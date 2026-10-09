@@ -1,0 +1,44 @@
+﻿//device username 
+${Device_Username} =
+//device Password
+${Device_Password} = 
+//Portal
+${Site} = 
+//protal username
+${Username} = 
+//Portal password
+${Password} = 
+//EWS Site
+${EWS_Site} = 
+//EWS password
+${EWS_Password} = 
+//Device name
+${Device_name} = 
+//device serial number
+${Device_Serial_No} = 
+//Device IP
+${Device_IP} = 
+//Authentication PIN
+${Device_PIN} = 
+${Job_Path} = 
+${Queue_Name} =
+//All required file paths should be provided, and ${App_Name} should be replaced with the application name, such as mspaint.exe.
+${Excel_File_Name} = 
+${Pdf_Name} = 
+${pptx_Name} = 
+${TXT_Name} = 
+${Word_Name} = 
+${JPG_Name} = 
+${GIF_Name} = 
+${BMP_Name} = 
+${App_Name} = 
+//Badgebox index
+${BADGE_INDEX} =
+//wait time for badgebox authentication
+${WaitTime} = 10
+// second Badgebox index
+${Second_BADGE_INDEX} =
+//Firmware Filepath
+${File_Path} =
+//Provide DirectIP printer name
+${DirectIPPrinter_Name}=

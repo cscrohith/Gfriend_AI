@@ -1,0 +1,48 @@
+﻿${UserName} = rdladmin
+${Password} = rdl@123
+
+//Scan to Email (To Address)
+${ToAddress} = rdladmin@amblr.com
+
+//Scan to Sharepoint(QuickSet)
+${STSQuickSetName} = #abc
+
+//Scan to Network Folder(QuickSet)
+${STNQuickSetName} = #Test 
+
+//FAX Number
+${SendTo} = 724079
+
+//USB Name for PrintFromUSB
+${UsbName} = #USB Drive 
+
+//File Name for PrintFromUSB
+${PrintFromUSBFileName} = #Print1.pdf
+
+//Print From Job Storage Folder
+${PrintFromJobStorageFolderName} = #RDLADMIN
+
+//Delta Value
+${DeltaValue} = 0.035
+
+//DeltaValue for Copy
+${DeltaValueCopy} = 0.080
+
+//Sleep Time
+${SleepTime} = 1
+
+//Default Delta Value
+${DefaultDeltaValue} = 0.05
+
+//Default Delta Value
+${ScreenRenderDelay} = 700
+
+//Scan Folder ID
+${ScanFolderID} = #D1AC8C3A-9503-44f8-AFD8-9FAC389F6E32
+
+//Print Folder ID
+${PrintFolderID} = #02FECD9A-7FE7-4797-AD15-8127DF2CFAAD
+
+
+
+

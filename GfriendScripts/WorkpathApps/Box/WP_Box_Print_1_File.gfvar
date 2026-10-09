@@ -1,0 +1,20 @@
+﻿//print options
+${Print_Folder}=Platform-Print
+${Print_Filename}=Test_001.pdf
+//${Print_Filename}=12pgGraphic.pdf
+//${Print_Filename}=15pgTextColorgraphics.docx
+
+// this is the print complete timeout in seconds
+${Print_JobCompleteTimeout}=240
+
+${Print_Repetitions}=1
+
+//print options
+${Print_SkipOptions}=Y
+${Print_NumberOfCopies}=1
+${Print_OutputSides}=1-sided
+${Print_Color}=Color
+${Print_PaperSize}=Letter \(8.5x11\)
+${Print_PaperType}=Plain
+${Print_PaperTray}=Automatically select
+${Print_Collate}=Collate on

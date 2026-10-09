@@ -1,0 +1,678 @@
+﻿using Web
+using web-portal-identifiers.gfvar
+
+OpenAlumaWebApplication
+{
+    Web.Open Chrome with Arguments (${AlumaPortalUrl},20,)
+}
+
+LoginToAlumaWebApplication
+{
+    //Input email Id in login page
+    If: Web.Wait For Object (${EmailTextFeild},300)
+    {
+        Web.Click Object (${EmailTextFeild})
+        Web.Append Text (${EmailTextFeild},${UserEmail})
+    }
+    Fail: 
+    {
+        Web.Refresh
+        Sleep(15)
+        If: Web.Wait For Object (${EmailTextFeild},300)
+        {
+            Web.Click Object (${EmailTextFeild})
+            Web.Append Text (${EmailTextFeild},${UserEmail})
+        }
+        Fail:
+        {
+            Web.Capture Screenshot (failed-input-email.png)
+            Fail (Couldn't load the email ID field on the login page)
+            Stop Test Case
+        }
+    }
+    
+    //Input password in login page
+    If: Web.Wait For Object (${PasswordTextFeild},60)
+    {
+        Web.Click Object (${PasswordTextFeild})
+        Web.Append Text (${PasswordTextFeild},${UserPassword})
+    }
+    Fail: 
+    {
+        Web.Capture Screenshot (failed-input-pwd.png)
+        Fail (Failed to click on the password field on the login page)
+        Stop Test Case
+    }
+    
+    //Click on login button
+    If: Web.Wait For Object (${SignInWithEmailButton},60)
+    {
+        Web.Click Object (${SignInWithEmailButton})
+    }
+    Fail: 
+    {
+        Web.Capture Screenshot (failed-clicking-login-btn.png)
+        Fail (Failed to load the Sign IN  button on the login page)
+        Stop Test Case
+    }
+    Sleep(5)
+}
+
+OpenValidationPage
+{
+    If: Web.Wait For Object (${ValidationButton},240)
+    {
+        Web.Click Object (${ValidationButton})
+    }
+    Fail:
+    {
+        // Second Attempt
+        If: Web.Wait For Object (${ValidationButton},60)
+        {
+            Web.Click Object (${ValidationButton})
+        }
+        Fail:
+        {
+            Web.Capture Screenshot (failed-opening-validation-pg.png)
+            Fail (Failed to click opne validate tab)
+            Stop Test Case
+        } 
+    }
+    Error:
+    {
+        // Second Attempt
+        If: Web.Wait For Object (${ValidationButton},60)
+        {
+            Web.Click Object (${ValidationButton})
+        }
+        Fail:
+        {
+            Web.Capture Screenshot (failed-opening-validation-pg.png)
+            Fail (Failed to click opne validate tab)
+            Stop Test Case
+        } 
+    }
+    Sleep(1)
+    Web.Select Tab (2)
+    //Give some time to tab for loading
+    Sleep(10)
+}
+   
+SelectDemoProjectForValidation
+{
+    If: Web.Wait For Text (demo-1,240)
+    {
+        Web.Click Text (demo-1)
+        //Give some time for page to load
+        Sleep(10)
+    }
+    Fail:
+    {
+        // Attempt Second Time
+        If: Web.Wait For Text (demo-1,60)
+        {
+            Web.Click Text (demo-1)
+            //Give some time for page to load
+            Sleep(10)
+        }
+        Fail:
+        {
+            Web.Capture Screenshot (failed-opening-demo-proj.png)
+            Fail (Demo project was not available)
+            Stop Test Case  
+        }
+    }
+}
+
+PerformDocumentSeperation_AlumaPortal
+{
+    // Initially when thumbnails for documents don't have a image, the <script> tag isn't
+    // updated in page DOM. It gets added once the images are loaded. We are using this diff
+    // -erence to check whether the page is loaded or not.
+    
+    Set Variable (${AreThumbnailsLoaded},N)
+    While:Equals IgnoreCase (${AreThumbnailsLoaded},N):10
+    {
+        If:Web.Wait For Object (${IsEmbeddedJSUpdatedInHead},2)
+        {
+            Set Variable (${AreThumbnailsLoaded},Y)
+        }
+        Fail:
+        {
+            Sleep(10)
+        }
+    }
+    
+    // If page is still not loaded after 30 iterations, we refresh the page and try again.
+    If:Equals IgnoreCase (${AreThumbnailsLoaded},N)
+    {
+        Web.Refresh
+        Sleep(15)
+        // After refresh validation homepage is reloaded on screen
+        // We need to select the demo project again.
+        If: Web.Wait For Text (demo-1,240)
+        {
+            Web.Click Text (demo-1)
+            //Give some time for page to load
+            Sleep(10)
+        }
+        Fail:
+        {
+            // Attempt Second Time
+            If: Web.Wait For Text (demo-1,60)
+            {
+                Web.Click Text (demo-1)
+                //Give some time for page to load
+                Sleep(10)
+            }
+            Fail:
+            {
+                Web.Capture Screenshot (failed-opening-demo-proj.png)
+                Fail (Demo project was not available)
+                Stop Test Case  
+            }
+        }
+        While:Equals IgnoreCase (${AreThumbnailsLoaded},N):10
+        {
+            If:Web.Wait For Object (${IsEmbeddedJSUpdatedInHead},2)
+            {
+                Set Variable (${AreThumbnailsLoaded},Y)
+            }
+            Fail:
+            {
+                Sleep(10)
+            }
+        }
+    }
+    
+    If:Web.Wait For Object (${Document3},240)
+    {
+            Web.Click Object (${Document3})    
+    }
+    Fail:
+    {
+        // Attemp second time
+        If:Web.Wait For Object (${Document3},60)
+        {
+            Web.Click Object (${Document3})
+        }
+        Fail:
+        {
+            Fail (Failed to select document-3)   
+        }
+        Web.Capture Screenshot (failed-selecting-doc3.png)
+    }
+    
+    If:Web.Wait For Object (${MoveArrowAtDocument3},240)
+    {
+        Web.Click Object (${MoveArrowAtDocument3})
+        Sleep(3)
+    }
+    Fail:
+    {
+        // Attempt second time
+        If:Web.Wait For Object (${MoveArrowAtDocument3},60)
+        {
+            Web.Click Object (${MoveArrowAtDocument3})
+            Sleep(3)
+        }
+        Fail:
+        {
+            Fail (Failed to click on MoveArrow button to merge document-3 to document-2)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (failed-moving-doc3-to-doc2.png)
+    }
+    
+    //Select document-4 and club it with document-3
+    Web.ScrollDownToParicularObject(${Document4})
+
+    If:Web.Wait For Object (${Document4},240)
+    {
+        Web.Click Object (${Document4})
+    }
+    Fail:
+    {
+        If:Web.Wait For Object (${Document4},60)
+        {
+            Web.Click Object (${Document4})    
+        }
+        Fail:
+        {
+            Fail (Failed to select document-4)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (failed-selecting-doc4.png)
+    }
+    
+
+    If: Web.Wait For Object (${MoveArrowAtDocument4},240)
+    {
+        Web.Click Object (${MoveArrowAtDocument4})
+        Sleep(5)
+    }
+    Fail:
+    {
+        //Attemp second time
+        If: Web.Wait For Object (${MoveArrowAtDocument4},60)
+        {
+            Web.Click Object (${MoveArrowAtDocument4})
+            Sleep(5)
+        }
+        Fail:
+        {
+            Fail (Failed to click on MoveArrow button to merge document-4 to document-3)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (failed-moving-doc4-to-doc3.png)
+    }
+    
+    //Separate document-4 from document-3
+    If:Web.Wait For Object (${Document3Page1},240)
+    {
+        Web.Click Object (${Document3Page1})
+        Sleep(1)
+    }
+    Fail:
+    {
+        // Second Attempt
+        If:Web.Wait For Object (${Document3Page1},60)
+        {
+            Web.Click Object (${Document3Page1})
+            Sleep(1)
+        }
+        Fail:
+        {
+            Fail (Failed to select page-1 of document3)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (failed-slct-page-1-of-doc-3.png)
+    }
+    
+    If:Web.Wait For Object (${SeparateDocument3And4},240)
+    {
+        Web.Click Object (${SeparateDocument3And4})
+        Sleep(5)
+    }
+    Fail:
+    {
+        If:Web.Wait For Object (${SeparateDocument3And4},60)
+        {
+            Web.Click Object (${SeparateDocument3And4})
+            Sleep(5)
+        }
+        Fail:
+        {
+            Fail (Failed to seperate doc-4 from doc-3)
+            Stop Test Case   
+        }
+        Web.Capture Screenshot (failed-seperating-doc3-and-doc4.png)
+    } 
+}
+
+PerformDocumentFeildsValidation_AlumaPortal
+{
+    //Select initial document
+    If:Web.Wait For Object (${Document1},240)
+    {
+        Web.Click Object (${Document1})
+        Sleep(1)
+    }
+    Fail:
+    {
+        // Second Attempt
+        If:Web.Wait For Object (${Document1},60)
+        {
+            Web.Click Object (${Document1})
+            Sleep(1)
+        }
+        Fail:
+        {
+            Fail(Failed to click on document 0)
+            Stop Test Case
+        }
+    }
+    Error:
+    {
+        // Second Attempt
+        If:Web.Wait For Object (${Document1},60)
+        {
+            Web.Click Object (${Document1})
+            Sleep(1)
+        }
+        Fail:
+        {
+            Fail(Failed to click on document 1)
+            Stop Test Case
+        }
+    }
+    
+    //Go to document-2 page-0
+    If:Web.Wait For Object (${MoveToNextDocument},240)
+    {
+        Web.Click Object (${MoveToNextDocument})
+        Sleep(1)
+    }
+    Fail:
+    {
+        // Second Attempt
+        If:Web.Wait For Object (${MoveToNextDocument},60)
+        {
+            Web.Click Object (${MoveToNextDocument})
+            Sleep(1)
+        }
+        Fail:
+        {
+            Fail(Failed to move to next document)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (move-to-doc-2.png)
+    }
+    Error:
+    {
+        // Second Attempt
+        If:Web.Wait For Object (${MoveToNextDocument},60)
+        {
+            Web.Click Object (${MoveToNextDocument})
+            Sleep(1)
+        }
+        Fail:
+        {
+            Fail(Failed to move to next document)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (move-to-doc-2.png)
+    }
+
+    If:Web.Wait For Object (${FeildViewButton},240)
+    {
+        Web.Click Object (${FeildViewButton})
+        Sleep(1)
+    }
+    Fail:
+    {
+        // Second Attempt
+        If:Web.Wait For Object (${FeildViewButton},60)
+        {
+            Web.Click Object (${FeildViewButton})
+            Sleep(1)
+        }
+        Fail:
+        {
+            Fail(Failed to move to next document)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (validate-feild-view-btn.png)
+    }
+    Error:
+    {
+        // Second Attempt
+        If:Web.Wait For Object (${FeildViewButton},60)
+        {
+            Web.Click Object (${FeildViewButton})
+            Sleep(1)
+        }
+        Fail:
+        {
+            Fail(Failed to move to next document)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (validate-feild-view-btn.png)
+    }
+    
+    Repeat:3
+    {
+        If:Web.Wait For Object (${InputTextFeild_Fornitore},240)
+        {
+            Web.Set Text (${InputTextFeild_Fornitore},${InputValue})
+            Sleep(1)
+        }
+        Fail:
+        {
+            // Second Attempt
+            If:Web.Wait For Object (${InputTextFeild_Fornitore},60)
+            {
+                Web.Set Text (${InputTextFeild_Fornitore},${InputValue})
+                Sleep(1)
+            }
+            Fail:
+            {
+                Fail (Failed to input text in fornitore feild)
+                Stop Test Case
+            }
+            Web.Capture Screenshot (validate-fornitore.png)
+        }
+        Error:
+        {
+            // Second Attempt
+            If:Web.Wait For Object (${InputTextFeild_Fornitore},60)
+            {
+                Web.Set Text (${InputTextFeild_Fornitore},${InputValue})
+                Sleep(1)
+            }
+            Fail:
+            {
+                Fail (Failed to input text in fornitore feild)
+                Stop Test Case
+            }
+            Web.Capture Screenshot (validate-fornitore.png)
+        }
+        
+        If:Web.Wait For Object (${InputTextFeild_PartitaIva},240)
+        {
+            Web.Set Text (${InputTextFeild_PartitaIva},${InputValue})
+            Sleep(1)
+        }
+        Fail:
+        {
+            // Second Attempt
+            If:Web.Wait For Object (${InputTextFeild_PartitaIva},60)
+            {
+                Web.Set Text (${InputTextFeild_PartitaIva},${InputValue})
+                Sleep(1)
+            }
+            Fail:
+            {
+                Fail (Failed to input text in PartIva feild)
+                Stop Test Case
+            }
+            Web.Capture Screenshot (validate-partita-iva.png)
+        }
+        Error:
+        {
+            // Second Attempt
+            If:Web.Wait For Object (${InputTextFeild_PartitaIva},60)
+            {
+                Web.Set Text (${InputTextFeild_PartitaIva},${InputValue})
+                Sleep(1)
+            }
+            Fail:
+            {
+                Fail (Failed to input text in PartIva feild)
+                Stop Test Case
+            }
+            Web.Capture Screenshot (validate-partita-iva.png)
+        }
+        
+        If:Web.Wait For Object (${MoveToNextDocument},240)
+        {
+            Web.Click Object (${MoveToNextDocument})
+            // Give some time to next fields to load.
+            Sleep(2)
+        }
+        Fail:
+        {
+            If:Web.Wait For Object (${MoveToNextDocument},60)
+            {
+               Web.Click Object (${MoveToNextDocument})
+               // Give some time to next fields to load.
+               Sleep(2)
+            }
+            Fail:
+            {
+               Web.Capture Screenshot (move-next-doc.png)
+               Fail (Failed to move to next document)
+               Stop Test Case
+            }
+        }
+        Error:
+        {
+            If:Web.Wait For Object (${MoveToNextDocument},60)
+            {
+               Web.Click Object (${MoveToNextDocument})
+               // Give some time to next fields to load.
+               Sleep(2)
+            }
+            Fail:
+            {
+               Web.Capture Screenshot (move-next-doc.png)
+               Fail (Failed to move to next document)
+               Stop Test Case
+            }
+        }
+    }
+}
+
+CompleteReview
+{
+    If:Web.Wait For Object (${ThumbnailViewButton},240) 
+    {
+        Web.Click Object (${ThumbnailViewButton})
+        Sleep(1) 
+    }
+    Fail:
+    {
+        // Attempt again
+        If:Web.Wait For Object (${ThumbnailViewButton},60)
+        {
+			Web.Click Object (${ThumbnailViewButton})
+			Sleep(1) 
+        }
+        Fail:
+        {
+			Fail (Failed to click thumbnail view button)
+			Stop Test Case
+        }
+        Web.Capture Screenshot (thumbnail-view-btn.png)
+    }
+    Error:
+    {
+       If:Web.Wait For Object (${ThumbnailViewButton},60)
+       {
+           Web.Click Object (${ThumbnailViewButton})
+           Sleep(1) 
+       }
+       Fail:
+       {
+          Fail (Failed to click thumbnail view button)
+          Stop Test Case
+       }
+       Web.Capture Screenshot (thumbnail-view-btn.png) 
+    }
+   
+    If:Web.Wait For Object (${ReviewCompleteButton},300)
+    {
+       Web.Click Object(${ReviewCompleteButton})
+       Sleep(1) 
+    }
+   Fail:
+   {
+       If:Web.Wait For Object (${ReviewCompleteButton},60)
+       {
+           Web.Click Object(${ReviewCompleteButton})
+           Sleep(1) 
+       }
+       Fail:
+       {
+           Fail(Failed to click review button)
+           Stop Test Case
+       }
+       Web.Capture Screenshot (review-complete-btn.png)
+   }
+   Error:
+   {
+        If:Web.Wait For Object (${ReviewCompleteButton},300)
+        {
+           Web.Click Object(${ReviewCompleteButton})
+           Sleep(1) 
+       }
+       Fail:
+       {
+           Fail(Failed to click review button)
+           Stop Test Case
+       }
+       Web.Capture Screenshot (review-complete-btn.png)
+   }
+    
+    If:Web.Wait For Object (${SubmitAndOpenNextTaskDropdown},300)
+    {
+        Web.Click Object(${SubmitAndOpenNextTaskDropdown})
+        Sleep(1) 
+    }
+    Fail:
+    {
+        If:Web.Wait For Object (${SubmitAndOpenNextTaskDropdown},60)
+        {
+            Web.Click Object(${SubmitAndOpenNextTaskDropdown})
+            Sleep(1) 
+        }
+        Fail:
+        {
+            Fail(Failed to click 'Submit & Open Next Task' button)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (submit-open-next-dropdown.png)
+    }
+    Error:
+    {
+        If:Web.Wait For Object (${SubmitAndOpenNextTaskDropdown},60)
+        {
+            Web.Click Object(${SubmitAndOpenNextTaskDropdown})
+            Sleep(1) 
+        }
+        Fail:
+        {
+            Fail(Failed to click 'Submit & Open Next Task' button)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (submit-open-next-dropdown.png)
+    }
+    
+    If:Web.Wait For Object (${SubmitAndReturnToTaskList},300)
+    {
+        Web.Click Object(${SubmitAndReturnToTaskList})
+        Sleep(1) 
+    }
+    Fail:
+    {
+        If:Web.Wait For Object (${SubmitAndReturnToTaskList},60)
+        {
+            Web.Click Object(${SubmitAndReturnToTaskList})
+            Sleep(1) 
+        }
+        Fail:
+        {
+            Fail(Failed to click 'Submit & Return To Task List' button)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (submit-return-task-list.png)
+    }
+    Error:
+    {
+        If:Web.Wait For Object (${SubmitAndReturnToTaskList},60)
+        {
+            Web.Click Object(${SubmitAndReturnToTaskList})
+            Sleep(1) 
+        }
+        Fail:
+        {
+            Fail(Failed to click 'Submit & Return To Task List' button)
+            Stop Test Case
+        }
+        Web.Capture Screenshot (submit-return-task-list.png) 
+    }
+    
+    //Wait for validation task to disappear from list
+    Sleep(15)
+    Web.Capture Screenshot (after-completing-validation.png)
+}

@@ -1,0 +1,277 @@
+﻿using Dune
+using Common_Variables.gfvar
+
+PrintFromJobStorage_WorkFlow
+{
+    //Navigate to Print from Storage   
+    If:Dune.Navigate To Application On Home Screen (#86DCD04A-5F44-4EAE-83C3-1C3C3F12E32B)
+    {
+        Common_Library.SleepTime
+        //clicks on Print from Storage  
+        Dune.Click (#86DCD04A-5F44-4EAE-83C3-1C3C3F12E32B)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to find Print App)
+        Stop Test Suite
+    }     
+}
+
+PrintFromJobStorage_Setup
+{
+    //Navigate to Print from Storage   
+    If:Dune.Navigate To Application On Home Screen (#86DCD04A-5F44-4EAE-83C3-1C3C3F12E32B)
+    {
+        Common_Library.SleepTime
+        //clicks on Print from Storage  
+        Dune.Click (#86DCD04A-5F44-4EAE-83C3-1C3C3F12E32B)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to find Print App)
+        Stop Test Suite
+    }     
+}
+
+PrintFromJobStorage_SelectsTheSpecifiedFolder
+{   
+   If: Dune.Wait For visibility (#JobStorageAppApplicationStackView,${PrintFromJobStorageFolderName},1)
+   {
+       Dune.Click Id And Wait For Transition (${PrintFromJobStorageFolderName},${ScreenRenderDelay})
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on ${PrintFromJobStorageFolderName})
+       Stop Test Suite
+   }
+}
+
+PrintFromJobStorage_SelectFile
+{
+    //Selects the file from Job Storage
+   If: Dune.Wait For (#CheckBoxView,10)
+   {
+       Dune.Click Id And Wait For Transition (#CheckBoxView,${ScreenRenderDelay})
+   }
+   Fail:
+   {
+       Return With Fail (No jobs are available to select)
+       Stop Test Suite
+   }
+}
+
+PrintFromJobStorage_ExpandButtonForNumberOfCopies
+{
+   If: Dune.Wait For (#expandButton #ButtonControl,10)
+   {
+       Dune.Click Id And Wait For Transition (#expandButton #ButtonControl,2000)
+   }
+   Fail:
+   {
+       Return With Fail (Unable to find Expand button)
+       Stop Test Suite
+   }
+}
+
+PrintFromJobStorage_NumberOfCopies
+{    
+    //Number of copies
+    If: Dune.Wait For (#jobStorage_numberOfCopiesMenuSpinBox #spinbox #SpinBoxTextInput,10) 
+    {
+        Dune.Click Id And Wait For Transition (#jobStorage_numberOfCopiesMenuSpinBox #spinbox #SpinBoxTextInput,${ScreenRenderDelay})
+        Dune.Wait For (#enterKeyPositiveIntegerKeypad,3)
+        Dune.Click Id And Wait For Transition  (#key2PositiveIntegerKeypad,${ScreenRenderDelay})
+        Dune.Click Id And Wait For Transition (#enterKeyPositiveIntegerKeypad,${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Fail (Unable to click on copies)
+    }
+}
+
+PrintFromJobStorage_ExecuteJob
+{
+  If: Dune.Wait For (#FooterViewRight #printButton #ButtonControl,10)
+   {
+       Dune.Click Id And Wait For Transition (#FooterViewRight #printButton #ButtonControl,2000)
+       Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,10)
+   }
+   Fail:
+   {
+       Return With Fail (Unable to find Print button)
+       Stop Test Suite
+   }
+} 
+ 
+PrintFromJobStorage_BackToHomeScreen
+{
+    If: Dune.Wait For Active Job Gone(print,25)
+    {
+        Dune.Go To Home Screen
+        Sleep (2)
+        Dune.Click (#SignInButton)
+        Dune.Click Id(#userInfoSignInButton)
+    }
+    Fail:
+    {
+        Return With Fail (Print job failed )
+        Stop Test Suite 
+    } 
+}
+
+PrintFromJobStorage_NumberOfCopies_PlusButton
+{
+   If: Dune.Wait For (#jobStorage_numberOfCopiesMenuSpinBox #upButtonContainer #Plus,2)
+   {
+       Dune.Click(#jobStorage_numberOfCopiesMenuSpinBox #upButtonContainer #Plus)
+       Sleep (1)
+   }
+   Fail:
+   {
+       Return With Fail (Unable to find Plus button)
+       Stop Test Suite
+   }
+}
+
+PrintFromJobStorage_NumberOfCopies_MinusButton
+{
+   If: Dune.Wait For (#jobStorage_numberOfCopiesMenuSpinBox #downButtonContainer #Minus,2)
+   {
+       Dune.Click(#jobStorage_numberOfCopiesMenuSpinBox #downButtonContainer #Minus)
+       Sleep (1)
+   }
+   Fail:
+   {
+       Return With Fail (Unable to find Minus button)
+       Stop Test Suite
+   }
+}
+
+PrintFromJobStorage_Teardown
+{   
+    Dune.Click (#BackButton)
+    Dune.Click (#ButtonControl)
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}
+
+PrintFromJobStorage_NumberOfCopies_Teardown
+{   
+    Dune.Click (#cancelButton)
+    Dune.Click (#BackButton)
+    Dune.Click (#ButtonControl)
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}
+
+// PrintfromUSB 
+PrintFromUSB_WorkFlow
+{
+     //Navigate to Print from USB   
+    If:Dune.Navigate To Application On Home Screen (${PrintFolderID})
+    {
+        //clicks on Print from USB  
+        Dune.Click (${PrintFolderID})
+    }
+    Fail:
+    {
+        Return With Fail (Unable to find Print App)
+        Stop Test Suite
+    } 
+        //wait and clicks on Print from USB
+    If: Dune.Wait For (#c93bc831-99a8-454c-b508-236fc3a2a08f,5)
+    {
+        Dune.Click (#c93bc831-99a8-454c-b508-236fc3a2a08f)          
+    }
+    Fail:
+    {
+        Return With Fail (Print from USB app button was not found on device home screen.)
+        Stop Test Suite
+    }     
+}
+
+PrintFromUSB_Setup
+{
+     //Navigate to Print from USB   
+    If:Dune.Navigate To Application On Home Screen (${PrintFolderID})
+    {
+        //clicks on Print from USB  
+        Dune.Click (${PrintFolderID})
+    }
+    Fail:
+    {
+        Return With Fail (Unable to find Print App)
+        Stop Test Suite
+    } 
+        //wait and clicks on Print from USB
+    If: Dune.Wait For (#c93bc831-99a8-454c-b508-236fc3a2a08f,5)
+    {
+        Dune.Click (#c93bc831-99a8-454c-b508-236fc3a2a08f)          
+    }
+    Fail:
+    {
+        Return With Fail (Print from USB app button was not found on device home screen.)
+        Stop Test Suite
+    }     
+}
+
+PrintFromUSB_SelectFile
+{
+   If: Dune.Wait For visibility (#scrollAreaGridLayout,${PrintFromUSBFileName},1)
+   {
+       Dune.Click Id And Wait For Transition (${PrintFromUSBFileName}, ${ScreenRenderDelay})
+   }
+   Fail:
+   {
+       Dune.SwipeVerticallyAndWaitForTransition (#scrollAreaGridLayout,#scrollAreaGridLayoutverticalScroll,${PrintFromUSBFileName}, 0.05, ${ScreenRenderDelay})
+       Dune.Click Id And Wait For Transition (${PrintFromUSBFileName}, ${ScreenRenderDelay})       
+   }
+}
+
+PrintFromUSB_ExecuteJob
+{
+    //ExecutePrintJob
+    If:  Dune.Wait For (#printUsbBtn,10)
+   {
+       Dune.Click Id And Wait For Transition (#printUsbBtn,${ScreenRenderDelay})     
+       Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,10)
+   }
+   Fail:
+   {
+       Return With Fail (Unable to find Print button)
+       Stop Test Suite 
+   }
+}
+
+PrintFromUSB_BackToHomeScreen
+{
+    If: Dune.Wait For Active Job Gone(Print,20)
+   {
+       Sleep (2)
+       Dune.Go To Home Screen
+       Dune.Click (#SignInButton)
+       Dune.Click Id(#userInfoSignInButton)
+   }
+   Fail:
+   {
+       Return With Fail (Print Job Failed)
+       Stop Test Suite 
+   }  
+}
+
+PrintFromUSB_Teardown
+{ 
+    Dune.Click (#BackButton)
+    Dune.Click (#ButtonControl)
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}

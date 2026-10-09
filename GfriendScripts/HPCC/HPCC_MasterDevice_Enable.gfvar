@@ -1,0 +1,14 @@
+﻿// discovery multicast options
+${Discover_Method_Multicast_YN}=Y
+${Discover_Multicast_Period}=Once a day
+${Discover_Multicast_Hour}=08
+${Discover_Multicast_Minute}=00
+${Discover_Multicast_AM_PM}=AM
+
+// discovery device announcement options
+${Discover_Method_DeviceAnnounce_YN}=N
+${Discover_DeviceAnnounce_TrustedAuth_YN}=N
+${Discover_DeviceAnnounce_SecondaryListeners_YN}=N
+
+// configure options for discovery
+${ConfigureOption_AddAllDevices_YN}=N

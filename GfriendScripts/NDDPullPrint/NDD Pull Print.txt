@@ -1,0 +1,78 @@
+﻿using JediOmni
+using NDD_Pull_Print_Library.gflib
+using NDD_Pull_Print_Variables.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         NDD Pull Print Flow
+// Description:     NDD Pull Print Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+NDD Pull Print Flow
+{ 
+    If: Equals IgnoreCase (${USER_AUTH},Y)
+    {
+        If: NDD_Pull_Print_Library.UserNamePasswordLogin(${STF_UserName},${STF_UserPassword},${LAZY_AUTH})
+        {
+            If: NDD_Pull_Print_Library.PullPrint(${PRINT_RELEASE_ACTION},${LAZY_AUTH})
+            {
+                NDD_Pull_Print_Library.ExitApp
+            }
+            Fail:
+            {
+                Fail(Fail occurred during pull print operation)
+            }
+            Error:
+            {
+                Error(Error occurred during pull print operation)
+            }
+        }
+        Fail:
+        {
+                Fail (Failed while Signing In Username\Password Authentication!)
+        }
+        Error:
+        {
+                Error (Error while Signing In Username\Password Authentication!)
+        }
+    }
+    
+    Fail:
+    {
+            NDD_Pull_Print_Library.GenerateUserCode(${STF_UserName})
+            If: NDD_Pull_Print_Library.PinLogin(${UserCode},${LAZY_AUTH})
+            {
+                If: NDD_Pull_Print_Library.PullPrint(${PRINT_RELEASE_ACTION},${LAZY_AUTH})
+                {
+                    NDD_Pull_Print_Library.ExitApp
+                }
+                Fail:
+                {
+                    Fail(Fail occurred during pull print operation)
+                }
+                Error:
+                {
+                    Error(Error occurred during pull print operation)
+                }   
+            }
+            Fail:
+            {
+                Fail (Failed while Signing In Pin Authentication!)
+            }
+            Error:
+            {
+                Error (Error while Signing In Pin Authentication!)
+            }
+    }
+    
+    //Signing Out
+    NDD_Pull_Print_Library.SignOut
+   
+}

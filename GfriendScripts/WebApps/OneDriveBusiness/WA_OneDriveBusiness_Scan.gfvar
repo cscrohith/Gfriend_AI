@@ -1,0 +1,19 @@
+﻿//scan options
+${Scan_Filename}=OneDriveBusnessSE_Scan_1pg
+${Scan_Folder}=Platform-Scans
+${Scan_Email}=FS-002@etl.boi.rd.hpicorp.net
+${Scan_Pages}=1
+
+// this is the scan complete timeout in seconds
+${Scan_JobCompleteTimeout}=300
+
+${Scan_Repetitions}=1
+
+${Scan_SkipOptions}=Y
+${Scan_FileType}=PDF
+${Scan_Resolution}=300 dpi
+${Scan_Color}=Color
+// Note: the character between the width and height must be an × not an x or X
+//${Scan_OriginalSize}=Letter \(8.5×11\)
+${Scan_ContentOrientation}=Portrait
+

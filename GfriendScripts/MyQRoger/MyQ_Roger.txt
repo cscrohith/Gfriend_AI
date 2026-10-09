@@ -1,0 +1,50 @@
+﻿using JediOmni
+using Android
+using MyQ_RogerTC.gflib
+using MyQ_Roger.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         MyQ Roger Flow
+// Description:     MyQ Roger Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+MyQ_Roger_Flow
+{
+    JediOmni.Enable Paperless Mode
+    Android.Start Memory Monitoring (cz.myq.roger.home)
+    Android.Get Heap Dump (cz.myq.roger.home,MemoryDumpBefore)
+    Repeat:5
+    {  
+        JediOmni.Press Home Key
+        JediOmni.Reset
+
+        Android.Collect Memory Info (cz.myq.roger.home)
+        JediOmni.Touch ID (hpid-385af4e5-2e7c-4ddb-a3d3-ff2d9327613e-homescreen-button)
+        Sleep (3)
+        If: MyQ_RogerTC.MyQRoger_PullPrint(${STF_UserName},${STF_UserPassword},${FOLDER},${FOLDER_NAME},${DOCUMENT_NAME})
+        { 
+            //Continue       
+        }
+    
+        Fail:
+        {
+            Return With Fail (Failed while Performing pull print operation!)
+        }
+        Error:
+        {
+            Return With Error (Error while Performing pull print operation!)
+        }
+        Sleep (10)
+    }
+    Android.Get Heap Dump (cz.myq.roger.home,MemoryDumpAfter)
+    Android.Draw Memory Usage Graph(cz.myq.roger.home) 
+}
+

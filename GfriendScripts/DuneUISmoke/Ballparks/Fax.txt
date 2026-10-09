@@ -1,0 +1,40 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+Authentication
+{
+    Common_Library.CheckHomeScreen
+    Common_Library.AuthenticationEager(${UserName},${Password})
+}
+FaxWorkFlow
+{
+    If: Dune.Wait For (#44aa632b-cfa3-4c10-8cab-697a9bef610b,10)
+    {
+        //clicks on FAX 
+        Dune.Click (#44aa632b-cfa3-4c10-8cab-697a9bef610b)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to click on FAX Application)
+        Stop Test Suite
+    }
+    //entering Send To (Fax Number)
+    If: Dune.Wait For (#enterFaxNumberTextField,10)
+    {
+        //click on Send To Fax Number text box
+        Dune.Click Id (#enterFaxNumberTextField)
+            
+        //types the Fax Number 
+        Sleep (2)
+        Dune.Fax DialPad Click(${SendTo})
+    }
+    Fail:
+    {
+        Return With Fail (Unable to update to Address)
+    }
+}
+Option_Check 
+{
+    Common_Library.Fax_Option_Validation_For_Camden_and_Busch
+} 

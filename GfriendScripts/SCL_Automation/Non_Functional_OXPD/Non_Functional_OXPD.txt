@@ -1,0 +1,354 @@
+﻿using ..\OXPD_Common\OXPD_Common_Variables.gfvar
+using ..\OXPD_Common\OXPD_Common_Library.gflib
+using Non_Functional_OXPD.gflib
+using Non_Functional_OXPD.gfvar
+using Web
+using Oxpd
+using JediOmni
+using Windows
+
+
+T1985577782_Print_Stress
+{
+    //continuously sending print jobs
+    Repeat:8
+    {
+        OXPD_Common_Library.Send_Job (${FilePath},${PrintQueueName})
+        Sleep (5)
+    }
+    //Verify Large File Print Test
+    OXPD_Common_Library.Device_Badgebox_Login (${BADGE_INDEX},${WaitTime})
+    OXPD_Common_Library.Pull_Print_Operation()
+    Sleep (2) 
+    //Large Number of Print Queues Test
+    Non_Functional_OXPD.T1985577782_Print_Queues_Test()
+    //go back to home screen
+    Oxpd.Wait For Xpath (${home_button1},10) 
+    Oxpd.Touch Xpath (${home_button1})
+    Oxpd.Wait For Xpath (${home_button2},10) 
+    Oxpd.Touch Xpath (${home_button2})
+    Oxpd.Return Browser Engine
+    //Badge Authentication Stress
+    Repeat:5
+    {
+        Non_Functional_OXPD.T1985577782_Print_Stress_Badge()
+    } 
+}
+
+T1985577776_Security_PJL_Setting 
+{
+    OXPD_Common_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    Non_Functional_OXPD.T1985577776_Security_PJL_Setting
+  //Send Print Job
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+
+    //Login to Device
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+
+    // Release Print Job
+     OXPD_Common_Library.Pull_Print_Operation()
+     OXPD_Common_Library.Device_Signout
+}
+ T1988557801_Verify_card_reader_behavior_for_2_cards_registered
+{
+     Repeat: 2
+    {
+       
+        Calculate And Assign (${R}-1,${BadgeIndex})
+        OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+        OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+        OXPD_Common_Library.Pull_Print_Operation
+        Sleep (20)
+        OXPD_Common_Library.Device_Signout
+        Sleep (10)
+    }
+}
+
+T1988557796_Validate_the_Hot_Swap_card_reader_using_a_different_model_of_card_reader
+{ 
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Badgebox_Login (${BADGE_INDEX_1})
+    OXPD_Common_Library.Device_Signout
+    SafeQ_Oxpd.T1988557796_Validate_the_Hot_Swap_card_reader_using_a_different_model_of_card_reader(${BADGE_INDEX_1})
+    OXPD_Common_Library.Device_Signout
+}
+
+T1988557806_Validate_Card_Authentication_by_Rebooting_the_Device
+{
+     JediOmni.Enable Paperless Mode
+     OXPD_Common_Library.Badgebox_Login (${BADGE_INDEX_1})
+     OXPD_Common_Library.Device_Signout
+     Non_Functional_OXPD.T1988557806_Validate_Card_Authentication_by_Rebooting_the_Device (${BADGE_INDEX_1})
+     OXPD_Common_Library.Device_Signout
+}
+ 
+ T1988557805_Verify_the_card reader's_behavior_when U1_swipes_first_followed_immediately_by_U2
+{
+    OXPD_Common_Library.Send_Job(${Printer})
+    OXPD_Common_Library.Badgebox_Login (${BADGE_INDEX_1})
+    OXPD_Common_Library.Pull_Print_Operation()
+    Non_Functional_OXPD.T1988557805_Verify_the_card reader's_behavior_when U1_swipes_first_followed_immediately_by_U2(${BADGE_INDEX_2},${BadgeBox_2_username})
+    OXPD_Common_Library.Device_Signout
+}
+//Security_SNMP_Security_settings-Citrine
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+T1985577773_Security_SNMP_Security_settings-Citrine
+{
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    Non_Functional_OXPD.T1985577773_Validate_SNMP_SecuritySettings_Enable()
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.OXPD_Device_Username_Login(${Device_Username},${Device_Password})
+    OXPD_Common_Library.Pull_Print_Operation()
+    Oxpd.Return Browser Engine
+    JediOmni.Press Home Key
+    If: JediOmni.Wait For Text (Sign Out,5)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    OXPD_Common_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    Non_Functional_OXPD.T1985577773_Validate_SNMP_SecuritySettings_Disable()
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.OXPD_Device_Username_Login(${Device_Username},${Device_Password})
+    OXPD_Common_Library.Pull_Print_Operation()
+}
+
+//Security -> SHA256 - Citrine()
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+T1985577779_Security_SHA256-Citrine()
+{
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    Non_Functional_OXPD.T1985577779_Validate_Security_SHA256()
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.OXPD_Device_Username_Login(${Device_Username},${Device_Password})
+    OXPD_Common_Library.Pull_Print_Operation()
+}
+
+//Validate_Server_Upgrade-Citrine
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+T1985577784_Server_Upgrade-Citrine
+{
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Non_Functional_OXPD.T1985577784_Validate_Server_Upgrade()
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.OXPD_Device_Username_Login(${Device_Username},${Device_Password})
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout
+}
+
+//Validate_User_session-Citrine
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+T1985577782_User_session-Citrine
+{
+    OXPD_Common_Library.OXPD_Device_Username_Login(${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.Pull_Print_Operation()
+    Non_Functional_OXPD.T1985577782_Validate_User_session()
+    OXPD_Common_Library.OXPD_Device_Username_Login(${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.Pull_Print_Operation()
+}
+T1985577774_Security_FIPS_encryption
+{
+    OXPD_Common_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    Non_Functional_OXPD.T1985577774_Security_FIPS(${EWS_Site})
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout
+}
+
+T1988557809_Validation_of_Card_Reader_KioskMode
+{
+    OXPD_Common_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    OXPD_Common_Library.T1988557809_Validation_of_Card_Reader_KioskMode(${BADGE_INDEX})
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout
+}
+
+// Functionality_SafeQ_Cloud_after_firmwareUpgrade(older_FS5_latest FS5)
+// Prerequisites:
+// downgrade firmware into the FS5 version and deploy the solution and run the below testcase
+// Provide the following details in the input variable file:
+// ${FilePath}       - Path of the BDL file for the respective device (single file).
+// ${BADGE_INDEX}    - Badge index to be used for authentication
+
+T1985577785_Functionality_SafeQCloud_firmware_upgrade(older_FS5_latest FS5)-Citrine
+{
+    OXPD_Common_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    OXPD_Common_Library.T1985577784_Firmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password})
+    OXPD_Common_Library.Badgebox_Login(${BADGE_INDEX})
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout
+}
+
+// Functionality_SafeQ_Cloud_after_firmwareUpgrade(FS4_to _FS5)
+// Prerequisites:
+// downgrade firmware into the FS4 version and deploy the solution and run the below testcase
+// Provide the following details in the input variable file:
+// ${FilePath}       - Path of the BDL file for the respective device (single file).
+// ${BADGE_INDEX}    - Badge index to be used for authentication
+
+T1985577784_Functionality_SafeQ_Cloud_after_firmwareUpgrade(FS4_to _FS5)-Cordoba
+{
+    OXPD_Common_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    OXPD_Common_Library.T1985577784_Firmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password})
+    OXPD_Common_Library.Badgebox_Login(${BADGE_INDEX})
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout
+}
+
+
+T1985577775_Security_CSRFsetting_Citrine
+{
+    OXPD_Common_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    Sleep (2)
+    Non_Functional_OXPD.T1985577775_Validate_CSRF_setting()
+    Sleep (2)
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    //Login to Device
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    // Release Print Job
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout
+}
+
+T1988557803_Validate_the_card_enrollment_after_48hours_Citrine10
+{
+    JediOmni.Press Home Key
+    //48 hours sleep time
+    Sleep (172800)   
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+    OXPD_Common_Library.Pull_Print_Operation
+    Sleep (20)
+    OXPD_Common_Library.Badgebox_LogOut(${BadgeIndex},${WaitTime})
+}
+T1988557804_Validate_the_card_enrollment_after_72hours_Citrine10
+{
+    JediOmni.Press Home Key
+    //72 hours sleep time
+    Sleep (259200)
+    
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+    OXPD_Common_Library.Pull_Print_Operation
+    Sleep (20)
+    OXPD_Common_Library.Badgebox_LogOut(${BadgeIndex},${WaitTime})
+}
+ // Prerequisite:
+// 1. Configure two different card types using the rfIDEAS Configuration Utility tool.
+// 2. Register both cards to the same card reader/device.
+// 3. Place both configured cards in the Badge Box before executing the test.
+ T1988557801_Verify_the_card_reader_behavior_when_two_(2)_cards_are_registered_to_the_same_device_using_the_rfIDEAS
+{
+      //Verify Card 1
+    OXPD_Common_Library.Device_Badgebox_Login(${BADGE_INDEX},${WaitTime})
+    OXPD_Common_Library.Badgebox_LogOut(${BadgeIndex},${WaitTime})
+    //Verify Card 2
+    Non_Functional_OXPD.Second_Badge_Login(${Second_BADGE_INDEX})
+    Non_Functional_OXPD.Second_Badge_Logout(${Second_BADGE_INDEX})
+}
+T1988557802_Verify_how_the card_reader_behaves_when_the_device_has_been_in_deep_sleep_mode_for_24_hours
+{
+    JediOmni.Press Home Key
+    // 24hours sleep time
+    Sleep (86400)
+
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+    OXPD_Common_Library.Pull_Print_Operation
+    Sleep (20)
+    OXPD_Common_Library.Badgebox_LogOut(${BadgeIndex},${WaitTime})
+}
+// Prerequisite:
+// 1. Install and configure the required solution on the device.
+// 2. Configure two cards (User1 and User2) using the HP Card Reader Configuration Utility.
+// 3. Register both cards to the same device.
+// 4. Place both configured cards in the Badge Box.
+// 5. Ensure the device is at the Sign In screen before starting the test.
+T1988557798_Verify_the_card_reader_behavior_when_two_cards_are_registered_to_same_device_with_different_users 
+{
+  
+    //Swipe User1 card - User1 Login
+    BadgeBox.Scan Badge (${User1_BADGE_INDEX})
+
+    If: JediOmni.Wait For Text (Sign Out,${WaitTime_SignIn_SignOut})
+    {
+        Pass (User1 logged in successfully.)
+    }
+    Fail:
+    {
+        Fail (Failed to log in User1.)
+        Stop Test Case
+    }
+
+    //Swipe User2 card immediately
+    BadgeBox.Scan Badge (${User2_BADGE_INDEX})
+
+    //Verify User1 remains signed in
+    If: JediOmni.Wait For Text (Sign Out,${WaitTime_SignIn_SignOut})
+    {
+        Pass (User1 remained signed in after User2's first swipe.)
+    }
+    Fail:
+    {
+        Fail (User1 was unexpectedly logged out after User2's first swipe.)
+        Stop Test Case
+    }
+
+    //Swipe User2 card again
+    BadgeBox.Scan Badge (${User2_BADGE_INDEX})
+
+    //Verify User2 is logged in
+    If: JediOmni.Wait For Text (Sign Out,${WaitTime_SignIn_SignOut})
+    {
+        Pass (User2 logged in successfully after the second swipe.)
+    }
+    Fail:
+    {
+        Fail (Failed to log in User2 after the second swipe.)
+        Stop Test Case
+    }
+}
+
+T1988557795_Verify_behavior_of_SF_2.7_display_when_the_user performs_swipe_and_replace_all_actions
+{
+   Functional_OXPD.T1984767199_Validate_the_Embedded_OXP_Agent_in_SafeQ_Cloud_Configure_device(${Device_Name},${Device_IP},${Device_Serial_No})
+   OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+   Non_Functional_OXPD.T1988557795_Verify_behavior_of_SF_2.7_display_when_the_user performs_swipe_and_replace_all_actions_step1
+   JediOmni.Enable Paperless Mode
+   Repeat:3
+   {
+    OXPD_Common_Library.Send_Job(${Printer})
+   }
+    OXPD_Common_Library.Badgebox_Login (${BADGE_INDEX_1})
+    Non_Functional_OXPD.T1988557795_Paper_Out_and_Direct_IP_Print_Trays
+    OXPD_Common_Library.Device_Signout
+}

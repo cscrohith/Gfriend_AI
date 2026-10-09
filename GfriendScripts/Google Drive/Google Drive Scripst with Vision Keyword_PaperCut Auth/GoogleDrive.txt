@@ -1,0 +1,85 @@
+﻿using JediOmni
+using Vision
+using Google_Drive.gflib
+using Files.gfvar
+ 
+Setup_AzureVision
+{
+    Google_Drive.AzureVision(${STF_AzureEndpoint},${STF_AzureKey})
+}
+    
+//Sign-out a user if already signed in
+ClearAuth
+{
+    If: Google_Drive.ClearAuth(${SignIn_Or_SignOut_ID})
+    {
+        Pass (ClearAuth) 
+    }
+}    
+
+PaperCut_SignIn
+{
+    If: Google_Drive.PaperCut_SignIn(${User_Name},${Password})
+    {
+        Pass (PaperCut Sign In Successful)    
+    }
+    Fail:
+    {
+        Fail (PaperCut Sign In failed)
+        Stop Test Suite 
+    }
+}   
+
+Google_Drive_SignIn
+{
+   If: Google_Drive.Google_Drive_SignIn(${Email},${Email_Password})
+   {
+       Pass (Google Drive Sign In Successful) 
+   }
+   Fail:
+   {
+       Fail (Google Drive Sign In Failed)
+       Google_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+       Stop Test Suite
+   }
+}
+
+Google_Drive_Print
+{
+    If: Google_Drive.Google_Drive_Print(${File_Name})
+    {
+        Pass (Print Doc Successful) 
+    }
+    Fail:
+    {
+        Fail (fail to print Doc) 
+        Google_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+        Stop Test Suite
+    }
+}  
+
+Google_Drive_SignOut
+{
+    If: Google_Drive.Google_Drive_SignOut
+    {
+        Pass (Google_Drive_Sign out Successful) 
+    }
+    Fail:
+    {
+        Fail (fail to Google_Drive_Sign out) 
+        Google_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+        Stop Test Suite
+    }
+}  
+
+SignOut
+{
+    If: Google_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+    {
+        Pass (Sign Out Successful)
+    }  
+    Fail:
+    {
+        Fail (Fail to Sign Out)
+    }
+}

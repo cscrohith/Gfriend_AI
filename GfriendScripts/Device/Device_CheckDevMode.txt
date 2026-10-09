@@ -1,0 +1,69 @@
+﻿/// <File>Device_CheckDevMode.txt</File>
+/// <Modified>2021-06-22</Modified>
+/// <Description>Check for a device being in Development Mode
+/// by checking for the Web Service Debug page which is only
+/// available in Development Mode</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${DUT_Address}=15.86.231.188
+${DUT_AdminPW}=!QAZ2wsx
+
+DataSet c:\temp\Doppler_Devices_1.xlsx as DeviceList
+
+using Device_EWS_Library.gflib
+
+/// <Name>CheckDeviceDevMode</Name>
+/// <Description>Check for a device being in Development Mode</Description>
+/// <Notes></Notes>
+CheckDeviceDevMode
+{
+    For Each Row:DeviceList.Table.Devices
+    {
+        //        Wait For User Confirm (IP: ${Address1}  - Asset: ${AssetId})
+        If: Device_EWS_Library.OpenEWS (${Address1})
+        {
+            If: Device_EWS_Library.SignInWithAdmin (${DUT_AdminPW}, Y, N)
+            {
+                If: Device_EWS_Library.CheckForDevMode(${Address1})
+                {
+                    // Success, in Dev Mode
+                    Write To Data Set (VerifyDevMode,Dev Mode)
+                    Pass (In Dev Mode.)
+                }
+                Fail:
+                {
+                    // in Prod Mode
+                    Write To Data Set (VerifyDevMode,Prod Mode)
+                    Fail (In Prod Mode!)
+                }
+                Error:
+                {
+                    Write To Data Set (VerifyDevMode,Unknown - Error)
+                    Error (Fail or Error!)
+                }
+            }
+            Fail:
+            {
+                Write To Data Set (VerifyDevMode,Unknown - Unable to sign in to EWS)
+                Error (Fail - Unable to sign in!)
+            }
+            Error:
+            {
+                Write To Data Set (VerifyDevMode,Unknown - Unable to sign in to EWS)
+                Error (Error - Unable to sign in!)
+            }
+        }
+        Fail:
+        {
+            Write To Data Set (VerifyDevMode,Unknown - Unable to access EWS)
+            Error (Fail - Unable to access device EWS!)
+        }
+        Error:
+        {
+            Write To Data Set (VerifyDevMode,Unknown - Unable to access EWS)
+            Error (Error - Unable to access device EWS!)
+        }
+        @Device_EWS_Library.CloseEWS
+    }
+}

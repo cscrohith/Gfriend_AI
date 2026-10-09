@@ -1,0 +1,357 @@
+<h1 id="gfriend-ui">GFriend UI</h1>
+<h3 id="gfriend---test-tool-with-user-script">GFriend - Test Tool with
+user script</h3>
+<figure>
+<img src=".images/GFriend_Main.png" alt="GFriend::Main" />
+<figcaption aria-hidden="true">GFriend::Main</figcaption>
+</figure>
+<ol type="1">
+<li><strong>Test Running</strong>
+<ol type="1">
+<li><strong>Makes new TC</strong>
+<ul>
+<li>You can make new TC from editor text on GFriend Tool.</li>
+<li>When you makes new file or open existing file, it displyed separated
+tab on Test by Test Cases.</li>
+<li>Simple guide for Statement
+<ul>
+<li>Each test case is separated by “{}”. When you write “{” after test
+case name and write “}” after test case, the tc is automatically added
+on Test Cases list.</li>
+<li>If you want to use specific library like the Android, JediOmni, etc.
+, test case would include “using [library name]” for load the
+library.</li>
+<li>After loading libraries, you can use auto complete menu for each
+library and keyword on the library. <img
+src=".images/GFriend_TestbyTestCases.png"
+alt="GFriend::Test by test cases" /></li>
+</ul></li>
+</ul></li>
+<li><strong>Register the test device</strong>
+<ul>
+<li><p>You can display device list by “Option &gt; Tool &gt; Device
+list” or “Device list button” on Targer Device layer. <img
+src=".images/GFriend_DeviceList.png"
+alt="GFriend::Device list" /></p></li>
+<li><p>Get the device information from Asset Inventory server</p>
+<ul>
+<li>You can find “Asset Inventory Server” text field and “Conncet”
+button below the Device list
+<ol type="1">
+<li>Typing Asset invertory server address on the text field.
+(<strong>Default value is STB asset inventory server on
+hppk</strong>)</li>
+<li>Click the Connect button
+<ul>
+<li>If the server address is valid, the device list on asset inventory
+server display to new device list.</li>
+</ul></li>
+<li>Select one device that you want to add the GFriend device list</li>
+<li>Click “<img src=".images/AddDevice.png"
+alt="GFriend::Add device button" />” button located on the middle of the
+device list form <img src=".images/GFriend_GetdevicefromServer.png"
+alt="GFriend::Get the device information form Asset Inventory Server" /></li>
+</ol></li>
+</ul></li>
+<li><p>Register the device by manual typing</p>
+<ul>
+<li>If you want to register new device on the list, click add button on
+the list.
+<ul>
+<li><strong>At now, the three fields are required for testing</strong>
+<ul>
+<li>Device Id: You should use it unique value. It use for classify the
+device.</li>
+<li>Device Address: Usually, it use the IP address. At mobile device,
+you can use device ID.</li>
+<li>Debug Address: If device has a debug LAN card attached, you should
+type the address to this field<br />
+</li>
+<li>Admin Password: It is required for test by the JediOmni.</li>
+</ul></li>
+<li><strong>For iOS/Mac testing</strong>*
+<ul>
+<li>Appium server information should be given (see descriptions) <img
+src=".images/GFriend_AddDevice.png"
+alt="GFriend::Add the device" /></li>
+</ul></li>
+</ul></li>
+<li>Also you can add device’s additional capabilities and use in your
+script. If additional capabilities are given, you can refer their value
+with system defined variable : ${DUT_[Capability Key with Upper case]}.
+For example, you can get ‘Mono’ with variable ${DUT_COLOR}, ‘A3’ with
+variable ${DUT_PAPER}.</li>
+</ul></li>
+</ul></li>
+<li><strong>Select device for test by test suites and test
+cases</strong>
+<ul>
+<li>You can select device from device list combobox located in right of
+the Target Device text.</li>
+<li>The combo box display all list of the device list form. <img
+src=".images/GFriend_TargetDeviceforTC.png"
+alt="GFriend::Select Device" /></li>
+</ul></li>
+<li><strong>Run test</strong>
+<ul>
+<li><strong>Test by Test Suites</strong>
+<ul>
+<li>You can run by selecting test suites on file list tree view on left
+side of the GFriend tool.</li>
+<li>Each test suites unit is file that have extention to “.txt” or
+“.gfscripts”<br />
+</li>
+<li>You can change displayed fil list fodler by clicking Open folder
+icon above the file list tree view.</li>
+<li>If you double click mouse button to the file list tree view or
+select open file after right click on the file, the file is opened to
+the text editor with new tab.</li>
+<li>When you right click item on the file list tree view, it display
+context menu for controlling file or directory
+<ul>
+<li>New File/Folder, Remove File/Folder, Open Folder, Open Folder in
+File Explorer.</li>
+</ul></li>
+<li>When “Run” button clicked in the Test by Test Suites layer, all
+selected test suites are run in order.<br />
+<img src=".images/GFriend_TestbyTestSuites.png"
+alt="GFriend::Test by test suites" /></li>
+</ul></li>
+<li><strong>Test by Test cases</strong>
+<ul>
+<li>You can run by selecting test cases on test cases on right side of
+the GFriend tool.</li>
+<li>Each test cases is separated by “{}”.</li>
+<li>When you change tab on the editor text, the test cases list
+automatically updated by selected tab.</li>
+<li>Before testing, the test suites would be saved to latest code.</li>
+<li>When you right click to item on the tab. it display context menu for
+controlling the file.
+<ul>
+<li>Save, Save As, Open Folder, Open Folder in File Explorer, Close,
+Close All, Close All But This.</li>
+</ul></li>
+<li>When “Run” button clicked in the Test by Test cases layer, all
+select test cases are run in the order. <img
+src=".images/GFriend_TestbyTestCases.png"
+alt="GFriend::Test by test cases" /></li>
+</ul></li>
+<li><strong>Test by one keyword</strong>
+<ul>
+<li>You can run one keyword by text run layer on bottom side of the
+GFriend tool. It exist on other tab on right of the output layer.</li>
+<li>It doesn’t save to specific file. You use it for simple testing for
+making new test case.</li>
+<li>Before testing, it would be pre-required connecting to specific
+device from its Target Device combo box.</li>
+<li>Also need to select libries to test with “Select Libraries”
+menu.</li>
+<li>Connecting for this test would be disconnected when test by test by
+Test Cases/Test Suites is run.</li>
+<li>When “Run” button clicked in the test by Text Run layer, the typing
+keyword on textbox is run. <img
+src=".images/GFriend_TestbytheKeyword.png"
+alt="GFriend::Test by one keyword" /></li>
+</ul></li>
+</ul></li>
+<li><strong>Test result</strong>
+<ul>
+<li>Test Result from local GFriend
+<ul>
+<li>Simple result is displayed on output layer on bottom side of the
+GFriend tool.</li>
+<li>Report about test result is saved to specific file about each test
+suite.</li>
+<li>When you click the link on output layer, the report is executed to
+internet browser. The report has detail result about the test. <img
+src=".images/GFriend_TestResult.png" alt="GFriend::Test Result" /></li>
+</ul></li>
+</ul></li>
+</ol></li>
+<li><strong>More information</strong>
+<ul>
+<li><p><strong>Keyword List</strong></p>
+<ul>
+<li>You can check this option from “Option &gt; Help &gt; Keyword List
+&gt; [Library Name]”</li>
+<li>You can get all keyword list about each library from this menu when
+clicking the library name.</li>
+<li>The keyword list display the documents included keyword list by
+internet browser. <img src=".images/GFriend_KeywordList.png"
+alt="GFriend::Keyword List" /></li>
+</ul></li>
+<li><p><strong>External Tools</strong></p>
+<ul>
+<li>UI Inspector (<a
+href="../GFTools/MeGustasTu/README.md">UserManual</a>)
+<ul>
+<li>You can execute UI Inspector from “Option &gt; Tool &gt; External
+Tools &gt; UI Inspector”.</li>
+<li>This tool support making test case. You can get info for Android and
+JediOmni object ID from this tool.</li>
+<li>This tool get Device Address and Admin Password from selected device
+on Target Device combo box when you run it.</li>
+</ul>
+<img src=".images/GFriend_UI_Inspector.png" title="fig:"
+alt="GFriend::UI Inspector" /></li>
+</ul></li>
+<li><p><strong>Git Integration</strong></p>
+<p>GFriend provides built-in Git client for managing test script with
+Git/Github. See more detail in (<a
+href="../GFUtils/GitHelperControls/README.md">Git manual</a>)</p></li>
+<li><p><strong>What’s New</strong></p>
+<ul>
+<li>You can check this option from “Option &gt; Help &gt; What’s
+New”.</li>
+<li>In the “What’s New” info box located at the bottom-right corner of
+GFriend, contains the following links. Click the respective links. These
+links will take you to the more documentation pages from GFriend2 Viva
+Engage page. Sample links like below are shown. This content will be
+keep changing based on the new features.
+<ul>
+<li>A video showcasing the new features of GFriend</li>
+<li>A video guide for keyword documentation</li>
+<li>A video tutorial on fetching Window Automation IDs</li>
+<li>A video on using the Dune UI Inspector</li>
+</ul>
+<img src=".images/What&#39;sNewImage.png" title="fig:"
+alt="GFriend::What’s New" /></li>
+</ul></li>
+<li><p><strong>Co-Developer</strong></p>
+<ul>
+<li>The GFriend CoDeveloper makes the users easy to write test
+cases.</li>
+<li>By default, CoDeveloper mode is turned off. When the user clicks the
+“CoDeveloper Mode” button on the top right corner, CoDeveloper
+activates, and a “Co-Developer” tab appears at the bottom.</li>
+<li>Once CoDeveloper is activated, as the user starts writing the
+script, the relevant keyword details such as “description, syntax, and
+sample script” are displayed in the CoDeveloper tab.</li>
+</ul>
+<figure>
+<img src=".images/CoDeveloper_TextEditor.png"
+alt="GFriend::Co-Developer Text Editor" />
+<figcaption aria-hidden="true">GFriend::Co-Developer Text
+Editor</figcaption>
+</figure>
+<ul>
+<li>Additionally, there is another way to access keyword details. In the
+CoDeveloper tab, there is a dropdown menu for selecting a library and a
+keyword. When a user chooses a library from the dropdown, all the
+keywords within that library are displayed in Keywords dropdown.
+Selecting a specific keyword will show its details such as “description,
+syntax, and sample script”.</li>
+</ul>
+<figure>
+<img src=".images/CoDeveloper_LibKey.png"
+alt="GFriend::Co-Developer Library Keyword" />
+<figcaption aria-hidden="true">GFriend::Co-Developer Library
+Keyword</figcaption>
+</figure>
+<ul>
+<li>Furthermore, there is another dropdown for selecting reserved
+keywords like “repeat,” “for,” “foreach,” and others. When a user picks
+one of these keywords, its details such as description, syntax, and
+sample script will be displayed.</li>
+</ul>
+<figure>
+<img src=".images/CoDeveloper_ReservedKeywords.png"
+alt="GFriend::Co-Developer Text Editor" />
+<figcaption aria-hidden="true">GFriend::Co-Developer Text
+Editor</figcaption>
+</figure>
+<ul>
+<li>Also in the Co-Developer tab, there is a copy button that allows
+users to copy the sample script for the selected keyword and paste it
+into the editor using (Ctrl+V).</li>
+</ul>
+<figure>
+<img src=".images/CoDeveloper_Copy.png"
+alt="GFriend::Co-Developer Text Editor" />
+<figcaption aria-hidden="true">GFriend::Co-Developer Text
+Editor</figcaption>
+</figure>
+<ul>
+<li>There is also a Clear button next to the Copy button in the
+Co-Developer tab, which allows users to clear the text in the
+Co-Developer tab textbox</li>
+</ul></li>
+<li><p><strong>Chatbot</strong></p>
+<ul>
+<li><p>The GFriend Chatbot allows users to quickly access details about
+GFriend, including its libraries and keywords, without manually
+searching through Help → Keyword List in the GFriend UI.</p></li>
+<li><p>A chat icon is available at the bottom right corner of the
+GFriend UI. Click on it to open the GFriend Chatbot. <img
+src=".images/GfriendChatBot_Icon.png"
+alt="GFriend::GFriend ChatBot icon" /></p></li>
+<li><p>By default, the chatbot displays general information about
+GFriend along with a menu.</p>
+<figure>
+<img src=".images/Chatbot_Default_Image.png"
+alt="GFriend::ChatBot Default Images" />
+<figcaption aria-hidden="true">GFriend::ChatBot Default
+Images</figcaption>
+</figure></li>
+<li><p>Clicking on the menu lists a few libraries. Selecting any library
+will navigate the user to its documentation, where available keywords
+can be explored.</p>
+<figure>
+<img src=".images/Chatbot_ListOfFew_Menu_Items.png"
+alt="GFriend::ChatBot Menu Items, list of few Libraries" />
+<figcaption aria-hidden="true">GFriend::ChatBot Menu Items, list of few
+Libraries</figcaption>
+</figure></li>
+<li><p>An additional More option in the menu displays all available
+libraries. Clicking on any library provides further details.</p>
+<figure>
+<img src=".images/Chatbot_ListOf_More_Items.png"
+alt="GFriend::ChatBot Menu Items, list of all Libraries" />
+<figcaption aria-hidden="true">GFriend::ChatBot Menu Items, list of all
+Libraries</figcaption>
+</figure></li>
+<li><p>Chatbot Commands: Users can enter text-based commands to retrieve
+information, then press Enter or click the Send button.</p>
+<ul>
+<li><p>Library Name → Navigates to the documentation for the specified
+library.</p>
+<figure>
+<img src=".images/Chatbot_Library_Documentation.png"
+alt="GFriend::ChatBot Library Documentation" />
+<figcaption aria-hidden="true">GFriend::ChatBot Library
+Documentation</figcaption>
+</figure></li>
+<li><p>Library.Keyword Name → Displays details such as the keyword
+description, arguments, and a sample script.</p>
+<figure>
+<img src=".images/Chatbot_LibraryWithKeyword_Documentation.png"
+alt="GFriend::ChatBot Library with Keyword Documentation" />
+<figcaption aria-hidden="true">GFriend::ChatBot Library with Keyword
+Documentation</figcaption>
+</figure></li>
+<li><p>Menu → Lists a few libraries. Clicking on any library directs the
+user to its documentation.</p>
+<figure>
+<img src=".images/Chatbot_Menuitem_Library_Documentation.png"
+alt="GFriend::ChatBot Menu Items redirect to the respective documentation, after clicking on any library." />
+<figcaption aria-hidden="true">GFriend::ChatBot Menu Items redirect to
+the respective documentation, after clicking on any
+library.</figcaption>
+</figure></li>
+<li><p>Manual → Navigates to the manual documentation, which provides
+information about GFriend and its usage. <img
+src=".images/Chatbot_Manual_Documentation.png"
+alt="GFriend::ChatBot Manual Documentation" /></p></li>
+<li><p>Random Text → If the entered text is unrecognized, the user is
+redirected to the manual documentation, which also contains
+library-related details.</p>
+<figure>
+<img src=".images/Chatbot_Invalid_Image.png"
+alt="GFriend::ChatBot Random Text Documentation" />
+<figcaption aria-hidden="true">GFriend::ChatBot Random Text
+Documentation</figcaption>
+</figure></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ol>

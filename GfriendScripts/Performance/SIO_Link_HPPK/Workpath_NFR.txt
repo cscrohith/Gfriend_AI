@@ -1,0 +1,1428 @@
+//- [2020-02-24 10:38:51][hhgha@hp.com][HPPK SQA JA Link][AutoTestSuite]
+//- Add two method to support new 2FA SIO behavior
+//- -6pin input is only required whenever WorkPath app is launched
+// ++++++++++++++++++++  File Name  ++++++++++++++++++++
+// Workpath_NFR.txt
+//
+// ++++++++++++++++++++ Description ++++++++++++++++++++
+// To measure Workpath app's NFR Quality such as performance and reliability
+// ++++++++++++++++++++ Restriction ++++++++++++++++++++
+// 
+//
+// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2019-12-17 Initial Version
+
+using link_variable.gfvar
+using Basic_BS_nfr.gflib
+using Window_auth.gflib
+using SecureAccess_auth.gflib
+using Sio_nfr.gflib
+using 2fa.gflib
+using Sio_nfr.gflib
+
+//using Android
+//using JediOm
+//using Info
+//using Oxpd
+//using GD.gflib
+//using SP.gflib
+//using Sage.gflib
+//using ODB.gflib
+//using ODP.gflib
+//using IM.gflib
+//using CC.gflib
+//using Clio.gflib
+//using Box.gflib
+
+/// <Description>To measure authentication for Windows auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>11</BlackHoleID>
+/// <TestRailID>22486513</TestRailID>
+HPID_2ndLinkingPerformanceForWindowsAuth
+{
+    Sio_nfr.HPID_2ndLinking(hpid2ndlinking_windows,windows)
+}
+
+/// <Description>To measure authentication for HPAC auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>12</BlackHoleID>
+/// <TestRailID>22486514</TestRailID>
+HPID_2ndLinkingPerformanceForHPACAuth 
+{
+    Sio_nfr.HPID_2ndLinking(hpid2ndlinking_hpac,hpac)
+}
+
+/// <Description>To measure authentication for Safecom auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>13</BlackHoleID>
+/// <TestRailID>22486515</TestRailID>
+HPID_2ndLinkingPerformanceForSafecomAuth
+{
+    Sio_nfr.HPID_2ndLinking(hpid2ndlinking_safecom,safecom)
+}
+
+/// <Description>To measure authentication for SecureAccess auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>14</BlackHoleID>
+/// <TestRailID>22486516</TestRailID>
+HPID_2ndLinkingPerformanceForSecureAccessAuth
+{
+    Sio_nfr.HPID_2ndLinking(hpid2ndlinking_secureaccess,secureaccess)
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for Sage</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>15</BlackHoleID>
+/// <TestRailID>22486517</TestRailID>
+CloudSIO_App_LaunchingForSage
+{
+    Sio_nfr.CloudSIO1stLaunching(Sage1stCloudSIOPerformance,${ID_Sage},com.hp.print.sageintacct:id/bt_dialog_right,Scan documents to...)
+    Sio_nfr.CloudSIO2ndLaunching(Sage2ndCloudSIOPerformance,${ID_Sage},com.hp.print.sageintacct:id/bt_dialog_right,Scan documents to...)
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for Sharepoint</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>16</BlackHoleID>
+/// <TestRailID>22486518</TestRailID>
+CloudSIO_App_LaunchingForSharepoint
+{
+    Sio_nfr.CloudSIO1stLaunching(Sharepoint1stCloudSIOPerformance,${ID_Sharepoint},com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,Communication site)
+    Sio_nfr.CloudSIO2ndLaunching(Sharepoint2ndCloudSIOPerformance,${ID_Sharepoint},com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,Communication site)
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for Onedrivebusiness</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>17</BlackHoleID>
+/// <TestRailID>22486519</TestRailID>
+CloudSIO_App_LaunchingForOneDriveBusiness
+{
+    Sio_nfr.CloudSIO1stLaunching(OnedriveB1stCloudSIOPerformance,${ID_OneDriveBusiness},com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,Auto Test)
+    Sio_nfr.CloudSIO2ndLaunching(OnedriveB2ndCloudSIOPerformance,${ID_OneDriveBusiness},com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,Auto Test)
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for Onedrivepersonal</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>18</BlackHoleID>
+/// <TestRailID>22486520</TestRailID>
+CloudSIO_App_LaunchingForOneDrivePersonal
+{
+    Sio_nfr.CloudSIO1stLaunching(OnedriveP1stCloudSIOPerformance,${ID_OneDrivePersonal},com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,Auto Test)
+    Sio_nfr.CloudSIO2ndLaunching(OnedriveP2ndCloudSIOPerformance,${ID_OneDrivePersonal},com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,Auto Test)
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for iManage</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>19</BlackHoleID>
+/// <TestRailID>22486521</TestRailID>
+CloudSIO_App_LaunchingForiManage
+{
+    Sio_nfr.CloudSIO1stLaunching(Imanage1stCloudSIOPerformance,${ID_iManage},com.hp.imanageconnector:id/bt_dialog_left,This is category folder)
+    Sio_nfr.CloudSIO2ndLaunching(Imanage2ndCloudSIOPerformance,${ID_iManage},com.hp.imanageconnector:id/bt_dialog_left,This is category folder)
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for Google</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>20</BlackHoleID>
+/// <TestRailID>22486522</TestRailID>
+CloudSIO_App_LaunchingForGoogle
+{
+    Sio_nfr.CloudSIO1stLaunching(Google1stCloudSIOPerformance,${ID_Google},com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,Auto Test)
+    Sio_nfr.CloudSIO2ndLaunching(Google2ndCloudSIOPerformance,${ID_Google},com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,Auto Test)
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for Concur</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>21</BlackHoleID>
+/// <TestRailID>22486523</TestRailID>
+CloudSIO_App_LaunchingForConcur
+{
+    Sio_nfr.CloudSIO1stLaunching(Concur1stCloudSIOPerformance,${ID_Concur},com.hp.print.department.concur:id/bt_dialog_right,File name)
+    Sio_nfr.CloudSIO2ndLaunching(Concur2ndCloudSIOPerformance,${ID_Concur},com.hp.print.department.concur:id/bt_dialog_right,File name)
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for Clio</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>22</BlackHoleID>
+/// <TestRailID>22486524</TestRailID>
+CloudSIO_App_LaunchingForClio
+{
+    Sio_nfr.CloudSIO1stLaunching(Clio1stCloudSIOPerformance,${ID_Clio},com.hp.print.clio:id/bt_dialog_left,Scan)
+    Sio_nfr.CloudSIO2ndLaunching(Clio2ndCloudSIOPerformance,${ID_Clio},com.hp.print.clio:id/bt_dialog_left,Scan)
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for Box</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>23</BlackHoleID>
+/// <TestRailID>22486525</TestRailID>
+CloudSIO_App_LaunchingForBox
+{
+    Sio_nfr.CloudSIO1stLaunching(Box1stCloudSIOPerformance,${ID_Box},com.hp.print.horizontalconnector.box:id/bt_dialog_right,Auto Test)
+    Sio_nfr.CloudSIO2ndLaunching(Box2ndCloudSIOPerformance,${ID_Box},com.hp.print.horizontalconnector.box:id/bt_dialog_right,Auto Tes
+}
+
+/// <Description>To measure Cloud SIO 1st and 2nd Launching time for Dropbox</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>24</BlackHoleID>
+/// <TestRailID>22486526</TestRailID>
+CloudSIO_App_LaunchingForDropbox
+{
+    Sio_nfr.CloudSIO1stLaunching(Dropbox1stCloudSIOPerformance,${ID_Dropbox},com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right,Auto Test)
+    Sio_nfr.CloudSIO2ndLaunching(Dropbox2ndCloudSIOPerformance,${ID_Dropbox},com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right,Auto Test)
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for Sage</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>25</BlackHoleID>
+/// <TestRailID>22486527</TestRailID>
+DeviceSIO_App_LaunchingForSage
+{
+    Sio_nfr.DeviceSIO1stLaunching(Sage1stDeviceSIOPerformance,${ID_Sage},com.hp.print.sageintacct:id/bt_dialog_right,Scan documents to...)
+    Sio_nfr.DeviceSIO2ndLaunching(Sage2ndDeviceSIOPerformance,${ID_Sage},com.hp.print.sageintacct:id/bt_dialog_right,Scan documents to...)
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for Sharepoint</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>26</BlackHoleID>
+/// <TestRailID>22486528</TestRailID>
+DeviceSIO_App_LaunchingForSharepoint
+{
+    Sio_nfr.DeviceSIO1stLaunching(Sharepoint1stDeviceSIOPerformance,${ID_Sharepoint},com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,Communication site)
+    Sio_nfr.DeviceSIO2ndLaunching(Sharepoint2ndDeviceSIOPerformance,${ID_Sharepoint},com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,Communication site)
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for Onedrivebusiness</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>27</BlackHoleID>
+/// <TestRailID>22486529</TestRailID>
+DeviceSIO_App_LaunchingForOneDriveBusiness
+{
+    Sio_nfr.DeviceSIO1stLaunching(OnedriveB1stDeviceSIOPerformance,${ID_OneDriveBusiness},com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,Auto Test)
+    Sio_nfr.DeviceSIO2ndLaunching(OnedriveB2ndDeviceSIOPerformance,${ID_OneDriveBusiness},com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,Auto Test)
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for Onedrivepersonal</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>28</BlackHoleID>
+/// <TestRailID>22486530</TestRailID>
+DeviceSIO_App_LaunchingForOneDrivePersonal
+{
+    Sio_nfr.DeviceSIO1stLaunching(OnedriveP1stDeviceSIOPerformance,${ID_OneDrivePersonal},com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,Auto Test)
+    Sio_nfr.DeviceSIO2ndLaunching(OnedriveP2ndDeviceSIOPerformance,${ID_OneDrivePersonal},com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,Auto Test)
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for iManage</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>29</BlackHoleID>
+/// <TestRailID>22486531</TestRailID>
+DeviceSIO_App_LaunchingForiManage
+{
+    Sio_nfr.DeviceSIO1stLaunching(Imanage1stDeviceSIOPerformance,${ID_iManage},com.hp.imanageconnector:id/bt_dialog_left,This is category folder)
+    Sio_nfr.DeviceSIO2ndLaunching(Imanage2ndDeviceSIOPerformance,${ID_iManage},com.hp.imanageconnector:id/bt_dialog_left,This is category folder)
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for Google</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>30</BlackHoleID>
+/// <TestRailID>22486532</TestRailID>
+DeviceSIO_App_LaunchingForGoogle
+{
+    Sio_nfr.DeviceSIO1stLaunching(Google1stDeviceSIOPerformance,${ID_Google},com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,Auto Test)
+    Sio_nfr.DeviceSIO2ndLaunching(Google2ndDeviceSIOPerformance,${ID_Google},com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,Auto Test)
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for Concur</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>31</BlackHoleID>
+/// <TestRailID>22486533</TestRailID>
+DeviceSIO_App_LaunchingForConcur
+{
+    Sio_nfr.DeviceSIO1stLaunching(Concur1stDeviceSIOPerformance,${ID_Concur},com.hp.print.department.concur:id/bt_dialog_right,File name)
+    Sio_nfr.DeviceSIO2ndLaunching(Concur2ndDeviceSIOPerformance,${ID_Concur},com.hp.print.department.concur:id/bt_dialog_right,File name)
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for Clio</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>32</BlackHoleID>
+/// <TestRailID>22486534</TestRailID>
+DeviceSIO_App_LaunchingForClio
+{
+    Sio_nfr.DeviceSIO1stLaunching(Clio1stDeviceSIOPerformance,${ID_Clio},com.hp.print.clio:id/bt_dialog_left,Scan)
+    Sio_nfr.DeviceSIO2ndLaunching(Clio2ndDeviceSIOPerformance,${ID_Clio},com.hp.print.clio:id/bt_dialog_left,Scan)
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for Box</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>33</BlackHoleID>
+/// <TestRailID>22486535</TestRailID>
+DeviceSIO_App_LaunchingForBox
+{
+    Sio_nfr.DeviceSIO1stLaunching(Box1stDeviceSIOPerformance,${ID_Box},com.hp.print.horizontalconnector.box:id/bt_dialog_right,Auto Test)
+    Sio_nfr.DeviceSIO2ndLaunching(Box2ndDeviceSIOPerformance,${ID_Box},com.hp.print.horizontalconnector.box:id/bt_dialog_right,Auto Tes
+}
+
+/// <Description>To measure Device SIO 1st and 2nd Launching time for Dropbox</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>34</BlackHoleID>
+/// <TestRailID>22486536</TestRailID>
+DeviceSIO_App_LaunchingForDropbox
+{
+    Sio_nfr.DeviceSIO1stLaunching(Dropbox1stDeviceSIOPerformance,${ID_Dropbox},com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right,Auto Test)
+    Sio_nfr.DeviceSIO2ndLaunching(Dropbox2ndDeviceSIOPerformance,${ID_Dropbox},com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right,Auto Test)
+}
+
+/// <Description>To measure Scanperformance for ScantoFTP</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>35</BlackHoleID>
+/// <TestRailID>22486537</TestRailID>
+Scan2FTPPerformance
+{
+    Basic_BS_nfr.Scan2FTPScanPerformance(Scan2FTPScanPerformance)
+}
+
+/// <Description>To measure Scanperformance for ScantoSMB</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>36</BlackHoleID>
+/// <TestRailID>22486538</TestRailID>
+Scan2SMBPerformance
+{
+    Basic_BS_nfr.Scan2SMBScanPerformance(Scan2SMBScanPerformance)
+}
+
+/// <Description>To measure Scanperformance for ScantoEmail</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>37</BlackHoleID>
+/// <TestRailID>22486539</TestRailID>
+Scan2EmailPerformance
+{ 
+    Basic_BS_nfr.Scan2EmailScanPerformance(Scan2EmailScanPerformance) 
+}
+
+/// <Description>To measure Scanperformance for Sage</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>38</BlackHoleID>
+/// <TestRailID>22486540</TestRailID>
+SageScanPerformance
+{
+   Basic_BS_nfr.SageScanPerformance(SageScanPerformance)
+}
+
+/// <Description>To measure Scanperformance for Concur</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>39</BlackHoleID>
+/// <TestRailID>22486541</TestRailID>
+ConcurScanPerformance
+{
+   Basic_BS_nfr.ConcurScanPerformance(ConcurScanPerformance)
+}
+
+/// <Description>To measure Print and Scan performance for Clio</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>40</BlackHoleID>
+/// <TestRailID>22486542</TestRailID>
+ClioPrintScanPerformance
+{
+    Basic_BS_nfr.ClioPrintPerformance(ClioPrintPerformance_pdf,office-PDF\(A&A4\).pdf)
+    Basic_BS_nfr.ClioPrintPerformance(ClioPrintPerformance_word,Office-Word\(A4\).doc)
+    Basic_BS_nfr.ClioPrintPerformance(ClioPrintPerformance_excel,Office-Excel\(A4\).xls)
+    Basic_BS_nfr.ClioPrintPerformance(ClioPrintPerformance_ppt,AdGraphics-Powerpoint\(A4\).ppt)
+    Basic_BS_nfr.ClioScanPerformance(ClioScanPerformance)
+}
+
+/// <Description>To measure Print and Scan performance for iManage</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>41</BlackHoleID>
+/// <TestRailID>22486543</TestRailID>
+ImanagePrintScanPerformance
+{
+    Basic_BS_nfr.ImanagePrintPerformance(ImanagePrintPerformance_pdf,office-PDF\(A_A4\))
+    Basic_BS_nfr.ImanagePrintPerformance(ImanagePrintPerformance_word,Office-Word\(A4\))
+    Basic_BS_nfr.ImanagePrintPerformance(ImanagePrintPerformance_excel,Office-Excel\(A4\))
+    Basic_BS_nfr.ImanagePrintPerformance(ImanagePrintPerformance_ppt,AdGraphics-Powerpoint\(A4\))
+    Basic_BS_nfr.ImanageScanPerformance(ImanageScanPerformance)
+}
+
+/// <Description>To measure Print and Scan performance for Box</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>42</BlackHoleID>
+/// <TestRailID>22486544</TestRailID>
+BoxPrintScanPerformance
+{
+    Basic_BS_nfr.BoxPrintPerformance(BoxPrintPerformance_pdf,office-PDF\(A&A4\).pdf)
+    Basic_BS_nfr.BoxPrintPerformance(BoxPrintPerformance_word,Office-Word\(A4\).doc)
+    Basic_BS_nfr.BoxPrintPerformance(BoxPrintPerformance_excel,Office-Excel\(A4\).xls)
+    Basic_BS_nfr.BoxPrintPerformance(BoxPrintPerformance_ppt,AdGraphics-Powerpoint\(A4\).ppt)
+    Basic_BS_nfr.BoxScanPerformance(BoxScanPerformance)
+}
+
+/// <Description>To measure Print and Scan performance for Dropbox</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>43</BlackHoleID>
+/// <TestRailID>22486545</TestRailID>
+DropboxPrintScanPerformance
+{
+    Basic_BS_nfr.DropboxPrintPerformance(DropboxPrintPerformance_pdf,office-PDF\(A&A4\).pdf)
+    Basic_BS_nfr.DropboxPrintPerformance(DropboxPrintPerformance_word,Office-Word\(A4\).doc)
+    Basic_BS_nfr.DropboxPrintPerformance(DropboxPrintPerformance_excel,Office-Excel\(A4\).xls)
+    Basic_BS_nfr.DropboxPrintPerformance(DropboxPrintPerformance_ppt,AdGraphics-Powerpoint\(A4\).ppt)
+    Basic_BS_nfr.DropboxScanPerformance(DropboxScanPerformance)
+}
+
+/// <Description>To measure Print and Scan performance for Google</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>44</BlackHoleID>
+/// <TestRailID>22486546</TestRailID>
+GooglePrintScanPerformance
+{
+    Basic_BS_nfr.GooglePrintPerformance(GooglePrintPerformance_pdf,office-PDF\(A&A4\).pdf)
+    Basic_BS_nfr.GooglePrintPerformance(GooglePrintPerformance_word,Office-Word\(A4\).doc)
+    Basic_BS_nfr.GooglePrintPerformance(GooglePrintPerformance_excel,Office-Excel\(A4\).xls)
+    Basic_BS_nfr.GooglePrintPerformance(GooglePrintPerformance_ppt,AdGraphics-Powerpoint\(A4\).ppt)
+    Basic_BS_nfr.GoogleScanPerformance(GoogleScanPerformance)
+}
+
+/// <Description>To measure Print and Scan performance for Onedrivepersonal</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>45</BlackHoleID>
+/// <TestRailID>22486547</TestRailID>
+OneDrivePersonalPrintScanPerformance
+{
+    Basic_BS_nfr.OneDrivePersonalPrintPerformance(OneDrivePersonalPrintPerformance_pdf,office-PDF\(A&A4\).pdf)
+    Basic_BS_nfr.OneDrivePersonalPrintPerformance(OneDrivePersonalPrintPerformance_word,Office-Word\(A4\).doc)
+    Basic_BS_nfr.OneDrivePersonalPrintPerformance(OneDrivePersonalPrintPerformance_excel,Office-Excel\(A4\).xls)
+    Basic_BS_nfr.OneDrivePersonalPrintPerformance(OneDrivePersonalPrintPerformance_ppt,AdGraphics-Powerpoint\(A4\).ppt)
+    Basic_BS_nfr.OneDrivePersonalScanPerformance(OneDrivePersonalScanPerformance)
+}
+
+/// <Description>To measure Print and Scan performance for Onedrivebusiness</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>46</BlackHoleID>
+/// <TestRailID>22486548</TestRailID>
+OneDriveBusinessPrintScanPerformance
+{
+    Basic_BS_nfr.OneDriveBusinessFileRefreshPerformance(OneDriveBusinessFileRefreshPerformance)
+    Basic_BS_nfr.OneDriveBusinessPrintPerformance(OneDriveBusinessPrintPerformance_pdf,office-PDF\(A_A4\).pdf)
+    Basic_BS_nfr.OneDriveBusinessPrintPerformance(OneDriveBusinessPrintPerformance_word,Office-Word\(A4\).doc)
+    Basic_BS_nfr.OneDriveBusinessPrintPerformance(OneDriveBusinessPrintPerformance_excel,Office-Excel\(A4\).xls)
+    Basic_BS_nfr.OneDriveBusinessPrintPerformance(OneDriveBusinessPrintPerformance_ppt,AdGraphics-Powerpoint\(A4\).ppt)
+    Basic_BS_nfr.OneDriveBusinessScanPerformance(OneDriveBusinessScanPerformance)
+}
+
+/// <Description>To measure Print and Scan performance for Sharepoint</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>47</BlackHoleID>
+/// <TestRailID>22486549</TestRailID>
+SharepointPrintScanPerformance
+{
+    Basic_BS_nfr.SharepointPrintPerformance(SharepointPrintPerformance_pdf,office-PDF\(A_A4\).pdf)
+    Basic_BS_nfr.SharepointPrintPerformance(SharepointPrintPerformance_word,Office-Word\(A4\).doc)
+    Basic_BS_nfr.SharepointPrintPerformance(SharepointPrintPerformance_excel,Office-Excel\(A4\).xls)
+    Basic_BS_nfr.SharepointPrintPerformance(SharepointPrintPerformance_ppt,AdGraphics-Powerpoint\(A4\).ppt)
+    Basic_BS_nfr.SharepointScanPerformance(SharepointScanPerformance)
+}
+
+/// <Description>To measure stability of Cloud SIO app launching with 2FA for Safecom auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>48</BlackHoleID>
+/// <TestRailID>22486550</TestRailID>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>1021</BlackHoleID>
+/// <TestRailID>24452633</TestRailID>
+2FA_AgingWithOneDriveBusinessUsingSafecomAuth_NEW
+{
+    Info.Start Memory Monitoring // for checking memory usage
+    Info.Start Time Check (OneDriveBSIO1stPerformance) // for checking app launching performance after SIO configuration.
+   
+    @Repeat:${2fa_count}
+    {
+       
+        2fa.login_safecom_new(${2fa_id})
+        
+        // one drive for business
+        If:JediOmni.Wait For Object (${ID_OneDriveBusiness},10)
+        {
+            JediOmni.Touch ID (${ID_OneDriveBusiness})
+            // Input 6-pin code
+            If: JediOmni.Wait For Object (hpid-hpid-pin-textbox,30)
+            {
+                JediOmni.Touch ID (hpid-hpid-pin-textbox)
+                JediOmni.Input Text (hpid-hpid-pin-textbox,${2fa_pw})
+                Sleep (2)
+                JediOmni.Touch ID (hpid-hpid-signin-button)
+            }
+            
+            Info.Mark Start(OneDriveBSIO1stPerformance,onedriveb_${R})
+            If: Android.Wait For Text (Auto Test,90) // First shown folder name is "Auto Test" after Link app login automatically. 
+            {
+                Pass(Pass!)
+                Android.Capture Screen Shot(OK_${R}.jpg)
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                
+            }
+            Fail:
+            {
+                Fail(Fail!)
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left,10)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left)
+                }
+                Android.Capture Screen Shot(NG_${R}.jpg)
+                JediOmni.Capture Screen Shot(NG_${R}.jpg)
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})   
+            }
+        }
+        Fail:
+        {
+            Fail(App Launching Fail!)
+            Android.Capture Screen Shot(NG_${R}.jpg)
+            JediOmni.Capture Screen Shot(NG_${R}.jpg)
+            Android.Press Home Key
+            JediOmni.Press Back Key
+        }
+        
+        
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Info.Collect Memory Info (${R})
+    }
+    Assert Last Repeat (Fail, <=${2fa_min_fail_count})
+    Info.Draw Time Graph(OneDriveBSIO1stPerformance)
+    Info.Draw Memory Usage Graph  
+}
+
+/// <Description>To measure stability of Cloud SIO app launching with 2FA for HPAC auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>49</BlackHoleID>
+/// <TestRailID>22486551</TestRailID>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>1022</BlackHoleID>
+/// <TestRailID>24452634</TestRailID>
+2FA_AgingWithOneDriveBusinessUsingHPACAuth_NEW
+{
+    Info.Start Memory Monitoring // for checking memory usage
+    Info.Start Time Check (OneDriveBSIO1stPerformance) // for checking app launching performance after SIO configuration.
+   
+    @Repeat:${2fa_count}
+    {
+       
+        2fa.login_hpac_new(${2fa_id})
+
+        // one drive for business
+        If:JediOmni.Wait For Object (${ID_OneDriveBusiness},10)
+        {
+            JediOmni.Touch ID (${ID_OneDriveBusiness})
+            // Input 6-pin code
+            If: JediOmni.Wait For Object (hpid-hpid-pin-textbox,30)
+            {
+                JediOmni.Touch ID (hpid-hpid-pin-textbox)
+                JediOmni.Input Text (hpid-hpid-pin-textbox,,${2fa_pw})
+                Sleep (2)
+                JediOmni.Touch ID (hpid-hpid-signin-button)
+            }
+                Info.Mark Start(OneDriveBSIO1stPerformance,onedriveb_${R})
+            If: Android.Wait For Text (Auto Test,90) // First shown folder name is "Auto Test" after Link app login automatically. 
+            {
+                Pass(Pass!)
+                Android.Capture Screen Shot(OK_${R}.jpg)
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                
+            }
+            Fail:
+            {
+                Fail(Fail!)
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left,10)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left)
+                }
+                Android.Capture Screen Shot(NG_${R}.jpg)
+                JediOmni.Capture Screen Shot(NG_${R}.jpg)
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R}) 
+                
+            }
+        }
+        Fail:
+        {
+            Fail(App Launching Fail!)
+            Android.Capture Screen Shot(NG_${R}.jpg)
+            JediOmni.Capture Screen Shot(NG_${R}.jpg)
+            Android.Press Home Key
+            JediOmni.Press Back Key
+        }
+        
+        
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Info.Collect Memory Info (${R})
+    }
+    Assert Last Repeat (Fail, <=${2fa_min_fail_count})
+    Info.Draw Time Graph(OneDriveBSIO1stPerformance)
+    Info.Draw Memory Usage Graph  
+}
+
+/// <Description>To measure stability of Cloud SIO app launching with 2FA for Safecom auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>48</BlackHoleID>
+/// <TestRailID>22486550</TestRailID>
+2FA_AgingWithOneDriveBusinessUsingSafecomAuth
+{
+    Info.Start Memory Monitoring // for checking memory usage
+    Info.Start Time Check (OneDriveBSIO1stPerformance) // for checking app launching performance after SIO configuration.
+   
+    @Repeat:${2fa_count}
+    {
+       
+        2fa.login_safecom(${2fa_id},${2fa_pw})
+        
+        // one drive for business
+        If:JediOmni.Wait For Object (${ID_OneDriveBusiness},10)
+        {
+            JediOmni.Touch ID (${ID_OneDriveBusiness})
+            Info.Mark Start(OneDriveBSIO1stPerformance,onedriveb_${R})
+            If: Android.Wait For Text (Auto Test,90) // First shown folder name is "Auto Test" after Link app login automatically. 
+            {
+                Pass(Pass!) 
+                Android.Capture Screen Shot(OK_${R}.jpg)
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                
+            }
+            Fail:
+            {
+                Fail(Fail!) 
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left,10)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left)
+                }
+                Android.Capture Screen Shot(NG_${R}.jpg)
+                JediOmni.Capture Screen Shot(NG_${R}.jpg)
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})   
+            }
+        }
+        Fail:
+        {
+            Fail(App Launching Fail!) 
+            Android.Capture Screen Shot(NG_${R}.jpg)
+            JediOmni.Capture Screen Shot(NG_${R}.jpg)
+            Android.Press Home Key
+            JediOmni.Press Back Key
+        }
+        
+        
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Info.Collect Memory Info (${R})
+    }
+    Assert Last Repeat (Fail, <=${2fa_min_fail_count})
+    Info.Draw Time Graph(OneDriveBSIO1stPerformance)
+    Info.Draw Memory Usage Graph  
+}
+
+/// <Description>To measure stability of Cloud SIO app launching with 2FA for HPAC auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>49</BlackHoleID>
+/// <TestRailID>22486551</TestRailID>
+2FA_AgingWithOneDriveBusinessUsingHPACAuth
+{
+    Info.Start Memory Monitoring // for checking memory usage
+    Info.Start Time Check (OneDriveBSIO1stPerformance) // for checking app launching performance after SIO configuration.
+   
+    @Repeat:${2fa_count}
+    {
+       
+        2fa.login_hpac(${2fa_id},${2fa_pw})
+        //2fa.login_equitrac(${2fa_id},${2fa_pw})
+        // one drive for business
+        If:JediOmni.Wait For Object (${ID_OneDriveBusiness},10)
+        {
+            JediOmni.Touch ID (${ID_OneDriveBusiness})
+            Info.Mark Start(OneDriveBSIO1stPerformance,onedriveb_${R})
+            If: Android.Wait For Text (Auto Test,90) // First shown folder name is "Auto Test" after Link app login automatically. 
+            {
+                Pass(Pass!) 
+                Android.Capture Screen Shot(OK_${R}.jpg)
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                
+            }
+            Fail:
+            {
+                Fail(Fail!) 
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left,10)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left)
+                }
+                Android.Capture Screen Shot(NG_${R}.jpg)
+                JediOmni.Capture Screen Shot(NG_${R}.jpg)
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R}) 
+                
+            }
+        }
+        Fail:
+        {
+            Fail(App Launching Fail!) 
+            Android.Capture Screen Shot(NG_${R}.jpg)
+            JediOmni.Capture Screen Shot(NG_${R}.jpg)
+            Android.Press Home Key
+            JediOmni.Press Back Key
+        }
+        
+        
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Info.Collect Memory Info (${R})
+    }
+    Assert Last Repeat (Fail, <=${2fa_min_fail_count})
+    Info.Draw Time Graph(OneDriveBSIO1stPerformance)
+    Info.Draw Memory Usage Graph  
+}
+
+/// <Description>To measure stability of Cloud SIO app launching with for Windows auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>50</BlackHoleID>
+/// <TestRailID>22486552</TestRailID>
+AgingWithOneDriveBusinessUsingWindwosAuth
+{
+    Info.Start Memory Monitoring // for checking memory usage
+    Info.Start Time Check (OneDriveBSIO1stPerformance) // for checking app launching performance after SIO configuration.
+   
+    @Repeat:${2fa_count}
+    {
+       
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw})
+        
+        // one drive for business
+        If:JediOmni.Wait For Object (${ID_OneDriveBusiness},30)
+        {
+            JediOmni.Touch ID (${ID_OneDriveBusiness})
+            Info.Mark Start(OneDriveBSIO1stPerformance,onedriveb_${R})
+            If: Android.Wait For Text (Auto Test,90) // First shown folder name is "Auto Test" after Link app login automatically. 
+            {
+                Pass(Pass!)
+                Android.Capture Screen Shot(OK_${R}.jpg)
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                
+            }
+            Fail:
+            {
+                Fail(Fail!)
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left,10)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left)
+                }
+                Android.Capture Screen Shot(NG_${R}.jpg)
+                JediOmni.Capture Screen Shot(NG_${R}.jpg)
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R}) 
+                
+            }
+        }
+        Fail:
+        {
+            Fail(App Launching Fail!)
+            Android.Capture Screen Shot(NG_${R}.jpg)
+            JediOmni.Capture Screen Shot(NG_${R}.jpg)
+            Android.Press Home Key
+            JediOmni.Press Back Key
+        }
+        
+        
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Info.Collect Memory Info (${R})
+    }
+    Assert Last Repeat (Fail, <=${2fa_min_fail_count})
+    Info.Draw Time Graph(OneDriveBSIO1stPerformance)
+    Info.Draw Memory Usage Graph  
+}
+
+/// <Description>To measure stability of Cloud SIO app launching with for SecureAccess auth</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>51</BlackHoleID>
+/// <TestRailID>22486553</TestRailID>
+AgingWithOneDriveBusinessUsingSecureAccessAuth
+{
+    Info.Start Memory Monitoring // for checking memory usage
+    Info.Start Time Check (OneDriveBSIO1stPerformance) // for checking app launching performance after SIO configuration.
+   
+    @Repeat:${2fa_count}
+    {
+       
+        SecureAccess_auth.Login(test,admin@12)
+        
+        // one drive for business
+        If:JediOmni.Wait For Object (${ID_OneDriveBusiness},30)
+        {
+            JediOmni.Touch ID (${ID_OneDriveBusiness})
+            Info.Mark Start(OneDriveBSIO1stPerformance,onedriveb_${R})
+            If: Android.Wait For Text (Auto Test,90) // First shown folder name is "Auto Test" after Link app login automatically. 
+            {
+                Pass(Pass!) 
+                Android.Capture Screen Shot(OK_${R}.jpg)
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                
+            }
+            Fail:
+            {
+                Fail(Fail!) 
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left,10)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_left)
+                }
+                Android.Capture Screen Shot(NG_${R}.jpg)
+                JediOmni.Capture Screen Shot(NG_${R}.jpg)
+                Android.Press Back Key
+                If:Android.Wait For Object(com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R}) 
+                
+            }
+        }
+        Fail:
+        {
+            Fail(App Launching Fail!) 
+            Android.Capture Screen Shot(NG_${R}.jpg)
+            JediOmni.Capture Screen Shot(NG_${R}.jpg)
+            Android.Press Home Key
+            JediOmni.Press Back Key
+        }
+        
+        
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Info.Collect Memory Info (${R})
+    }
+    Assert Last Repeat (Fail, <=${2fa_min_fail_count})
+    Info.Draw Time Graph(OneDriveBSIO1stPerformance)
+    Info.Draw Memory Usage Graph  
+}
+
+/// <Description>To measure reliability for SIO 1st launching using Onedrivebusiness</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>52</BlackHoleID>
+/// <TestRailID>22486554</TestRailID>
+OneDriveBusinessSIO1stLaunching_Aging
+{
+    Info.Start Memory Monitoring
+    Info.Start Time Check (OneDriveBSIO1stPerformance)
+    Repeat:${aging_count}
+    {
+        If: JediOmni.Wait For Text (Sign In,3)
+        {
+              //Reset Device
+            JediOmni.Press Home Key
+            JediOmni.Reset
+            If: Equals (${auth_method},windows)
+            {
+                Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+            }
+            Fail:
+            {
+                Sleep (1)
+                If: Equals (${auth_method},hpac)
+                {
+                   2fa.login_hpac(${2fa_id},${2fa_pw})
+                }
+                Fail:
+                {
+                    Sleep (1)
+                    If: Equals (${auth_method},safecom)
+                    {
+                        2fa.login_safecom(${2fa_id},${2fa_pw})
+                    }
+                    Fail:
+                    {
+                        SecureAccess_auth(${secureaccess_id},${secureaccess_pw})
+                    }
+                }
+            } 
+        }
+        
+        If:JediOmni.Wait For Object (${ID_OneDriveBusiness},10)
+        {
+            JediOmni.Touch ID (${ID_OneDriveBusiness})
+            Info.Mark Start(OneDriveBSIO1stPerformance,onedriveb_${R})
+            If: Android.Wait For Text (Auto Test,90)
+            {
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Info.Collect Memory Info (${R})
+    }
+    Info.Draw Time Graph(OneDriveBSIO1stPerformance)
+    Info.Draw Memory Usage Graph  
+}
+
+/// <Description>To measure reliability for SIO 1st launching across all apps</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>53</BlackHoleID>
+/// <TestRailID>22486555</TestRailID>
+ForAllAppsSIO1stLaunching_Aging
+{
+    Info.Start Memory Monitoring
+    Info.Start Time Check (OneDriveBSIO1stPerformance)
+    Info.Start Time Check (OneDrivePSIO1stPerformance)
+    Info.Start Time Check (GoogleSIO1stPerformance)
+    Info.Start Time Check (SageSIO1stPerformance)
+    Info.Start Time Check (SharepointSIO1stPerformance)
+    Info.Start Time Check (ImanageSIO1stPerformance)
+    Info.Start Time Check (ConcurSIO1stPerformance)
+    Info.Start Time Check (ClioSIO1stPerformance)
+    Info.Start Time Check (BoxSIO1stPerformance)
+    
+    Repeat:${aging_count}
+    {
+        If: JediOmni.Wait For Text (Sign In,3)
+        {
+              //Reset Device
+            JediOmni.Press Home Key
+            JediOmni.Reset
+            If: Equals (${auth_method},windows)
+            {
+                Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+            }
+            Fail:
+            {
+               Sleep (1)
+               If: Equals (${auth_method},hpac)
+               {
+                   2fa.login_hpac(${2fa_id},${2fa_pw})
+               }
+               Fail:
+               {
+                    Sleep (1)
+                    If: Equals (${auth_method},safecom)
+                    {
+                        2fa.login_safecom(${2fa_id},${2fa_pw})
+                    }
+                    Fail:
+                    {
+                        SecureAccess_auth(${secureaccess_id},${secureaccess_pw})
+                    }
+               }
+            } 
+        }
+        
+        // one drive for business
+        If:JediOmni.Wait For Object (${ID_OneDriveBusiness},10)
+        {
+            JediOmni.Touch ID (${ID_OneDriveBusiness})
+            Info.Mark Start(OneDriveBSIO1stPerformance,onedriveb_${R})
+            If: Android.Wait For Text (Auto Test,90)
+            {
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        // one drive for personal
+        If:JediOmni.Wait For Object (${ID_OneDrivePersonal},10)
+        {
+            JediOmni.Touch ID (${ID_OneDrivePersonal})
+            Info.Mark Start(OneDrivePSIO1stPerformance,onedrivep_${R})
+            If: Android.Wait For Text (Auto Test,90)
+            {
+                Info.Mark End(OneDrivePSIO1stPerformance,onedrivep_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(OneDrivePSIO1stPerformance,onedrivep_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        // google
+        If:JediOmni.Wait For Object (${ID_Google},10)
+        {
+            JediOmni.Touch ID (${ID_Google})
+            Info.Mark Start(GoogleSIO1stPerformance,google_${R})
+            If: Android.Wait For Text (Auto Test,90)
+            {
+                Info.Mark End(GoogleSIO1stPerformance,google_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(GoogleSIO1stPerformance,google_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        // Sage
+        If:JediOmni.Wait For Object (${ID_Sage},10)
+        {
+            JediOmni.Touch ID (${ID_Sage})
+            Info.Mark Start(SageSIO1stPerformance,sage_${R})
+            If: Android.Wait For Text (Load Originals,90)
+            {
+                Info.Mark End(SageSIO1stPerformance,sage_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.sageintacct:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.sageintacct:id/bt_dialog_right)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(SageSIO1stPerformance,sage_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        // sharepoint
+        If:JediOmni.Wait For Object (${ID_Sharepoint},10)
+        {
+            JediOmni.Touch ID (${ID_Sharepoint})
+            Info.Mark Start(SharepointSIO1stPerformance,sharepoint_${R})
+            If: Android.Wait For Text (Communication site,90)
+            {
+                Info.Mark End(SharepointSIO1stPerformance,sharepoint_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(SharepointSIO1stPerformance,sharepoint_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        // imanage
+        If:JediOmni.Wait For Object (${ID_iManage},10)
+        {
+            JediOmni.Touch ID (${ID_iManage})
+            Info.Mark Start(ImanageSIO1stPerformance,imange_${R})
+            If: Android.Wait For Text (This is category folder,90)
+            {
+                Info.Mark End(ImanageSIO1stPerformance,imange_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.imanageconnector:id/bt_dialog_left,30)
+                {
+                    Android.Touch ID (com.hp.imanageconnector:id/bt_dialog_left)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(ImanageSIO1stPerformance,imange_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        // concur
+        If:JediOmni.Wait For Object (${ID_Concur},10)
+        {
+            JediOmni.Touch ID (${ID_Concur})
+            Info.Mark Start(ConcurSIO1stPerformance,sage_${R})
+            If: Android.Wait For Text (File name,90)
+            {
+                Info.Mark End(ConcurSIO1stPerformance,sage_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.department.concur:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.department.concur:id/bt_dialog_right)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(ConcurSIO1stPerformance,sage_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        // clio
+        If:JediOmni.Wait For Object (${ID_Clio},10)
+        {
+            JediOmni.Touch ID (${ID_Clio})
+            Info.Mark Start(ClioSIO1stPerformance,clio_${R})
+            If: Android.Wait For Text (Scan,90)
+            {
+                Info.Mark End(ClioSIO1stPerformance,clio_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.clio:id/bt_dialog_left,30)
+                {
+                    Android.Touch ID (com.hp.print.clio:id/bt_dialog_left)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(ClioSIO1stPerformance,clio_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        // Box
+        If:JediOmni.Wait For Object (${ID_Box},10)
+        {
+            JediOmni.Touch ID (${ID_Box})
+            Info.Mark Start(BoxSIO1stPerformance,box_${R})
+            If: Android.Wait For Text (Auto Test,90)
+            {
+                Info.Mark End(BoxSIO1stPerformance,box_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.horizontalconnector.box:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.box:id/bt_dialog_right)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(BoxSIO1stPerformance,box_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Info.Collect Memory Info (${R})
+    }
+    Info.Draw Time Graph(OneDriveBSIO1stPerformance)
+    Info.Draw Time Graph(OneDrivePSIO1stPerformance)
+    Info.Draw Time Graph(GoogleSIO1stPerformance)
+    Info.Draw Time Graph(SageSIO1stPerformance)
+    Info.Draw Time Graph(SharepointSIO1stPerformance)
+    Info.Draw Time Graph(ImanageSIO1stPerformance)
+    Info.Draw Time Graph(ConcurSIO1stPerformance)
+    Info.Draw Time Graph(ClioSIO1stPerformance)
+    Info.Draw Time Graph(BoxSIO1stPerformance)
+    
+    Info.Draw Memory Usage Graph  
+}
+
+/// <Description>To measure reliability for Basic behavior across all apps</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>54</BlackHoleID>
+/// <TestRailID>22486556</TestRailID>
+ForAllAppsBasic_BS_Aging
+{
+    Info.Start Memory Monitoring
+
+    Repeat:${aging_count}
+    {
+            Basic_BS_nfr.Scan2FTPScanPerformance(Scan2FTPScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.Scan2SMBScanPerformance(Scan2SMBScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.SageScanPerformance(SageScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ConcurScanPerformance(ConcurScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ClioPrintPerformance(ClioPrintPerformance_pdf_${R},office-PDF\(A&A4\).pdf)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ClioPrintPerformance(ClioPrintPerformance_word_${R},Office-Word\(A4\).doc)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ClioPrintPerformance(ClioPrintPerformance_excel_${R},Office-Excel\(A4\).xls)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ClioPrintPerformance(ClioPrintPerformance_ppt_${R},AdGraphics-Powerpoint\(A4\).ppt)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ClioScanPerformance(ClioScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+      
+            Basic_BS_nfr.ImanagePrintPerformance(ImanagePrintPerformance_pdf_${R},office-PDF\(A_A4\))
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ImanagePrintPerformance(ImanagePrintPerformance_word_${R},Office-Word\(A4\))
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ImanagePrintPerformance(ImanagePrintPerformance_excel_${R},Office-Excel\(A4\))
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ImanagePrintPerformance(ImanagePrintPerformance_ppt_${R},AdGraphics-Powerpoint\(A4\))
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.ImanageScanPerformance(ImanageScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.BoxPrintPerformance(BoxPrintPerformance_pdf_${R},office-PDF\(A&A4\).pdf)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.BoxPrintPerformance(BoxPrintPerformance_word_${R},Office-Word\(A4\).doc)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.BoxPrintPerformance(BoxPrintPerformance_excel_${R},Office-Excel\(A4\).xls)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.BoxPrintPerformance(BoxPrintPerformance_ppt_${R},AdGraphics-Powerpoint\(A4\).ppt)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.BoxScanPerformance(BoxScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+       
+            Basic_BS_nfr.GooglePrintPerformance(GooglePrintPerformance_pdf_${R},office-PDF\(A&A4\).pdf)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.GooglePrintPerformance(GooglePrintPerformance_word_${R},Office-Word\(A4\).doc)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.GooglePrintPerformance(GooglePrintPerformance_excel_${R},Office-Excel\(A4\).xls)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.GooglePrintPerformance(GooglePrintPerformance_ppt_${R},AdGraphics-Powerpoint\(A4\).ppt)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.GoogleScanPerformance(GoogleScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.OneDrivePersonalPrintPerformance(OneDrivePersonalPrintPerformance_pdf_${R},office-PDF\(A&A4\).pdf)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.OneDrivePersonalPrintPerformance(OneDrivePersonalPrintPerformance_word_${R},Office-Word\(A4\).doc)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.OneDrivePersonalPrintPerformance(OneDrivePersonalPrintPerformance_excel_${R},Office-Excel\(A4\).xls)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.OneDrivePersonalPrintPerformance(OneDrivePersonalPrintPerformance_ppt_${R},AdGraphics-Powerpoint\(A4\).ppt)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.OneDrivePersonalScanPerformance(OneDrivePersonalScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+       
+            Basic_BS_nfr.OneDriveBusinessPrintPerformance(OneDriveBusinessPrintPerformance_pdf_${R},office-PDF\(A_A4\).pdf)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.OneDriveBusinessPrintPerformance(OneDriveBusinessPrintPerformance_word_${R},Office-Word\(A4\).doc)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.OneDriveBusinessPrintPerformance(OneDriveBusinessPrintPerformance_excel_${R},Office-Excel\(A4\).xls)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.OneDriveBusinessPrintPerformance(OneDriveBusinessPrintPerformance_ppt_${R},AdGraphics-Powerpoint\(A4\).ppt)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.OneDriveBusinessScanPerformance(OneDriveBusinessScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.SharepointPrintPerformance(SharepointPrintPerformance_pdf_${R},office-PDF\(A_A4\).pdf)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.SharepointPrintPerformance(SharepointPrintPerformance_word_${R},Office-Word\(A4\).doc)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.SharepointPrintPerformance(SharepointPrintPerformance_excel_${R},Office-Excel\(A4\).xls)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.SharepointPrintPerformance(SharepointPrintPerformance_ppt_${R},AdGraphics-Powerpoint\(A4\).ppt)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.SharepointScanPerformance(SharepointScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+            
+            Basic_BS_nfr.DropboxPrintPerformance(DropboxPrintPerformance_pdf_${R},office-PDF\(A&A4\).pdf)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.DropboxPrintPerformance(DropboxPrintPerformance_word_${R},Office-Word\(A4\).doc)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.DropboxPrintPerformance(DropboxPrintPerformance_excel_${R},Office-Excel\(A4\).xls)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.DropboxPrintPerformance(DropboxPrintPerformance_ppt_${R},AdGraphics-Powerpoint\(A4\).ppt)
+            Info.Collect Memory Info (${R})
+            Basic_BS_nfr.DropboxScanPerformance(DropboxScanPerformance_${R})
+            Info.Collect Memory Info (${R})
+        
+            Sio_nfr.SIO1stLaunching(Sage1stCloudSIOPerformance_${R},${ID_Sage},com.hp.print.sageintacct:id/bt_dialog_right,Load Originals)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(Sage2ndCloudSIOPerformance_${R},${ID_Sage},com.hp.print.sageintacct:id/bt_dialog_right,Load Originals)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO1stLaunching(Sharepoint1stCloudSIOPerformance_${R},${ID_Sharepoint},com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,Communication site)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(Sharepoint2ndCloudSIOPerformance_${R},${ID_Sharepoint},com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,Communication site)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO1stLaunching(OnedriveB1stCloudSIOPerformance_${R},${ID_OneDriveBusiness},com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(OnedriveB2ndCloudSIOPerformance_${R},${ID_OneDriveBusiness},com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO1stLaunching(OnedriveP1stCloudSIOPerformance_${R},${ID_OneDrivePersonal},com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(OnedriveP2ndCloudSIOPerformance_${R},${ID_OneDrivePersonal},com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO1stLaunching(Imanage1stCloudSIOPerformance_${R},${ID_iManage},com.hp.imanageconnector:id/bt_dialog_left,This is category folder)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(Imanage2ndCloudSIOPerformance_${R},${ID_iManage},com.hp.imanageconnector:id/bt_dialog_left,This is category folder)
+            Info.Collect Memory Info (${R})
+        
+            Sio_nfr.SIO1stLaunching(Google1stCloudSIOPerformance_${R},${ID_Google},com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(Google2ndCloudSIOPerformance_${R},${ID_Google},com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO1stLaunching(Concur1stCloudSIOPerformance_${R},${ID_Concur},com.hp.print.department.concur:id/bt_dialog_right,File name)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(Concur2ndCloudSIOPerformance_${R},${ID_Concur},com.hp.print.department.concur:id/bt_dialog_right,File name)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO1stLaunching(Clio1stCloudSIOPerformance_${R},${ID_Clio},com.hp.print.clio:id/bt_dialog_left,Scan)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(Clio2ndCloudSIOPerformance_${R},${ID_Clio},com.hp.print.clio:id/bt_dialog_left,Scan)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO1stLaunching(Box1stCloudSIOPerformance_${R},${ID_Box},com.hp.print.horizontalconnector.box:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(Box2ndCloudSIOPerformance_${R},${ID_Box},com.hp.print.horizontalconnector.box:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+            
+            Sio_nfr.SIO1stLaunching(Dropbox1stCloudSIOPerformance_${R},${ID_Dropbox},com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+            Sio_nfr.SIO2ndLaunching(Dropbox2ndCloudSIOPerformance_${R},${ID_Dropbox},com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right,Auto Test)
+            Info.Collect Memory Info (${R})
+    }
+    Info.Draw Memory Usage Graph  
+}
+
+/// <Description>To measure reliability for SIO 1st launching with 2FA using Onedrivebusiness</Description>
+/// <Author>hhgha@hp.com</Author>
+/// <BlackHoleID>55</BlackHoleID>
+/// <TestRailID>22486557</TestRailID>
+ForOnedrivebusinessSIO1stLaunching_With2FA_Aging
+{
+    Info.Start Memory Monitoring
+    Info.Start Time Check (OneDriveBSIO1stPerformance)
+   
+    Repeat:${aging_count}
+    {
+       
+        If: Equals (${auth_method},windows)
+        {
+            Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+        }
+        Fail:
+        {
+           Sleep (1)
+           If: Equals (${auth_method},hpac)
+           {
+               2fa.login_hpac(${2fa_id},${2fa_pw})
+           }
+           Fail:
+           {
+                Sleep (1)
+                If: Equals (${auth_method},safecom)
+                {
+                    2fa.login_safecom(${2fa_id},${2fa_pw})
+                }
+                Fail:
+                {
+                    SecureAccess_auth(${secureaccess_id},${secureaccess_pw})
+                }
+           }
+        } 
+        
+        // one drive for business
+        If:JediOmni.Wait For Object (${ID_OneDriveBusiness},10)
+        {
+            JediOmni.Touch ID (${ID_OneDriveBusiness})
+            Info.Mark Start(OneDriveBSIO1stPerformance,onedriveb_${R})
+            If: Android.Wait For Text (Auto Test,90)
+            {
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+            }
+            Fail:
+            {
+                Info.Mark End(OneDriveBSIO1stPerformance,onedriveb_${R})
+                Android.Touch Text (OK)             
+            }
+        }
+        
+        
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Info.Collect Memory Info (${R})
+    }
+    Info.Draw Time Graph(OneDriveBSIO1stPerformance)
+   
+    Info.Draw Memory Usage Graph  
+}
+
+

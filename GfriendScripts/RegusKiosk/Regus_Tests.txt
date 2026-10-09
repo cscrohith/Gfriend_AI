@@ -1,0 +1,71 @@
+﻿
+${PerformanceFileName} = PortalReliability
+
+using Regus_PrinterOn_Vars.gfvar
+
+using Regus_Web_Library.gflib
+using Web
+
+/////////////////////////////////////////////////
+// Routine:         Login
+// Description:     log in to the Regus app
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+Login
+{
+    // Signin
+    IF: Regus_Web_Library.SignIn (${Regus_Username},${Regus_UserPassWord},${PrinterOn_JobSubmit_url},${Regus_Browser})
+    {
+        Sleep(2)
+    }
+    Fail:
+    {
+        Fail (PrinterOn Sign In Failed!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (RegusPrinterOn Sign In Errored!)
+        Stop Test Case
+    }
+    Sleep (0)
+    
+    Sleep (2)
+Wait For User Confirm (?)
+}
+
+/////////////////////////////////////////////////
+// Routine:         Logout
+// Description:     logout of the Regus app
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+Logout
+{
+    IF: Regus_Web_Library.SignOut
+    {
+        Sleep(2)
+    }
+    Fail:
+    {
+        Fail (RegusPrinterOn Sign Out Failed!)
+    }
+    Error:
+    {
+        Error (RegusPrinterOn Sign Out Errored!)
+    }
+Wait For User Confirm (?)
+}

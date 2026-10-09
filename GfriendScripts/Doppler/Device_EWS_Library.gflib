@@ -1,0 +1,545 @@
+﻿//Using Web As EWS_Web
+
+/////////////////////////////////////////////////
+// Routine:         OpenEWS
+// Description:     open EWS in Chrome for a specified device
+//
+// Arguments:       ${OpenEWS_IP} - device IP address
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+OpenEWS (${OpenEWS_IP})
+{
+    // access the device EWS page
+    If: EWS_Web.Open with Chrome (${OpenEWS_IP})
+    {
+        Sleep (2)
+        // check for cert issue
+        If: EWS_Web.Wait For Text (Your connection is not private,0)
+        {
+            // click the Advanced button
+            EWS_Web.Click Object (//*[@id="details-button"])
+            Sleep (1)
+            EWS_Web.Click Object (//*[@id="proceed-link"])
+        }
+        
+        // check for the device page to show
+        If: EWS_Web.Wait For Object (//*[@id="HomeDeviceIp"],30)
+        {
+        }
+        Fail:
+        {
+             Fail (Open device EWS failed to complete!)
+        }
+    }
+    Fail:
+    {
+        Fail (Device EWS failed to open!)
+    }
+    Error:
+    {
+        Error (Error while opeing device EWS!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         CloseEWS
+// Description:     close EWS in Chrome
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+CloseEWS
+{
+    EWS_Web.Close
+}
+
+/////////////////////////////////////////////////
+// Routine:         SignInWithAdmin
+// Description:     sign in to EWS with the admin password
+//                  optionally, if the password has not been set
+//                  sign in as admin with a blank password,
+//                  and set the admin password if blank
+//
+// Arguments:       ${Dev_Password} - device admin password
+//                  ${CheckBlankPW} - Y to check for blank password if above failed
+//                  ${SetWhenBlank} - Y to set password if it was blank
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SignInWithAdmin (${Dev_Password}, ${CheckBlankPW}, ${SetWhenBlank})
+{
+    // check for sign in available
+    If: EWS_Web.Wait For Object (//*[@id="EwsLogin"],0)
+    {
+        EWS_Web.Click Object (//*[@id="EwsLogin"])
+        // check for sign in
+        If: EWS_Web.Wait For Object (//*[@id="PageSignIn"],10)
+        {
+            EWS_Web.Set Text (//*[@id="PasswordTextBox"],${Dev_Password})
+            EWS_Web.Click Object (//*[@id="signInOk"])
+            // check for success, if not attempt to sign in with no password
+            If: EWS_Web.Wait For Object (//*[@id="EwsLogoff"],5)
+            {// success no further action
+            }
+            Fail:
+            {// if specified to check for blank password, then do so, else Fail
+                If: Equals (${CheckBlankPW},Y)
+                {// checking for blank
+                    EWS_Web.Clear Text (//*[@id="PasswordTextBox"])
+                    EWS_Web.Click Object (//*[@id="signInOk"])
+                    If: EWS_Web.Wait For Object (//*[@id="EwsLogoff"],5)
+                    {// success with blank, set the password if specified to
+                        If: Equals (${SetWhenBlank},Y)
+                        {
+                            // set the admin password
+                            If: DevHealth_EWS_Library.SetAdminPassword (${Dev_Password})
+                            {// success
+                            }
+                            Fail:
+                            {// signed in with blank, failed to set new admin password
+                                EWS_Web.Capture Screenshot (SignInWithAdmin_Fail.png)
+                                Fail (Signed in to admin with blank password but failed setting password!)
+                            }
+                        }
+                    }
+                    Fail:
+                    {
+                        Fail (Failed signing in with admin using both specified and blank password!)
+                    }
+                }
+                Fail:
+                {
+                    Fail (Failed signing in with admin using specified password and blank password not checked!)
+                }
+            }
+        }
+        Fail:
+        {
+            Fail (Failed signing in with admin!)
+        }
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SetAdminPassword
+// Description:     set the device admin password
+//
+// Arguments:       ${Dev_Password} - device admin password
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SetAdminPassword (${Dev_Password})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the General Security page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/device/GeneralSecurity/Index)
+        {
+            // make sure it gets to the page
+            If: EWS_Web.Wait For Object (//*[@id="PageGeneralSecurity"],5)
+            {
+                // enter the password
+                EWS_Web.Set Text (//*[@id="GeneralSecuritySectionId"]//descendant::input[@id="newPassword"],${Dev_Password})
+                
+                EWS_Web.Set Text (//*[@id="GeneralSecuritySectionId"]//descendant::input[@id="verifyPassword"],${Dev_Password})
+                
+                EWS_Web.Click Object (//*[@id="FormButtonSubmit"])
+            }
+            Fail:
+            {
+                // check for sign in
+                If: EWS_Web.Wait For Object (//*[@id="PageSignIn"],10)
+                {
+                    EWS_Web.Set Text (//*[@id="PasswordTextBox"],${Dev_Password})
+                    EWS_Web.Click Object (//*[@id="signInOk"])
+                    EWS_Web.Wait For Object (//*[@id="PageGeneralSecurity"],10)
+                }
+                Fail:
+                {
+                    Fail (Failed locating the Sign In page!)
+                }
+            }
+        }
+        Fail:
+        {
+            Fail (Failed locating the General Security page!)
+        }
+    }
+    Fail:
+    {
+        Fail (Failed getting the device IP!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SetProxy
+// Description:     set the network proxy
+//
+// Arguments:       ${Dev_ProxyServer} - proxy server IP or DNS name
+//                  ${Dev_ProxyPort} - proxy port number
+//                  ${Dev_ProxyExceptions} - exceptions for the proxy
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SetProxy (${Dev_ProxyServer},${Dev_ProxyPort},${Dev_ProxyExceptions})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the General Security page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/webserviceproxy.htm)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="cloudproxy_server"],5)
+            {
+                EWS_Web.Set Text (//*[@id="cloudproxy_server"],${Dev_ProxyServer})
+                EWS_Web.Set Text (//*[@id="cloudproxy_port"],${Dev_ProxyPort})
+                EWS_Web.Set Text (//*[@id="cloudproxy_exceptions"],${Dev_ProxyExceptions})
+                EWS_Web.Click Object (//*[@id="Apply"])
+                EWS_Web.Wait For Object (//*[@id="Result_type"],20)
+                If: EWS_Web.Wait For Text (Success:,0)
+                {
+                }
+                Fail:
+                {
+                    Fail (Failed setting the Web Services Proxy!)
+                }
+            }
+            Fail:
+            {
+                Fail (Failed locating the Web Services Proxy page!)
+            }
+        }
+        Fail:
+        {
+            Fail (Failed locating the Web Services Proxy page!)
+        }
+    }
+    Fail:
+    {
+        Fail (Failed getting the device IP!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         ClearProxy
+// Description:     clear the network proxy settings
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+ClearProxy
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the General Security page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/webserviceproxy.htm)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="cloudproxy_server"],5)
+            {
+                EWS_Web.Clear Text (//*[@id="cloudproxy_server"])
+                EWS_Web.Set Text (//*[@id="cloudproxy_port"],80)
+                EWS_Web.Clear Text (//*[@id="cloudproxy_exceptions"])
+                EWS_Web.Click Object (//*[@id="Apply"])
+                EWS_Web.Wait For Object (//*[@id="Result_type"],20)
+                If: EWS_Web.Wait For Text (Success:,0)
+                {
+                }
+                Fail:
+                {
+                    Fail (Failed clearing the Web Services Proxy!)
+                }
+            }
+            Fail:
+            {
+                Fail (Failed locating the Web Services Proxy page!)
+            }
+        }
+        Fail:
+        {
+            Fail (Failed locating the Web Services Proxy page!)
+        }
+    }
+    Fail:
+    {
+        Fail (Failed getting the device IP!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         EnableWebServices
+// Description:     enable Web Services
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+EnableWebServices
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the General Security page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/webservice)
+        {
+            // check for the link to enable web services
+            If: EWS_Web.Wait For Object (//*[@id="Register"],5)
+            {
+                // click the Register link
+                EWS_Web.Click Object (//*[@id="Register"])
+                
+                // wait for the result, checking for success
+                EWS_Web.Wait For Object (//*[@id="Result_type"],20)
+                If: EWS_Web.Wait For Text (Success:,0)
+                {
+                }
+                Fail:
+                {
+                    Fail (Failed enabling Web Services!)
+                }
+            }
+            Fail:
+            {
+                Fail (Failed locating the Web Services Enable link page!)
+            }
+        }
+        Fail:
+        {
+            Fail (Failed locating the Web Services page!)
+        }
+    }
+    Fail:
+    {
+        Fail (Failed getting the device IP!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         DisableWebServices
+// Description:     disable Web Services
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+DisableWebServices
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the web services page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/webservice)
+        {
+            // check for the link to disnable web services
+            If: EWS_Web.Wait For Object (//*[@id="Remove"],5)
+            {
+                // click the remove link
+                EWS_Web.Click Object (//*[@id="Remove"])
+                
+                // wait for the verification popup and click OK
+                EWS_Web.Wait For Object (//input[@class='buttonA' and @value='OK'],10)
+                EWS_Web.Click Object (//input[@class='buttonA' and @value='OK'])
+                
+                // wait for the result, checking for success
+                EWS_Web.Wait For Object (//*[@id="Result_type"],20)
+                If: EWS_Web.Wait For Text (Success:,0)
+                {
+                }
+                Fail:
+                {
+                    Fail (Failed disabling Web Services!)
+                }
+            }
+            Fail:
+            {
+                // check for web services not enabled
+                If: EWS_Web.Wait For Object (//*[@id="Register"],0)
+                {
+                }
+                Fail:
+                {
+                    Fail (Failed locating the Web Services disable link page!)
+                }
+            }
+        }
+        Fail:
+        {
+            Fail (Failed locating the Web Services page!)
+        }
+    }
+    Fail:
+    {
+        Fail (Failed getting the device IP!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         ResetDevice
+// Description:     reset the device using the EWS Reset Firmware function
+//                  equivilant to a partial clean
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+ResetDevice
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the Reset Factory Settings page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/device/ResetFactoryDefaults)
+        {
+            // check for the reset firmware button
+            If: EWS_Web.Wait For Object (//*[@id="ResetFirmwareButton"],10)
+            {
+                EWS_Web.Click Object (//*[@id="ResetFirmwareButton"])
+                EWS_Web.Wait For Text (Confirmation Page,5)
+                EWS_Web.Click Object (//*[@id="DialogButtonYes"])
+                Sleep (10)
+            }
+        }
+        Fail:
+        {
+            Fail (Failed locating the device reset page!)
+        }
+    }
+    Fail:
+    {
+        Fail (Failed getting the device IP!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         WaitForDeviceResetComplete
+// Description:     wait for the device to reboot after
+//                  the ResetDevice routine was executed
+//
+// Arguments:       ${Dev_IP} - device IP address
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+WaitForDeviceResetComplete(${Dev_IP})
+{
+    // try to go to the device ews default page looking for the information page
+    @EWS_Web.Go To (${Dev_IP})
+    While:!EWS_Web.Wait For Object (//*[@id="Information"],1):30
+    {
+        // check for cert issue
+        If: EWS_Web.Wait For Text (Your connection is not private,0)
+        {
+            // click the Advanced button
+            EWS_Web.Click Object (//*[@id="details-button"])
+            Sleep (1)
+            EWS_Web.Click Object (//*[@id="proceed-link"])
+        }
+        // wait then retry the default page
+        Sleep (20)
+        @EWS_Web.Go To (${Dev_IP})
+        Sleep (20)
+    }
+    
+    // rechedk that on the informatino page
+    If: EWS_Web.Wait For Object (//*[@id="Information"],20)
+    {
+    }
+    Fail:
+    {
+        Fail (Failed checking for device reset completion!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         CheckForDevMode
+// Description:     check EWS for the <IP>/webserviceDebug.htm
+//                  page, which indicates Dev Mode
+//
+// Arguments:       ${Dev_IP} - device IP address
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+CheckForDevMode(${Dev_IP})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${Dev_IP})
+    {
+        // goto the WebService Debug page
+        // if successful, then in Dev Mode
+        // if not, then in Prod Mode
+        If: EWS_Web.Go To (${Dev_IP}/webserviceDebug.htm)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="stackSelection"],5)
+            {
+                // success - in Dev Mode
+            }
+            Fail:
+            {
+                If: EWS_Web.Wait For Text (HTTP ERROR 404,0)
+                {
+                    // page not found - in Prod Mode
+                    Fail (Failed locating the Web Services Debug page! Device not in Dev Mode.)
+                }
+                Fail:
+                {
+                    Error (Failed locating the Web Services Debug page!)
+                }
+            }
+        }
+        Fail:
+        {
+            Error (Failed locating the Web Services Debug page!)
+        }
+    }
+    Fail:
+    {
+        Error (Failed verifying the device IP on the EWS site!)
+    }
+}

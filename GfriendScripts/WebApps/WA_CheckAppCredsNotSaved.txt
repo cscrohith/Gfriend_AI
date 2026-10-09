@@ -1,0 +1,205 @@
+﻿/// <File>WA_CheckAppCredsNotSaved.txt</File>
+/// <Modified>2021-04-20</Modified>
+/// <Description>Check that the credentials for the specified Web App have not
+/// been saved for the authenticated device user</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using WA_CheckAppCredsNotSaved.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\Device\Device_Library.gflib
+//Using DeviceAuth.gflib
+Using ..\DeviceAuth\DeviceAuth.gflib
+
+Using JediOmni
+Using Oxpd
+
+/// <Name>SignIn</Name>
+/// <Description>Sign In to the device</Description>
+/// <Notes>WA_GoogleDriveAuth.gfvar contains the needed authentication and User variables. 
+///   WA_GoogleDrive.gfvar contains needed app variables.
+///   If this script is run from STF/STB the variables with names beginning
+///   with STF_ can be commented to use the values from the STF/STB virtual worker user.</Notes>
+SignIn
+{
+    // authenticate if specified
+    If: Equals IgnoreCase (${AuthenticationType},Windows)
+    {
+        // sign in with Windows
+        If: DeviceAuth.SignIn_Windows (${STF_UserName},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            //DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Windows authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Windows authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},HPAC)
+    {
+        // sign in with HPAC
+        If: DeviceAuth.SignIn_HPAC (${UserCode})
+        {// complete the sign in process
+            //DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},SafeCom)
+    {
+        // sign in with SafeCom
+        If: DeviceAuth.SignIn_SafeCom (${STF_UserName},${UserCode},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            //DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},Papercut)
+    {
+        // sign in with Papercut
+        If: DeviceAuth.SignIn_Papercut (${STF_UserName},${UserCode},${STF_UserPassword})
+        {// complete the sign in process
+            //DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+    }
+    // if got to here either authentication was successful
+    // or not authentication type specified
+    
+    Pass (Sign In complete!)
+}
+
+/// <Name>Check_SIO_AppCredentials</Name>
+/// <Description>Check that the credentials for the specified Web App have not
+///   been saved for the authenticated device user</Description>
+/// <Notes></Notes>
+Check_SIO_AppCredentials
+{
+    // ensure any cloud connection mesage is cleared
+    DeviceAuth.WaitForCloudConnection
+    
+    // check for the SIO Link screen
+    If: JediOmni.Wait For Object (hpid-hpid-welcome-view,0)
+    {
+        JediOmni.Touch ID (hpid-hpid-skip-button)
+        JediOmni.Wait For Text (Sign Out,10)
+    }
+    
+    // open the app
+    If: Device_Library.LaunchApp(${ButtonID},${ButtonText})
+    {
+    }
+    Fail:
+    {
+        Fail (Fail launching app!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error launching app!)
+        Stop Test Case
+    }
+    
+    // ensure any cloud connection mesage is cleared
+    DeviceAuth.WaitForCloudConnection
+    
+    // check for the SIO Link screen
+    If: JediOmni.Wait For Object (hpid-hpid-welcome-view,0)
+    {
+        JediOmni.Touch ID (hpid-hpid-skip-button)
+        JediOmni.Wait For Text (Sign Out,10)
+    }
+    
+    // get the Oxpd browser
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Fail (Fail connecting to the app OXPd!)
+        Stop Test Case
+    }
+    Error:
+    {
+       Error (Error connecting to the app OXPd!)
+       Stop Test Case
+    }
+    
+    // check for EULA screen
+    If: Oxpd.Wait For Css (#TermsOfUseAndPrivacyPolicy,5)
+    {
+    }
+    Fail:
+    {
+        // check for popup stating leaving HP environment
+        // or other pop up message
+        Repeat:2
+        {
+            If: Oxpd.Wait For Css (#genericModel[style*="block"],5)
+            {
+                Oxpd.Touch Id (done-button)
+                While:Oxpd.Wait For Css (#genericModel[style*="block"],1):10
+                {
+                }
+                Sleep (10)
+            }
+        }
+        
+        // check for app main screen
+        If: Oxpd.Wait For Css (#listViewHeaderContent,15)
+        {
+            Fail (Fail SIO user linked and app credentials saved!)
+            Stop Test Case
+        }
+    }
+
+    Pass (Checking that no app credentials were saved has passed!)
+}
+
+/// <Name>CloseAppSignOut</Name>
+/// <Description>Cose the app and sign out</Description>
+/// <Notes></Notes>
+CloseAppSignOut
+{
+    DeviceAuth.ClearAuth
+}

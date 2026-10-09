@@ -1,0 +1,60 @@
+﻿//For PIN Authentication, provide the variable (${PIN_AUTH}) value as Y
+//For Username And Password Authentication, provide the variable (${PIN_AUTH}) value as N
+${PIN_AUTH} = Y
+
+${PIN} = 1234
+//Credentials 
+${USERNAME} = rdladmin@hp.com
+${PASSWORD} = dl@12345
+
+//Crop percentage
+${Crop_Percentage} = 10
+
+//To Print job,mention the variable (${PRINT}) value as Y
+//To Delete job,mention the variable (${PRINT}) value as N
+${PRINT} = Y
+
+${ActivityId} = 0
+
+//X and Y coordinates for home button in Login page
+//For 8 inch device (35,747)
+//For 10 inch device (27,781)
+${XValueForHomeButton} = 27
+${YValueForHomeButton} = 781
+
+//X and Y coordinates for '@' text
+${XValueForAtSymbolText} = 92
+${YValueForAtSymbolText} = 545
+
+//X and Y coordinates for Tick Sign  text
+//8 inch (950,545) 
+//10 inch (1186,577)
+${XValueForTickSymbolText} = 1186
+${YValueForTickSymbolText} = 547
+
+//X and Y coordinates for 123 button 
+${XValueFor123Button} = 55
+${YValueFor123Button} = 690
+
+//To Select All job,mention the variable (${SelectAll}) value as Y
+//To Select All job,mention the variable (${SelectAll}) value as N
+${SelectAll} = N
+
+//X and Y coordinates for SelectAll button
+//10 inch x=1141, y=-63
+${XValueForSelectAllButton} = 1141
+${YValueForSelectAllButton} = -63
+
+//X and Y coordinates for print button 
+//10 inch for X=1142,Y=13
+${XValueForPrintButton} = 1142
+${YValueForPrintButton} = 13
+
+//X and Y coordinates for delete button
+//10 inch x=1141,y=70
+${XValueForDeleteButton} = 1141
+${YValueForDeleteButton} = 70
+
+//Azure account details
+//${STF_AzureEndpoint}=
+//${STF_AzureKey}=

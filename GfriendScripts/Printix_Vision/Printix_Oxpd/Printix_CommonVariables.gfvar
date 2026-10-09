@@ -1,0 +1,38 @@
+﻿//To Print all the jobs, provide the variable (${PRINT_ALL}) value as Y
+//To Print one job, provide the variable (${PRINT_ALL}) value as N
+${PRINT_ALL} = N
+
+//For Card Authentication, provide the variable (${BADGE_AUTH}) value as Y
+//and provide The variable ${BADGE_INDEX} with the Configured Card Slot.
+//For ID Code and PIN Authentication, provide the variable (${BADGE_AUTH}) value as N
+${BADGE_AUTH} = N
+${BADGE_INDEX} = 0
+
+//ID code
+${First_Digit} = 5 
+${Second_Digit} = 2
+${Third_Digit} = 6
+${Fourth_Digit} = 1
+${Fifth_Digit} = 4
+${Sixth_Digit} = 3
+
+//PIN code
+${First_PIN} = 1
+${Second_PIN} = 2
+${Third_PIN} = 3
+${Fourth_PIN} = 3
+
+//Crop percentage
+${Crop_Percentage} = 10
+
+${ActivityId} = 0
+//X and Y coordinates for select all job from 'Print' text
+${XValueForSelectAll} = 826
+${YValueForSelectAll} = 68
+
+//X and Y coordinates for print button from 'Print' text
+${XValueForPrintButton} = 854
+${YValueForPrintButton} = 700
+
+${AzureEndpoint}=https://cvwestus01.azure.com/
+${SubscriptionKey}=4imAbXzeAaCzMAVjpAhuxvx

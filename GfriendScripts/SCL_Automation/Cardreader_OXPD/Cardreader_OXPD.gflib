@@ -1,0 +1,43 @@
+﻿using BadgeBox
+using Android
+using JediOmni
+ 
+ 
+Badgebox_Login(${BADGE_INDEX},${Username},${Password})
+{
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/textview_alert_credentials'],60) 
+       {
+           Cardreader_Workpath.Card_Activation (${Username},${Password})
+           BadgeBox.Scan Badge (${BADGE_INDEX})
+       }
+    While:!JediOmni.Wait For Text (Sign Out,10): 10
+    {
+        Sleep(5)
+    }
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        Pass (Badge SigIN Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignIn)
+        Stop Test Case   
+    }
+}
+ 
+ 
+Card_Activation(${Username},${Password})
+{
+        Android.Wait For XPath Gone (//node[@class='android.widget.ProgressBar'],60)
+        Android.Input Text With XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/credentials_username_edittext'],${Username})
+        Android.Press Enter Key
+        Sleep (3)
+        Android.Input Text With XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/credentials_password_textinputlayout'],Automation@123)
+        Android.Press Enter Key
+        Sleep (3)
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/activate_button_credentials'])
+        JediOmni.Wait For Text (Sign Out,20)
+        JediOmni.Touch Text (Sign Out)
+        JediOmni.Wait For Text (Reset,20)
+}

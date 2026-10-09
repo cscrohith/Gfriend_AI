@@ -1,0 +1,297 @@
+﻿using JediOmni
+using Android
+using Info
+using BadgeBox
+
+/////////////////////////////////////////////////
+// Routine:         YSoft SafeQ Cloud Pullprint
+// Description:     YSoft SafeQ Cloud Safe_Q Pullprint Job
+//
+// Arguments:       ${PRINT_ALL}) - Print All Variable
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+YSoft_SafeQ_Cloud_PullPrint(${PRINT_ALL},${BADGE_AUTH},${BADGE_INDEX})
+{
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_ProcessingJob)
+    
+    If: YSoft_SafeQ_Cloud_AUTH.YSoft_SafeQ_Cloud(${BADGE_AUTH},${BADGE_INDEX})
+    {
+        //All Good, Continue
+    }
+    
+    Info.Mark Start (STF_AppShown,2)
+    // click on secure print
+    If: JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,20)
+    {
+        JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+        JediOmni.Touch Text (Secure Print & Scan)
+        Info.Mark End (STF_AppShown,2)
+        Info.Draw Time Graph (STF_AppShown)
+    } 
+    Fail:
+    {
+        Android.Capture Screen Shot (failed to click Secure Print &Scan)
+        Info.Mark End (STF_AppShown,2)
+        Info.Draw Time Graph (STF_AppShown)
+        Return With Fail (Failed to click Secure Print & Scan)
+    }
+     
+    //If sign in is not happened for the first time , once clicked on app will get user login or authentication error screen
+    // checks for userlogin screen
+    If: Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/textview_auth_alert_box,5)  
+    {
+        Android.Capture Screen Shot (UserLoginScreen)
+        //scans the badge for the second time
+        If: BadgeBox.Scan Badge (${BADGE_INDEX})
+        {
+            //continue
+        } 
+        Fail:
+        {
+            Android.Capture Screen Shot (failed screen)
+            Return With Fail (Failed to Authenticate in the user login screen) 
+        }
+    }
+    //checks for authentication error screen
+    If: Android.Wait For XPath (//node[@class='androidx.compose.ui.platform.ComposeView']/node[1]/node[3],5)
+    {
+        Android.Capture Screen Shot (AuthenticationErrorScreen)
+        //clciking on go to homescreen
+        Android.Touch XPath (//node[@class='androidx.compose.ui.platform.ComposeView']/node[1]/node[3])
+        JediOmni.Reset
+        Return With Fail (Failed to Authenticate the device)
+    }
+  
+
+    
+    If: Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/printAll,20)
+    {
+        Info.Mark Start (STF_ProcessingJob,3)
+        
+        //To Print all the Documents
+        If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            If: Android.Wait For Text (Print all,15)
+            {   
+               Android.Touch Text (Print all)
+            }
+            Fail:
+            {
+                Android.Capture Screen Shot (Print_all_Page_Load)
+                Info.Mark End (STF_ProcessingJob,3) 
+                Info.Draw Time Graph (STF_ProcessingJob)
+                Return With Fail (Failed to load Print all Page in the device)
+            }             
+        } 
+        
+        //To Print Only 1 Document
+        Fail:
+        {      
+            Android.Touch Text (My print jobs)
+            If: Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/header_name,15)
+            {
+                //print jobs screen to load
+                If: Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/print_list_item,30)
+                {
+                    Android.Get Text (com.ysoft.safeq.terminals.hp.hcp:id/displayedText,${first_print_job})
+                    Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print_list_item) 
+                }
+                Fail:
+                {
+                    Return With Fail (Failed to load Print Page in the device within 30 seconds)
+                }
+                Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+            }           
+            Fail:
+            {
+                Android.Capture Screen Shot (Print_Page_Load)
+                Info.Mark End (STF_ProcessingJob,3)
+                Info.Draw Time Graph (STF_ProcessingJob)
+                Return With Fail (Failed to load Print Page in the device)
+            }
+            
+        }
+    }    
+    Fail:
+    {
+        Android.Capture Screen Shot (Unable_to_load_Home_Page)
+        Info.Mark End (STF_ProcessingJob,3) 
+        Info.Draw Time Graph (STF_ProcessingJob)
+        Return With Fail (Failed to load Print Home Page in the device)
+         
+    }
+    
+    If: Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/success_job_image,300)  
+    {
+        Info.Mark End (STF_ProcessingJob,3) 
+        Info.Draw Time Graph (STF_ProcessingJob)
+    }
+    Fail:
+    {
+        Android.Capture Screen Shot (Print Job Failed)
+        Info.Mark End (STF_ProcessingJob,3) 
+        Info.Draw Time Graph (STF_ProcessingJob)
+        Return With Fail (Failed to print jobs within 300 seconds!)
+    }
+    
+    If: Android.Check Screen Contains Full Text (Folder is empty)
+    {
+        Return With Pass (Print Job Completed Successfully)
+    }
+    Fail:
+    {
+        If:Android.Wait For Text (${first_print_job},10)
+        {
+            Return With Fail (Print Job is not submitted and it still exists in queue)
+        }
+        Fail:
+        {
+            Return With Pass (Print Job Completed Successfully)   
+        }
+    }
+    
+}
+
+/////////////////////////////////////////////////
+//Routine:         ClearAuth
+//Description:     make sure at Home screen, signed out and reset
+//
+//Arguments: 
+//      
+//Pre-requisites: 
+// 
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+      
+ClearAuth
+{
+    Repeat:2
+    {
+       JediOmni.Press Home Key
+    }  
+    //Click on OK button if Sign in failed error message is seen
+    If: JediOmni.Wait For Object (hpid-button-signinfailed-ok,10)
+    {
+        JediOmni.Touch ID (hpid-button-signinfailed-ok)     
+    }
+    
+    If: JediOmni.Wait For Object (hpid-control-signin,5) 
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Wait For Object (hp-button-signin-or-signout,5) 
+        {
+            If: JediOmni.Touch ID (hp-button-signin-or-signout) 
+            {
+                JediOmni.Wait For Text Gone (Signing out,30)
+            }
+             Fail:
+            {
+                Return With Fail (Fail to Sign Out)
+            }
+        }
+    }
+    JediOmni.Reset
+}
+
+//////////////////////////////////////////////////
+//Routine:         VerifyUserLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+     
+
+YSoft_SafeQ_Cloud(${BADGE_AUTH},${BADGE_INDEX})
+{
+
+    Info.Start Time Check (STF_Authentication)
+    
+    If: YSoft_SafeQ_Cloud_AUTH.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+    
+    If: Equals IgnoreCase (${BADGE_AUTH},Y)
+    {               
+        Info.Mark Start (STF_Authentication,1)
+        //scans the badge for the first time
+        BadgeBox.Scan Badge (${BADGE_INDEX})
+        JediOmni.Capture Screen Shot (HomeScreenAfterFirstTimeBadgeScan)
+        //checks for signout 
+        If: JediOmni.Wait For Text (Sign Out,15) 
+        {
+            Info.Mark End (STF_Authentication,1)
+            Info.Draw Time Graph (STF_Authentication)
+            Return With Pass (Badge Sign In was Successful)
+        }
+        Fail:
+        {
+            Fail ("Badge is not swiped in for the first time")
+            Info.Mark End (STF_Authentication,1)
+            Info.Draw Time Graph (STF_Authentication)
+             
+        }   
+        Info.Mark End (STF_Authentication,1)
+        Info.Draw Time Graph (STF_Authentication)
+    }
+    Fail:
+    {
+        Return With Fail (Not using Badge Sign In)       
+    }  
+  
+}
+
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignOut
+{
+    //App Signout 
+    Info.Start Time Check (STF_DeviceSignOut)
+    Info.Mark Start (STF_DeviceSignOut,4)
+    If: Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity,15)
+    {
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity)
+    }
+    Fail:
+    {
+        Fail (Failed to find Solution Screen LogOut!)
+    }
+    Info.Mark End (STF_DeviceSignOut,4)
+    Info.Draw Time Graph (STF_DeviceSignOut)
+}

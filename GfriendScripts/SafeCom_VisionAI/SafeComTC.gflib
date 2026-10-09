@@ -1,0 +1,163 @@
+﻿using Vision
+using Info
+using JediOmni
+using Oxpd
+using BadgeBox
+
+VisionAISetup(${STF_AzureEndpoint},${SOLUTION_NAME})
+{
+    Vision.Set AI OCR Method (${STF_AzureEndpoint},${SOLUTION_NAME})
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+}
+
+Authentication(${STF_UserName},${BADGE_AUTH},${STF_BadgeIndex})
+{
+   If: Equals IgnoreCase (${STF_BadgeIndex},Y)
+   {
+       SafeComTC.BadgeBoxSignIn(${STF_BadgeIndex})
+   }
+   Fail:
+   {  
+       SafeComTC.CredentialsLogin(${STF_UserName})  
+   }
+}
+
+CredentialsLogin(${STF_UserName})
+{   
+   Info.Start Time Check (STF_DeviceButtonPress)
+   Info.Start Time Check (STF_Authentication)
+   Info.Start Time Check (STF_EnterCredentials)
+   If: Vision.Is Text Exist (Sign In)
+   {
+       Vision.Click Text (Sign In)
+       Info.Mark End (STF_DeviceButtonPress,1)       
+   } 
+   Fail:
+   {
+       Return With Fail (Sign In not available)
+        Stop Test Case
+   }
+    Sleep (2)
+    Info.Mark Start (STF_Authentication,2)
+    If: Vision.Is Text Exist (Local Device)
+   {
+       Vision.Click Text (Local Device)
+       Sleep (2)
+       Vision.Click Text (KOFAX)       
+   } 
+   Sleep (3)
+   If:Vision.Is Text Exist (Code)
+   {
+       Info.Mark Start (STF_EnterCredentials,3)
+        Oxpd.Get Browser Engine
+        Vision.Click Text (Code)
+        Oxpd.Input Text (${STF_UserName})
+        Info.Mark End (STF_EnterCredentials,3)
+        Oxpd.Press ESC Key
+        Sleep (1)
+        Vision.Click Text (Login)
+        Sleep (1)
+        If: Vision.Is Text Exist (Sign Out)
+        {
+            Info.Mark End (STF_Authentication,2)
+            Return With Pass (Sign In  was Successful)
+        }
+        Fail:
+        {
+            Fail (Sign In was not Successful)
+            Stop Test Case
+        }
+   }
+   Fail:
+   {
+       Fail (Not entered into Authentication screen) 
+   }
+}
+
+BadgeBoxSignIn(${STF_BadgeIndex})
+{
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Mark Start (STF_Authentication,2)
+    Info.Mark Start (STF_EnterCredentials,3)
+    BadgeBox.Scan Badge (${STF_BadgeIndex})
+    Info.Mark End (STF_EnterCredentials,3)
+    Info.Mark End (STF_Authentication,2)
+    Sleep (1)
+    If: Vision.Is Text Exist (Sign Out)
+    {
+      Return With Pass (Sign In was Successful)
+    }
+    Fail:
+    {
+      Fail (Sign In was not Successful)
+      Stop Test Case
+    }  
+}
+
+Execute_PullPrint(${PRINT_ALL})
+{
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_ProcessingJob)
+    If: Vision.Is Text Exist (Pull Print)
+    {
+        Info.Mark Start(STF_AppButtonPress,5)
+        Vision.Click Text (Pull Print)
+        Info.Mark End (STF_AppButtonPress,5)
+        Sleep (1)
+    }
+    Fail:
+    {
+         Fail (Pull Print not Available)
+         Stop Test Case      
+    }
+    Info.Mark End (STF_AppShown,4)
+    If: Vision.Is Text Exist (iSelectAll)
+    {
+        Info.Mark Start (STF_ProcessingJob,6)
+        If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            //Clicking on Select all jobs check box
+            Vision.Click Text (iSelectAll)
+            Sleep(2)
+            //Clicking on Print button to Print jobs.
+            Vision.Click Text (Print)
+            Return With Pass (All Jobs Printed successfully)
+        } 
+        //To Print Only 1 Job
+        Fail:
+        {
+            If: Vision.Is Text Exist (iFirstJob)
+            {
+                //clicking on first job check box
+                Vision.Click Text (iFirstJob)
+                Sleep(1)
+                //Clicking on Print button to Print jobs
+                Vision.Click Text (Print)
+                Return With Pass (One job printed successfully)
+            }
+            Fail:
+            {
+                Fail (Print job not selected and Print button is not availble)
+                Stop Test Case
+            }        
+        }
+        Info.Mark End (STF_ProcessingJob,6)
+    }
+    Fail:
+    {  
+        Fail (No Jobs found)
+    }
+}
+
+Teardown()
+{
+    //clicking on Home button
+    JediOmni.Press Home Key
+    Sleep (2)
+    Vision.Click Text (Sign Out)
+    Sleep (2)
+    Vision.Click Text (Reset)
+}

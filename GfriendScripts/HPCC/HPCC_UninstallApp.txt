@@ -1,0 +1,67 @@
+﻿/// <File>HPCC_UninstallApp.txt</File>
+/// <Modified>2021-06-09</Modified>
+/// <Description>Unintall an app from a device in HPCC</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${UseSerialNumber_YN}=N
+${Dev_SerialNumber}=
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC_Apps.gfvar
+Using HPCC.gfvar
+
+Using HPCC_Library.gflib
+
+Using JediOmni
+
+/// <Name>AppUninstall</Name>
+/// <Description>Uninstall an app from a device in HPCC</Description>
+/// <Notes></Notes>
+AppUninstall
+{
+    // remove the "-" from the device as it is a non-allowed character in HPCC
+    Set Variable (${AssetNumber},${DUT_ID})
+    Replace (${AssetNumber},-,)
+    
+    //Signin
+    IF: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+        
+        // set the device ID to use to either Serial No or Asset ID
+        If: Equals IgnoreCase (${UseSerialNumber_YN},Y)
+        {
+            Set Variable (${Device_ID},${Dev_SerialNumber})
+        }
+        Fail:
+        {
+            Set Variable (${Device_ID},${AssetNumber})
+        }
+        
+        //App uninstall
+        If: HPCC_Library.UninstallApp(${HPCC_Customer},${App},${Device_ID},${HPCC_TaskCompleteLimit})
+        {
+        }
+        Fail:
+        {
+            Fail (Failed uninstalling app!)
+        }
+        Error:
+        {
+            Error (Error occured during App Uninstall!)
+        }
+    }
+    Fail:
+    {
+        Fail (Failed signing in to HPCC!)
+    }
+    
+    HPCC_Library.SignOut()
+    
+    Web.Close
+}

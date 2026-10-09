@@ -1,0 +1,19 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+PrintFromUSBWorkFlow
+{
+   Common_Library.CheckHomeScreen
+   Common_Library.AuthenticationEager(${UserName},${Password})
+   Common_Library.PrintFromUSB_Workflow_For_Camden_and_Busch
+}
+
+
+
+
+
+
+    
+
+

@@ -1,0 +1,26 @@
+﻿///<File>DevHealth_OOBE.txt</File>
+///<Modified>2020-04-22</Modified>
+///<Description>Handle the OOBE screens on a device after reset</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+Using DevHealth_OOBE.gfvar
+
+Using DevHealth_Device_Library.gflib
+
+Using Web
+
+// <Name>Main</Name>
+/// <Description>Handle the OOBE screens on a device after reset</Description>
+/// <Notes></Notes>
+Main
+{
+    // handle the initial OOBE screens
+    If: DevHealth_Device_Library.HandleInitialOobeScreens (${OOBE_InitLanguage}, ${OOBE_InitLocation}, ${OOBE_EnableDevHealthApp_YN}, ${OOBE_EnableAutoSend_YN}, ${OOBE_EnableUSB_YN}, ${OOBE_FinalSummaryTimeout})
+    {
+    }
+    Fail:
+    {
+        Fail (OOBE initial screen handling failed!)
+    }
+}

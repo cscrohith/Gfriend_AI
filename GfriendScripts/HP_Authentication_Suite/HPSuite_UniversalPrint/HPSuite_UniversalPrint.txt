@@ -1,0 +1,32 @@
+﻿using Vision
+using HPSuite_UniversalPrint.gfvar
+using HPSuite_UniversalPrint.gflib
+
+SetupAzureVision
+{
+   HPSuite_UniversalPrint.SetupAzureVision(${STF_AzureEndpoint},${STF_AzureKey})
+}
+
+Authentication
+{
+    If: HPSuite_UniversalPrint.Authentication(${STF_BadgeIndex})
+    {
+        //Continue
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (Authentication_Fail)
+        Fail (Authentication not Successful)
+        Stop Test Suite
+    }
+}
+
+HPSuite_UniversalPrint_Flow
+{
+   HPSuite_UniversalPrint.HPSuite_UniversalPrint_PullPrint() 
+}
+
+Teardown
+{ 
+   HPSuite_UniversalPrint.HPSuite_UniversalPrint_Teardown()
+} 

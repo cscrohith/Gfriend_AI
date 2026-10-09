@@ -1,0 +1,144 @@
+//Direct print queue name
+${Direct_Print_Queue_Name}=
+
+//Pull print queue name
+${Pull_Print_Queue_Name}=
+
+//Updating ‘Scan to Email’ to a more detailed and lengthy version.
+${Scan_to_Email}=
+
+//File Path for job
+${File_Path1}=
+${File_Path2}=
+
+//File Name
+${File_Name1}=
+${File_Name2}=
+
+
+//Job Name
+${Job_Name}=
+
+//Printer
+${Printer_Name}=
+
+${SafeQExeFilePath}=
+﻿//Provide The variable ${BADGE_INDEX} with the Configured Card Slot.
+${BADGE_INDEX} = 0
+
+//Iterate count to Wait for Signoutbutton after Badge Sigin
+${WaitTime} = 5
+
+//Repeat count for the TestScenario
+${Total_Iteration} = 3
+
+${Job_Path_MB} = 
+${Job_Path_Pages} =
+${word-document-file}=..\print-documents\word-doc\testfile.docx
+${excel-document-file}=..\print-documents\excel-doc\testfile.xlsx
+${ppt-document-file}=..\print-documents\ppt-doc\testfile.pptx
+
+${print-queue-name}=Secure Print
+
+${alt-f}=%f
+${alt-f4}=%[F4]
+${p-key}=p
+${enter-key}=[ENTER]
+${cannot-complete-operation-OK-button}=CloseButton
+${print-image-button}=PrintButton
+${browser-pdf-print-queue-dropdown}=//*[@id="selecttrigger-1"]
+${pdf-browser-print-button}=//*[@id="sidebar"]/div[3]/div/button[1]
+
+// These are absolute file paths.
+// Testers need to update these paths to reflect the files/executables in their test computer.
+${mspaint-executable-path}=C:\Program Files\WindowsApps\Microsoft.Paint_11.2603.251.0_x64__8wekyb3d8bbwe\PaintAppmspaint.exe
+
+${image-document-file}=C:\Users\ReVi345\source\repos\GFriend\SCL_Automation\SCL_Automation\print-documents\print-documents\image-doc\testfile.jpg
+${pdf-document-file}=C:\Users\ReVi345\source\repos\GFriend\SCL_Automation\SCL_Automation\print-documents\print-documents\pdf-doc\testfile.pdf
+${text-document-file}=C:\Users\ReVi345\source\repos\GFriend\SCL_Automation\SCL_Automation\print-documents\print-documents\text-doc\testfile.txt
+
+//////////////////////////////////////////////////////////////
+// ***********************************************************
+// * Wait durations for printer screen transitions.          *
+// * These values can be adjusted depending on printer speed *
+// ***********************************************************
+//////////////////////////////////////////////////////////////
+${ultra-short-wait}=1
+${short-wait}=3
+${medium-wait}=5
+${long-wait}=10
+${extra-long-wait}=25
+${max-printing-wait}=900 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// *******************************************************************************************************************************
+// * THESE VARIABLE ARE USED FOR OPERATING THE PRINTER.                                                                          *
+// *******************************************************************************************************************************
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+${jediomni-reset-button}=hpid-button-reset
+${jediomni-sign-in-button}=hpid-control-signin
+${signout-text}=Sign Out
+${jediomni-sign-out-button}=hp-button-signin-or-signout
+${jediomni-sign-in-dropdown}=hpid-dropdown-agent
+${jediomni-safeq-cloud-login-dropdown-option}=hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1
+
+${username-textbox}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/authentication_username_textinputlayout']/node[1]
+${password-textbox}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/authentication_password_textinputlayout']/node[1]
+${username-password-login-btn}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/btn_login']
+
+${secure-print-and-scan-app-icon}=hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button
+
+// ************************************************************
+// * Icons inside the 'SafeQ secure print and scan application*
+// ************************************************************
+${print-all-app-icon}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/printAll']
+${my-print-jobs-app-icon}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print']
+${my-scan-workflow-app-icon}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/scan']
+${scan-to-email-app-icon}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/quick_action_1']
+
+// ************************************************************
+// *  Elements inside the print jobs icon screen              *
+// ************************************************************
+${first-print-job-radio-button}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1]/node[1]
+${select-all-printjobs-button}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/select_all']
+${first-print-job-settings-button}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1]/node[3]
+${reload-print-jobs-button}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1]/node[2]
+${print-button}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2]/node[2]
+${delete-button}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/delete']
+${cancel-printing-button}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_cancel']
+${logout-button}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity']
+
+
+// ************************************************************
+// *  Elements for print job settings                         *
+// ************************************************************
+${first-print-job-settings}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1]/node[3]
+${sides-selection-dropdown}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/text_input_end_icon']
+${one-sided-dropdown-item}=//node[@class='android.widget.ListView']/node[1]
+${flip-on-long-edge-dropdown-item}=//node[@text='Flip on Long Edge']
+${flip-on-short-edge-dropdown-item}=//node[@text='Flip on Short Edge']
+${decrease-copy-count}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/number_picker_minus']
+${increase-copy-count}=//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/number_picker_plus']
+
+${job-details-print-button}=//node[@class='android.widget.Button']
+
+${HPCC_Site} = 
+${HPCC_User} = 
+${HPCC_Pwd} = 
+${HPCC_Printer} = 
+${Device_PIN} = 
+${SIO_Pin} = 
+${Job_Path} = 
+${Queue_Name} = 
+${Google_domain} = 
+${Azure_Tenant} = 
+
+${DownLoadFolderPath} = 
+${IsColorMFP} = 
+
+//IPP Printer name
+${IPP_Printername} =
+
+//Control Panel path
+${ControlPanelPath} = C:\Windows\System32\control.exe

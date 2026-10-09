@@ -1,0 +1,465 @@
+﻿using JediOmni
+using Oxpd
+using Info
+using BadgeBox
+using Info
+
+/////////////////////////////////////////////////
+// Routine:         VerifyBadgeLoggedIn
+// Description:     Make sure Badgebox is connected and card is registered for signed In
+//
+// Arguments:      
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignIn_YSoft_SafeQ_Cloud(${BADGE_AUTH},${BADGE_INDEX})
+{ 
+    Info.Start Time Check (STF_Authentication)
+    
+    Info.Start Time Check (STF_EnterCredentials)
+        
+    Info.Start Time Check (STF_AppShown)
+    
+    If: YSoft_SafeQ_Cloud_AUTH.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+ 
+    Info.Mark Start (STF_Authentication,1)   
+     
+    If: BadgeBox.Scan Badge (${BADGE_INDEX}) 
+    {     
+         Pass (Badge is scanned for first time)
+          Sleep (3) 
+         //check SignOut Text 
+         If: JediOmni.Wait For Text (Sign Out,10)
+         {       
+             Pass (Badge Sign In was Successful) 
+             
+             Info.Mark End (STF_Authentication,4)           
+         }  
+         Fail:
+         {
+              Oxpd.Get Browser Engine (3)   
+              If: Oxpd.Wait For Xpath (//*[@id="toggle_block_switch"]/span/span[1],5)
+              {                 
+                  BadgeBox.Scan Badge (${BADGE_INDEX}) 
+                  Sleep (5) 
+                  Pass (Badge is scanned for second time)
+                  Oxpd.Return Browser Engine
+                  If:JediOmni.Wait For Text (Sign Out,5)
+                  {                      
+                      //continue
+                  }
+                  Fail:
+                  {
+                      Return With Fail (Badge was not Signed-In properly and it's still present in the user login screen)
+                  }
+              
+                  Info.Mark End (STF_Authentication,3)         
+               }               
+          }
+     }
+      
+     Fail:
+     {           
+         Return With Fail (Failed to SignedIn the badge)
+     } 
+        
+     //click Secure Print 
+     Info.Mark Start (STF_AppShown,1)  
+     If: JediOmni.Wait For Object (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button,5)
+     {        
+          JediOmni.Touch ID (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button) 
+             
+          Info.Mark End (STF_AppShown,2)                 
+     }
+     Fail:
+     {
+         Fail (Unable to click Secure Print application)              
+     }          
+}
+
+/////////////////////////////////////////////////
+// Routine:         YSoft SafeQ Cloud PullPrint
+// Description:     YSoft SafeQ Cloud Pullprint Job
+//
+// Arguments:       ${PRINT_ALL}) - Print All Variable
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+YSoft_SafeQ_Cloud_PullPrint(${PRINT_ALL},${STF_UserName},${STF_UserPassword},${LAZY_AUTH},${SHORT_ID},${SHORT_ID_CODE},${BADGE_AUTH},${BADGE_INDEX})
+{
+    Info.Start Time Check (STF_ProcessingJob)
+    
+      If: Equals IgnoreCase (${BADGE_AUTH},Y)
+      {
+          If: YSoft_SafeQ_Cloud_AUTH.SignIn_YSoft_SafeQ_Cloud(${BADGE_AUTH},${BADGE_INDEX})
+          {
+              //continue 
+          }
+          Fail:
+          {
+              Return With Fail (Failed to Signin with Badge Authentication)          
+          }
+      }
+    
+      Fail:
+      {
+          If: YSoft_SafeQ_Cloud_AUTH.SignInYSoft_SafeQ_Cloud(${STF_UserName},${STF_UserPassword},${LAZY_AUTH},${SHORT_ID},${SHORT_ID_CODE},${BADGE_AUTH},${BADGE_INDEX})
+          {
+             //All Good, Continue
+          }
+      }
+   
+    Oxpd.Get Browser Engine (10)
+    //Print Job Screen
+    If: Oxpd.Wait For Text (Document Name,15)
+    {
+         Info.Mark Start (STF_ProcessingJob,6)
+         
+         //To Print all the Documents
+         If: Equals IgnoreCase (${PRINT_ALL},Y)
+         {
+             Oxpd.Touch Id (select_all_button)
+            
+             Oxpd.Touch Id (print_selected_button)  
+         } 
+        
+         //To Print Only 1 Document
+         Fail:
+         {
+             If: Oxpd.Wait For Xpath (/html/body/div[2]/div/div[2]/table/tbody/tr[1],5)
+             {
+                  Oxpd.Touch Xpath (/html/body/div[2]/div/div[2]/table/tbody/tr[1])        
+                  Oxpd.Touch Id (print_selected_button)
+             }
+             Fail:
+             {
+                  Oxpd.Return Browser Engine
+                  Return With Fail (Failed to select print job within the given time)
+             }
+         }   
+    }
+    Info.Mark End (STF_ProcessingJob,6)
+    Oxpd.Return Browser Engine
+
+    Fail:
+    {
+        Oxpd.Capture Screen Shot (print job screen)
+        Sleep (2)
+        Oxpd.Return Browser Engine
+        Return With Fail (No Jobs found to Pull!) 
+    }
+    
+    If: JediOmni.Wait For Active Job (20)
+    {
+        //Continue
+    }
+    Fail:
+    {
+        Return With Fail (Failed to initiate print jobs within 20 seconds!)
+    }
+    
+    If: JediOmni.Wait For Active Job Gone (300)
+    {
+        Return With Pass (Print Job Completed Successfully) 
+        Sleep (1)     
+    }
+    Fail:
+    {
+        Return With Fail (Failed to print jobs within 100 seconds!) 
+    }
+    
+}
+
+/////////////////////////////////////////////////
+//Routine:         ClearAuth
+//Description:     make sure at Home screen, signed out and reset
+//
+//Arguments: 
+//      
+//Pre-requisites: 
+// 
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+      
+ClearAuth
+{
+    JediOmni.Press Home Key
+    If: JediOmni.Wait For Text (Sign In,10)
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Touch Text (Sign Out)
+        {
+            JediOmni.Wait For Text Gone (Signing out,30)
+            Sleep (1)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to Sign Out!)
+        }
+    }
+    Repeat:2
+    {
+        JediOmni.Reset
+    }
+}
+
+//////////////////////////////////////////////////
+//Routine:         VerifyUserLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+     
+
+SignInYSoft_SafeQ_Cloud(${STF_UserName},${STF_UserPassword},${LAZY_AUTH},${SHORT_ID},${SHORT_ID_CODE},${BADGE_AUTH},${BADGE_INDEX})
+{
+    
+    Info.Start Time Check (STF_Authentication)
+    
+    Info.Start Time Check (STF_EnterCredentials)
+        
+    Info.Start Time Check (STF_AppShown)
+    
+    Info.Start Time Check (STF_AppButtonPress)
+    
+    Info.Start Time Check (STF_DeviceButtonPress)
+    
+    If: YSoft_SafeQ_Cloud_AUTH.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+    
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    {
+           Info.Mark Start (STF_AppButtonPress,2)
+           If: JediOmni.Touch Text (Secure Print)
+           {
+              Info.Mark End (STF_AppButtonPress,2)
+              Oxpd.Get Browser Engine (5)
+            
+               //Lazy Authentication 
+                If: Equals IgnoreCase (${SHORT_ID},Y)
+                {             
+                    YSoft_SafeQ_Cloud_AUTH.SignIn_YSoft_SafeQ_Cloud_ShortID(${SHORT_ID_CODE})
+                } 
+            
+                Fail:
+                {
+                    Info.Mark Start (STF_Authentication,4)
+                    Info.Mark Start (STF_EnterCredentials,5)
+                    //Enter the Username
+                    Oxpd.Touch Id (usernameLoginFormText) 
+                    Oxpd.Input Text (${STF_UserName})
+    
+                    //Enter the Password
+                    JediOmni.Touch Text (OK)
+                    Oxpd.Touch Id (usernameLoginFormPass)
+                    Oxpd.Input Text (${STF_UserPassword})
+                
+                    // Keyboard OK
+                    JediOmni.Touch Text (OK)
+                
+                    Info.Mark End (STF_EnterCredentials,5) 
+ 
+                    //Footer OK
+                    Oxpd.Touch Id (usernameLoginFormSubmitButton)
+                    Info.Mark End (STF_Authentication,4)
+                
+                                
+                    //Click on Secure Print Application
+                    If: JediOmni.Wait For Object (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button,10)
+                    {
+                        JediOmni.Touch ID (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button)
+                    }
+                    Info.Mark End (STF_AppShown,3)
+                } 
+            }
+    }
+    
+    If: Equals IgnoreCase (${LAZY_AUTH},N)
+    {
+        
+        Info.Mark End (STF_DeviceButtonPress,1)
+        // press the Sign In button
+        JediOmni.Touch ID (hp-button-signin-or-signout)
+        
+        Oxpd.Get Browser Engine (5)
+        
+        If: Equals IgnoreCase (${SHORT_ID},Y)
+        {   
+            YSoft_SafeQ_Cloud_AUTH.SignIn_YSoft_SafeQ_Cloud_ShortID(${SHORT_ID_CODE})   
+        }
+    
+        Fail:
+        {
+            Info.Mark Start (STF_Authentication,4)
+            Info.Mark Start (STF_EnterCredentials,5)
+            //Enter the Username
+            Oxpd.Touch Id (usernameLoginFormText) 
+            Oxpd.Input Text (${STF_UserName})
+    
+            //Enter the Password
+            JediOmni.Touch Text (OK)
+            Oxpd.Touch Id (usernameLoginFormPass)
+            Oxpd.Input Text (${STF_UserPassword})
+                
+            // Keyboard OK
+            JediOmni.Touch Text (OK)
+            
+            Info.Mark End (STF_EnterCredentials,5)
+            
+            //Footer OK
+            Oxpd.Touch Id (usernameLoginFormSubmitButton)
+            
+            Info.Mark End (STF_Authentication,4)
+            
+            Info.Mark End (STF_AppButtonPress,2)
+            //Click on Secure Print Application
+            If: JediOmni.Wait For Object (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button,10)
+            {
+                JediOmni.Touch ID (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button)
+            }
+
+            Info.Mark End (STF_AppShown,3)
+            
+        } 
+    }
+}
+
+//////////////////////////////////////////////////
+//Routine:         VerifyUserLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+
+SignIn_YSoft_SafeQ_Cloud_ShortID(${SHORT_ID_CODE})
+{  
+    Info.Start Time Check (STF_Authentication)
+    
+    Info.Start Time Check (STF_EnterCredentials)
+        
+    Info.Start Time Check (STF_AppShown)
+   
+    Info.Start Time Check (STF_AppButtonPress)
+     
+    Info.Mark Start (STF_Authentication,4)
+    
+    Oxpd.Wait For Id (login_switch,10)
+    Oxpd.Touch Id (login_switch)
+
+     Sleep (3)      
+     If: Oxpd.Wait For Id (shortIdLoginFormText,10)
+     {
+         Info.Mark Start (STF_EnterCredentials,5)
+         Oxpd.Touch Id (shortIdLoginFormText)
+         Oxpd.Input Text (${SHORT_ID_CODE})
+
+         //Keyboard OK
+         JediOmni.Touch Text (OK)
+         
+         Info.Mark End (STF_EnterCredentials,5)
+         
+         Oxpd.Wait For Id (shortIdLoginFormSubmitButton,10)
+         Oxpd.Touch Id (shortIdLoginFormSubmitButton)
+         
+         //Keyboard OK
+         JediOmni.Touch Text (OK)
+         
+         Info.Mark End (STF_Authentication,4)
+         
+         //Click on Secure Print Application
+         If: JediOmni.Wait For Object (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button,10)
+         {
+             Info.Mark End (STF_AppButtonPress,2)
+             JediOmni.Touch ID (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button)
+         }
+         Info.Mark End (STF_AppShown,3)
+     }
+                 
+     Fail:
+     {
+          Return With Fail (Fail To Switch To Short ID)
+     }
+ }
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignOut
+{
+    
+    JediOmni.Press Home Key
+    Info.Start Time Check (STF_DeviceSignOutBegin)
+    Info.Start Time Check (STF_DeviceSignOutEnd)
+    Info.Mark Start (STF_DeviceSignOutBegin,4)
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (Failed to Sign Out)
+        Fail (Failed to find Home Screen Sign Out!)
+    }
+    Info.Mark End (STF_DeviceSignOutEnd,4)
+    Info.Draw Time Graph (STF_DeviceSignOutBegin)
+    Info.Draw Time Graph (STF_DeviceSignOutEnd)
+}
+
+
+     
+

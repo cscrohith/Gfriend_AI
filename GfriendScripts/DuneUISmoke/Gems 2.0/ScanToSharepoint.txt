@@ -1,0 +1,479 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+using ..\Common\Common_Scan_Library.gflib
+
+Authentication
+{
+    Common_Library.CheckHomeScreen
+    Common_Library.AuthenticationEager(${UserName},${Password})
+}
+
+ScanToSharepointWorkFlow
+{    
+    //Navigate to Scan Folder
+    If:Dune.Navigate To Application On Home Screen (#ScanFolderGUID)
+    {
+        Common_Library.SleepTime
+        //clicks on Scan Folder 
+        Dune.Click And Wait For Transition (#ScanFolderGUID,${ScreenRenderDelay})
+        
+        //wait and clicks on Scan to SharePoint app 
+        Dune.Wait For (#a3d696df-b7ff-4d3d-9969-5cd7f18c0c92,5)          
+        Common_Library.ClickIdWithDefaultDelay (#a3d696df-b7ff-4d3d-9969-5cd7f18c0c92 #launcherButton)        
+    }
+    Fail:
+    {
+        Return With Fail (Scan To Email app button was not found on device home screen.)
+        Stop Test Suite
+    }
+         
+    //CLICKING ON QUICKSET
+    If: Dune.Wait For (${STSQuickSetName},10)
+    {        
+        Common_Library.ClickIdWithDefaultDelay (${STSQuickSetName})       
+
+        Dune.Wait For (#fileNameTextField,5)        
+        Common_Library.ClickIdWithDefaultDelay (#fileNameTextField)        
+
+        Get Random Number (01,1000,${FileName})
+        Common_Library.SleepTime
+        Dune.Set Text (#fileNameTextField,${FileName})
+        Common_Library.SleepTime
+        If: Dune.Wait For (#enterKey1,2)
+        {            
+            Common_Library.ClickIdWithDefaultDelay (#enterKey1)
+        }       
+    }
+    Fail:
+    {
+        Return With Fail (Scan to USB app is not opened)
+    }    
+
+    Common_Scan_Library.Scan_OpenOption()
+}
+        
+TC_Scan_ContentType
+{
+    Common_Scan_Library.Scan_ContentType
+}
+
+TC_Scan_ContentType_Mixed
+{
+    Common_Scan_Library.Scan_ContentType_Mixed
+}
+    
+TC_Scan_ContentType_Photo
+{
+    Common_Scan_Library.Scan_ContentType_Photo
+}
+    
+TC_Scan_ContentType_Text
+{
+    Common_Scan_Library.Scan_ContentType_Text
+}
+
+TC_Scan_ContentType_Image
+{
+    Common_Scan_Library.Scan_ContentType_Image
+}
+
+TC_Scan_ColorMode
+{    
+    Common_Scan_Library.Scan_ColorMode
+}
+
+TC_Scan_ColorMode_AutomaticColorOrBlack
+{    
+    Common_Scan_Library.Scan_ColorMode_AutomaticColorOrBlack
+}
+
+TC_Scan_ColorMode_Grayscale
+{    
+    Common_Scan_Library.Scan_ColorMode_Grayscale
+}
+
+TC_Scan_ColorMode_Color
+{    
+    Common_Scan_Library.Scan_ColorMode_Color
+}
+
+TC_Scan_ColorMode_BlackandWhite
+{    
+    Common_Scan_Library.Scan_ColorMode_BlackandWhite
+}
+
+TC_Scan_ColorMode_GrayscaleOnly
+{    
+    Common_Scan_Library.Scan_ColorMode_GrayscaleOnly
+}
+
+TC_Scan_BlankPagemsuppression
+{   
+    Common_Scan_Library.Scan_BlankPagemsuppression
+}
+
+TC_Scan_BlankPagemsuppression_Off
+{    
+    Common_Scan_Library.Scan_BlankPagemsuppression_Off
+}
+
+TC_Scan_BlankPagemsuppression_ON
+{    
+    Common_Scan_Library.Scan_BlankPagemsuppression_ON
+}
+
+TC_Scan_ScanMode
+{    
+    Common_Scan_Library.Scan_ScanMode
+}
+
+TC_Scan_ScanMode_BookMode
+{    
+    Common_Scan_Library.Scan_ScanMode_BookMode
+}
+
+TC_Scan_ScanMode_Standard
+{    
+    Common_Scan_Library.Scan_ScanMode_Standard
+}
+
+TC_Scan_Resolution
+{    
+    Common_Scan_Library.Scan_Resolution
+}
+
+TC_Scan_Resolution_75dpi
+{    
+    Common_Scan_Library.Scan_Resolution_75dpi
+}
+
+TC_Scan_Resolution_150dpi
+{    
+    Common_Scan_Library.Scan_Resolution_150dpi
+}
+
+TC_Scan_Resolution_200dpi
+{   
+    Common_Scan_Library.Scan_Resolution_200dpi
+}
+
+TC_Scan_Resolution_300dpi
+{   
+    Common_Scan_Library.Scan_Resolution_300dpi
+}
+
+TC_Scan_Resolution_400dpi
+{   
+    Common_Scan_Library.Scan_Resolution_400dpi
+}
+
+TC_Scan_Resolution_600dpi
+{   
+    Common_Scan_Library.Scan_Resolution_600dpi
+}
+
+TC_Scan_OriginalSide
+{   
+    Common_Scan_Library.Scan_OriginalSide
+}
+
+TC_Scan_OriginalSide_1Sided
+{   
+    Common_Scan_Library.Scan_OriginalSide_1Sided
+}
+
+TC_Scan_OriginalSide_2Sided
+{   
+    Common_Scan_Library.Scan_OriginalSide_2Sided
+}
+
+TC_Scan_OriginalSize
+{
+    Common_Scan_Library.Scan_OriginalSize
+} 
+
+TC_Scan_OriginalSize_AnySize  
+{
+    Common_Scan_Library.Scan_OriginalSize_AnySize
+}
+
+TC_Scan_OriginalSize_MixedLetterOrLedger  
+{
+    Common_Scan_Library.Scan_OriginalSize_MixedLetterOrLedger
+}
+    
+TC_Scan_OriginalSize_MixedA4OrA3  
+{
+    Common_Scan_Library.Scan_OriginalSize_MixedA4OrA3
+}
+
+TC_Scan_OriginalSize_Letter8dot5x11in  
+{
+    Common_Scan_Library.Scan_OriginalSize_Letter8dot5x11in
+}
+  
+TC_Scan_OriginalSize_LetterMediaSize8dot5x11in  
+{
+    Common_Scan_Library.Scan_OriginalSize_LetterMediaSize8dot5x11in 
+}
+ 
+TC_Scan_OriginalSize_Legal_8dot5x14in  
+{
+    Common_Scan_Library.Scan_OriginalSize_Legal_8dot5x14in 
+}
+ 
+TC_Scan_OriginalSize_Executive_7dot25x10dot5i  
+{
+    Common_Scan_Library.Scan_OriginalSize_Executive_7dot25x10dot5i      
+}  
+ 
+TC_Scan_OriginalSize_Invoice5dot5x85dotin  
+{
+    Common_Scan_Library.Scan_OriginalSize_Invoice5dot5x85dotin        
+} 
+
+TC_Scan_OriginalSize_Ledger_11x17in  
+{
+    Common_Scan_Library.Scan_OriginalSize_Ledger_11x17in     
+}    
+ 
+TC_Scan_OriginalSize_5x7in  
+{
+    Common_Scan_Library.Scan_OriginalSize_5x7in
+} 
+ 
+TC_Scan_OriginalSize_5x8in  
+{
+    Common_Scan_Library.Scan_OriginalSize_5x8in       
+} 
+
+TC_Scan_OriginalSize_Oficio_8dot5x13in  
+{
+    Common_Scan_Library.Scan_OriginalSize_Oficio_8dot5x13in     
+}
+
+TC_Scan_OriginalSize_Oficio_216x340in
+{
+    Common_Scan_Library.Scan_OriginalSize_Oficio_216x340in 
+}
+    
+TC_Scan_OriginalSize_A3_297x420mm  
+{
+    Common_Scan_Library.Scan_OriginalSize_A3_297x420mm           
+      
+} 
+TC_Scan_OriginalSize_A4_210x297mm  
+{
+    Common_Scan_Library.Scan_OriginalSize_A4_210x297mm
+      
+} 
+TC_Scan_OriginalSize_A4_MediaSize_148x210mm 
+{
+    Common_Scan_Library.Scan_OriginalSize_A4_MediaSize_148x210mm   
+}  
+
+TC_Scan_OriginalSize_A5_210x297mm
+{
+    Common_Scan_Library.Scan_OriginalSize_A5_210x297mm       
+}   
+ 
+TC_Scan_OriginalSize_A5_MediaSize_148x210mm  
+{
+    Common_Scan_Library.Scan_OriginalSize_A5_MediaSize_148x210mm
+} 
+
+TC_Scan_OriginalSize_A6_105x148mm  
+{
+    Common_Scan_Library.Scan_OriginalSize_A6_105x148mm
+} 
+
+TC_Scan_OriginalSize_Ra4_215x305mm 
+{
+    Common_Scan_Library.Scan_OriginalSize_Ra4_215x305mm         
+} 
+
+TC_Scan_OriginalSize_B4_257x364mm 
+{
+    Common_Scan_Library.Scan_OriginalSize_B4_257x364mm
+}  
+ 
+TC_Scan_OriginalSize_B5JIS_182x257mm
+{
+    Common_Scan_Library.Scan_OriginalSize_B5JIS_182x257mm         
+}      
+
+TC_Scan_OriginalSize_B5JIS_MediaSize_182x257mm1
+{
+    Common_Scan_Library.Scan_OriginalSize_B5JIS_MediaSize_182x257mm1 
+}  
+   
+TC_Scan_OriginalSize_B6JIS_128x182mm
+{
+    Common_Scan_Library.Scan_OriginalSize_B6JIS_128x182mm
+}   
+   
+TC_Scan_OriginalSize_16k_195x270mm
+{
+    Common_Scan_Library.Scan_OriginalSize_16k_195x270mm
+}
+
+TC_Scan_OriginalSize_16k_177x273
+{
+    Common_Scan_Library.Scan_OriginalSize_16k_177x273
+} 
+ 
+TC_Scan_OriginalSize_DoublePostCardJIS_148x200mm
+{
+    Common_Scan_Library.Scan_OriginalSize_DoublePostCardJIS_148x200mm
+}
+
+TC_Scan_OriginalSize_MixedLetterOrLegal  
+{
+    Common_Scan_Library.Scan_OriginalSize_MixedLetterOrLegal
+}
+    
+TC_Scan_Sharpness
+{
+    Common_Scan_Library.Scan_Sharpness      
+}
+  
+TC_Scan_LighterDarker
+{
+    Common_Scan_Library.Scan_LighterDarker
+}
+
+TC_Scan_Contrast
+{
+    Common_Scan_Library.Scan_Contrast
+}
+
+TC_Scan_BackgroundCleanup
+{
+    Common_Scan_Library.Scan_BackgroundCleanup        
+}
+  
+TC_Scan_AutomaticTone
+{
+    Common_Scan_Library.Scan_AutomaticTone            
+}
+
+TC_Scan_FileTypes
+{            
+    Common_Scan_Library.Scan_FileTypes         
+}
+
+TC_Scan_FileTypes_JPEG
+{
+    Common_Scan_Library. Scan_FileTypes_JPEG
+}
+    
+TC_Scan_FileTypes_TIFF
+{
+    Common_Scan_Library. Scan_FileTypes_TIFF 
+}
+    
+TC_Scan_FileTypes_PDFA
+{
+    Common_Scan_Library.Scan_FileTypes_PDFA        
+}
+    
+TC_Scan_FileTypes_PDF
+{
+    Common_Scan_Library.Scan_FileTypes_PDF         
+} 
+    
+TC_Scan_MultipleFiles
+{
+    Common_Scan_Library.Scan_MultipleFiles 
+}
+    
+TC_Scan_EraseEdges
+{
+    Common_Scan_Library.Scan_EraseEdges
+}
+
+TC_Scan_EraseEdges_Millimeters
+{
+    Common_Scan_Library. Scan_EraseEdges_Millimeters   
+}
+    
+TC_Scan_EraseEdges_ApplySameWidth
+{            
+    Common_Scan_Library.Scan_EraseEdges_ApplySameWidth
+}
+
+TC_Scan_EraseEdges_MirrorFrontSide
+{
+    Common_Scan_Library.Scan_EraseEdges_MirrorFrontSide 
+}
+TC_Scan_EraseEdges_FrontSide
+{
+    Common_Scan_Library.Scan_EraseEdges_FrontSide
+}
+    
+TC_Scan_EraseEdges_BackSide
+{
+    Common_Scan_Library.Scan_EraseEdges_BackSide
+}    
+    
+TC_Scan_PdfEncryption
+{
+    Common_Scan_Library.Scan_PdfEncryption
+}
+
+TC_Scan_HighCompression
+{
+    Common_Scan_Library. Scan_HighCompression
+}
+
+TC_Scan_Orientation
+{
+    Common_Scan_Library.Scan_Orientation 
+}
+
+TC_Scan_Orientation_Landscape
+{
+    Common_Scan_Library.Scan_Orientation_Landscape
+}
+    
+TC_Scan_Orientation_Portrait
+{
+    Common_Scan_Library.Scan_Orientation_Portrait
+}
+    
+TC_Scan_FileSize
+{
+    Common_Scan_Library.Scan_FileSize 
+}
+
+TC_Scan_FileSize_High
+{
+    Common_Scan_Library.Scan_FileSize_High
+}
+    
+TC_Scan_FileSize_Medium
+{
+    Common_Scan_Library. Scan_FileSize_Medium  
+}
+    
+TC_Scan_FileSize_Low
+{
+    Common_Scan_Library.Scan_FileSize_Low
+}
+    
+TC_Scan_FileSize_Highest
+{
+    Common_Scan_Library.Scan_FileSize_Highest 
+}
+    
+TC_Scan_FileSize_Lowest
+{
+    Common_Scan_Library.Scan_FileSize_Lowest
+}
+    
+TC_Scan_ExecuteManager
+{
+    Common_Scan_Library.Scan_ExecuteManager(scanSharePoint)
+}
+

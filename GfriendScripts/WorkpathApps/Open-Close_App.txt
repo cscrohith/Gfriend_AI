@@ -1,0 +1,48 @@
+﻿/// <File>Open-Close_App.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Open and app on a device then close it afer a short wait</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using Apps.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\Device\Device_Library.gflib
+
+Using JediOmni
+
+/// <Name>OpenApp</Name>
+/// <Description>Open an app on a device</Description>
+/// <Notes></Notes>
+OpenApp
+{
+    If: Device_Library.LaunchApp(${ButtonID}, ${ButtonText})
+    {
+        Sleep (${Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Fail opening the specified app!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Error opening the specified app!)
+        Stop Test Suite
+    }
+}
+
+/// <Name>CloseApp</Name>
+/// <Description>Close the app on a device</Description>
+/// <Notes></Notes>
+CloseApp
+{
+    JediOmni.Press Home Key
+}

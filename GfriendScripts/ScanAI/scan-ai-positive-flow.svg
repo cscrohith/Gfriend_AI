@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="845pt" height="910pt" viewBox="0.00 0.00 844.51 910.20">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 906.2)">
+<title>G</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-906.2 840.51,-906.2 840.51,4 -4,4"/>
+<!-- HomeScreen -->
+<g id="node1" class="node">
+<title>HomeScreen</title>
+<ellipse fill="none" stroke="black" cx="653.16" cy="-884.2" rx="97.52" ry="18"/>
+<text text-anchor="middle" x="653.16" y="-880" font-family="Times,serif" font-size="14.00">Printer's Home Screen</text>
+</g>
+<!-- ClickHPScanAI -->
+<g id="node2" class="node">
+<title>ClickHPScanAI</title>
+<polygon fill="none" stroke="black" points="688.9,-829.2 458.05,-829.2 435.41,-793.2 666.27,-793.2 688.9,-829.2"/>
+<text text-anchor="middle" x="562.16" y="-807" font-family="Times,serif" font-size="14.00">HP Scan AI Clicked</text>
+</g>
+<!-- HomeScreen&#45;&gt;ClickHPScanAI -->
+<g id="edge1" class="edge">
+<title>HomeScreen-&gt;ClickHPScanAI</title>
+<path fill="none" stroke="darkgreen" d="M631.59,-866.37C620.17,-857.46 605.94,-846.36 593.34,-836.53"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="595.75,-833.97 585.71,-830.58 591.44,-839.49 595.75,-833.97"/>
+</g>
+<!-- SelectDemoProject -->
+<g id="node3" class="node">
+<title>SelectDemoProject</title>
+<polygon fill="none" stroke="black" points="703.29,-756.2 366.09,-756.2 333.03,-720.2 670.23,-720.2 703.29,-756.2"/>
+<text text-anchor="middle" x="518.16" y="-734" font-family="Times,serif" font-size="14.00">User Selects Workflow Project</text>
+</g>
+<!-- ClickHPScanAI&#45;&gt;SelectDemoProject -->
+<g id="edge2" class="edge">
+<title>ClickHPScanAI-&gt;SelectDemoProject</title>
+<path fill="none" stroke="darkgreen" d="M551.51,-793.01C546.48,-784.9 540.37,-775.04 534.75,-765.98"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="537.75,-764.17 529.51,-757.52 531.8,-767.86 537.75,-764.17"/>
+</g>
+<!-- ClickStartNewJob -->
+<g id="node4" class="node">
+<title>ClickStartNewJob</title>
+<polygon fill="none" stroke="black" points="494.59,-683.2 193.28,-683.2 163.73,-647.2 465.04,-647.2 494.59,-683.2"/>
+<text text-anchor="middle" x="329.16" y="-661" font-family="Times,serif" font-size="14.00">User Clicks 'Start New Job'</text>
+</g>
+<!-- SelectDemoProject&#45;&gt;ClickStartNewJob -->
+<g id="edge3" class="edge">
+<title>SelectDemoProject-&gt;ClickStartNewJob</title>
+<path fill="none" stroke="darkgreen" d="M471.92,-719.83C446.07,-710.12 413.62,-697.93 386.2,-687.63"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="387.58,-684.41 376.99,-684.17 385.12,-690.96 387.58,-684.41"/>
+</g>
+<!-- NewScanWindow -->
+<g id="node5" class="node">
+<title>NewScanWindow</title>
+<polygon fill="none" stroke="black" points="353.09,-610.2 221.22,-610.2 221.22,-574.2 353.09,-574.2 353.09,-610.2"/>
+<text text-anchor="middle" x="287.16" y="-588" font-family="Times,serif" font-size="14.00">Flatbed Scans Again</text>
+</g>
+<!-- ClickStartNewJob&#45;&gt;NewScanWindow -->
+<g id="edge4" class="edge">
+<title>ClickStartNewJob-&gt;NewScanWindow</title>
+<path fill="none" stroke="darkgreen" d="M318.99,-647.01C314.19,-638.9 308.36,-629.04 303,-619.98"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="306.11,-618.36 298,-611.53 300.08,-621.92 306.11,-618.36"/>
+</g>
+<!-- ScanMoreOrTerminateScan -->
+<g id="node6" class="node">
+<title>ScanMoreOrTerminateScan</title>
+<polygon fill="none" stroke="black" points="254.16,-521.4 0,-503.4 254.16,-485.4 508.32,-503.4 254.16,-521.4"/>
+<text text-anchor="middle" x="254.16" y="-499.2" font-family="Times,serif" font-size="14.00">Scan More Documents? or Complete Scan?</text>
+</g>
+<!-- NewScanWindow&#45;&gt;ScanMoreOrTerminateScan -->
+<g id="edge5" class="edge">
+<title>NewScanWindow-&gt;ScanMoreOrTerminateScan</title>
+<path fill="none" stroke="darkgreen" d="M276.67,-573.78C273.64,-568.29 270.52,-562.11 268.16,-556.2 265.17,-548.73 262.61,-540.41 260.52,-532.66"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="263.92,-531.84 258.09,-522.99 257.13,-533.54 263.92,-531.84"/>
+</g>
+<!-- ScanMoreOrTerminateScan&#45;&gt;NewScanWindow -->
+<g id="edge6" class="edge">
+<title>ScanMoreOrTerminateScan-&gt;NewScanWindow</title>
+<path fill="none" stroke="blue" d="M260.55,-521.22C265.12,-533.22 271.36,-549.64 276.65,-563.56"/>
+<polygon fill="blue" stroke="blue" points="273.28,-564.53 280.1,-572.64 279.82,-562.05 273.28,-564.53"/>
+<text text-anchor="middle" x="321.82" y="-543.6" font-family="Times,serif" font-size="14.00">Scan another doc</text>
+</g>
+<!-- UploadWindow -->
+<g id="node7" class="node">
+<title>UploadWindow</title>
+<polygon fill="none" stroke="black" points="340.51,-432.6 167.81,-432.6 167.81,-396.6 340.51,-396.6 340.51,-432.6"/>
+<text text-anchor="middle" x="254.16" y="-410.4" font-family="Times,serif" font-size="14.00">Uploading To Aluma Portal</text>
+</g>
+<!-- ScanMoreOrTerminateScan&#45;&gt;UploadWindow -->
+<g id="edge7" class="edge">
+<title>ScanMoreOrTerminateScan-&gt;UploadWindow</title>
+<path fill="none" stroke="darkgreen" d="M254.16,-485.25C254.16,-473.56 254.16,-457.79 254.16,-444.22"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="257.66,-444.52 254.16,-434.52 250.66,-444.52 257.66,-444.52"/>
+<text text-anchor="middle" x="315" y="-454.8" font-family="Times,serif" font-size="14.00">User clicked on Done</text>
+</g>
+<!-- ClickNextStepForSeparation -->
+<g id="node8" class="node">
+<title>ClickNextStepForSeparation</title>
+<polygon fill="none" stroke="black" points="396.45,-343.8 137.28,-343.8 111.87,-307.8 371.03,-307.8 396.45,-343.8"/>
+<text text-anchor="middle" x="254.16" y="-321.6" font-family="Times,serif" font-size="14.00">User Clicks 'Next Step'</text>
+</g>
+<!-- UploadWindow&#45;&gt;ClickNextStepForSeparation -->
+<g id="edge8" class="edge">
+<title>UploadWindow-&gt;ClickNextStepForSeparation</title>
+<path fill="none" stroke="darkgreen" d="M254.16,-396.45C254.16,-384.76 254.16,-368.99 254.16,-355.42"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="257.66,-355.72 254.16,-345.72 250.66,-355.72 257.66,-355.72"/>
+</g>
+<!-- DocumentSeparationWindow -->
+<g id="node9" class="node">
+<title>DocumentSeparationWindow</title>
+<polygon fill="none" stroke="black" points="348.86,-270.8 159.46,-270.8 159.46,-234.8 348.86,-234.8 348.86,-270.8"/>
+<text text-anchor="middle" x="254.16" y="-248.6" font-family="Times,serif" font-size="14.00">Document Separation Window</text>
+</g>
+<!-- ClickNextStepForSeparation&#45;&gt;DocumentSeparationWindow -->
+<g id="edge9" class="edge">
+<title>ClickNextStepForSeparation-&gt;DocumentSeparationWindow</title>
+<path fill="none" stroke="darkgreen" d="M254.16,-307.61C254.16,-300.03 254.16,-290.9 254.16,-282.34"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="257.66,-282.34 254.16,-272.34 250.66,-282.34 257.66,-282.34"/>
+</g>
+<!-- ResetChangesOrStartValidation -->
+<g id="node10" class="node">
+<title>ResetChangesOrStartValidation</title>
+<polygon fill="none" stroke="black" points="272.16,-182 36.58,-164 272.16,-146 507.73,-164 272.16,-182"/>
+<text text-anchor="middle" x="272.16" y="-159.8" font-family="Times,serif" font-size="14.00">Reset Changes Or Validate Documents?</text>
+</g>
+<!-- DocumentSeparationWindow&#45;&gt;ResetChangesOrStartValidation -->
+<g id="edge10" class="edge">
+<title>DocumentSeparationWindow-&gt;ResetChangesOrStartValidation</title>
+<path fill="none" stroke="darkgreen" d="M255.24,-234.38C256.1,-224.25 257.6,-211.3 260.16,-200 260.69,-197.65 261.32,-195.24 262.02,-192.83"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="265.35,-193.91 265.09,-183.32 258.69,-191.76 265.35,-193.91"/>
+</g>
+<!-- ResetChangesOrStartValidation&#45;&gt;DocumentSeparationWindow -->
+<g id="edge11" class="edge">
+<title>ResetChangesOrStartValidation-&gt;DocumentSeparationWindow</title>
+<path fill="none" stroke="red" d="M268.61,-182.11C266.17,-193.87 262.87,-209.77 260.05,-223.41"/>
+<polygon fill="red" stroke="red" points="256.63,-222.67 258.02,-233.17 263.48,-224.09 256.63,-222.67"/>
+<text text-anchor="middle" x="335.53" y="-204.2" font-family="Times,serif" font-size="14.00">User clicks 'Reset' button</text>
+</g>
+<!-- ClickValidateDocuments -->
+<g id="node11" class="node">
+<title>ClickValidateDocuments</title>
+<polygon fill="none" stroke="black" points="499.08,-109 134.94,-109 99.23,-73 463.38,-73 499.08,-109"/>
+<text text-anchor="middle" x="299.16" y="-86.8" font-family="Times,serif" font-size="14.00">User Clicks 'Validate Documents'</text>
+</g>
+<!-- ResetChangesOrStartValidation&#45;&gt;ClickValidateDocuments -->
+<g id="edge12" class="edge">
+<title>ResetChangesOrStartValidation-&gt;ClickValidateDocuments</title>
+<path fill="none" stroke="darkgreen" d="M278.56,-146.17C281.52,-138.39 285.11,-128.93 288.47,-120.11"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="291.7,-121.45 291.99,-110.86 285.16,-118.96 291.7,-121.45"/>
+</g>
+<!-- ExitOrFinishValidation -->
+<g id="node12" class="node">
+<title>ExitOrFinishValidation</title>
+<polygon fill="none" stroke="black" points="536.16,-36 378.31,-18 536.16,0 694.01,-18 536.16,-36"/>
+<text text-anchor="middle" x="536.16" y="-13.8" font-family="Times,serif" font-size="14.00">Exit or Finish Validation?</text>
+</g>
+<!-- ClickValidateDocuments&#45;&gt;ExitOrFinishValidation -->
+<g id="edge13" class="edge">
+<title>ClickValidateDocuments-&gt;ExitOrFinishValidation</title>
+<path fill="none" stroke="darkgreen" d="M357.44,-72.54C395.98,-60.99 446.11,-45.98 483.46,-34.79"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="484.1,-38.25 492.68,-32.03 482.09,-31.54 484.1,-38.25"/>
+</g>
+<!-- ExitOrFinishValidation&#45;&gt;HomeScreen -->
+<g id="edge14" class="edge">
+<title>ExitOrFinishValidation-&gt;HomeScreen</title>
+<path fill="none" stroke="red" d="M598.13,-29.36C655.22,-40.71 731.16,-61.22 731.16,-90 731.16,-812.2 731.16,-812.2 731.16,-812.2 731.16,-833.06 715.72,-849.41 698.57,-861.14"/>
+<polygon fill="red" stroke="red" points="696.85,-858.09 690.24,-866.37 700.57,-864.02 696.85,-858.09"/>
+<text text-anchor="middle" x="783.84" y="-454.8" font-family="Times,serif" font-size="14.00">User Clicked 'Exit'</text>
+</g>
+<!-- ExitOrFinishValidation&#45;&gt;SelectDemoProject -->
+<g id="edge15" class="edge">
+<title>ExitOrFinishValidation-&gt;SelectDemoProject</title>
+<path fill="none" stroke="darkgreen" d="M536.16,-36.22C536.16,-50.59 536.16,-71.63 536.16,-90 536.16,-666.2 536.16,-666.2 536.16,-666.2 536.16,-680.51 532.68,-695.96 528.78,-708.78"/>
+<polygon fill="darkgreen" stroke="darkgreen" points="525.46,-707.68 525.64,-718.28 532.1,-709.88 525.46,-707.68"/>
+<text text-anchor="middle" x="625.98" y="-366" font-family="Times,serif" font-size="14.00">User Clicked 'Finish Validation'</text>
+</g>
+</g>
+</svg>

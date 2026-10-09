@@ -1,0 +1,125 @@
+﻿/// <File>DeviceConfigure.txt</File>
+/// <Modified>2021-04-22</Modified>
+/// <DescriptionConfgure the device as specified from EWS and/or directly</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using DeviceConfigure.gfvar
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\Device\Device_Library.gflib
+//Using Device_EWS_Library.gflib
+Using ..\Device\Device_EWS_Library.gflib
+
+Using Web As EWS_Web
+Using JediOmni
+
+/// <Name>ConfigureDevice</Name>
+/// <Description>Confgure the device as specified from EWS and/or directly</Description>
+/// <Notes></Notes>
+ConfigureEWS
+{
+    // oepn the device EWS
+    If: Device_EWS_Library.OpenEWS (${DUT_Address})
+    {
+        // check admin password set, set if not set
+    }
+    Fail:
+    {
+        Fail (Fail accessing device ${DUT_Address} EWS!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error accessing device ${DUT_Address} EWS!)
+        Stop Test Case
+    }
+    
+    If: Device_EWS_Library.SignInWithAdmin (${DUT_AdminPW}, Y, Y)
+    {
+    }
+    Fail:
+    {
+        Fail (Fail setting device admin password!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error setting device admin password!)
+        Stop Test Case
+    }
+    
+    // set the date/time if specified
+    If: Equals IgnoreCase (${Set_DateTime},Y)
+    {
+        If: Device_EWS_Library.SetDateTimeSettings(${DateTime_TimeZone},${DateTime_AdjustDaylightSavings},${DateTime_DateFormat},${DateTime_TimeFormat},${DateTime_SynchToTimeServer},${DateTime_TimeServerAddress},${DateTime_TimeServerPort},${DateTime_TimeServerPeriod})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting Date Time settings!)
+        }
+        Error:
+        {
+            Error (Error setting Date Time settings!)
+        }
+    }
+    
+    // configure Windows Auth
+    If: Equals IgnoreCase (${Configure_WindowsAuth},Y)
+    {
+        If: Device_EWS_Library.ConfigureWindowsAuth(${Enable_WindowsAuth},${WindowsAuth_Domain},${WindowsAuth_Use_SSL_YN},${WindowsAuth_Name_Match_Attrribute},${WindowsAuth_Email_Attribut},${WindowsAuth_User_Name_Attribute})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting device admin password!)
+        }
+        Error:
+        {
+            Error (Error setting device admin password!)
+        }
+    }
+    
+    // configure Default Sign In Method
+    If: Equals IgnoreCase (${Set_DefaultSignIn},Y)
+    {
+        If: Device_EWS_Library.SetDefaultSignInMethod(${SignIn_Default})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting device admin password!)
+        }
+        Error:
+        {
+            Error (Error setting device admin password!)
+        }
+    }
+}
+
+/// <Name>ConfigurePaperlessMode</Name>
+/// <Description>Confgure Paperless Mode on a device</Description>
+/// <Notes></Notes>
+ConfigurePaperlessMode
+{
+    // enable Paperless Mode if specified
+    If: Equals IgnoreCase (${Enable_PaperlessMode},Y)
+    {
+        If: Device_Library.SetPaperlessMode(Y)
+        {
+        }
+        Fail:
+        {
+            Fail (Fail enabling Paperless Mode!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error enabling Paperless Mode!)
+            Stop Test Case
+        }
+    }
+}

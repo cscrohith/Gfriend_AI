@@ -1,0 +1,95 @@
+﻿//Azure Vision End Point and Subscription key
+${AzureEndpoint}=https://azure.com/
+${SubscriptionKey}=7rfjsYSDaABh
+
+//ScanCount
+${ScanCount} = 5
+
+//TotalDocumentsCount
+${TotalValidationDocCount} = 6
+
+//SignoutButton
+${SignOutButton} = hp-button-signin-or-signout
+
+${YesButton_CancelScanNotification}=hpid-button-yes
+ 
+${StartNewJob} = START NEW JOB
+//Application Name
+${HPScanAIEnhanced} = HP Scan AI Enhanced
+
+//Clearing Settings toast message
+${ClearingSettingsMsg} = Clearing Settings
+
+//ScanAIApplicationIcon native Id
+${ScanAIApplicationIcon} = hpid-627b8ca8-0e68-11ed-861d-0242ac120002-homescreen-button
+
+//DemoWorkflowProjectUnderTest
+${DemoProjectUnderTest} = Demonstration Project - UK Invoices & Delivery Notes
+
+${DemoProjectPortalValidation} = Demo Project - Portal Validation
+
+${ProjectUnderTest} = Demonstration Project - UK Invoices
+
+//StartNewJobbutton
+${StartNewJobbutton} = START NEW JOB
+
+${JediOmniFlatbedScanPrompt} = hpid-prompt-flatbed-duplex
+
+${CancelScanNotifictaion} = hpid-cancel-confirm
+
+${YesButton_CancelScanNotification} = hpid-button-yes
+                  
+// Scan Button
+${ScanButton} = hpid-button-scan
+
+// Done Button
+${DoneButton} = hpid-button-done
+
+//Cancel Job Button
+${CancelButton} = hpid-button-cancel-job
+
+//Cancel button that appears while scanning document
+${CancelScan} = Cancel Job
+
+//Cancel Upload to Aluma portal
+${CancelUpload} = CANCEL JOB
+
+${Scanning} = Scanning
+// Next Step Button
+${NextStepButton} = NEXT STEP
+
+//Validate Step button
+${ValidateButton} =VALIDATE
+
+// Document Fields
+${DocumentTypeFeild} = Document type
+
+//Document type delivery
+${DocumentTypeDeliveryNoteValue} =Delivery_note
+
+//Delivery note field
+${DeleveryNoteNumber} =Delivery Note Number
+
+//Delivery date field
+${DeliveryDateField} =Delivery Date
+
+//Document type invoice
+${DocumentTypeInvoiceValue} = Invoice
+
+//Invoice date
+${InvoiceDate} = Invoice Date
+
+//Invoice number
+${InvoiceNumber} = Invoice Number
+
+//Net total
+${NetTotal} =Net Total
+
+//Tax total
+${TaxTotal} =Tax Total
+
+//Gross total
+${GrossTotal} =Gross Total
+
+//Finish Validation Button
+${FinishValidationButton} =FINISH VALIDATION

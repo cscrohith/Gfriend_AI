@@ -1,0 +1,14 @@
+﻿using printer-validation-testcases.gflib
+
+UK-Invoices-And-Delivery-Notes
+{
+    printer-validation-testcases.Setup
+    printer-validation-testcases.Open_HPScanAIEnhanced
+    printer-validation-testcases.Select_WorkflowDProject
+    printer-validation-testcases.Scan_DocMultipleTimes
+    printer-validation-testcases.Click_NextStepButton
+    printer-validation-testcases.Perform_ValidationOfScannedDocuments
+    printer-validation-testcases.Click_Validate_Button
+    printer-validation-testcases.Click_FinishValidation_Button
+    printer-validation-testcases.Teardown
+}

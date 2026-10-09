@@ -1,0 +1,16 @@
+﻿${Site} =    
+
+${Package_name} = com.ysoft.ysoftsafeq
+
+${Platformtool_Path} = 
+
+${Username} = admin
+
+${Password} = Automation@123
+
+${Job_Name} = 
+
+${Print_Queue_Name} = 
+
+${Document_Name} = test.doc
+

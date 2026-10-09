@@ -1,0 +1,35 @@
+﻿/// <File>HPCC_Onboard_Device.txt</File>
+/// <Modified>2021-09-17</Modified>
+/// <Description>Onboard a device via the device control panel to HP Command Center (HPCC)</Description>
+/// <Precondition>Device admin password is set</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using HPCC.gfvar
+
+Using HPCC_Onboard_Device.gflib
+
+Using JediOmni
+
+/// <Name>OnBoardDevice</Name>
+/// <Description>Onboard a device via the device control panel to an HPCC account</Description>
+/// <Notes>OnBoardDevice</Notes>
+OnBoardDevice
+{
+    // remove the "-" from the device as it is a non-allowed character in HPCC
+    Set Variable (${AssetNumber},${DUT_ID})
+    Replace (${AssetNumber},-,)
+    
+    // onboard device via device control panel
+    If: HPCC_Onboard_Device.OnBoardDevice(${AssetNumber})
+    {
+        Pass (Onboarded successful!)
+    }
+    Fail:
+    {
+        Fail (Fail occured while onboarding device to HPCC!)
+    }
+    Error:
+    {
+        Error (Error occured while onboarding device to HPCC!)
+    }
+}

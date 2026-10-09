@@ -1,0 +1,62 @@
+﻿//${ButtonText} = HP for Box
+//${ButtonID} = hpid-ef9beb16-aceb-4b55-924b-45a5583748c4-homescreen-button
+
+//${ButtonText} = HP for Clio
+//${ButtonID} = hpid-66a9808c-dfce-438a-9723-a8f9f017710d-homescreen-button
+
+//${ButtonText} = HP for SAP Concur
+//${ButtonID} = hpid-d89fa35e-9979-430c-9b62-d9a4b783da1d-homescreen-button
+
+//${ButtonText} = HP for DropBox
+//${ButtonID} = hpid-a8f9c6f8-6734-42cb-bf1f-dd7b8fb628ae-homescreen-button
+
+//${ButtonText} = HP for Google Drive
+//${ButtonID} = hpid-66029bd4-93b5-42a2-9945-4bbc723c80a1-homescreen-button
+
+//${ButtonText} = Mail
+//${ButtonID} = hpid-2a507531-405a-4eb1-b822-601c6d88c9c8-homescreen-button
+
+//${ButtonText} = HP for iManage
+//${ButtonID} = hpid-a92bf006-1b76-474f-870b-e80d35921781-homescreen-button
+
+${ButtonText} = HP for OneDrive
+${ButtonID} = hpid-3f553433-a6e9-4a70-838e-4873d18edb7f-homescreen-button
+
+//${ButtonText} = HP for OneDrive Business
+//${ButtonID} = hpid-7fbeabca-cc3e-46ef-92cd-d4a00c9ee935-homescreen-button
+
+//${ButtonText} = HP for Sage Intacct
+//${ButtonID} = hpid-b6438ea9-1454-44f4-84e3-7a4c60e74b8a-homescreen-button
+
+//${ButtonText} = Scan to Email
+//${ButtonID} = hpid-d3b13d6d-ef1f-464c-bb67-8cc52c1bb026-homescreen-button
+
+//${ButtonText} = Scan to FTP
+//${ButtonID} = hpid-968afa31-a6d2-425b-8651-74b44daf4dda-homescreen-button
+
+//${ButtonText} = Scan to SMB
+//${ButtonID} = hpid-368da5fe-2c81-4217-b36d-23247cea0c9f-homescreen-button
+
+//${ButtonText} = Secure Access
+//${ButtonID} = hpid-5e8c5026-cffd-4afa-a3ee-290d94fb48cb-homescreen-button
+
+//${ButtonText} = HP for SharePoint Online
+//${ButtonID} = hpid-a206482f-df58-4b28-893b-f120a1d9989b-homescreen-button
+
+//${ButtonText} = HP for Box \(Special Edition\)
+//${ButtonID} = hpid-eaf8f7de-39ca-405f-90fc-e2430e07de4c-homescreen-button
+
+//${ButtonText} = HP for DropBox \(Special Edition\)
+//${ButtonID} = hpid-7b46da50-5533-49c1-86ae-0e4dfca0548e-homescreen-button
+
+//${ButtonText} = HP for Google Drive \(Special Edition\)
+//${ButtonID} = hpid-f655491f-ba6b-4729-bd6d-e97016af65ab-homescreen-button
+
+//${ButtonText} = HP for OneDrive \(Special Edition\)
+//${ButtonID} = hpid-3ddad548-de39-4b7e-9cb9-ccbeee6c9f15-homescreen-button
+
+//${ButtonText} = HP for OneDrive Business
+//${ButtonID} = hpid-b29e8358-e9ae-4aad-a12a-1ac01be19603-homescreen-button
+
+//${ButtonText} = HP for SharePoint Online
+//${ButtonID} = hpid-4dd5ee1c-ab45-4254-89f4-911296b90d81-homescreen-button

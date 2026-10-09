@@ -1,0 +1,7 @@
+﻿Using PrinterOnTC.gflib
+Using PrinterOn.gfvar
+
+PrinterOn_Printers
+{
+    PrinterOnTC.PrinterOn_Print(${PrinterOnLink},${PrinterName},${Filepath},${Filename},${Username},${Password})   
+}

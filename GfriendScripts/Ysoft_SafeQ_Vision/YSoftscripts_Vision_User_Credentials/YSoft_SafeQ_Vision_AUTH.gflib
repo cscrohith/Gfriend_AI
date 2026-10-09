@@ -1,0 +1,314 @@
+﻿using JediOmni
+using Vision
+//using Info
+
+//
+/////////////////////////////////////////////////
+// Routine:         YSoft SafeQ Vision Pullprint
+// Description:     YSoft SafeQ vision Safe_Q Pullprint Job
+//
+// Arguments:       ${PRINT_ALL}) - Print All Variable
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SetupAzureVision(${AzureEndpoint},${SubscriptionKey})
+{
+    Encrypt(${AzureEndpoint},${AzureEndpointEncryptedValue})
+    Encrypt(${SubscriptionKey},${SubscriptionKeyEncryptedValue})
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+}
+
+YSoft_SafeQ_Vision_PullPrint(${PRINT_ALL},${PASSWORD_PREFIX},${PASSWORD_SUFFIX},${USER_NAME},${ActivityId})
+{
+    //Info.Start Time Check (STF_ProcessingJob)
+    //
+    //Info.Start Time Check (STF_AppShown)
+    
+    If: YSoft_SafeQ_Vision_AUTH.YSoft_SafeQ_Vision(${PASSWORD_PREFIX},${PASSWORD_SUFFIX},${USER_NAME})
+    {
+        //All Good, Continue
+    }
+    //Info.Mark Start (STF_AppShown,2)
+    Sleep (5) 
+
+    If: JediOmni.Wait For Text (Secure Print & Scan,20)
+    {
+        JediOmni.Touch Text (Secure Print & Scan)
+        Sleep (5) 
+        //Info.Mark End (STF_AppShown,2)
+        //Info.Draw Time Graph (STF_AppShown)
+    }
+    Fail:
+    {
+        Return With Fail (Failed to click Secure Print & Scan)
+        //Info.Mark End (STF_AppShown,2)
+        //Info.Draw Time Graph (STF_AppShown)
+    }
+    
+    Sleep (3)
+    If: Vision.Is Text Exist (My quick actions)
+    {
+        Sleep (5)
+        //Info.Mark Start (STF_ProcessingJob,3)
+        //To Print all the Documents
+        If: Equals IgnoreCase (${PRINT_ALL},N)
+        {
+            //Click on Print Button            
+            Vision.Click Text (Print all)
+            If:Vision.Is Text Exist (Cancel printing)
+            {
+                pass(Print jobs available)
+            }
+            Fail:
+            {
+                Fail(Print jobs not available)
+            }
+            While:Vision.Is Text Exist (Cancel printing): 50
+            {
+                Sleep (1)               
+            }
+            If: Vision.Is Text Exist (My quick actions)
+            {
+                Pass(Print all)
+                //Info.Mark End (STF_ProcessingJob,3)
+                //Info.Draw Time Graph (STF_ProcessingJob)
+            }
+        }
+        //To Print Only 1 Document
+        Fail:
+        {      
+            Vision.Click Text (My print jobs)
+            sleep(5)
+            //Selecting the first job
+            If: Vision.Click Next To Text (WAITING,0,46)
+            {
+                If: Vision.Is Text Exist (Select all)
+                {
+                    //Click on Print button
+                    Vision.Click XY Location (582,730,136,41)
+                    While:Vision.Is Text Exist (Cancel printing): 50
+                    {
+                        Sleep (1)
+                    }
+                    Pass (Jobs Printed)
+                     //Info.Mark End (STF_ProcessingJob,3)
+                     //Info.Draw Time Graph (STF_ProcessingJob)
+                }
+                Fail:
+                {
+                    Fail(Print jobs not available)
+                    //Info.Mark End (STF_ProcessingJob,3)
+                    //Info.Draw Time Graph (STF_ProcessingJob)
+                }                
+            }
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (Unable_to_load_Home_Page)
+        Fail (Pull Print Jobs are not available)
+        //Info.Mark End (STF_ProcessingJob,3)
+        //Info.Draw Time Graph (STF_ProcessingJob)
+    }    
+}
+
+//Clear authentication
+ClearAuth
+{
+    JediOmni.Press Home Key
+    Sleep (5)
+    If: Vision.Is Text Exist (Sign Out)
+    {
+        Vision.Click Text (Sign Out)  
+    }
+    //Click on OK button if Sign in failed error message is seen
+    If: JediOmni.Wait For Object (hpid-button-signinfailed-ok,10)
+    {
+        JediOmni.Touch ID (hpid-button-signinfailed-ok)     
+    }
+    
+    If: JediOmni.Wait For Object (hpid-control-signin,5) 
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Wait For Object (hp-button-signin-or-signout,5) 
+        {
+            JediOmni.Touch ID (hp-button-signin-or-signout)            
+            JediOmni.Wait For Text Gone (Signing out,30)
+            Sleep (2)
+        }
+        Fail:
+        {
+            Return With Fail (Fail to Sign Out)
+        }
+    }
+    If: Vision.Is Text Exist (My quick actions)
+    {
+        //Logout for 8 inch
+        Vision.Click XY Location (990,22,10,9)
+        If: Vision.Is Text Exist (Sign In)
+        {
+            Pass (ClearAuth) 
+        }
+        Fail:
+        {
+            //Logout for 10 inch
+            Vision.Click XY Location (1250,33,2,27)
+            Sleep (5)
+        }        
+    }
+    JediOmni.Reset
+}
+
+//Sign In
+YSoft_SafeQ_Vision(${PASSWORD_PREFIX},${PASSWORD_SUFFIX},${USER_NAME})
+{
+    //Info.Start Time Check (STF_Authentication)    
+    If: YSoft_SafeQ_Vision_AUTH.ClearAuth
+    {
+        //If already signed in, clear the authentication here
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }    
+ 
+    If: JediOmni.Wait For Text (Sign In,10)
+    {
+        JediOmni.Reset
+        JediOmni.Press Home Key
+        JediOmni.Touch ID (hpid-control-signin)
+        Sleep (10)
+        Vision.Is Text Exist (Username)
+        //Info.Mark Start (STF_Authentication,1)
+        Vision.Click Next To Text (Username,0,33)
+        JediOmni.Input Text (${USER_NAME})
+        Sleep (3)
+        JediOmni.Press Tab Key
+        Vision.Click Next To Text (Password,0,30)
+        //JediOmni.Input Text (Cevtadmin@12)
+        Vision.Click XY Location (67,651,2,2)
+        Vision.Click XY Location (328,610,1,1)
+        JediOmni.Input Text (${PASSWORD_PREFIX})
+        Vision.Click XY Location (64,717,2,1)
+        Vision.Click XY Location (116,576,5,2)
+        Vision.Click XY Location (64,717,2,1)
+        JediOmni.Input Text (${PASSWORD_SUFFIX})
+        sleep(5)
+        JediOmni.Press Enter Key
+        Vision.Click Text (Login)
+        Sleep (2)
+        
+        If: Vision.Is Text Exist (Secure Print & Scan)
+        {
+            Return With Pass (Authenticated successfully)
+            //Info.Mark End (STF_Authentication,1)
+        }
+        If: Vision.Is Text Exist (invalid credentials)
+        {
+            Vision.Click Next To Text (Password,0,30)
+            //JediOmni.Input Text (Cevtadmin@12)
+            Vision.Click XY Location (67,651,2,2)
+            Vision.Click XY Location (413,648,16,24)
+            JediOmni.Input Text (${PASSWORD_PREFIX})
+            Vision.Click XY Location (64,717,2,1)
+            Vision.Click XY Location (114,576,25,27)
+            Vision.Click XY Location (66,728,35,16)
+            JediOmni.Input Text (${PASSWORD_SUFFIX})
+            sleep(5)
+            JediOmni.Press Enter Key
+            Vision.Click Text (Login)
+            Sleep (2)
+        
+            If: Vision.Is Text Exist (Secure Print & Scan)
+            {
+                Return With Pass (Authenticated successfully)
+                //Info.Mark End (STF_Authentication,1)
+            }
+            If: Vision.Is Text Exist (invalid credentials)
+            {
+               Return With Fail (invalid credentials) 
+               //Info.Mark End (STF_Authentication,1)
+            }         
+        }
+    }
+    
+    Fail:
+    {
+        Fail (Sign In got failed)       
+    }   
+}
+
+//Sign out
+SignOut(${USER_NAME})
+{
+    //Info.Start Time Check (STF_DeviceSignout)
+    //
+    //Info.Mark Start ((STF_DeviceSignout,4)
+    If: Vision.Is Text Exist (Sign In)
+    {
+        //If this is true, It is already signed out
+    }
+    Fail:Vision.Is Text Exist (Authentication)
+    {
+        //Vision.Click XY Location (939,34,46,14)
+        Vision.Click Next To Text (${USER_NAME},49,0)
+        //Info.Mark End ((STF_DeviceSignout,4)
+        Sleep (5)
+    }
+    If: Vision.Is Text Exist (Sign In)
+    {
+        Pass (ClearAuth) 
+    }
+    Fail:
+    {
+        Vision.Click XY Location (1250,33,2,27)
+        //Info.Mark End ((STF_DeviceSignout,4)
+        Sleep (5)
+    }
+    If: JediOmni.Wait For Text (Sign In,5)
+    {
+        Pass (ClearAuth)  
+    }
+    Fail:
+    {
+        Vision.Click XY Location (990,22,10,9)
+        //Info.Mark End ((STF_DeviceSignout,4)
+        Sleep (5)
+    }
+}
+
+// Click on job to print
+ClickOnPrintJob(${JobName})
+{
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (block)
+    Substring (${JobName},0,4,${YsoftJOBID_1})
+    Substring (${JobName},1,4,${YsoftJOBID_2})
+    Substring (${JobName},2,4,${YsoftJOBID_3})
+    Substring (${JobName},3,4,${YsoftJOBID_4})
+    Substring (${JobName},4,4,${YsoftJOBID_5})
+    Repeat:5
+    {
+        Concatenate Variables And Store Result (${YsoftJOBID_},${R},${newvalue})
+        If: Vision.Is Text Exist (${newvalue})
+        {
+            Vision.Click Text (${newvalue})
+            Sleep (3)
+            Return With Pass (Print Job ID Clicked)
+        }             
+    }
+}

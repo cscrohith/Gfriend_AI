@@ -1,0 +1,952 @@
+﻿using Dune
+using Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+Copy_ContentType
+{
+    If: Dune.Wait For (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox,3)
+    {
+        Dune.Click Id And Wait For Transition (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox, ${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Fail (Unable to select the Content type)
+    } 
+}
+
+Copy_ContentType_Photo
+{
+    //clicks on Photo option
+    Common_Library.SwipeAndClick (#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsphoto,${DefaultDeltaValue},${ScreenRenderDelay})    
+}
+
+Copy_ContentType_Text
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+    //clicks on text option
+    Common_Library.SwipeAndClick (#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstext, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_ContentType_Image
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+    //clicks on image option
+    Common_Library.SwipeAndClick (#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsimage, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_ContentType_Mixed
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+    //clicks on Mixed option 
+    Common_Library.SwipeAndClick (#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsmixed, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}  
+
+Copy_BlankpageSuppression
+{
+    If: Dune.Wait For (#copySettingsPage_list1 #scan_blankPageSuppressionComboBox,3)
+    {
+        Dune.Click Id And Wait For Transition (#copySettingsPage_list1 #scan_blankPageSuppressionComboBox, ${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Fail (Unable to Click on the Blank page suppression)
+    }    
+}
+
+Copy_BlankpageSuppression_On
+{
+    Common_Library.ValidateandCheck (#scan_blankPageSuppressionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstrue_)
+}
+
+Copy_BlankpageSuppression_off
+{
+    Dune.Click Id And Wait For Transition (#copySettingsPage_list1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox, ${ScreenRenderDelay})
+    //clicks on off option
+    Common_Library.ValidateandCheck (#scan_blankPageSuppressionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsfalse_)
+}
+
+Copy_ColorMode
+{
+    If: Dune.Wait For (#copySettingsPage_list1 #scan_colorModeComboBox,3)
+    {
+        //for Citrine and Jasper
+        Dune.Click Id (#copySettingsPage_list1 #scan_colorModeComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Color Mode)
+    }    
+}
+
+Copy_ColorMode_Color
+{
+    //Color
+    Common_Library.SwipeAndClick (#scan_colorModeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionscolor, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_ColorMode_Grayscale
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_colorModeComboBox) 
+    //clicks on grayscale option
+    Common_Library.SwipeAndClick (#scan_colorModeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsgrayscale, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_ColorMode_Autodetect
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_colorModeComboBox)
+    //clicks on autodetect option
+    Common_Library.SwipeAndClick (#scan_colorModeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsautoDetect, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Sides
+{
+    If: Dune.Wait For (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox,5) 
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Side)
+    }
+}
+
+Copy_Sides_one_To_Two_Sided
+{
+    Common_Library.SwipeAndClick (#SettingsSpiceComboBoxpopupList, #copySettingsPage_list1ScrollBar, #Copy1to2Sided, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Sides_Two_to_Two_sided
+{
+    Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+    Common_Library.SwipeAndClick (#SettingsSpiceComboBoxpopupList, #comboBoxScrollBar, #Copy2to2Sided, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Sides_Two_to_One_sided
+{
+    Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+    //clicks on 2 to 1 sided  option
+    Common_Library.SwipeAndClick (#SettingsSpiceComboBoxpopupList, #comboBoxScrollBar, #Copy2to1Sided, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Sides_One_to_One_sided
+{
+    Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+    //clicks on 1 to 1 sided  option
+    Common_Library.SwipeAndClick (#SettingsSpiceComboBoxpopupList, #comboBoxScrollBar, #Copy1to1Sided, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_ScanMode
+{
+    If: Dune.Wait For (#scan_scanModeSettingsTextImage_firstinfoBlockRow,2)
+    {
+        Dune.Click (#copySettingsPage_list1 #scan_scanModeSettingsTextImage_firstinfoBlockRow)
+    }
+    Fail:
+    {
+        Fail (unable to select scan mode)
+    }
+}
+
+Copy_ScanMode_BookMode
+{
+    Dune.Wait For (#copy_scanModeList #scan_scanModestandardImageContainer,3)
+    Dune.Click Id (#copy_scanModeList #bookMode)
+}
+
+Copy_ScanMode_Two_Sided_Id
+{
+    Dune.Wait For (#copy_scanModeList #scan_scanModeidCard,3)
+    Dune.Click Id (#copy_scanModeList #scan_scanModeidCard)    
+}
+
+Copy_ScanMode_StandardDocument
+{
+    Dune.Click Id And Wait For Transition (#copy_scanModeList #scan_scanModestandardImageContainer, ${ScreenRenderDelay})
+    Dune.Click Id (#footerDoneButton)
+}
+
+Copy_OriginalSize
+{
+    If: Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #scan_originalSizeSettingsTextImage, ${DeltaValue}, ${ScreenRenderDelay})
+    {
+       Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow) 
+    }
+   Fail:
+    {
+        Fail (Unable to find the  Original size)
+    }
+}
+
+Copy_OriginalSize_Letter
+{  
+    //clicks on Letter
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_letter_8_dot_5x11inscan_originalSize, ${DeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_Executive
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on Executive (7.25x10.5 in.)    
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_executive_7_dot_25x10_dot_5inscan_originalSize,${DeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_5x8in
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on 5x8 in.    
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_index_dash_5x8_5x8inscan_originalSize,${DeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_a4_210x297mm
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on A4 (210x297 mm)
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #iso_a4_210x297mmscan_originalSize, ${DeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_a5_148x210mm
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on A5 (148x210 mm)
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #iso_a5_148x210mmscan_originalSize, ${DeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_b5_182x257
+{   
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on B5 (JIS) (182x257 mm)
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #jis_b5_182x257mmscan_originalSize, ${DeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_b6_128x182mm
+{    
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on B6 (JIS) (128x182 mm)    
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #jis_b6_128x182mmscan_originalSize, ${DeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_Oficio_216x340mm
+{    
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on Oficio (216x340 mm)    
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_oficio_8_dot_5x13_dot_4inscan_originalSize, ${DeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_16k_195x270mm
+{    
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on 16k (195x270 mm
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #om_16k_195x270mmscan_originalSize, ${DeltaValue} , ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_16k_184x260mm
+{
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on 16k (184x260 mm)    
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #om_16k_184x260mmscan_originalSize, ${DeltaValue} , ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_16k_197x273mm
+{    
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on 16K (197x273 mm)
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #roc_16k_7_dot_75x10_dot_75inscan_originalSize, ${DeltaValue} , ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_DoublePostcard_JIS_148X200mm
+{    
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on Double Postcard (JIS) (148X200 mm)
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #jpn_oufuku_148x200mmscan_originalSize, ${DeltaValue} , ${ScreenRenderDelay}) 
+}
+
+Copy_OriginalSize_Statement_5_dot_5x8_dot_5in
+{   
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on Statement (5.5X8.5 in.)    
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_invoice_5_dot_5x8_dot_5inscan_originalSize, ${DeltaValue} , ${ScreenRenderDelay}) 
+}
+
+Copy_OriginalSize_16k_195x270mm
+{    
+    Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+    //clicks on 16K (195x270 mm)
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #om_16k_195x270mmscan_originalSize, ${DeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_OriginalSize_any_size
+{  
+   Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+   //clicks on any size option
+   Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #anyscan_originalSize, ${DeltaValue}, ${ScreenRenderDelay}) 
+}
+
+Copy_Lighter_Or_Darker
+{
+    //Ligher and darker 
+    If: Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #scan_lighterDarkerSettingsSlider, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_lighterDarkerMenuSlider,9)
+    }
+    Fail:
+    {
+        Fail (Unable to find the LighterDarker)
+    }
+}
+
+Copy_Sharpness
+{
+    //Sharpness
+    If: Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #scan_sharpnessSettingsSlider, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_sharpnessMenuSlider,5)
+    }
+    Fail:
+    {
+        Fail (Unable to find the Sharpness)
+    }
+}
+
+//Contrast
+Copy_Contrast
+{
+    If: Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #scan_contrastSettingsSlider, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_contrastMenuSlider,9)
+    }
+    Fail:
+    {
+        Fail (Unable to find the Contrast)
+    }
+}
+
+Copy_Background_Cleanup
+{
+    //Background cleanup
+    If: Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #scan_backGroundCleanUpSettingsSlider, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_backGroundCleanUpMenuSlider,9)
+    }
+    Fail:
+    {
+        Fail (Unable to find the Background cleanup)
+    }
+}
+
+Copy_Number_Of_Copies
+{  
+    If: Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #copy_numberOfCopiesSettingsSpinBox, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    {
+        Dune.Click Id (#copySettingsPage_list1 #SpinBoxTextInput)
+        Dune.Wait For (#enterKeyPositiveIntegerKeypad,3)
+        Dune.Click Id (#key2PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+    }
+    Fail:
+    {
+        Fail (Unable to scroll to copies)
+    }
+}
+
+Copy_Collate
+{
+    If: Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #copy_collateToggleSettingsSwitch, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    {
+        Repeat:2
+        {
+            Dune.Click Id (#copy_collateToggleMenuSwitch)
+        }
+    }
+    Fail:
+    {
+        Fail (Unable to find the collate option)
+    }
+}
+
+Copy_OutputScale
+{
+    If: Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #copySettingResize, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copySettingResize)
+        Dune.Wait For (#copyResizeView #none,3)
+    }
+    Fail:
+    {
+        Fail (Unable to find the output scale)
+    }
+}
+
+Copy_OutputScale_custom
+{
+  Dune.Click Id (#custom)  
+}
+
+Copy_OutputScale_fullPage
+{
+    Dune.Click Id (#fullPage)
+}
+
+Copy_OutputScale_legalToLetter
+{
+    Dune.Click Id (#legalToLetter)
+}
+
+Copy_OutputScale_a4ToLetter
+{
+    Dune.Click Id (#a4ToLetter)
+}
+
+Copy_OutputScale_letterToA4
+{
+     Dune.Click Id (#letterToA4)
+}
+ 
+Copy_OutputScale_none
+{
+     Dune.Click Id (#none)
+     Dune.Click (#copyResizeView #BackButton)
+} 
+ 
+Copy_Pages_Per_Sheet
+{  
+    Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #copySettingPagesPerSheet, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    Dune.Click Id (#copySettingsPage_list1 #copySettingPagesPerSheet)
+    Dune.Wait For (#copy_pagesPerSheetView,3)    
+}
+
+Copy_Pages_Per_Sheet_FourRightThenDown
+{
+    Dune.Click Id And Wait For Transition (#copy_pagesPerSheetView #fourRightThenDown, ${ScreenRenderDelay})
+} 
+   
+Copy_Pages_Per_Sheet_FourDownThenRight
+{
+    Dune.Click Id And Wait For Transition (#copy_pagesPerSheetView #fourDownThenRight, ${ScreenRenderDelay})
+}
+
+Copy_Pages_Per_Sheet_AddPageBorders
+{
+    Dune.Click Id And Wait For Transition (#copy_pagesPerSheetView #AddPageBorders, ${ScreenRenderDelay})
+}
+
+Copy_Pages_Per_Sheet_twoUp
+{
+    Dune.Click Id And Wait For Transition (#copy_pagesPerSheetView #twoUp, ${ScreenRenderDelay})
+}
+
+Copy_Pages_Per_Sheet_oneUp
+{
+    Dune.Click Id (#copy_pagesPerSheetView #oneUp)
+    Dune.Click Id (#copy_pagesPerSheetView #BackButton)
+}
+
+Copy_Paper_Selection
+{
+    Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #copyPaperSelection, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    Dune.Click Id (#copySettingsPage_list1 #copyPaperSelection)
+    Dune.Wait For (#copy_paperSelectionMenuList,3)    
+}
+
+Copy_Paper_Selection_Paper_Size
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    Dune.Wait For (#copy_mediaSizeMenuSelectionList,3)
+}
+
+Copy_Paper_Selection_Paper_Size_letter
+{
+    //clicks on letter(8.5x11 in.)
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_letter_8_dot_5x11incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Size_Legal
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on Legal(8.5x14 in.)
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_legal_8_dot_5x14incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Size_Executive
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on executive(7.25x10.5 in.)
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_executive_7_dot_25x10_dot_5incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})  
+}
+
+Copy_Paper_Selection_Paper_Size_Statement
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on Statement
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_invoice_5_dot_5x8_dot_5incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})       
+}
+
+Copy_Paper_Selection_Paper_Size_FourXSix
+{
+   Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+   //clicks on FourXSix
+   Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_index_dash_4x6_4x6incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})  
+}
+
+Copy_Paper_Selection_Paper_Size_FiveXSeven
+{
+   Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+   //clicks on FiveXSeven
+   Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_5x7_5x7incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})    
+}
+
+Copy_Paper_Selection_Paper_Size_FiveXEight
+{
+   Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+   //clicks on FiveXEight
+   Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_index_dash_5x8_5x8incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})    
+}
+
+Copy_Paper_Selection_Paper_Size_A4
+{
+   Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+   //clicks on A4
+   Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #iso_a4_210x297mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})    
+}
+
+Copy_Paper_Selection_Paper_Size_A6
+{
+   Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+   //clicks on A6
+   Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #iso_a6_105x148mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})    
+}
+
+Copy_Paper_Selection_Paper_Size_RA4
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on RA4
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #iso_ra4_215x305mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})    
+}
+
+Copy_Paper_Selection_Paper_Size_B5
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on B5
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #jis_b5_182x257mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})    
+}
+
+Copy_Paper_Selection_Paper_Size_TenxFifteen
+{
+     Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+     //clicks on TenxFifteen
+     Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #om_small_dash_photo_100x150mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})    
+} 
+ 
+Copy_Paper_Selection_Paper_Size_Oficio216x340
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on Oficio216x340
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_oficio_8_dot_5x13_dot_4incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})   
+}
+
+Copy_Paper_Selection_Paper_Size_Sixteen184x260
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on Sixteen184x260
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #om_16k_184x260mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})   
+}
+
+Copy_Paper_Selection_Paper_Size_PostcardJis
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on PostcardJis
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #jpn_hagaki_100x148mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})  
+}
+
+Copy_Paper_Selection_Paper_Size_DoublePostcard
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on DoublePostcard
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #jpn_oufuku_148x200mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Size_EnvelopeHashTen
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on EnvelopeHashTen
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_number_dash_10_4_dot_125x9_dot_5incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})    
+}
+
+Copy_Paper_Selection_Paper_Size_EnvelopeMonarch
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on EnvelopeMonarch
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #na_monarch_3_dot_875x7_dot_5incopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})    
+}
+
+Copy_Paper_Selection_Paper_Size_EnvelopeB5
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on EnvelopeB5
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #iso_b5_176x250mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})  
+}
+
+Copy_Paper_Selection_Paper_Size_EnvelopeC5
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on EnvelopeC5
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #iso_c5_162x229mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})  
+}
+
+Copy_Paper_Selection_Paper_Size_EnvelopeDL
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on EnvelopeDL
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #iso_dl_110x220mmcopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})   
+}
+
+Copy_Paper_Selection_Paper_Size_Any
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+    //clicks on Any
+    Common_Library.SwipeAndClick (#copy_mediaSizeMenuSelectionList, #copy_mediaSizeMenuSelectionListScrollBar, #anycopy_mediaSize, ${DefaultDeltaValue}, ${ScreenRenderDelay})  
+}
+
+Copy_Paper_Selection_Paper_Type
+{
+    If: Dune.Wait For (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage,3)
+    { 
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        Dune.Wait For (#copy_paperTypeMenuSelectionList,3)
+    }
+    Fail:
+    {
+        Fail (unable to find Paper type)
+    }    
+}
+
+Copy_Paper_Selection_Paper_Type_anysize
+{
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #anycopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_Envelope
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  Envelope
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #envelopecopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_Automatic
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects Automatic
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #stationerycopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_Light
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects Light 
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #stationery_dash_lightweightcopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_HpEcoEFFICIENT
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects HpEcoEFFICIENT
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #com_dot_hp_dot_EcoSMARTLitecopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_MidWeight
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  MidWeight
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #com_dot_hp_dot_midweightcopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_Heavy
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  Heavy
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #stationery_dash_heavyweightcopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_ExtraHeavy
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  ExtraHeavy
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #com_dot_hp_dot_extra_dash_heavycopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_ColorTransparency
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  ColorTransparency
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #transparencycopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_Labels
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  Labels
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #labelscopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_StationeryLetterhead
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  StationeryLetterhead
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #stationery_dash_letterheadcopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_StationeryPreprinted
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects StationeryPreprinted 
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #stationery_dash_preprintedcopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_Colored
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  Colored
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #stationery_dash_coloredcopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_Bond
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  Bond
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #stationery_dash_bondcopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Type_Recycled
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+    //selects  Recycled
+    Common_Library.SwipeAndClick (#copy_paperTypeMenuSelectionList, #copy_paperTypeMenuSelectionListScrollBar, #com_dot_hp_dot_recycledcopy_paperType, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Tray
+{
+    If: Dune.Wait For (#copy_paperSelectionMenuList #copy_paperSourceComboBox,3)
+    {
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+        Dune.Wait For (#copy_paperSourceComboBoxpopupList,3)
+    }
+    Fail:
+    {
+        Fail (unable to find Paper tray)
+    }
+}
+
+Copy_Paper_Selection_Paper_Tray_One
+{
+    Common_Library.SwipeAndClick (#copy_paperSourceComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstray_dash_1, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Tray_Two
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+    //click on tray2  
+    Common_Library.SwipeAndClick (#copy_paperSourceComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstray_dash_2, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Tray_Three
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+    //click on tray2  
+    Common_Library.SwipeAndClick (#copy_paperSourceComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstray_dash_3, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Tray_Four
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+    //click on tray2  
+    Common_Library.SwipeAndClick (#copy_paperSourceComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstray_dash_4, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Tray_Manual
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+    //clicks on tray5  
+    Common_Library.SwipeAndClick (#copy_paperSourceComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsmanual, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_Paper_Selection_Paper_Tray_Automatic
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+    //clicks on Automatic 
+    Common_Library.SwipeAndClick (#copy_paperSourceComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsauto_, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    Dune.Wait For (#copy_paperSelectionMenuList #BackButton,3)
+    Dune.Click Id (#copy_paperSelectionMenuList #BackButton)
+}
+
+Copy_Resetting_Options_To_Set_Booklet
+{ 
+    If: Dune.Wait For (#copySettingsPage_list1 #closeButton,2)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #closeButton)
+        Dune.Go To Home Screen
+        Dune.Wait For (#cedab422-33b3-4638-b6a1-604e54525215,3)
+        Dune.Click (#cedab422-33b3-4638-b6a1-604e54525215)
+        Dune.Wait For (#optionsDetailPanelButton,3)
+        Dune.Click Id (#optionsDetailPanelButton)
+    }
+}
+ 
+Copy_Booklet
+{
+    If: Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #copySettingBooklet, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copySettingBooklet)
+        Dune.Wait For (#copy_bookletView #CheckBoxOptionsbookletFormatImageContainer,3)
+    }
+    Fail:
+    {
+        Fail (Unable to select the booklet)
+    }
+} 
+
+Copy_Booklet_BookletFormat
+{
+    Dune.Click Id (#copy_bookletView #CheckBoxOptionsbookletFormatImageContainer)
+    Dune.Wait For (#CheckBoxOptionsbordersOnEachPageImageContainer,3)
+    Dune.Click Id (#CheckBoxOptionsbordersOnEachPageImageContainer)
+    Dune.Click Id (#doneButton)
+}
+
+Copy_ExecuteManager
+{
+    // Closing the option panel and click on Send button
+    If: Dune.Wait For (#copySettingsPage_list1 #closeButton,2)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #closeButton)        
+    }
+    
+    //click on copy button
+    Dune.Wait For (#mainActionButtonOfDetailPanel,5)
+    Dune.Click Id (#mainActionButtonOfDetailPanel)
+    //clicks on done button, this button is available when we select the options other than 1 to 2 sided 
+    Common_Library.SleepTime
+    If: Dune.Wait For (#doneButton,30)
+    {
+        //this button will be avaliable only if we select original side as 2 to 1 sided 
+        Dune.Click Id (#doneButton)
+    } 
+    Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,5)
+    Dune.Wait For Active Job Gone (Copy,25)
+    Sleep (10)
+    Dune.Go To Home Screen
+    Common_Library.SleepTime
+    Dune.Click (#SignInButton)
+    //click on Sign Out button
+    Dune.Click (#userInfoSignInButton)    
+}
+
+Setup
+{
+    //waits and clicks on the copy app in home screen
+    If: Dune.Navigate To Application On Home Screen (#cedab422-33b3-4638-b6a1-604e54525215)
+    {
+       Dune.Click And Wait For Transition (#cedab422-33b3-4638-b6a1-604e54525215, ${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Return With Fail (Copy app button was not found on the home screen)
+        Stop Test Suite
+    }
+    
+    //Options checks will starts from here
+    If: Dune.Wait For (#optionsDetailPanelButton,3)
+    {
+        Dune.Click Id (#optionsDetailPanelButton)
+    }
+    Fail:
+    {
+        Return With Fail (unable to click on option button )
+        Dune.Go To Home Screen
+    }
+}
+
+Copy_OriginalSize_Scroll
+{
+    Dune.Swipe Vertically And Wait For Transition (#copySettingsPage_list1, #copySettingsPage_list1ScrollBar, #scan_originalSizeSettingsTextImage, ${DeltaValue}, ${ScreenRenderDelay})    
+}
+
+Copy_ScanMode_Prompt_For_Additional_Pages
+{
+    Dune.Click Id And Wait For Transition (#copy_scanModeList #scan_scanModestandardImageContainer, ${ScreenRenderDelay})
+    Dune.Click Id And Wait For Transition (#copy_scanModeList #promptCheckBoxForAdditionalPages, ${ScreenRenderDelay})
+    Dune.Click Id (#footerDoneButton)
+}
+
+Copy_Paper_Selection_Paper_Tray_Automatic_Option
+{
+    Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+    //clicks on Automatic 
+    Common_Library.SwipeAndClick (#copy_paperSourceComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsauto_, ${DefaultDeltaValue}, ${ScreenRenderDelay})
+}
+
+Copy_ScanMode_Prompt_For_Additional_Page
+{
+    Dune.Click Id And Wait For Transition (#copy_scanModeList #scan_scanModestandardImageContainer, ${ScreenRenderDelay})
+    Dune.Click Id And Wait For Transition (#copy_scanModeList #promptCheckBoxForAdditionalPages, ${ScreenRenderDelay})
+}
+
+Copy_ScanMode_Standard_Document
+{
+    Dune.Click Id And Wait For Transition (#copy_scanModeList #scan_scanModestandardImageContainer, ${ScreenRenderDelay})
+}
+
+Copy_Teardown
+{
+    Dune.Click (#closeButton)
+    Dune.Click (#ButtonControl)
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}
+
+Copy_Pages_Per_Sheet_Teardown
+{
+    Dune.Click Id (#copy_pagesPerSheetView #BackButton)
+    Dune.Click (#closeButton)
+    Dune.Click (#ButtonControl)
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}
+
+Copy_Paper_Selection_Teardown
+{
+    Dune.Wait For (#copy_paperSelectionMenuList #BackButton,3)
+    Dune.Click Id (#copy_paperSelectionMenuList #BackButton)
+    Dune.Click (#closeButton)
+    Dune.Click (#ButtonControl)
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}
+
+Copy_ScanMode_Teardown
+{
+    Dune.Click Id (#footerDoneButton)
+    Dune.Click (#closeButton)
+    Dune.Click (#ButtonControl)
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}
+
+Copy_Pages_Per_Sheet_oneUp_Option
+{
+    Dune.Click Id (#copy_pagesPerSheetView #oneUp)
+}

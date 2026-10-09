@@ -1,0 +1,564 @@
+﻿using ..\OXPD_Common\OXPD_Common_Variables.gfvar
+using ..\OXPD_Common\OXPD_Common_Library.gflib
+using Cardreader_OXPD.gflib
+using Cardreader_OXPD.gfvar
+
+
+\\\ Prerequisites
+\\\ Configure the X3D03B_Mifare_SIM card reader using the HP Card Reader Utility Tool.
+\\\ Due to Badge Box limitations, only 4 cards can be placed at a time.
+\\\ Load the first set of 4 cards into the Badge Box before starting the test.
+\\\ When the "Wait For User Confirm" prompt appears, replace the current cards with the next set of 4 cards and click OK to continue.
+\\\ When prompted again, replace the cards with the remaining 3 cards and click OK to continue execution.
+\\\ Total cards validated: 11 (executed in batches of 4 + 4 + 3).
+
+T1983952263_Authentication_Functionality_with_HP_Universal_(Wren)_X3D03B_Mifare_SIM_(2NJ29B)_Card_Reader_and_various_Card_Types
+
+{ 
+
+    Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+
+
+}
+
+\\\ Prerequisites
+\\\ Configure the Elatec TWN4 Slim Legic (4L6N1B) card reader with the required card type configuration.
+\\\ Only 4 cards can be loaded into the Badge Box at a time.
+\\\ When prompted, replace the existing cards with the next set of cards and continue execution.
+\\\ Card validation is performed in multiple batches due to Badge Box limitations.
+
+T1983952260_Authentication_Functionality_with_Elatec_TWN4_Slim_Legic_(4L6N1B)_and_various_Card_Types
+{
+     Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation 
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+}
+
+\\\ Prerequisites
+\\\ Configure the Elatec TWN4 Slim - Option PI (427H8B) card reader with the required card type configuration.
+\\\ Only 4 cards can be loaded into the Badge Box at a time.
+\\\ When prompted, replace the existing cards with the next set of cards and continue execution.
+\\\ Card validation is performed in multiple batches due to Badge Box limitations.
+T1983952261_Authentication_Functionality_with_Elatec_TWN4_Slim_Option_PI_(427H8B)_and_various_Card_Types
+{
+     Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+}
+
+\\\ Prerequisites
+\\\ Configure the HP Universal (Wren) X3D03B card reader using the HP Card Reader Utility Tool.
+\\\ Only 4 cards can be loaded into the Badge Box at a time.
+\\\ When prompted, replace the existing cards with the next set of cards and continue execution.
+\\\ Card validation is performed in multiple batches due to Badge Box limitations.
+
+T1983952262_Authentication_Functionality_with_HP_Universal_(Wren)_X3D03B_Card_Reader_and_various_Card_Types
+{
+     Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation 
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+}
+
+\\\ Prerequisites
+\\\ Configure the HP Keystroke (Wren) Y7CO5B card reader using the RFID Configuration Utility.
+\\\ Only 4 cards can be loaded into the Badge Box at a time.
+\\\ When prompted, replace the existing cards with the next set of cards and continue execution.
+\\\ Card validation is performed in multiple batches due to Badge Box limitations.
+
+
+T1983952264_Authentication_Functionality_with_HP_Keystroke_(Wren)_Y7CO5B_Card_Reader_and_various_Card_Types
+{
+     Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+        
+   }
+}
+
+\\\ Prerequisites
+\\\ Configure the HP BLE Reader (35H11B) using the RFID Configuration Utility.
+\\\ Only 4 cards can be loaded into the Badge Box at a time.
+\\\ When prompted, replace the existing cards with the next set of cards and continue execution.
+\\\ Card validation is performed in multiple batches due to Badge Box limitations.
+
+
+T1983952265_Authentication_Functionality_with_HP_BLE_Reader_35H11B_Card_Reader_and_various_Card_Types
+
+{
+     Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+}
+
+\\\ Prerequisites
+\\\ Configure the HP Keystroke (Wren) Y7CO5B - Mifare SIM (2NJ29B) card reader using the RFID Configuration Utility.
+\\\ Only 4 cards can be loaded into the Badge Box at a time.
+\\\ When prompted, replace the existing cards with the next set of cards and continue execution.
+\\\ Card validation is performed in multiple batches due to Badge Box limitations.
+
+
+T1983952266_Authentication_Functionality_with_HP_Keystroke_(Wren)_Y7CO5B_Mifare_SIM_(2NJ29B)_Card_Reader_and_various_Card_Types
+{
+     Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+}
+
+\\\ Prerequisites
+\\\ Configure the HP Legic 4QL32B card reader using the HP Card Reader Utility Tool.
+\\\ Only 4 cards can be loaded into the Badge Box at a time.
+\\\ When prompted, replace the existing cards with the next set of cards and continue execution.
+\\\ Card validation is performed in multiple batches due to Badge Box limitations.
+
+
+T1983952267_Authentication_Functionality_with_HP_Legic_4QL32B_Card_Reader_and_various_Card_Types
+{
+     Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+}
+
+\\\ Prerequisites
+\\\ Configure the BT1T9B card reader using the RFID Configuration Utility.
+\\\ Only 4 cards can be loaded into the Badge Box at a time.
+\\\ When prompted, replace the existing cards with the next set of cards and continue execution.
+\\\ Card validation is performed in multiple batches due to Badge Box limitations.
+
+T1983952268_Authentication_Functionality_with_BT1T9B_Card_Reader_and_various_Card_Types
+{
+     Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+}
+
+\\\ Prerequisites
+\\\ Configure the BT1T9B card reader using the RFID Configuration Utility.
+\\\ Only 4 cards can be loaded into the Badge Box at a time.
+\\\ When prompted, replace the existing cards with the next set of cards and continue execution.
+\\\ Card validation is performed in multiple batches due to Badge Box limitations.
+
+T1983952264_Authentication_Functionality_with_HPKeystroke_Wren_Y7CO5B_CardReaderandvariousCardTypes
+{
+     Repeat:4   
+    {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+    }
+
+       Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:4   
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+
+   Wait For User Confirm (Please change other 4 set of cards)
+
+   Repeat:3  
+   {
+
+       Calculate And Assign (${R}-1,${BadgeIndex})
+
+       OXPD_Common_Library.Send_Job (${Printer},${File_Location})
+
+       OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+
+       OXPD_Common_Library.Pull_Print_Operation
+       
+       OXPD_Common_Library.Device_Signout   
+   }
+}

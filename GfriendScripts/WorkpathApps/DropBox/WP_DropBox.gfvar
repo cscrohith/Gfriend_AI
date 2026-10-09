@@ -1,0 +1,14 @@
+﻿// App variables
+${ButtonText} = HP for DropBox
+${ButtonID} = hpid-a8f9c6f8-6734-42cb-bf1f-dd7b8fb628ae-homescreen-button
+
+// App user varibles
+${AppUserID}=RDLLabBoise@gmail.com
+${AppPassword}=1qaz2wsx#EDC
+
+${SaveSIO_AppCredentials}=Y
+${VerifySIOConnectDuringAppOpen}=N
+
+// General variables
+${BackOutOfApp} = Y
+${DeviceSignOut} = Y

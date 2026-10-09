@@ -1,0 +1,80 @@
+﻿/// <File>DisconnectAndMemoryGarbageCollection_Devices.txt</File>
+/// <Modified>2021-10-18</Modified>
+/// <Description>Force a disconnect of inspectable web pages for the device.
+///    Then perform the memory garbage collection function on the diagnostics memory page of EWS</Description>
+/// <Precondition>The device must be in Development mode for the diagnostics page to be available.</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using Device_EWS_Library.gflib
+Using DeviceList.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Common_LIbrary.gflib
+Using ..\Common\Common_LIbrary.gflib
+
+Using Web As EWS_Web
+
+/// <Name>DisconnectAndPerformMemoryCollection</Name>
+/// <Description>Force a disconnect of inspectable web pages for the device.
+///    Then perform the memory garbage collection function on the diagnostics memory page of EWS</Description>
+/// <Notes></Notes>
+DisconnectAndPerformMemoryCollection
+{
+    // copy local versions of device IP variables
+    // so that the loop below can be used to access them
+    Set Variable (${IP_1},${Device_IP_1})
+    Set Variable (${IP_2},${Device_IP_2})
+    Set Variable (${IP_3},${Device_IP_3})
+    Set Variable (${IP_4},${Device_IP_4})
+    Set Variable (${IP_5},${Device_IP_5})
+    Set Variable (${IP_6},${Device_IP_6})
+    Set Variable (${IP_7},${Device_IP_7})
+    Set Variable (${IP_8},${Device_IP_8})
+    Set Variable (${IP_9},${Device_IP_9})
+    Set Variable (${IP_10},${Device_IP_10})
+    
+    // loop through the device IP's
+    // use Run Keyword in order to evaluate the IP variables
+    // based on the loop iteration number
+    Repeat:10
+    {
+        If: Run Keyword (Common_LIbrary.CheckVariableContainsValue (${IP_${R}}))
+        {
+            // disconect the inspectable pages
+            Run Keyword (Device_EWS_Library.DisconnectInspectablePages (${IP_${R}}))
+            
+            
+            // oepn the device EWS
+            If: Run Keyword (Device_EWS_Library.OpenEWS (${IP_${R}}))
+            {
+                If: Run Keyword (Device_EWS_Library.MemoryGarbageCollection)
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail performing memory garbage collection of device ${R}!)
+                }
+                Error:
+                {
+                    Error (Error performing memory garbage collection of device ${R}!)
+                }
+            }
+            Fail:
+            {
+                Fail (Fail accessing device ${R} EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device ${R} EWS!)
+            }
+            
+            // ensure browser is closed
+            Device_EWS_Library.CloseEWS
+        }
+        Fail:
+        {
+            Pass (Device ${R} not specified - skipped!)
+        }
+    }
+}

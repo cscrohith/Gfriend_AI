@@ -1,0 +1,458 @@
+﻿/// <File>HPCC_Onboard_Device.gflib</File>
+/// <Modified>2021-09-21</Modified>
+/// <Description>Onboard a device to HP Command Center (HPCC)</Description>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC.gfvar
+Using HPCC_Onboard_Device.gfvar
+
+Using HPCC_Library.gflib
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\Device\Device_Library.gflib
+//Using DeviceAuth.gflib
+Using ..\DeviceAuth\DeviceAuth.gflib
+
+Using Web
+Using JediOmni
+Using Oxpd
+
+/// <Name></Name>
+/// <Description>Onboard a device to an HPCC account</Description>
+/// <Notes>OnBoardDevice</Notes>
+OnBoardDevice(${Asset_No})
+{
+    // make sure at Home screen, signed out
+    If: DeviceAuth.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find Home Screen Reset or Sign Out!)
+    }
+    
+    // open the command center app
+    If: Device_Library.LaunchApp(${HPCC_Button_ID},${HPCC_ButtonText})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Opening the Command Center app failed!)
+    }
+
+    // check for the command center popup message displayed
+    If: JediOmni.Wait For Object (hpid-hpcommandcenter-confirmation-popup,${Short_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        Return With Fail (The Command Center app did not open!)
+    }
+    
+    JediOmni.Touch Text(Continue)
+    JediOmni.Wait For Object (hpid-web-access-check-progress-popup,${Long_Wait})
+    If: JediOmni.Wait For Object Gone (hpid-web-access-check-progress-popup,1${Long_Wait})
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        Return With Fail (The Command Center access progress popup did not close in 120 sec!)
+    }
+    
+    // check for the network connection error screen
+    If: JediOmni.Wait For Object (hpid-hpCommandCenter-network-connection-error-view,${Wait_Time})
+    {
+        If: Device_Library.SetProxy(${Device_ProxyServer},${Device_ProxyPort},${Device_ProxyExceptionsList})
+        {
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+            @JediOmni.Press Home Key
+            @JediOmni.Reset
+            Return With Fail (Fail while setting the web proxy!!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (OnboardDevice_Error.png)
+            @JediOmni.Press Home Key
+            @JediOmni.Reset
+            Return With Error (Error while setting the web proxy!!)
+        }
+    }
+    
+    // check for the HP Cloud services status screen
+    If: JediOmni.Wait For Object (hpid-hpCommandCenter-cloud-registration-status-view,${Minimal_Wait_Time})
+    {
+        // press the Register button and then sign in
+        JediOmni.Touch ID (hpid-web-services-register-button)
+        
+        // sign in with admin if required
+        If: DeviceAuth.AdminSignIn (${DUT_AdminPW})
+        {
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+            @JediOmni.Press Home Key
+            @JediOmni.Reset
+            Return With Fail (Fail signing in as Admin on device to set proxy!)
+        }
+    }
+    
+    // wait for the cloud registration screen
+    ////*[@id="hpid-hpCommandCenter-cloud-registration-status-view"]
+    IF: JediOmni.Wait For Object (hpid-hpCommandCenter-cloud-registration-setting-view,${Wait_Time})
+    {
+        While:!JediOmni.Wait For Object (hpid-registration-confirmation-checkbox,${Zero_Wait_Time}): 3
+        {
+            JediOmni.Drag (50,80,50,30)
+        }
+        JediOmni.Touch ID (hpid-registration-confirmation-checkbox)
+        
+        JediOmni.Touch ID (hpid-cloud-config-register-button)
+        JediOmni.Wait For Text (Registering,${Wait_Time})
+        If: JediOmni.Wait For Text Gone (Registering,${Web_Serivce_Registration_Timeout})
+        {
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+            @JediOmni.Press Home Key
+            @JediOmni.Reset
+            Return With Fail (Fail completing the device registration!)
+        }
+    }
+
+    // wait for the HPCC OXPd screen to be loaded
+    If: JediOmni.Wait For Object (body,${HPCC_OXPd_screen_load_Timeout})
+    {
+        //Sleep (${Long_Wait})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (The Command Center claim screen did not display within ${HPCC_OXPd_screen_load_Timeout} seconds!)
+        @JediOmni.Reset
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Error.png)
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Error (Error while accessing the Command Center claim screen!)
+    }
+    
+    // connect to the OXPd browser
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        @Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (Fail occured attempting to connect to the Onboarding device screen!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Error.png)
+        @Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Error (Error occured attempting to connect to the Onboarding device screen!)
+    }
+    
+    // wait for the Command Center screen text to show with the claim code
+    //    If: Oxpd.Wait For Xpath (//*[@id="userCode"],${HPCC_OXPd_screen_load_Timeout})
+    //    If: Oxpd.Wait For Css (#ClaimBasedAuth,${HPCC_OXPd_screen_load_Timeout})
+    If: Oxpd.Wait For Css (#signinDesc2,${HPCC_OXPd_screen_load_Timeout})
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (The Command Center claim code did not display within ${HPCC_OXPd_screen_load_Timeout} seconds!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Error.png)
+        Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Error (Error while accessing the Onboarding screen!)
+    }
+
+    // get the claim code and the Command Center claim url
+    Oxpd.Get Text (signinDesc2,${HPCC_Claim_Url})
+    Oxpd.Get Text (userCode,${HPCC_Claim_Code})
+    Oxpd.Return Browser Engine
+
+    // cleanup the url and claim code
+    Trim (${HPCC_Claim_Url},")
+    Trim (${HPCC_Claim_Code},")
+    Replace (${HPCC_Claim_Code}, ,)
+    
+    // check for a blank code
+    If: Equals (${HPCC_Claim_Code},)
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (The Command Center claim code was blank!)
+    }
+    Sleep (${Zero_Wait_Time})
+
+    //Wait For User Confirm (Url: ${HPCC_Claim_Url})
+    //Wait For User Confirm (Code: ${HPCC_Claim_Code})
+
+    // access the HPCC claim page
+    IF: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_Claim_Url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (Fail while signing in to HPCC!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Error.png)
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Error (Error while signing in to HPCC!)
+    }
+    Sleep (${Zero_Wait_Time})
+    
+    // enter the device claim code and then sign out
+    If: Web.Wait For Object (//input[@id='userCode'],${Long_Wait})
+    {
+        Web.Click Object (//input[@id='userCode'])
+        Web.Set Text (//input[@id='userCode'],${HPCC_Claim_Code})
+        Web.Click Object(//div[@class='footer']//descendant::button[@class='hpBlueButton'])
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (Fail while waiting for the HPCC Claim Code page!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Error.png)
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Error (Error while waiting for the HPCC Claim Code page!)
+    }
+    
+    Web.Wait For Object (//div[@class='signOutArea'],${Wait_Time})
+    @Web.Click Object (//div[@class='signOutArea'])
+    //@Web.Click Text (Sign Out)
+    Sleep (${Very_Short_Wait_Time})
+    
+    Web.Close
+
+    // connect to the OXPd browser
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        @Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (Fail occured attempting to complete onboarding after entering claim code in HPCC!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Error.png)
+        @Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Error (Error occured attempting to complete onboarding after entering claim code in HPCC!)
+    }
+    
+    // wait for the device onboard Ready, Customer Choose, or Claimed page to display
+    // within the specified time
+    //    If: Oxpd.Wait For CSS (#ChooseCustomerPage[style*="block"] div#OnboardHeader,${HPCC_OXPd_screen_load_Timeout})
+    
+    If: Oxpd.Wait For CSS (#ChooseCustomerPage:not\([style*="none"]\) div#OnboardHeader\, #ReadyPage:not\([style*="none"]\) div#OnboardHeader\, #ClaimedPage:not\([style*="none"]\) div#OnboardHeader,${HPCC_OXPd_screen_load_Timeout})
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (The device Onboard completion screen did not display within ${HPCC_OXPd_screen_load_Timeout} seconds!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Error.png)
+        Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Error (An error occurred while waiting for the device Onboard completion screen to display within ${HPCC_OXPd_screen_load_Timeout} seconds!)
+    }
+    
+    // extra wait to be sure the screen is fully formatted
+    // this is partially due to JOLT taking a bit longer
+    Sleep (${Long_Wait})
+    
+    Set Variable (${NewDevice},N)
+    
+    // check for the Claimed page indicating the device is claimed to a different account
+    If: Oxpd.Wait For CSS (#ClaimedPage:not\([style*="none"]\) div#OnboardHeader,${Minimal_Wait_Time})
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (The device was poreviously onboarded to a different reseller/service provider!)
+    }
+    
+    // ensure we are at the ChooseCustomer page
+    If: Oxpd.Wait For CSS (#ChooseCustomerPage:not\([style*="none"]\) div#OnboardHeader,${Minimal_Wait_Time})
+    {
+        Set Variable (${NewDevice},Y)
+        
+        // drag the screen until the customer dropdown is visible
+        // this is due to the needed controls being below on 4" x 3" screens
+        // does not cause issues on 8" screens
+//        Repeat:2
+//        {
+//            JediOmni.Drag (80,90,80,15)
+//        }
+        
+        // click on the Customer dropdown then the search textbox
+        // the dropdown has not always displayed on the first click
+        // for some reason so try several times
+        While:!Oxpd.Wait For XPath (//*[@id="dropdown_chosen" and contains\(@class\,"chosen-container-active"\)],${Minimal_Wait_Time}): 4 
+        {
+            Oxpd.Touch Id (dropdown-dn)
+            Sleep (${Minimal_Wait_Time})
+        }
+        
+        // enter the customer to search
+        Oxpd.Touch Id (search)
+        // enter the customer and then Enter
+        Oxpd.Input Text (${HPCC_Customer})
+        Sleep (${Short_Wait_Time})
+        If: JediOmni.Wait For Object (hpid-keyboard,${Minimal_Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-keyboard-key-enter)
+            JediOmni.Touch ID (hpid-keyboard-key-done)
+        }
+        Sleep (${Short_Wait_Time})
+        
+        //        Oxpd.Touch Id (ChooseCustomerPage)
+
+        // click on the Asset Number textbox
+        Oxpd.Touch Id (AssetTextBox)
+        // enter the Asset Number (device AssetNumber) then enter
+        Oxpd.Input Text (${Asset_No})
+        If: JediOmni.Wait For Object (hpid-keyboard,${Zero_Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-keyboard-key-done)
+        }
+        Sleep (${Very_Short_Wait_Time})
+        
+        // click the Add button
+//        JediOmni.Drag (80,80,80,30)
+        Oxpd.Touch Id (OnboardButton)
+        
+        // wait for the completion screen
+        //        Oxpd.Wait For Xpath (//*[@id="ReadyPage" and not\(contains\(@style\,"none"\)\)]//descendant::*[@id="OnboardReadyExitButton"],${HPCC_OXPd_screen_load_Timeout})
+
+        //Oxpd.Wait For Xpath (//*[@id="ReadyPage" and not\(contains\(@style\,"none"\)\)],${HPCC_OXPd_screen_load_Timeout})
+        
+//        Oxpd.Wait For CSS (#ReadyPage:not\([style*="none"]\) div#OnboardHeader,${HPCC_OXPd_screen_load_Timeout})
+//
+//        Sleep (${Wait_Time})
+        
+//        While:!Oxpd.Wait For Id (OnboardReadyExitButton,${Minimal_Wait_Time}):5
+//        {
+//            JediOmni.Drag (80,90,80,15)
+//        }
+        
+        
+//        Sleep (${Very_Short_Wait_Time})
+//        Oxpd.Touch Id (OnboardReadyExitButton)
+//        Sleep (${Short_Wait_Time})
+//        Oxpd.Return Browser Engine
+//        
+//        @DeviceAuth.ClearAuth
+//        
+//        Return With Pass (OnBoardDevice completed!)
+    }
+    
+    // check for onboard completion to correct customer account
+    //    If: Oxpd.Wait For CSS (#ReadyPage:not\([style*="none"]\) div#OnboardHeader,${Minimal_Wait_Time})
+    If: Oxpd.Wait For CSS (#ReadyPage:not\([style*="none"]\) div#OnboardHeader,${HPCC_OXPd_screen_load_Timeout})
+    {
+        // check the customer account to ensure its the same
+        Oxpd.Get Text (Account,${AssignedCustomer})
+        Trim (${AssignedCustomer},")
+
+        Oxpd.Touch Id (OnboardReadyExitButton)
+        Sleep (${Short_Wait_Time})
+        Oxpd.Return Browser Engine
+        
+        @DeviceAuth.ClearAuth
+        
+        
+        If: Equals IgnoreCase (${AssignedCustomer},${HPCC_Customer})
+        {
+            If: Equals IgnoreCase (${NewDevice},Y)
+            {
+                Set Variable (${ReturnMessage},OnBoardDevice completed - device successfully added to customer '${AssignedCustomer}'!)
+            }
+            Fail:
+            {
+                Set Variable (${ReturnMessage},OnBoardDevice completed - device previously onboarded to customer '${AssignedCustomer}'!)
+            }
+            Return With Pass (${ReturnMessage})
+        }
+        Fail:
+        {
+            If: Equals IgnoreCase (${NewDevice},Y)
+            {
+                Set Variable (${ReturnMessage},The device was onboarded to an incorrect customer '${AssignedCustomer}'!)
+            }
+            Fail:
+            {
+                Set Variable (${ReturnMessage},The device was previously onboarded to a different customer '${AssignedCustomer}'!)
+            }
+            Return With Fail (${ReturnMessage})
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OnboardDevice_Fail.png)
+        Oxpd.Return Browser Engine
+        @JediOmni.Press Home Key
+        @JediOmni.Reset
+        Return With Fail (The device Onboard completion screen did not display when expected!)
+    }
+}

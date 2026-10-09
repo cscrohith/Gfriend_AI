@@ -1,0 +1,33 @@
+﻿//For PIN Auth, provide the ${USER_AUTH} value as N
+//For username\password Auth, provide the ${USER_AUTH} value as Y
+${USER_AUTH} = Y 
+
+//For LAZY Authentication, provide the variable (${LAZY_AUTH}) value as Y
+//For EAGER Authentication, provide the variable (${LAZY_AUTH}) value as N
+${LAZY_AUTH} = Y 
+
+//Pin parameter for NDD Authentication
+//While running in STF, variable ${UserCode} can be commented to use the values from the STF/STB virtual worker user.
+//While running in STB, uncomment ${UserCode} variable and provide the IRM Authentication code value.
+${UserCode} = 1234
+
+//Username and Password parameters
+//If this script is run from STF/STB the variables with names beginning
+//with STF_ can be commented to use the values from the STF/STB virtual worker user.
+${STF_UserName} = U1111
+
+//Pasword
+${STF_UserPassword} = rdl@123
+
+//For Print option, provide the variable (${PRINT_RELEASE_ACTION}) value as Print
+//For Delete option, provide the variable (${PRINT_RELEASE_ACTION}) value as Delete
+${PRINT_RELEASE_ACTION} = Delete
+
+//For Print All and Delete All options, provide the variable (${SELECT_ALL}) value as Y and N for single document operation.
+${SELECT_ALL} = N
+
+//Wait Timeouts
+${Short_Wait_Time} = 5
+${Wait_Time} = 15
+${Longest_Wait} = 300
+

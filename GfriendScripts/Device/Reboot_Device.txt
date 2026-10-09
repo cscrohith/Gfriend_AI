@@ -1,0 +1,38 @@
+﻿/// <File>Reboot_Device.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Reboot a device</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+using JediOmni
+
+/// <Name>RebootDevice</Name>
+/// <Description>Reboot a device</Description>
+/// <Notes></Notes>
+RebootDevice
+{
+    // ensure at the Home screen and reset
+    JediOmni.Reset
+    Sleep (${Very_Short_Wait_Time})
+    JediOmni.Press Home Key
+    Sleep (${Very_Short_Wait_Time})
+
+    // reboot, if successful wait til Ready
+    If: JediOmni.Reboot
+    {
+        JediOmni.Wait Until Boot
+    }
+    Fail:
+    {
+        Fail (Failed rebooting the device!)
+    }
+    Error:
+    {
+        Error (Error while rebooting the device!)
+    }
+}

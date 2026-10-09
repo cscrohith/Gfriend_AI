@@ -1,0 +1,36 @@
+﻿using JediOmni
+using Vision
+using YSoft_SafeQ_Vision_AUTH.gflib
+using YSoft_SafeQ_Vision_Variables.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         Safe_Q_Flow
+// Description:     Safe_Q Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Safe_Q_FLOW
+{
+    YSoft_SafeQ_Vision_AUTH.SetupAzureVision(${STF_AzureEndpoint},${STF_AzureKey}) 
+
+    If: YSoft_SafeQ_Vision_AUTH.YSoft_SafeQ_Vision_PullPrint (${PRINT_ALL},${PASSWORD_PREFIX},${PASSWORD_SUFFIX},${USER_NAME},${ActivityId})  
+    { 
+        //Continue  
+    }
+    Fail:
+    {
+        Return With Fail (Failed while Performing pull print operation!)
+    }
+    Error:
+    {
+        Return With Error (Error while Performing pull print operation!)
+    } 
+    YSoft_SafeQ_Vision_AUTH.SignOut(${USER_NAME})       
+}

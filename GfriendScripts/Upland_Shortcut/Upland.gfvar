@@ -1,0 +1,20 @@
+﻿//Profile Name Selection in Device
+${Profile_NAME} = Accounts Payable 
+
+//File Name for Scanned Document
+${STF_ScanFileName} = ACP  
+
+//Upland Instance URL
+${UPLAND_INSTANCE} = https://uic-stg.uplandcapture.com 
+
+//User Name
+${STF_USER_NAME} = chitack.chang@hp.com
+
+//Password
+${STF_PASSWORD} = Platform@12
+
+//FileBound Instance URL
+${FILEBOUND_INSTANCE} = https://hpbevankirby.filebound.com
+
+//FileBound Project
+${FILEBOUND_PROJECT} = AP Invoice

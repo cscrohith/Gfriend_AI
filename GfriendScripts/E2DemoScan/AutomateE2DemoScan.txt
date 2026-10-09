@@ -1,0 +1,37 @@
+using Dune
+using Vision
+
+AutomateE2DemoScan
+{
+    Repeat:1h
+    {
+        //1.Launch Scan App through Dune Keyword.
+        Dune.Wait For (#b5e3d874-831c-4a22-a68c-8dd308069864,20)
+        Sleep (2)
+        Dune.Click (#b5e3d874-831c-4a22-a68c-8dd308069864)
+        Sleep (3)
+        Vision.Set Target (Dune)
+        Vision.Set Text Grouping (block)
+        Sleep (5)
+        //2.Wait until to see "Please press the Start button to initiate a scan"
+        Vision.Is Text Exist (Please press the Start button to initiate a scan)
+        Sleep (2)
+        //Dune.Wait For Text (Please press the Start button to initiate a scan,10)
+        Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,20)
+        //3.Click "Start" button right bottom in green.
+        Dune.Wait For (#startButton,10)
+        Sleep (2)
+        Dune.Click (#startButton)
+        Sleep (3)
+        //4.Wait until "Scan" job is finisehd through Dune Keyword.
+        Dune.Wait For Active Job (scanHttp,20)
+        Dune.Wait For Active Job Gone (scanHttp,20)
+        Sleep (5)
+        //5.Back to Home.
+        Dune.Wait For (#homeButton,20)
+        Sleep (2)
+        Dune.Click (#homeButton)
+        Sleep (2)
+        
+    }
+}

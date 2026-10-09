@@ -1,0 +1,13 @@
+﻿//Provide The variable ${BADGE_INDEX} with the Configured Card Slot.
+${BADGE_INDEX} = 0
+
+//Iterate count to Wait for Signoutbutton after Badge Sigin
+${WaitTime} = 5
+
+//Repeat count for the TestScenario
+${Total_Iteration} = 3
+
+${Second_BADGE_INDEX}=1
+${User1_BADGE_INDEX}=0
+${User2_BADGE_INDEX}=1
+${WaitTime_SignIn_SignOut}=50

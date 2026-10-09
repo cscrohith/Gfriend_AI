@@ -1,0 +1,36 @@
+﻿using printer-validation-testcases.gflib
+
+TC_WorkFlow
+{
+    ScanAI_Vision_Library.ScanAI_WorkFlow
+}
+
+TC_SetTargetAndGrouping
+{
+    ScanAI_Vision_Library.SetTargetAndGrouping
+}
+
+TC_SelectWorkFlowListAndStartJob
+{
+    ScanAI_Vision_Library.ScanAI_SelectWorkFlowListAndStartJob
+}
+
+TC_SelectDone
+{
+    ScanAI_Vision_Library.ScanAI_SelectDone
+}
+
+TC_SelectNextStep
+{
+  ScanAI_Vision_Library.ScanAI_SelectNextStep
+}
+
+TC_SelectValidate
+{
+  ScanAI_Vision_Library.ScanAI_SelectValidate
+}
+
+TC_FinishValidations
+{
+  ScanAI_Vision_Library.ScanAI_FinishValidations
+}

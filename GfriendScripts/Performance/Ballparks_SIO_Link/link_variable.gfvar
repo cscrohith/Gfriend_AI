@@ -1,0 +1,15 @@
+﻿// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2020-10-22 Initial Version (copied from SIV-K's Sio_nfr.gfilib for Workpath and modified to Ballparks & WebApps)
+
+${ID_Sharepoint}=hpid-4dd5ee1c-ab45-4254-89f4-911296b90d81-homescreen-button
+${ID_OneDriveBusiness}=hpid-b29e8358-e9ae-4aad-a12a-1ac01be19603-homescreen-button
+${ID_OneDrivePersonal}=hpid-3ddad548-de39-4b7e-9cb9-ccbeee6c9f15-homescreen-button
+${ID_Google}=hpid-f655491f-ba6b-4729-bd6d-e97016af65ab-homescreen-button
+${ID_Box}=hpid-eaf8f7de-39ca-405f-90fc-e2430e07de4c-homescreen-button
+${ID_Dropbox}=hpid-7b46da50-5533-49c1-86ae-0e4dfca0548e-homescreen-button
+${windows_id}=u00100
+${windows_pw}=1qaz2wsx
+${2fa_id}=00100
+${2fa_pw}=454545
+${iteration} = 10
+${auth_method}=windows

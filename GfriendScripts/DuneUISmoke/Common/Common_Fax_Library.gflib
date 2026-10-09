@@ -1,0 +1,447 @@
+﻿using Dune
+using Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+Fax_OpenOption
+{
+    //Options checks will starts from here
+    If: Dune.Wait For (#faxAllOptionsButton,3)
+    {
+        Dune.Click Id (#faxAllOptionsButton)
+    }
+    Fail:
+    {
+        Return With Fail (unable to click on option button )
+        Dune.Go To Home Screen
+    }
+}
+
+Fax_OriginalSide
+{
+    Sleep (2)
+    If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #originalSidesSettings_2infoBlockRow,5) 
+    {
+        Dune.Click(#faxSettingsPageMenuListListViewlist1 #originalSidesSettings_2infoBlockRow)
+    }
+    Fail:
+    {
+        Fail (Unable to select the  Original side)
+    }
+}
+
+Fax_OriginalSide_2Sided
+{
+    //Clicks on 2 sided option
+     Common_Library.ValidateandCheck(#faxSettingsPageMenuListListView,, #RadioButtonOptionsduplexImageContainer)
+     Dune.Click Id (#faxSettingsPageMenuListListView #BackButton)
+}    
+Fax_OriginalSide_1Sided
+{
+    //Clicks on 1 sided option
+   Common_Library.ValidateandCheck(#faxSettingsPageMenuListListView,, #RadioButtonOptionssimplexImageContainer)
+}
+ 
+Fax_OriginalSize
+{
+    //Original size
+    Sleep (2)
+    If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsTextImage,5)
+    {
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsTextImage)
+    }
+    Fail:
+    {
+         Fail (Unable to select the  Original size)
+    }
+}
+ 
+Fax_OriginalSize_Letter_8dot5x11_in
+{
+    //Click on Letter (8.5x11 in.) option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_letter_8_dot_5x11inscan_originalSize,0.05,700)
+}  
+
+
+Fax_OriginalSize_Letter_MediaSize_8dot5x11_in
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsTextImage)
+    //Click on Letter ▭ (8.5x11 in.) option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #com_dot_hp_dot_ext_dot_mediaSize_dot_na_letter_8_dot_5x11in_dot_rotatedscan_originalSizeImageContainer,0.05,700)
+}
+
+Fax_OriginalSize_Legal_8dot5x14_in
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsTextImage)
+    //Click on Letter ▭ (8.5x11 in.) option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_legal_8_dot_5x14inscan_originalSizeImageContainer,0.05,700)
+}
+ 
+Fax_OriginalSize_A4_210x297mm
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsTextImage)
+    //Click on A4 (210x297 mm) option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #iso_a4_210x297mmscan_originalSize,0.05,700)
+}
+
+Fax_OriginalSize_A4_MediaSize_210x297mm
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsTextImage)
+    //Click on A4 ▭ (210x297 mm)
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #com_dot_hp_dot_ext_dot_mediaSize_dot_iso_a4_210x297mm_dot_rotatedscan_originalSize,0.05,700)
+} 
+
+Fax_OriginalSize_Ledger_11x17in
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsTextImage)
+    //Click on Ledger (11x17 in.)
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_ledger_11x17inscan_originalSize,0.05,700)
+}
+
+Fax_OriginalSize_A3_297x420mm
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsTextImage)
+    //Click on A3 (297x420 mm)
+    Common_Library.SwipeAndClick (#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #iso_a3_297x420mmscan_originalSize,0.05,700)
+}
+
+Fax_LighterDarker
+{
+    //LighterDarker for FAX
+    Sleep (2)
+    If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #scan_lighterDarkerSettingsSlider #scan_lighterDarkerMenuSlider,5)
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_lighterDarkerMenuSlider,7)
+    }
+    Fail:
+    {
+        Fail (Unable to slide the LighterDarker)
+    }
+} 
+
+Fax_ContentType
+{
+    //ContentType for FAX
+    Sleep (2)
+    If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1, #faxSettingsPageMenuListListViewlist1ScrollBar, #scan_contentTypeSettingsComboBox,0.05)
+    {
+        Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Content type)
+    }
+}
+
+Fax_ContentType_Mixed
+{
+    Sleep (1) 
+    //clicks on Mixed option 
+    Common_Library.SwipeAndClick(#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsmixed,0.05,700)
+} 
+Fax_ContentType_Photo
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+    //clicks on Photo option
+    Common_Library.SwipeAndClick(#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsphoto,0.05,700)
+}
+
+Fax_ContentType_Text
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+    //clicks on text option
+    Common_Library.SwipeAndClick(#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstext,0.05,700)
+}
+Fax_Resolution
+{
+    //Resolution for FAX
+    Sleep (2)
+    If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1, #faxSettingsPageMenuListListViewlist1ScrollBar, #fax_resolutionSettingsComboBox,0.05)
+    {
+        Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #fax_resolutionSettingsComboBox #fax_resolutionComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to set the Cover page option)
+    }
+} 
+
+Fax_Resolution_Fine_200x200dpi
+{
+    //clicks fine (200X200 dpi) option
+    Common_Library.SwipeAndClick(#fax_resolutionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsfine,0.05,700)
+} 
+     
+Fax_Resolution_Standard_200X100dpi
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #fax_resolutionSettingsComboBox #fax_resolutionComboBox)
+    //clicks standard (200X100 dpi) option
+    Common_Library.SwipeAndClick(#fax_resolutionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsstandard,0.05,700)
+}
+    
+Fax_Resolution_Superfine_300X300dpi
+{
+    Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #fax_resolutionSettingsComboBox #fax_resolutionComboBox)
+    //clicks Superfine (300X300 dpi) option
+    Common_Library.SwipeAndClick(#fax_resolutionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionssuperfine,0.05,700)
+}
+Fax_CoverPage
+{
+    //cover page for FAX
+    Sleep (2)
+    If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1, #faxSettingsPageMenuListListViewlist1ScrollBar, #fax_includeCoverPageSettingsSwitch,0.05)
+    {
+
+        Dune.Click Id (#fax_includeCoverPageMenuSwitch)
+    }
+    Fail:
+    {
+        Fail (Unable to set the Cover page option)
+    }
+}
+
+Fax_Notification
+{
+    //Notification
+    Sleep (2)
+    If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1, #faxSettingsPageMenuListListViewlist1ScrollBar, #sendJobNotification,0.05)
+    {
+        //Clicks on Notification Option
+        Dune.Click Id (#FaxSendNotification_2infoBlockRow)
+        Sleep (1)
+    }
+    Fail:
+    {
+        Fail (Unable to click on Notification)
+    }
+}
+
+Fax_Notification_NotifyAfterJobFinishes
+{   
+    Common_Fax_Library.NotifyAfterJobFinishesNotifymethod_Email
+    Common_Fax_Library.Fax_Notification
+    Common_Fax_Library.NotifyAfterJobFinishes_Notifymethod_Print
+} 
+
+NotifyAfterJobFinishes_NotifymethodEmail
+{
+    Dune.Click Id (#notifyAfterJobFinishesRBViewModel)
+    Sleep (1)
+    Dune.Click Id (#notificationMethodComboBoxViewModel #SettingsSpiceComboBox)
+    Dune.Click Id (#emailComboBoxModelImageContainer)
+    Sleep (1)
+    Dune.Click Id (#emailAddressTextFieldControlModel)
+    Sleep (1)
+    Dune.Set Text (#emailAddressTextFieldControlModel,${ToAddress})
+    Sleep (1)
+    //Clicks on Thumbnail
+    Dune.Click Id (#includeThumbnailCheckBoxViewModelImageContainer)
+    Sleep (1)
+    Dune.Click Id (#sendJobNotificationDoneButton)
+    Sleep (1)
+    Dune.Get Text (#sendJobNotification_firstinfoBlockRow #secondInfoBlockModelChevronRight #contentItem,${Email})
+    If: builtin.Equals (${Email},Email on completion)
+    {
+        Pass(Email notification is set successfully)
+    }
+    Fail:
+    {
+        Fail (Email on completion is not selected)
+    }
+}
+
+NotifyAfterJobFinishes_Notifymethod_Print
+{
+    Dune.Click Id (#notifyAfterJobFinishesRBViewModel)
+    Sleep (1)
+    Dune.Click Id (#notificationMethodComboBoxViewModel #SettingsSpiceComboBox)
+    Dune.Click Id (#printComboBoxModelImageContainer)
+    Sleep (1)
+    //Clicks on Thumbnail
+    Dune.Click Id (#includeThumbnailCheckBoxViewModelImageContainer)
+    Sleep (1)
+    Dune.Click Id (#sendJobNotificationDoneButton)
+    Sleep (1)
+    Dune.Get Text (#sendJobNotification_firstinfoBlockRow #secondInfoBlockModelChevronRight #contentItem,${Print})
+    If: builtin.Equals (${Print},Print on completion)
+    {
+        Pass(Print notification is set successfully)
+    }
+    Fail:
+    {
+        Fail (Print on completion is not selected)
+    }
+}
+    
+Fax_Notification_NotifyOnlyIfJobSuccessfull
+{
+    //Clicks on  Notify only if job successfull
+    Common_Fax_Library.NotifyOnlyIfJobSuccessfull_Notifymethod_Email
+    Common_Fax_Library.Fax_Notification
+    Common_Fax_Library.NotifyOnlyIfJobSuccessfull_Notifymethod_Print
+} 
+
+NotifyOnlyIfJobSuccessfull_Notifymethod_Email
+{
+    Dune.Click Id (#notifyOnlyOnFailRBViewModel)
+    Sleep (1)
+    Dune.Click Id (#notificationMethodComboBoxViewModel #SettingsSpiceComboBox)
+    Dune.Click Id (#emailComboBoxModelImageContainer)
+    Sleep (1)
+    Dune.Click Id (#emailAddressTextFieldControlModel)
+    Sleep (1)
+    Dune.Set Text (#emailAddressTextFieldControlModel,${ToAddress})
+    Sleep (1)
+    //Clicks on Thumbnail
+    Dune.Click Id (#includeThumbnailCheckBoxViewModelImageContainer)
+    Sleep (1)
+    Dune.Click Id (#sendJobNotificationDoneButton)
+    Sleep (1)
+    Dune.Get Text (#sendJobNotification_firstinfoBlockRow #secondInfoBlockModelChevronRight #contentItem,${Email})
+    If: builtin.Equals (${Email},Email on failure)
+    {
+        Pass(Email notification is set successfully)
+    }
+    Fail:
+    {
+        Fail (Email on completion is not selected)
+    }
+}
+
+NotifyOnlyIfJobSuccessfull_Notifymethod_Print
+{
+    Dune.Click Id (#notifyOnlyOnFailRBViewModel)
+    Sleep (1)
+    Dune.Click Id (#notificationMethodComboBoxViewModel #SettingsSpiceComboBox)
+    Dune.Click Id (#printComboBoxModelImageContainer)
+    Sleep (1)
+    //Clicks on Thumbnail
+    Dune.Click Id (#includeThumbnailCheckBoxViewModelImageContainer)
+    Sleep (1)
+    Dune.Click Id (#sendJobNotificationDoneButton)
+    Sleep (1)
+    Dune.Get Text (#sendJobNotification_firstinfoBlockRow #secondInfoBlockModelChevronRight #contentItem,${Print})
+    If: builtin.Equals (${Print},Print on failure)
+    {
+        Pass(Print notification is set successfully)
+    }
+    Fail:
+    {
+        Fail (Print on completion is not selected)
+    }
+}   
+ 
+Fax_Notification_DoNotNotify
+{
+    // Clicks on Do not Notify
+    Dune.Click Id (#never)
+    Sleep (1)
+    //Clicks on Done button
+    Dune.Click Id (#sendJobNotificationDoneButton)
+} 
+
+Fax_ExecuteManager()
+{
+    // Closing the option panel and click on Send button
+    Sleep (2)
+    If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #closeButton,2)
+    {
+        Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #closeButton)
+        Sleep (2)
+    }
+    //clicks on Send button 
+    Dune.Click Id (#sendFaxButtonFooterMain)
+    //waiting and clicking Done button
+    Dune.Wait For (#finish,20)
+    Dune.Click Id (#finish)
+    Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,5)
+    Dune.Wait For Active Job Gone (scanFax,70)
+    Sleep (5)
+    Dune.Go To Home Screen
+    Sleep (2)
+    //clicks on Sign out 
+    Dune.Click (#SignInButton)
+    Dune.Click Id(#userInfoSignInButton)
+    Dune.Reset User Setting 
+}
+Setup
+{
+    If:Dune.Navigate To Application On Home Screen (#44aa632b-cfa3-4c10-8cab-697a9bef610b)
+    {
+        Dune.Click (#44aa632b-cfa3-4c10-8cab-697a9bef610b)
+    }
+    Fail:
+    {
+        Return With Fail (Fax app button was not found on device home screen.)
+        Stop Test Suite
+    }
+    Common_Fax_Library.Fax_OpenOption()
+}
+Fax_OriginalSize_Scroll
+{
+    Common_Fax_Library.Fax_OriginalSize
+    Common_Fax_Library.Fax_OriginalSize_Letter_8dot5x11_in
+}
+Fax_ContentType_Scroll
+{
+    Common_Fax_Library.Fax_ContentType
+    Common_Fax_Library.Fax_ContentType_Mixed 
+}
+Fax_Resolution_Scroll
+{
+    Common_Fax_Library.Fax_Resolution
+    Common_Fax_Library.Fax_Resolution_Fine_200x200dpi
+}
+
+Fax_Notification_DoNotNotify_Option
+{
+    // Clicks on Do not Notify
+    Dune.Click Id (#never)
+    Sleep (1)
+}
+
+Fax_OriginalSide_2Side
+{
+    //Clicks on 2 sided option
+     Common_Library.ValidateandCheck(#faxSettingsPageMenuListListView,, #RadioButtonOptionsduplexImageContainer)
+} 
+ 
+Fax_Teardown
+{ 
+    Dune.Click (#BackButton)
+    Dune.Click (#closeButton)
+    Dune.Click (#ButtonControl)
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}
+
+Fax_OriginalSide_Teardown
+{ 
+    Dune.Click Id (#faxSettingsPageMenuListListView #BackButton)
+    Common_Library.SleepTime 
+    Dune.Click (#closeButton)
+    Common_Library.SleepTime 
+    Dune.Click (#ButtonControl)
+    Common_Library.SleepTime 
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}
+
+Fax_Notification_Teardown
+{ 
+    //Clicks on Done button
+    Dune.Click Id (#doneButton)
+    Dune.Click (#closeButton)
+    Dune.Click (#ButtonControl)
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    } 
+}

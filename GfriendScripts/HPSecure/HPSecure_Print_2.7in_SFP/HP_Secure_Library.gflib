@@ -1,0 +1,141 @@
+﻿using JediOmni
+using BadgeBox
+using Windows
+using Web
+
+Badgebox_Login(${BADGE_INDEX})
+{
+    If:JediOmni.Wait For Object (#hpid-button-ok,2)
+    {
+        JediOmni.Touch ID (hpid-button-ok)
+        //Added message for when  insufficient memeory issue comes
+        Pass (Insufficient memory handled by pressing OK button)
+    }
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+}
+
+HP_Secure_ActiveJob
+{
+    If:JediOmni.Wait For Object (.hp-button-active-jobs:last,120)
+    {
+        If:JediOmni.Wait For Object (#hpid-button-ok,2)
+        {
+            JediOmni.Touch ID (hpid-button-ok)
+            Pass (Insufficient memory handled by pressing OK button)
+        }
+        Pass (Active jobs are releasing)
+    }
+    Fail:
+    {
+        Fail (There is no active job icon on the home screen)
+    }
+    Sleep (5)
+    
+    If: JediOmni.Wait For Active Job Gone (50)
+    {
+        If:JediOmni.Wait For Object (#hpid-button-ok,2)
+        {
+            JediOmni.Touch ID (hpid-button-ok)
+            Pass (Insufficient memory handled by pressing OK button)
+        }
+        Pass (Active jobs are released)
+    }
+    Fail:
+    {
+        
+        Fail(Active jobs are not released)
+    }
+}
+
+Send_Jobs(${Job_Path},${Queue_Name})
+{
+    Windows.Print File To Print Queue (${Job_Path},${Queue_Name})
+}
+
+Initial_JobcountCheck
+{
+    Web.Click Text (Information)
+    Web.Click Text (Usage Page)
+    If: Web.Wait For Object (//*[@id="UsagePage.ImpressionsByMediaSizeTable.Print.Letter.Monochrome"],10)
+    {
+        Web.Get Text (//*[@id="UsagePage.ImpressionsByMediaSizeTable.Print.Letter.Monochrome"],${InitialJob_Count})
+    }
+    pass(Initial Job Count Retrieved)
+    //Added web.close to close browsers to save memory
+    Web.Close
+}
+
+Final_JobcountCheck(${Jobcountupdate_Maxtime})
+{
+    Sleep (${Jobcountupdate_Maxtime})
+    Web.Click Text (Information)
+    Web.Click Text (Usage Page)
+    If: Web.Wait For Object (//*[@id="UsagePage.ImpressionsByMediaSizeTable.Print.Letter.Monochrome"],10)
+    {
+        Web.Get Text (//*[@id="UsagePage.ImpressionsByMediaSizeTable.Print.Letter.Monochrome"],${FinalJob_Count})
+    }
+    Pass (Final Job count Retrieved)
+    If: BuiltIn.NotEquals (${InitialJob_Count},${FinalJob_Count})
+    {
+        //Added so that if job count is different, it is updated as such
+        Pass (Initial Job Count: ${InitialJob_Count} and Final Job Count: ${FinalJob_Count} are not same)
+    }
+    If: BuiltIn.Equals (${InitialJob_Count},${FinalJob_Count})
+    {
+        //Added so that if job count is same, it is updated as such
+        Pass (Initial Job Count: ${InitialJob_Count} and Final Job Count: ${FinalJob_Count} are same)
+    }
+    Web.Close
+    
+}
+
+EWS_Login(${EWS_Site},${EWS_Password})
+{
+    If: Web.Open with Chrome (${EWS_Site},120)
+    {
+        //contiune  
+    }
+    //Added refresh due to website not loading in some iterations
+    Repeat:2
+    {
+        Web.Refresh
+        Sleep (2)
+    }
+    //Sign-In with Credentials
+    If: Web.Wait For Object (//*[@id="EwsLogin"],120)
+    {
+        Web.Click Object (//*[@id="EwsLogin"]) 
+        Web.Wait For Object (//*[@id="PasswordTextBox"],30)
+        Web.Click Object (//*[@id="PasswordTextBox"])     
+        Web.Set Text (//*[@id="PasswordTextBox"],${EWS_Password})   
+    }
+
+    Web.Click Object (//*[@id="signInOk"])
+    
+    //waits for complete page to load 
+    If: Web.Wait For Object (//*[@id="EwsLogoff"],30)
+    {
+        //continue
+    }
+    Pass (Login Successfull)
+}
+
+//Added functions here itself so that they could be called by script just once
+HP_Secure_Flow(${Job_Path},${Queue_Name},${EWS_Site},${EWS_Password},${BADGE_INDEX})
+{
+    Repeat:8
+    {
+       HP_Secure_Library.Send_Jobs(${Job_Path},${Queue_Name})
+       Sleep (3)
+    }
+    HP_Secure_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    HP_Secure_Library.Initial_JobcountCheck
+    HP_Secure_Library.Badgebox_Login(${BADGE_INDEX})
+    HP_Secure_Library.HP_Secure_ActiveJob
+}
+
+JobCount_Check(${EWS_Site},${EWS_Password},${Jobcountupdate_Maxtime})
+{
+    HP_Secure_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    HP_Secure_Library.Final_JobcountCheck(${Jobcountupdate_Maxtime})
+}

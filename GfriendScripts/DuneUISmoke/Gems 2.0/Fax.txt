@@ -1,0 +1,167 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+using ..\Common\Common_Fax_Library.gflib
+
+Authentication
+{
+    Common_Library.CheckHomeScreen
+    Common_Library.AuthenticationEager(${UserName},${Password})
+}
+
+FaxWorkFlow
+{
+    If:Dune.Navigate To Application On Home Screen (#44aa632b-cfa3-4c10-8cab-697a9bef610b)
+    {
+        Dune.Click (#44aa632b-cfa3-4c10-8cab-697a9bef610b)
+    }
+    Fail:
+    {
+        Return With Fail (Fax app button was not found on device home screen.)
+        Stop Test Suite
+    }
+    
+    //entering Send To (Fax Number)
+    If: Dune.Wait For (#enterFaxNumberTextField,10)
+    {
+        //click on Send To Fax Number text box
+        Dune.Click Id (#enterFaxNumberTextField)
+            
+        //types the Fax Number 
+        Sleep (2)
+        Dune.Fax DialPad Click(${SendTo})
+    }
+    Fail:
+    {
+        Return With Fail (Unable to update to Address)
+    }
+    Common_Fax_Library.Fax_OpenOption()
+}
+
+TC_Fax_OriginalSide
+{
+    Common_Fax_Library.Fax_OriginalSide
+}
+
+TC_Fax_OriginalSide_1Sided
+{
+    Common_Fax_Library.Fax_OriginalSide_1Sided
+}
+
+TC_Fax_OriginalSide_2Sided
+{
+    Common_Fax_Library.Fax_OriginalSide_2Sided
+}
+
+TC_Fax_OriginalSize
+{
+    Common_Fax_Library.Fax_OriginalSize
+}
+
+TC_Fax_OriginalSize_Letter_8dot5x11_in
+{
+    Common_Fax_Library.Fax_OriginalSize_Letter_8dot5x11_in
+}
+
+TC_Fax_OriginalSize_Letter_MediaSize_8dot5x11_in
+{
+    Common_Fax_Library.Fax_OriginalSize_Letter_MediaSize_8dot5x11_in
+}
+
+TC_Fax_OriginalSize_Legal_8dot5x14_in
+{
+    Common_Fax_Library.Fax_OriginalSize_Legal_8dot5x14_in
+}
+TC_Fax_OriginalSize_A4_MediaSize_210x297mm
+{
+    Common_Fax_Library.Fax_OriginalSize_A4_MediaSize_210x297mm
+}
+
+TC_Fax_OriginalSize_Ledger_11x17in
+{
+    Common_Fax_Library.Fax_OriginalSize_Ledger_11x17in
+}
+
+TC_Fax_OriginalSize_A3_297x420mm
+{
+    Common_Fax_Library.Fax_OriginalSize_A3_297x420mm
+}
+TC_Fax_OriginalSize_A4_210x297mm
+{
+    Common_Fax_Library.Fax_OriginalSize_A4_210x297mm
+}
+
+TC_Fax_LighterDarker
+{
+    Common_Fax_Library.Fax_LighterDarker
+}
+
+TC_Fax_ContentType
+{
+    Common_Fax_Library.Fax_ContentType
+}
+
+TC_Fax_ContentType_Mixed
+{
+    Common_Fax_Library.Fax_ContentType_Mixed
+}
+
+TC_Fax_ContentType_Photo
+{
+    Common_Fax_Library.Fax_ContentType_Photo
+}
+
+TC_Fax_ContentType_Text
+{
+    Common_Fax_Library.Fax_ContentType_Text
+}
+
+TC_Fax_Resolution
+{
+    Common_Fax_Library.Fax_Resolution
+}
+
+TC_Fax_Resolution_Fine_200x200dpi
+{
+    Common_Fax_Library.Fax_Resolution_Fine_200x200dpi
+}
+TC_Fax_Resolution_Superfine_300X300dpi
+{
+    Common_Fax_Library.Fax_Resolution_Superfine_300X300dpi
+}
+TC_Fax_Resolution_Standard_200X100dpi
+{
+    Common_Fax_Library.Fax_Resolution_Standard_200X100dpi
+}
+TC_Fax_Notification
+{
+    Common_Fax_Library.Fax_Notification
+}
+
+TC_Fax_Notification_NotifyAfterJobFinishes
+{
+    Common_Fax_Library.Fax_Notification_NotifyAfterJobFinishes
+}
+
+TC_Fax_Notification_NotifyOnlyIfJobSuccessfull
+{
+    Common_Fax_Library.Fax_Notification_NotifyOnlyIfJobSuccessfull
+}
+
+TC_Fax_Notification_IncludeThumbnail
+{
+    Common_Fax_Library.Fax_Notification_IncludeThumbnail
+}
+
+TC_Fax_Notification_DoNotNotify
+{
+    Common_Fax_Library.Fax_Notification_DoNotNotify
+}
+
+TC_Fax_ExecuteManager
+{
+    Common_Fax_Library.Fax_ExecuteManager
+}
+
+
+

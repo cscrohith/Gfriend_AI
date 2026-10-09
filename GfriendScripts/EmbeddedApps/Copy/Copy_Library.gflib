@@ -1,0 +1,191 @@
+﻿/// <File>Copy_Library</File>
+/// <Modified>2021-07-08</Modified>
+/// <Description>Library of common routines for use with the 
+///   embedded Copy app</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${ButtonID}=hpid-copy-homescreen-button
+${ButtonText}=Copy
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\..\Device\Device_Library.gflib
+//Using DeviceAuth.gflib
+Using ..\..\DeviceAuth\DeviceAuth.gflib
+
+Using JediOmni
+
+/// <Name>OpenApp</Name>
+/// <Description>Open the Copy app</Description>
+/// <Parameters>User-ID : UserID/Username</Parameters>
+/// <Parameters>User-PW : Password</Parameters>
+/// <Parameters>User-Code : User Code</Parameters>
+/// <Parameters>HPID-UserID : </Parameters>
+/// <Parameters>HPID-Password : </Parameters>
+/// <Parameters>HPID-PIN : </Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+OpenApp(${User-ID},${User-PW},${User-Code},${HPID-UserID},${HPID-Password},${HPID-PIN})
+{
+    If: Device_Library.LaunchApp(${ButtonID},${ButtonText})
+    {
+        Sleep (${Very_Short_Wait_Time})
+
+        
+//        // check for and handle SIO 2 factor auth PIN
+//        If: DeviceAuth.Check_HPID_SIO(${HPID-UserID},${HPID-Password},${HPID-PIN})
+//        {
+//            Sleep (${Very_Short_Wait_Time})
+//
+            // verify in the Copy app
+            If: JediOmni.Wait For Object (hpid-copy-app-screen,${Wait_Time})
+            {
+                Return With Pass (OpenApp completed!)
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (OpenApp_Fail.png)
+                JediOmni.Press Home Key
+                Return With Fail (Fail opening of Copy app!)
+            }
+            Error:
+            {
+                JediOmni.Capture Screen Shot (OpenApp_Error.png)
+                JediOmni.Press Home Key
+                Return With Error (Error opening of Copy app!)
+            }
+//        }
+//        Fail:
+//        {
+//            JediOmni.Capture Screen Shot (OpenApp_Fail.png)
+//            JediOmni.Press Home Key
+//            Return With Fail (Fail opening of Copy app!)
+//        }
+//        Error:
+//        {
+//            JediOmni.Capture Screen Shot (OpenApp_Error.png)
+//            JediOmni.Press Home Key
+//            Return With Error (Error opening of Copy app!)
+//        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OpenApp_Fail.png)
+        JediOmni.Press Home Key
+        Return With Fail (Fail opening of Copy app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OpenApp_Error.png)
+        JediOmni.Press Home Key
+        Return With Error (Error opening of Copy app!)
+    }
+}
+
+/// <Name>AppExit</Name>
+/// <Description>Exit out of the app</Description>
+/// <Parameters></Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+AppExit
+{
+    Repeat: 2
+    {
+        JediOmni.Press Home Key
+    }
+    Return With Pass (AppExit complete!)
+}
+
+/// <Name>CompleteCopyJob</Name>
+/// <Description>Complete the Copy job</Description>
+/// <Parameters>JobCompleteTimeout : number of seconds to wait for completion</Parameters>
+/// <Precondition>scan job has been initiated, options and file name set</Precondition>
+/// <Notes></Notes>
+CompleteCopyJob(${JobCompleteTimeout})
+{
+    // all pages added, finish the scan
+    If: JediOmni.Wait For Object Gone (#hpid-button-copy-start.hp-disabled,${Long_Wait})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Return With Fail (Fail while waiting for Copy Start button to be available!)
+    }
+    Error:
+    {
+        Return With Error (Error while waiting for Copy Start button to be available!)
+    }
+    
+    If: JediOmni.Touch ID (hpid-button-copy-start)
+    {
+        // wait for the scanning screen to show/disappear
+        If: JediOmni.Wait For Text (Scanning...,${Very_Short_Wait_Time})
+        {
+            JediOmni.Wait For Text Gone (Scanning...,${Long_Wait})
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while pressing the Copy Start button!)
+    }
+    Error:
+    {
+        Return With Error (Error while pressing the Copy Start button!)
+    }
+    
+    // handle the original size screen if shown
+    If: JediOmni.Wait For Object (hpid-button-continue,${Very_Short_Wait_Time})
+    {
+        JediOmni.Touch ID (hpid-button-continue)
+        JediOmni.Wait For Object Gone (hpid-button-continue,${Short_Wait_Time})
+    }
+    
+    // wait for the job to complete within the specified time
+    If: JediOmni.Wait For Object Gone (#hpid-button-copy-start.hp-disabled,${JobCompleteTimeout})
+    {
+        Return With Pass (Complete Copy Job complete!)
+    }
+    Fail:
+    {
+        Return With Fail (Fail completing Copy job with specified timeout!)
+    }
+    Error:
+    {
+        Return With Error (Error while completing Copy job!)
+    }
+}
+
+/// <Name>SetNumberOfCopies</Name>
+/// <Description>Set the Number of Copies option</Description>
+/// <Parameters>Copy_NumberCopies : Number of copies</Parameters>
+/// <Precondition>Already in the Copy app</Precondition>
+/// <Notes></Notes>
+SetNumberOfCopies(${Copy_NumberCopies})
+{
+    If: JediOmni.Wait For Object (hpid-copy-start-copies,${Zero_Wait_Time})
+    {
+        JediOmni.Touch ID (hpid-copy-start-copies)
+        JediOmni.Wait For Object (hpid-keypad,${Minimal_Wait_Time})
+        JediOmni.Input Text (${Copy_NumberCopies})
+        JediOmni.Touch ID (hpid-keypad-key-close)
+        JediOmni.Wait For Object Gone (hpid-keypad,${Minimal_Wait_Time})
+        
+        Return With Pass (SetNumberOfCopies completed!)
+    }
+    Fail:
+    {
+        Return With Fail (Fail while finding the Copies textbox!)
+    }
+    Error:
+    {
+        Return With Error (Error while finding the Copies textbox!)
+    }
+}

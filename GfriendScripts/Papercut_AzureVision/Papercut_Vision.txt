@@ -1,0 +1,33 @@
+﻿using JediOmni
+using PapercutTC_Vision.gflib
+using Papercut_Vision.gfvar
+
+Setup_AzureVision
+{
+    PapercutTC_Vision.SetupAzureVision
+}
+
+Authentication
+{
+    PapercutTC_Vision.Authentication(${USERNAME},${PASSWORD},${BADGE_AUTH},${BADGE_INDEX})
+}
+
+Papercut_Flow
+{
+    JediOmni.Enable Paperless Mode
+    //To Print the jobs
+    If: Equals IgnoreCase (${PRINT},Y)
+    {
+        PapercutTC_Vision.Papercut_PullPrint(${PRINT_ALL},${ActivityId})
+    }
+    //To Delete the jobs
+    Fail:
+    {
+        PapercutTC_Vision.Papercut_Delete(${PRINT_ALL},${ActivityId})
+    }
+}
+
+Papercut_Signout
+{
+    PapercutTC_Vision.SignOut
+}

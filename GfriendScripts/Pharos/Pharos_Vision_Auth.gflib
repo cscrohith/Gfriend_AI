@@ -1,0 +1,245 @@
+﻿using JediOmni
+using Vision
+using BadgeBox
+using Info
+
+SetupVisionAI(${STF_AzureEndpoint},${SOLUTION_NAME})
+{
+    Vision.Set AI OCR Method (${STF_AzureEndpoint},${SOLUTION_NAME})
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+}
+
+Authentication(${STF_UserName},${STF_UserPassword},${BADGE_AUTH},${STF_BadgeIndex})
+{
+    If: Vision.Is Text Exist (SignOut)
+    {
+        Pharos_Vision_AUTH.ClearAuth()
+    }
+    If: Equals IgnoreCase (${BADGE_AUTH},Y)
+    {
+        Pharos_Vision_AUTH.Pharos_Vision_AI_BadgeBox_Authentication(${BADGE_AUTH},${STF_BadgeIndex})
+    }
+    Fail:
+    {
+        Pharos_Vision_AUTH.Pharos_Vision_Credential(${STF_UserName},${STF_UserPassword})
+    }
+}
+
+//
+/////////////////////////////////////////////////
+// Routine:         Pharos BadgeBox authentication
+// Description:     Pharos Vision Authentication
+//
+// Arguments:       ${BADGE_AUTH}, ${STF_BadgeIndex}
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Pharos_Vision_AI_BadgeBox_Authentication(${BADGE_AUTH},${STF_BadgeIndex})
+{
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_DeviceButtonPress)
+     
+    If: Equals IgnoreCase (${BADGE_AUTH},Y)
+    {
+        
+        Info.Mark End (STF_AppButtonPress,4)
+        Info.Mark Start (STF_Authentication,1)
+        Sleep (1)
+        While:Vision.Is Text Exist (UsernameAndPassword): 5
+        {
+            Info.Mark Start (STF_EnterCredentials,2)
+            BadgeBox.Scan Badge (${STF_BadgeIndex})
+            Info.Mark End (STF_EnterCredentials,2)
+            If: Vision.Is Text Exist (SignOut)
+            {
+                Pass (Authenticated successfully)
+            }
+            Info.Mark End (STF_Authentication,1)
+            If: Vision.Is Text Exist (PrintAll)
+            {
+                Info.Mark End (STF_AppShown,3)
+            }
+        }
+    }
+    Fail:
+    {
+        Fail (Sign In was not Successfull)
+        Stop Test Case
+    }
+}
+ 
+ 
+ //
+/////////////////////////////////////////////////
+// Routine:         Enter Crendential
+// Description:     Entering the credential for Pharos 
+//
+// Arguments:       ${STF_UserPassword}, ${STF_UserName} 
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Pharos_Vision_Credential(${STF_UserName},${STF_UserPassword})
+{
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    
+    If: Vision.Is Text Exist(UsernameAndPassword)
+    {
+        Vision.Click Text (UsernameAndPassword)
+        Info.Mark End (STF_AppButtonPress,4)
+        Sleep (1)
+        Info.Mark Start (STF_Authentication,1)
+        Info.Mark Start (STF_EnterCredentials,2)
+        Vision.Is Text Exist (Username)
+        Vision.Click Text (Username)
+        Sleep (1)
+        JediOmni.Input Text (${STF_UserName})
+        Sleep (1)
+        JediOmni.Press Tab Key
+        JediOmni.Input Text (${STF_UserPassword})
+        Info.Mark End (STF_EnterCredentials,2)
+        //To Login
+        JediOmni.Press Enter Key
+        Info.Mark End (STF_Authentication,1)
+        Sleep (1)
+    }
+    Fail:
+    {
+        Fail (Sign In was not Successfull)
+        Stop Test Case
+    } 
+}
+
+//
+/////////////////////////////////////////////////
+// Routine:         Pharos Vision Print/Delete/SelectAll
+// Description:     Pharos Vision to Print documents and delete Documents
+//
+// Arguments:       ${PRINT},${SELECT_ALL}
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Pharos_Vision_DeletePrintSelectAll(${PRINT},${SELECT_ALL})
+{
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_ProcessingJob)
+    If: Vision.Is Text Exist (ReviewDocuments)
+    {
+        Info.Mark End (STF_AppShown,3)
+        Vision.Click Text (ReviewDocuments)
+    }
+    Sleep(2)
+    If: Vision.Is Text Exist (iRefresh)
+    {
+        Vision.Click Text (iRefresh)
+    }
+    //PrintAll or DeleteAll
+    If: Equals IgnoreCase (${SELECT_ALL},Y)
+    {
+        Info.Mark Start (STF_ProcessingJob,5) 
+        If: Vision.Is Text Exist (iSelectAll)
+        {
+            Vision.Click Text (iSelectAll)
+            If: Equals IgnoreCase (${PRINT},Y)
+            {
+                Vision.Click Text (Print)
+            }
+            Fail:
+            {
+                Vision.Click Text (iDelete)
+            }   
+        }
+        Fail:
+        {
+            Fail (No documents available to print)
+        }
+    }
+    //1 document Print or Delete
+    Fail:
+    {
+        If: Vision.Is Text Exist (FirstJob)
+        {
+            Vision.Click Text (FirstJob)
+            If: Equals IgnoreCase (${PRINT},Y)
+            {
+                Vision.Click Text (Print)
+            }
+            Fail:
+            { 
+                Vision.Click Text (iDelete)
+            }
+        } 
+        Fail:
+        {
+            Fail (No documents available to print)
+        }
+    }
+    Info.Mark End (STF_ProcessingJob,5)  
+}
+
+//Clear authentication
+ClearAuth
+{
+    If: Vision.Is Text Exist (SignOut)
+    {
+        Vision.Click Text (SignOut)  
+        Sleep(2)
+    }
+    Fail:
+    {
+        Return With Fail (Fail to Sign Out)
+    }
+    If: Vision.Is Text Exist (UsernameAndPassword)
+    {
+        Pass (ClearAuth) 
+    }
+    Sleep (2)
+}
+
+//
+/////////////////////////////////////////////////
+// Routine:         SignOut 
+// Description:     Pharos Sign out
+//
+// Arguments:       ${USER_NAME} 
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignOut(${STF_UserName})
+{
+    If: Vision.Is Text Exist (UsernameAndPassword)
+    {
+        Pass (ClearAuth) 
+    }
+    Fail:
+    {
+        Vision.Click Text (SignOut)
+        Sleep (2)
+    }
+}

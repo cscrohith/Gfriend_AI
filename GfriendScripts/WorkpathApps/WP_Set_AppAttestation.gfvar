@@ -1,0 +1,52 @@
+﻿//AppAttestation variables
+${UtilityPath}=\\rdlfs.etl.boi.rd.hpicorp.net\public\Test\Platform\Resources\AppAttestation_SIO\Update_AttestationConfiguration_v2.5
+${UtilityExe}=UpdateAttestation.exe
+${UtilityAccount}=admin@123
+
+//App options
+//Box Staging
+//${UtilityOption}=1
+//Box Production
+//${UtilityOption}=2
+//Clio Staging
+//${UtilityOption}=3
+//Clio Staging
+//${UtilityOption}=4
+//Dropbox Staging
+//${UtilityOption}=5
+//Dropbox Production
+//${UtilityOption}=6
+OneDrive for Personal
+//${UtilityOption}=7
+//OneDrive for Business
+//${UtilityOption}=8
+//Sharepoint Online
+//${UtilityOption}=9
+//Google Drive Staging
+//${UtilityOption}=10
+//Google Drive Production
+//${UtilityOption}=11
+//Imanage Staging
+//${UtilityOption}=12
+//Imanage Production
+//${UtilityOption}=13
+//Concur
+//${UtilityOption}=14
+//Sage
+//${UtilityOption}=15
+//Scan to Email
+//${UtilityOption}=16
+//Scan to FTP
+//${UtilityOption}=17
+//Scan to SMB
+//${UtilityOption}=18
+//HPMail Staging
+//${UtilityOption}=19
+//HPMail Production
+//${UtilityOption}=20
+//Regus Kiosk
+//${UtilityOption}=21
+//Secure Access
+//${UtilityOption}=22
+//All Apps
+//${UtilityOption}=23

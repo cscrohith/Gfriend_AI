@@ -1,0 +1,190 @@
+﻿using JediOmni
+using Vision
+using Files.gfvar
+
+AzureVision(${AzureEndpoint},${SubscriptionKey})
+{
+    Encrypt(${AzureEndpoint},${AzureEndpointEncryptedValue})
+    Encrypt(${SubscriptionKey},${SubscriptionKeyEncryptedValue})
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (block)
+}
+
+ClearAuth(${SignIn_Or_SignOut_ID})
+{
+    If: Vision.Is Text Exist (Sign In)
+    {
+        Pass (ClearAuth) 
+    }
+    Fail:Vision.Is Text Exist (Sign Out)
+    {
+        JediOmni.Press Home Key
+        Sleep (2)
+        JediOmni.Touch ID (${SignIn_Or_SignOut_ID})
+        Sleep (10)
+    }
+}
+
+Windows_SignIn(${User_Name},${Password})
+{
+    Vision.Click Text (Sign In)
+    Sleep (3)
+    Vision.Is Text Exist (Windows)
+    Sleep (3)
+    JediOmni.Wait For Object (hpid-signin-textbox-UserNameTextBox,10)
+    JediOmni.Touch ID (hpid-signin-textbox-UserNameTextBox)
+    Sleep (2)
+    JediOmni.Input Text (${User_Name})
+    Sleep (3)
+    JediOmni.Touch ID (hpid-signin-textbox-PasswordTextBox)
+    Sleep (2)
+    JediOmni.Input Text (${Password})
+    Sleep (3)
+    Vision.Click Text (Sign In)
+    
+    JediOmni.Wait For Object (hpid-button-signin-ok,10)
+    JediOmni.Touch ID (hpid-button-signin-ok)
+    Sleep (5)
+    
+    If: Vision.Is Text Exist (HP for OneDrive)
+    {
+        Pass (One Drive APP insatlled)
+    }
+    Fail:
+    {
+        Fail (One Drive App not insatlled)
+    }
+}
+
+One_Drive_SignIn(${Email},${EmailPasswordPart1},${EmailPasswordPart2})
+{
+    Vision.Click Text (HP for OneDrive)
+    Sleep (15)
+    
+    If:Vision.Is Text Exist (View) 
+    {
+        While:JediOmni.Press Tab Key:3 {
+            Sleep (2)  
+        }
+        JediOmni.Press Enter Key
+        Sleep (5)
+        While:JediOmni.Press Tab Key:2 {
+            Sleep (3)  
+        }
+        JediOmni.Press Enter Key 
+    }
+    Sleep (20)
+    
+    //click on Email text box
+    Vision.Click XY Location (590,400,450,10)
+    Sleep (5)
+    JediOmni.Input Text (${Email})
+    Sleep (10)
+    
+    //click on @ symbol
+    Vision.Click XY Location (180,715,15,15)
+    Sleep (5)
+    JediOmni.Input Text (gmail.com)
+    Sleep (10)
+    
+    // To hide the keyboard
+    Vision.Click XY Location (75,740,10,5)
+    Sleep (5)
+    Vision.Click Text (Next)
+    Sleep (10)
+    
+    Vision.Click Text (Use your password)
+    Sleep (10)
+    JediOmni.Input Text (${EmailPasswordPart1})
+    Sleep (5)
+    
+    // Shift botton 
+    Vision.Click XY Location (30,685,25,5) 
+    Sleep (10)
+    
+    // Click on @ symbol
+    Vision.Click XY Location (85,540,10,10)
+    Sleep (10)
+    JediOmni.Input Text (${EmailPasswordPart2})
+    Sleep (15)
+    
+    // To hide the keyboard
+    Vision.Click XY Location (70,735,10,10)
+    Sleep (5)
+    Vision.Click Text (Next)
+    Sleep (50)
+    If:Vision.Is Text Exist (Close)
+    {
+        Vision.Is Text Exist (Close)
+        Vision.Click Text (Close)
+    } 
+    Sleep (5)
+    If:Vision.Is Text Exist (No Thanks)
+    {
+        Sleep (3)
+        Vision.Click Text (No Thanks)
+    }
+    Vision.Is Text Exist (Scan)
+    JediOmni.Capture Screen Shot (One Drive)
+}
+
+One_Drive_Print(${Doc_Name},${File_Name})
+{
+    Vision.Is Text Exist (${Doc_Name})
+    Vision.Click Text (${Doc_Name})
+    Sleep (15)
+    Vision.Is Text Exist (${File_Name})
+    Vision.Click Text (${File_Name})
+    Sleep (10)
+    Vision.Is Text Exist (Print)
+    Sleep (5)
+    //Click on print button
+    If: Vision.Click Text (Print)
+    {
+        // Print button clicked
+    }
+    Sleep (10)
+    If: Vision.Is Text Exist (SCAN)
+    {
+        //File printed successfully    
+    }
+
+}
+//OneDrive application sign out
+One_Drive_SignOut
+{
+    //To click sign out list control
+    Vision.Click XY Location (989,64,6,20)
+    If: Vision.Is Text Exist (Sign Out)
+    {
+        Vision.Click Text (Sign Out)
+        //Use tab to click on Exit  button
+        While:JediOmni.Press Tab Key:3  
+        {
+            Sleep(2)
+        }
+        JediOmni.Press Enter Key
+        Sleep (3)
+    }
+    Fail:
+    {
+        Fail (One Drive App sign out failed)
+    }
+    
+}
+//windows sign out
+SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+{
+    If:JediOmni.Wait For Object (${SignIn_Or_SignOut_ID},50)
+    {
+        JediOmni.Touch ID (${SignIn_Or_SignOut_ID})
+    }
+    Fail:Vision.Is Text Exist (Sign Out)
+    {
+        JediOmni.Press Home Key
+        Sleep (2)
+        JediOmni.Touch ID (${SignIn_Or_SignOut_ID})
+    }
+    JediOmni.Wait For Object (${Reset_Button_ID},10)
+}

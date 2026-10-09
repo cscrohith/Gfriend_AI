@@ -1,0 +1,9 @@
+// standard defined wait time variables for consistency and ease of adjustment
+${Zero_Wait_Time}=0
+${Minimal_Wait_Time}=1
+${Very_Short_Wait_Time}=2
+${Short_Wait_Time}=5
+${Wait_Time}=15
+${Long_Wait}=30
+${Very_Long_Wait}=60
+${Longest_Wait}=300

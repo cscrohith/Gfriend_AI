@@ -1,0 +1,48 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+
+
+Authentication
+{
+    Common_Library.CheckHomeScreen
+    Common_Library.AuthenticationEager(${UserName},${Password})
+}
+ScanToUSBWorkFlow
+{
+    If: Dune.Wait For (#ScanFolderGUID,10)
+    {
+        Dune.Click (#ScanFolderGUID)
+        Dune.Wait For (#df4a8a01-7659-486f-95d5-e125ccd1529a,5)
+        Dune.Click (#df4a8a01-7659-486f-95d5-e125ccd1529a)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to click on Scan Application)
+        Stop Test Suite
+    }
+         
+    //entering To address, From address
+    If: Dune.Wait For (#fileNameTextField,10)
+    {
+        Dune.Click Id (#fileNameTextField)
+        Get Random Number (01,1000,${FileName})
+        Dune.Set Text (#fileNameTextField,${FileName})
+        If: Dune.Wait For (#enterKey1,2)
+        {
+            Dune.Click Id (#enterKey1)
+        }
+        Sleep (1)
+    }
+    Fail:
+    {
+        Return With Fail (Scan to USB app is not opened)
+    }
+}        
+Option_Check
+{
+    Common_Library.Scan_Option_Validation_For_Camden_and_Busch
+}
+
+

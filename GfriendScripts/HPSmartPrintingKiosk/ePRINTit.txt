@@ -1,0 +1,13 @@
+﻿Using ePRINTit.gflib
+Using ePRINTit.gfvar
+
+
+ePRINTit Portal
+{
+    ePRINTit.ePRINTit Portal(${STF_Username},${STF_Password},${path},${URL})
+}
+ePRINTit Device
+{
+    ePRINTit.ePRINTit Device(${PIN},${STF_Username},${STF_Password},${STF_Document_name},${PIN_AUTH})
+}
+   

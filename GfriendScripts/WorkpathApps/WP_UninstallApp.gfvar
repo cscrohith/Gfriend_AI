@@ -1,0 +1,21 @@
+﻿//Workpath App variables
+${InstallAppPath}=\\rdlfs.etl.boi.rd.hpicorp.net\public\Test\Platform\Resources\JA Link Apps\Latest\
+
+//${InstallAppFile}=Box_1.01.14.hpk
+//${InstallAppFile}=Clio_1.01.10.hpk
+//${InstallAppFile}=Concur_1.01.14
+//${InstallAppFile}=Dropbox_1.01.14.hpk
+//${InstallAppFile}=GoogleDrive_1.01.16.hpk
+//${InstallAppFile}=HPMailFlow_1.00.10.hpk
+//${InstallAppFile}=iManage_2.00.07.hpk
+//${InstallAppFile}=OneDrive_1.01.15.hpk
+//${InstallAppFile}=OneDriveBusiness_1.01.15.hpk
+//${InstallAppFile}=PONAgentApp_1.01.049.hpk
+//${InstallAppFile}=Regus_plugin_1.01.079_.hpk
+//${InstallAppFile}=SageIntacct_1.01.10.hpk
+//${InstallAppFile}=ScanToEmail_1.01.09.hpk
+//${InstallAppFile}=ScanToFTP_1.01.09.hpk
+//${InstallAppFile}=ScanToSMB_1.01.09.hpk
+//${InstallAppFile}=SecureAccess_2.00.07.hpk
+${InstallAppFile}=SharePoint_1.01.14.hpk
+//${InstallAppFile}=SmartPrintingKiosk_1.02.083_private.hpk

@@ -1,0 +1,179 @@
+﻿using Android
+using JediOmni
+using Vision
+
+AzureVision(${AzureEndpoint},${SubscriptionKey})
+{
+    //${AzureEndpoint} is a variable from AzureVariables.gfvar file which has actual value of the Azure Endpoint , ${AzureEndpointEncryptedValue} stores the encrypted value of Azure Endpoint
+     Encrypt(${AzureEndpoint},${AzureEndpointEncryptedValue})
+    //${SubscriptionKey} is a variable from AzureVariables.gfvar file which has actual value of the Subscription Key , ${SubscriptionKeyEncryptedValue} stores the encrypted value of Subscription Key
+    Encrypt(${SubscriptionKey},${SubscriptionKeyEncryptedValue})
+    //Pass the encrypted values of Azure Endpoint and Subscription key in the Set OCR Method Keyword
+    //1.If the endpoint and subscriptionkey are encrypted in the Encrypted Variables form , then pass the 3rd parameter as "UI" 
+    //2.If the endpoint and subscriptionkey are encrypted using Encrypt Keyword , then pass the 3rd parameter as "ENCRYPT"
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+}
+
+Setup(${CancelScanNotifictaion},${YesButton_CancelScanNotification},${ClearingSettingsMsg})
+{
+    JediOmni.Reset
+    JediOmni.Press Home Key
+
+    // If previous iteration has failed, screen may be stuck in middle of scan.
+    If: JediOmni.Wait For Object (${CancelScanNotifictaion},1) 
+    {
+        JediOmni.Touch ID (${YesButton_CancelScanNotification})
+    }
+    JediOmni.Reset
+    JediOmni.Wait For Text Gone (${ClearingSettingsMsg},5)
+}
+
+Open_HPScanAIEnhanced(${HPScanAIEnhanced},${ScanAIApplicationIcon},${DemoProjectUnderTest})
+{
+    If: JediOmni.Check Screen Contains Full Text (${HPScanAIEnhanced})
+    {
+        JediOmni.Touch ID (${ScanAIApplicationIcon})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-app)
+        Return With Fail (App couldn't be found on the printer)
+    }
+    
+    //HP Scan AI Enhanced takes some time to load screen
+    While:!Vision.Is Text Exist (${DemoProjectUnderTest}):2
+    {
+        Sleep(1)
+    }
+}
+
+Select_WorkflowProject(${DemoProjectUnderTest},${ProjectUnderTest},${StartNewJobbutton})
+{
+    While:!Vision.Is Text Exist (${DemoProjectUnderTest}):20 
+    {
+        JediOmni.Press Down Key
+    }
+    If: Vision.Is Text Exist (${DemoProjectUnderTest})
+    {
+        Vision.Click Text (${ProjectUnderTest})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-workflow-proj)
+        Fail(Failed to find or click on workflow project: ${DemoProjectUnderTest})
+    }
+    Vision.Click Text (${StartNewJobbutton})
+}
+
+Scan_DocMultipleTime(${ScanButton},${CancelScan},${DoneButton})
+{
+    //ScanCount=5
+    Repeat:5
+    {
+        While:!JediOmni.Wait For Object (${ScanButton},1):30
+        {
+            Sleep(3)
+        }
+        JediOmni.Capture Screen Shot (scr-contains-scan-btn)
+        JediOmni.Touch ID (${ScanButton})
+        While:Vision.Is Text Exist (${CancelScan}):60
+        {
+            Sleep(5)
+        }
+    }
+    While:!JediOmni.Wait For Object (${DoneButton},1):30
+    {
+        Sleep(10)
+    }
+    JediOmni.Capture Screen Shot (scr-contains-done-btn)
+    JediOmni.Touch ID (${DoneButton})
+    Sleep(3) 
+}
+
+Wait_UploadDocumentsToAlumaPortal(${CancelUpload})
+{
+    JediOmni.Capture Screen Shot (upload-doc-to-aluma)
+    While:: Vision.Is Text Exist (${CancelUpload}): 30
+    {
+        Sleep(10)
+    }
+}
+
+Click_NextStepButton(${NextStepButton})
+{
+    JediOmni.Capture Screen Shot (scr-contains-nxt-step-btn)
+    Vision.Is Text Exist (${NextStepButton})
+    Vision.Click Text (${NextStepButton})
+}
+
+Wait_DocumentSeparationScreen(${ContinueOnDesktopButton})
+{
+    While:!Vision.Is Text Exist (${ContinueOnDesktopButton}):10
+    {
+        Sleep(10)
+    }
+}
+
+Click_ContinueOnDesktopButton(${ContinueOnDesktopButton})
+{
+    If:Vision.Is Text Exist (${ContinueOnDesktopButton})
+    {
+        Vision.Click Text (${ContinueOnDesktopButton})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-continue-desktop-btn)
+        Fail(Failed to find or click ${ContinueOnDesktopButton} button)
+    }
+}
+
+Input_ProjectIdentifierName(${TaskNameTextFeild})
+{
+    Sleep (5)
+    Vision.Is Text Exist (${TaskNameTextFeild})
+    Vision.Click Text with index (${TaskNameTextFeild},2)
+    JediOmni.Capture Screen Shot (scr-contains-txt-box)
+    JediOmni.Input Text (demo-1)
+    JediOmni.Press Enter Key
+    JediOmni.Capture Screen Shot (scr-contains-value-txtbox)
+}
+
+Click_Continue_SendToAlumaPortal(${ContinueSendingToPortal})
+{
+    Vision.Is Text Exist (${ContinueSendingToPortal})
+    Vision.Click Text (${ContinueSendingToPortal})
+    JediOmni.Capture Screen Shot (uploading-to-aluma-portl)
+}
+
+Click_Finish(${FinishSendingToPortal})
+{
+    Sleep (10)
+    If: Vision.Is Text Exist (${FinishSendingToPortal})
+    {
+        Vision.Click Text (${FinishSendingToPortal})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-finish-btn)
+        Fail (Failed to click 'Finish' button.) 
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-finish-btn)
+        Error (Finish button was not found)
+    }
+}
+
+Wait_WorkflowProjectsListPage(${DemoProjectUnderTest})
+{
+    Vision.Is Text Exist (${DemoProjectUnderTest})
+    JediOmni.Capture Screen Shot (scr-contains-wrkflw-prjct)
+}
+
+Teardown
+{
+    JediOmni.Press Home Key
+    Sleep(2)
+}

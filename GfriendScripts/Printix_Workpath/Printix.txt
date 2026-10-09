@@ -1,0 +1,36 @@
+﻿using JediOmni
+Using PrintixTC.gflib
+Using Printix.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         Printix_FLOW
+// Description:     Printix Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Printix_FLOW
+{
+    JediOmni.Enable Paperless Mode
+    If: PrintixTC.Printix_PullPrint(${PRINT_ALL},${BADGE_AUTH},${BADGE_INDEX},${First_Digit},${Second_Digit},${Third_Digit},${Fourth_Digit},${Fifth_Digit},${Sixth_Digit},${First_PIN},${Second_PIN},${Third_PIN},${Fourth_PIN})
+    { 
+        //Continue  
+    }
+    
+    Fail:
+    {
+        Return With Fail (Failed while Performing pull print operation!)
+    }
+    Error:
+    {
+        Return With Error (Error while Performing pull print operation!)
+    }
+    
+    PrintixTC.SignOut
+}

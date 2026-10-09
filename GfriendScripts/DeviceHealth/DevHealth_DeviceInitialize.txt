@@ -1,0 +1,45 @@
+﻿///<File>DevHealth_DeviceInitialize.txt</File>
+///<Modified>2020-04-22</Modified>
+///<Description>Initialize the device, from EWS, for the Device Health OOBE test</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+Using DevHealth_DeviceInitialize.gfvar
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_EWS_Library.gflib
+Using ..\Device\Device_EWS_Library.gflib
+
+Using Web As EWS_Web
+
+/// <Name>InitializeDevice</Name>
+/// <Description>Initialize the device, from EWS, for the Device Health OOBE test</Description>
+/// <Notes></Notes>
+InitializeDevice
+{
+    // oepn the device EWS
+    If: Device_EWS_Library.OpenEWS (${DUT_Address})
+    {
+        // check admin password set, set if not set
+        If: Device_EWS_Library.SetAdminPassword (${DUT_AdminPW})
+        {
+            // set the proxy
+            If: Device_EWS_Library.SetProxy (${Device_ProxyServer}, ${Device_ProxyPort}, ${Device_ProxyExceptionsList} )
+            {
+            }
+            Fail:
+            {
+                Fail (Set device proxy failed!)
+            }
+        }
+        Fail:
+        {
+            Fail (Set device admin password failed!)
+        }
+    }
+    Fail:
+    {
+        Fail (Access device ${DUT_Address} EWS failed!)
+    }
+}

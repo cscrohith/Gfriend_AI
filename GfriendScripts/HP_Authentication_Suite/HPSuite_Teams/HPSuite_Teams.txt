@@ -1,0 +1,40 @@
+﻿using Vision
+using HPSuite_Teams.gfvar
+using HPSuite_Teams.gflib
+
+SetupAzureVision
+{
+   HPSuite_Teams.SetupAzureVision(${STF_AzureEndpoint},${STF_AzureKey})
+}
+
+Authentication
+{
+    If: HPSuite_Teams.Authentication(${STF_BadgeIndex})
+    {
+        //Continue
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (Authentication_Fail)
+        Fail (Authentication not Successful)
+        Stop Test Suite
+    }
+}
+
+HPSuite_Teams_Flow
+{
+    HPSuite_Teams.HPSuite_SelectTeams(${Teams_Name},${Chat_Name})
+    If: Equals IgnoreCase (${Print},Y)
+    {
+        HPSuite_Teams.HPSuite_Teams_Print(${Print_FileName}) 
+    }
+    If: Equals IgnoreCase (${Scan},Y)
+    {
+        HPSuite_Teams.HPSuite_Teams_Scan() 
+    }
+}
+
+Teardown
+{ 
+   HPSuite_Teams.HPSuite_Teams_Teardown()
+}

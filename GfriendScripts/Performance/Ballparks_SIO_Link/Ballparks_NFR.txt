@@ -1,0 +1,70 @@
+﻿//- [2020-10-22 11:28:00][ron.pridmore@hp.com][SIV-C][AutoTestSuite]
+//- Add two method to support new 2FA SIO behavior
+//- -6pin input is only required whenever WorkPath app is launched
+// ++++++++++++++++++++  File Name  ++++++++++++++++++++
+// Ballparks_NFR.txt
+//
+// ++++++++++++++++++++ Description ++++++++++++++++++++
+// To measure Ballparks SIO NFR performance and reliability
+// ++++++++++++++++++++ Restriction ++++++++++++++++++++
+// 
+//
+// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2020-10-22 Initial Version (copied from SIV-K's Workpath_NFR.txt and modified to Ballparks & WebApps)
+
+using link_variable.gfvar
+//using Window_auth.gflib
+using Sio_nfr.gflib
+//using 2fa.gflib
+
+
+HPID_2ndLinkingPerformanceForWindowsAuth
+{
+    Sio_nfr.HPID_2ndLinking(hpid2ndlinking_windows,windows)
+}
+
+HPID_2ndLinkingPerformanceForHPACAuth 
+{
+    Sio_nfr.HPID_2ndLinking(hpid2ndlinking_hpac,hpac)
+}
+
+HPID_2ndLinkingPerformanceForSafecomAuth
+{
+    Sio_nfr.HPID_2ndLinking(hpid2ndlinking_safecom,safecom)
+}
+
+CloudSIO_App_LaunchingForSharepoint
+{
+    Sio_nfr.CloudSIO1stLaunching(Sharepoint1stCloudSIOPerformance,${ID_Sharepoint})
+    Sio_nfr.CloudSIO2ndLaunching(Sharepoint2ndCloudSIOPerformance,${ID_Sharepoint})
+}
+
+CloudSIO_App_LaunchingForOneDriveBusiness
+{
+    Sio_nfr.CloudSIO1stLaunching(OnedriveB1stCloudSIOPerformance,${ID_OneDriveBusiness})
+    Sio_nfr.CloudSIO2ndLaunching(OnedriveB2ndCloudSIOPerformance,${ID_OneDriveBusiness})
+}
+
+CloudSIO_App_LaunchingForOneDrivePersonal
+{
+    Sio_nfr.CloudSIO1stLaunching(OnedriveP1stCloudSIOPerformance,${ID_OneDrivePersonal})
+    Sio_nfr.CloudSIO2ndLaunching(OnedriveP2ndCloudSIOPerformance,${ID_OneDrivePersonal})
+}
+
+CloudSIO_App_LaunchingForGoogle
+{
+    Sio_nfr.CloudSIO1stLaunching(Google1stCloudSIOPerformance,${ID_Google})
+    Sio_nfr.CloudSIO2ndLaunching(Google2ndCloudSIOPerformance,${ID_Google})
+}
+
+CloudSIO_App_LaunchingForBox
+{
+    Sio_nfr.CloudSIO1stLaunching(Box1stCloudSIOPerformance,${ID_Box})
+    Sio_nfr.CloudSIO2ndLaunching(Box2ndCloudSIOPerformance,${ID_Box})
+}
+
+CloudSIO_App_LaunchingForDropbox
+{
+    Sio_nfr.CloudSIO1stLaunching(Dropbox1stCloudSIOPerformance,${ID_Dropbox})
+    Sio_nfr.CloudSIO2ndLaunching(Dropbox2ndCloudSIOPerformance,${ID_Dropbox})
+}

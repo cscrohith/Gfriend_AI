@@ -1,0 +1,31 @@
+﻿//Azure Vision End Point and Subscription key
+${AzureEndpoint}=https://azure.com/
+${SubscriptionKey}=wwxxyyzz
+
+//Credentials 
+${USERNAME} = rdladmin
+${PASSWORD} = rdl@123
+
+//For Badgebox,mention the variable (${BADGE_AUTH}) value as Y
+//For Credentials,mention the variable (${BADGE_AUTH}) value as N
+${BADGE_AUTH} = N
+
+//BadgeIndex
+${BADGE_INDEX} = 0
+
+//To Print all the jobs, mention the variable (${PRINT_ALL}) value as Y
+//To Print one job, mention the variable (${PRINT_ALL}) value as N
+${PRINT_ALL} = Y
+
+//To Print job,mention the variable (${PRINT}) value as Y
+//To Delete job,mention the variable (${PRINT}) value as N
+${PRINT} = Y
+
+//this variable is used to get the Print job id from the STB 
+${ActivityId} = 0
+
+//Set the X coordinate for the "Delete" button based on the device type.
+//For a 4.3-inch device (Camden), use X = -70
+//For an 8-inch device (Fairmont), use X = -116
+//Adjust the X value accordingly depending on the selected device.
+${XValueForDeleteButton} = -70

@@ -1,0 +1,515 @@
+﻿///<File>DevHealth_Device_Library.gflib</File>
+///<Modified>2020-05-11</Modified>
+///<Description>Library of Device Health device routines</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using JediOmni
+Using Oxpd
+
+///<Name>CloseDevHealthApp</Name>
+///<Description>Close the Device Health App</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+CloseDevHealthApp
+{
+    @Oxpd.Return Browser Engine
+    JediOmni.Press Home Key
+    Sleep (${Very_Short_Wait_Time})
+    If: JediOmni.Wait For Text (Sign Out,${Minimal_Wait_Time})
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    JediOmni.Reset
+    
+    Return With Pass (CloseDevHealthApp completed!)
+}
+
+///<Name>AdminSignIn</Name>
+///<Description>Sign in with the device admin</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+AdminSignIn
+{
+    If: JediOmni.Wait For Object (hpid-dropdown-agent,${Short_Wait_Time})
+    {
+        // check for access type Local Device
+        JediOmni.Get Text (hpid-dropdown-agent, ${Buffer})
+        If: Equals (${Buffer},Local Device)
+        {
+        }
+        Fail:
+        {
+            // select the Local Device option
+            JediOmni.Touch ID (hpid-dropdown-agent)
+            JediOmni.Wait For Object (hpid-dropdown-agent-hp_EmbeddedPin_v1,${Very_Short_Wait_Time})
+            JediOmni.Touch ID (hpid-dropdown-agent-hp_EmbeddedPin_v${Minimal_Wait_Time})
+        }
+        
+        // complete the sign in
+        JediOmni.Wait For Object (hpid-signin-dropdown-PinDropDown,${Minimal_Wait_Time})
+        JediOmni.Touch ID (hpid-signin-dropdown-PinDropDown)
+        JediOmni.Wait For Object (hpid-signin-list-item-AdminItem,${Minimal_Wait_Time})
+        JediOmni.Touch ID (hpid-signin-list-item-AdminItem)
+        
+        // short delay to allow the appropriate code textbox to display (there are actually 2 with same id)
+        Sleep (${Minimal_Wait_Time})
+        JediOmni.Enter Access Code (${DUT_AdminPW})
+        
+        // press the keyboard OK button
+        If: JediOmni.Wait For Object (hpid-keyboard-key-done,${Zero_Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-keyboard-key-done)
+            Sleep (${Very_Short_Wait_Time})
+        }
+        
+        // press the Sign In button if showing
+        If: JediOmni.Wait For Object (hpid-button-signin-ok,${Minimal_Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-button-signin-ok)
+        }
+    }
+}
+
+///<Name>LaunchSystemHealthApps</Name>
+///<Description>Open the System Health Apps if necessary set the device proxy
+///   and Register (enable Web Serivces)</Description>
+///<Parameters>Dev_Proxy : proxy server address</Parameters>
+///<Parameters>Dev_ProxyPort : proxy server port number</Parameters>
+///<Parameters>Dev_ProxyExceptions : proxy exception list</Parameters>
+///<Parameters>Registration_Timeout : Web Services registration timeout in seconds</Parameters>
+///<Parameters>SysHealth_LoadTimeout : System Health apps screen timeout in seconds</Parameters>
+///<Parameters>Performance_FileName : file name for performance measurements</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+LaunchSystemHealthApps (${Dev_Proxy}, ${Dev_ProxyPort}, ${Dev_ProxyExceptions}, ${Registration_Timeout}, ${SysHealth_LoadTimeout}, ${Performance_FileName})
+{
+    // launch the app
+    Info.Mark Start(${Performance_FileName},OpenSystemApps)
+    
+    // wait for the Devcie Health app to load
+    JediOmni.Wait For Text (Loading,${Wait_Time})
+    JediOmni.Wait For Text Gone (Loading,${Very_Long_Wait})
+    
+    // check for the Web Proxy setup button
+    If: JediOmni.Wait For Object (hpid-proxy-settings-button,${Minimal_Wait_Time})
+    {
+        // setup the web proxy & register WebServices
+        JediOmni.Touch ID (hpid-proxy-settings-button)
+        
+        // sign in with admin if required
+        DevHealth_Device_Library.AdminSignIn
+        
+        JediOmni.Wait For Object (hpid-proxy-server-address-textbox,${Wait_Time})
+        JediOmni.Touch ID (hpid-proxy-server-address-textbox)
+        //        JediOmni.Input Text (hpid-proxy-server-address-textbox,${Dev_Proxy})
+        JediOmni.Input Text (${Dev_Proxy})
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        
+        // scroll to the port textbox and enter
+        While:!JediOmni.Wait For Object (hpid-proxy-server-port-textbox,${Zero_Wait_Time}): 3
+        {
+            JediOmni.Drag (50,80,50,30)
+        }
+        JediOmni.Touch ID (hpid-proxy-server-port-textbox)
+        //        JediOmni.Input Text (hpid-proxy-server-port-textbox,${Dev_ProxyPort})
+        JediOmni.Input Text (${Dev_ProxyPort})
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        
+        // scroll to the exceptions textbox and enter
+        While:!JediOmni.Wait For Object (hpid-proxy-server-exceptions-list-textbox,${Zero_Wait_Time}): 5
+        {
+            JediOmni.Drag (50,80,50,30)
+        }
+        JediOmni.Touch ID (hpid-proxy-server-exceptions-list-textbox)
+        //        JediOmni.Input Text (hpid-proxy-server-exceptions-list-textbox,${Dev_ProxyExceptions})
+        JediOmni.Input Text (${Dev_ProxyExceptions})
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        
+        JediOmni.Touch ID (hpid-proxy-config-apply-button)
+        
+        // wait for the Applying message
+        If: JediOmni.Wait For Text (Applying,${Wait_Time})
+        {
+            JediOmni.Wait For Text Gone (Applying,${Long_Wait})
+        }
+        JediOmni.Wait For Object Gone (hpid-systemHealthApps-proxy-settings-configuration-view,${Wait_Time})
+        Sleep (${Very_Short_Wait_Time})
+    }
+    
+    // check for the not registered screen
+    If: JediOmni.Wait For Object (hpid-systemHealthApps-cloud-registration-status-view,${Minimal_Wait_Time})
+    {
+        JediOmni.Touch ID (hpid-web-services-register-button)
+        
+        // sign in with admin if required
+        DevHealth_Device_Library.AdminSignIn
+        Sleep (${Very_Short_Wait_Time})
+    }
+    
+    // enable Web Serives
+    If: JediOmni.Wait For Object (hpid-systemHealthApps-cloud-registration-setting-view,${Minimal_Wait_Time})
+    {
+        While:!JediOmni.Wait For Object (hpid-registration-confirmation-checkbox,${Zero_Wait_Time}): 3
+        {
+            JediOmni.Drag (50,80,50,30)
+        }
+        JediOmni.Touch ID (hpid-registration-confirmation-checkbox)
+        
+        Info.Mark Start(${Performance_FileName}, WebServiceRegistration)
+        JediOmni.Touch ID (hpid-cloud-config-register-button)
+        JediOmni.Wait For Text (Registering,${Wait_Time})
+        If: JediOmni.Wait For Text Gone (Registering,${Registration_Timeout})
+        {
+            Info.Mark End(${Performance_FileName}, WebServiceRegistration)
+        }
+        Fail:
+        {
+            Return With Fail (Fail finding the Device Health icons!)
+        }
+    }
+    
+    // connect to the device OXPd browser then wait for the Dev Health button
+    Oxpd.Get Browser Engine
+    //If: Oxpd.Wait For Text (Getting Ready,${Long_Wait})
+    If: Oxpd.Wait For Text Contains (Getting Ready,${Long_Wait})
+    {
+        //        Oxpd.Wait For Text Gone (Getting Ready,1${Long_Wait})
+        While:Oxpd.Check Screen Contains Text (Getting Ready): 120
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+    }
+    
+    If: Oxpd.Wait For Xpath (//div[@data-service-text="Device Health"],${SysHealth_LoadTimeout})
+    {
+        Info.Mark End(${Performance_FileName},OpenSystemApps)
+        Oxpd.Return Browser Engine
+        Return With Pass (LaunchSystemHealthApps completed!)
+    }
+    Fail:
+    {
+        Return With Fail (Fail opening the System Health Apps within ${SysHealth_LoadTimeout} seconds!)
+    }
+}
+
+///<Name>LaunchDevHealthApp</Name>
+///<Description>Open the Device Health app within the System Health Apps</Description>
+///<Parameters>DevHealth_LoadTimeout : timeout (seconds) for the Device Health app to open</Parameters>
+///<Parameters>DataGatherFlowLoopMax : max loop count to limit the amount of time 
+///   for the Device Health app to complete approx 2.5 seconds/loop iteration</Parameters>
+///<Parameters>Performance_FileName : file name for performance measurements</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+LaunchDevHealthApp (${DevHealth_LoadTimeout}, ${DataGatherFlowLoopMax}, ${Performance_FileName})
+{
+    // connect to the device OXPd browser then wait for the Dev Health button
+    Oxpd.Get Browser Engine
+    If: Oxpd.Wait For Xpath (//div[@data-service-text="Device Health"],${Minimal_Wait_Time})
+    {
+        Info.Mark Start(${Performance_FileName},OpenDevHealthApp)
+        Oxpd.Touch Xpath (//div[@data-service-text="Device Health"])
+            
+        Info.Mark End(${Performance_FileName},OpenDevHealthApp)
+        
+        Info.Mark Start(${Performance_FileName},DevHealthAppFlow)
+        
+        // wait for success, timeout or error
+        While:!Oxpd.Wait For Xpath (//*[@id="DataGatheringSucceededPanel" or @id="ErrorPanel" or @id="DataCollectionTimeoutPanel"][@class="hp-panel stepPanel" or @class="hp-panel"], ${Minimal_Wait_Time}): ${DataGatherFlowLoopMax}
+        {
+        }
+        // check for success
+        If: Oxpd.Wait For Xpath (//*[@id="DataGatheringSucceededPanel"][@class="hp-panel stepPanel"],${Minimal_Wait_Time})
+        {
+            Info.Mark End(${Performance_FileName},DevHealthAppFlow)
+            Return With Pass (LaunchDevHealthApp completed!)
+        }
+        Fail:
+        {
+            Oxpd.Get Text (deviceId, ${DeviceID})
+            Oxpd.Get Text (operationId, ${OpID})
+            // check for timeout
+            If: Oxpd.Wait For Xpath (//*[@id="DataCollectionTimeoutPanel"][@class="hp-panel stepPanel"],${Minimal_Wait_Time})
+            {
+                Return With Fail (The Device Health app ended with a Timeout!)
+                //                Fail (The Device Health app ended with a Timeout!  Device ID: ${DeviceID}  Operation ID: ${OpID})
+            }
+            Fail:
+            {
+                // check for error
+                If: Oxpd.Wait For Xpath (//*[@id="ErrorPanel"][@class="hp-panel"],${Minimal_Wait_Time})
+                {
+                    Oxpd.Get Text (errorCode, ${ErrorCode})
+                    Oxpd.Get Text (errorTraceId, ${ErrorTraceID})
+                    Return With Fail (The Device Health app ended with an Error!)
+                    //                    Fail (The Device Health app ended with an Error! Error Code: ${ErrorCode}  Trace ID: ${ErrorTraceID}  Device ID: ${DeviceID}  Operation ID: ${OpID})
+                }
+                Fail:
+                {
+                    Return With Fail (Unknown Failure completing the Device Health app flow within approximately 3 minutes!)
+                }
+            }
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail finding the Device Health icons!)
+    }
+}
+
+///<Name>HandleInitialLanguageScreen</Name>
+///<Description>Handle the OOBE Language screen</Description>
+///<Parameters>LanguageText : text for the language to set</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+HandleInitialLanguageScreen (${LanguageText})
+{
+    // check for the Language screen displayed
+    If: JediOmni.Wait For Text (Language,${Zero_Wait_Time})
+    {
+        
+        // select the language
+        While:!JediOmni.Wait For Text (${LanguageText},${Zero_Wait_Time}):5
+        {
+            JediOmni.Drag (75,80,75,30)
+        }
+        If: JediOmni.Wait For Text (${LanguageText},${Zero_Wait_Time})
+        {
+            JediOmni.Touch Text (${LanguageText})
+            JediOmni.Touch ID (hpid-wizard-next-button)
+        }
+        Fail:
+        {
+            Return With Fail (Failed handling the initial Language screen!)
+        }
+    }
+}
+
+///<Name>HandleInitialLocationScreen</Name>
+///<Description>Handle the OOBE Location screen</Description>
+///<Parameters>LocationText : text for the location to set</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+HandleInitialLocationScreen (${LocationText})
+{
+    // locate the specidied location text in the list
+    
+    While:!JediOmni.Wait For Text (${LocationText}, ${Zero_Wait_Time}):30
+    {
+        // swipe the location list up
+        JediOmni.Drag (75,80,75,30)
+    }
+    // verify that the location was found and select it
+    If: JediOmni.Wait For Text (${LocationText},${Zero_Wait_Time})
+    {
+        JediOmni.Touch Text (${LocationText})
+        JediOmni.Touch ID (hpid-wizard-next-button)
+        Return With Pass (HandleInitialLocationScreen completed!)
+    }
+    Fail:
+    {
+        Fail (Failed handling the initial Location screen!)
+    }
+}
+
+///<Name>HandleInitialDateScreens</Name>
+///<Description>Handle the OOBE Date Format and Date/Time screens</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+HandleInitialDateScreens
+{
+    // Date Format screen
+    If: JediOmni.Wait For Object (hpid-date-format-selection,${Wait_Time})
+    {
+        JediOmni.Touch ID (hpid-wizard-next-button)
+    }
+    // Date Time screen
+    If: JediOmni.Wait For Object (hpid-year-textbox,${Wait_Time})
+    {
+        JediOmni.Touch ID (hpid-wizard-next-button)
+    }
+}
+
+///<Name>HandleInitialDevHealthScreen</Name>
+///<Description>Handle the OOBE System Health screen</Description>
+///<Parameters>Enable_YN : Y to enable System Health</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+HandleInitialDevHealthScreen (${Enable_YN})
+{
+    // look for the web connection result popup
+    If: JediOmni.Wait For Object (hpid-web-access-check-result-popup,${Long_Wait})
+    {
+        If: JediOmni.Wait For Text (Connection verified,${Zero_Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-button-ok)
+        }
+    }
+    
+    // wait for the System Health enable screen
+    If: JediOmni.Wait For Object (hpid-isw-otherfeatures-page-systemhealth,${Short_Wait_Time})
+    {
+        If: Equals IgnoreCase (${Enable_YN},N)
+        {
+            JediOmni.Touch Text(No)
+        }
+        Fail:
+        {
+            JediOmni.Touch Text(Yes (Recommended))
+        }
+        JediOmni.Touch ID (hpid-wizard-next-button)
+    }
+    Fail:
+    {
+        Return With Fail (Failed handling the initial Date Format screen!)
+    }
+}
+
+///<Name>HandleInitialNetworkCheckScreen</Name>
+///<Description>Handle the OOBE Network Check screen defaults to Yes</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+HandleInitialNetworkCheckScreen
+{
+    // look for the network check prompt screen
+    If: JediOmni.Wait For Object (hpid-isw-otherfeatures-page-checkNetworkPrompt,${Short_Wait_Time})
+    {
+        JediOmni.Touch ID (hpid-isw-otherfeatures-checkNetworkPrompt-listbox-yes)
+        JediOmni.Touch ID (hpid-wizard-next-button)
+    }
+}
+
+///<Name>HandleInitialAutoSendScreen</Name>
+///<Description>Handle the OOBE Auto Send screen deaults to No</Description>
+///<Parameters>EnableAutoSend : Y to enable Auto Send, or N</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+HandleInitialAutoSendScreen (${EnableAutoSend})
+{
+    If: JediOmni.Wait For Text (Enable AutoSend,${Wait_Time})
+    {
+        If: Equals IgnoreCase (${EnableAutoSend},N)
+        {
+            JediOmni.Touch Text(No)
+        }
+        Fail:
+        {
+            JediOmni.Touch Text(Yes)
+        }
+        JediOmni.Touch ID (hpid-wizard-next-button)
+    }
+}
+
+///<Name>HandleInitialPrintUsbScreen</Name>
+///<Description>Handle the OOBE Print From USB screen defaults to No</Description>
+///<Parameters>EnableUSB : Y to enable USB, or N</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+HandleInitialPrintUsbScreen (${EnableUSB})
+{
+    If: JediOmni.Wait For Object (hpid-isw-otherfeatures-page-openfromusb,${Wait_Time})
+    {
+        If: Equals IgnoreCase (${EnableUSB},N)
+        {
+            JediOmni.Touch Text(No)
+        }
+        Fail:
+        {
+            JediOmni.Touch Text(Yes)
+        }
+        JediOmni.Touch ID (hpid-wizard-next-button)
+    }
+}
+
+///<Name>HandleInitialOobeScreens</Name>
+///<Description>Handle the OOBE screens</Description>
+///<Parameters>InitLanguageText : text for the language to set</Parameters>
+///<Parameters>InitLocationText : text for the location to set</Parameters>
+///<Parameters>EnableDevHealthApp_YN : Y to enable System Health</Parameters>
+///<Parameters>EnableAutoSend_YN : Y to enable Auto Send</Parameters>
+///<Parameters>EnableUSB_YN : Y to enable USB</Parameters>
+///<Parameters>FinalSummaryTimeout : timeout from opening of the Device Health to the final screen in seconds</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+HandleInitialOobeScreens (${InitLanguageText}, ${InitLocationText}, ${EnableDevHealthApp_YN}, ${EnableAutoSend_YN}, ${EnableUSB_YN},  ${FinalSummaryTimeout})
+{
+    // Language screen, if displayed
+    If: DevHealth_Device_Library.HandleInitialLanguageScreen(${InitLanguageText})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed handling the initial Language screen!)
+    }
+    
+    // Location screen
+    If: DevHealth_Device_Library.HandleInitialLocationScreen(${InitLocationText})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed handling the initial Location screen!)
+    }
+    
+    // Date format screen
+    If: DevHealth_Device_Library.HandleInitialDateScreens
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed handling the initial Date screens!)
+    }
+    
+    // network check prompt screen
+    DevHealth_Device_Library.HandleInitialNetworkCheckScreen
+
+    // device health app screen
+    If: DevHealth_Device_Library.HandleInitialDevHealthScreen (${EnableDevHealthApp_YN})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed handling the initial Device Health screen!)
+    }
+    
+    // remaining feature screens
+    DevHealth_Device_Library.HandleInitialAutoSendScreen (${EnableAutoSend_YN})
+    DevHealth_Device_Library.HandleInitialPrintUsbScreen (${EnableUSB_YN})
+    
+    // wait for the summary screen
+    If: JediOmni.Wait For Text (Finish,${FinalSummaryTimeout})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed handling reaching the Initial Setup Summary screen!)
+    }
+    
+    // check for an element with aria-label="Enabled"
+    // first scroll as needed so the System Health lable is visible
+    While:!JediOmni.Wait For Object (td[aria-label="System Health Apps"],${Zero_Wait_Time}):2
+    {
+        JediOmni.Drag (75,80,50,75)
+    }
+    If: JediOmni.Wait For Object (td[aria-label="System Health Apps"]+td[aria-label="Enabled"],${Zero_Wait_Time})
+    {// success
+        //JediOmni.Touch ID (hpid-wizard-finish-button)
+        JediOmni.Touch Text (Finish)
+        JediOmni.Wait For Text (Sign In,${Long_Wait})
+        
+        Return With Pass (HandleInitialOobeScreens completed!)
+    }
+    Fail:
+    {
+        Return With Fail (Failed verifying the Device Health App is enabled!)
+    }
+}

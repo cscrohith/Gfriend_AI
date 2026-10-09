@@ -1,0 +1,7 @@
+﻿using Workpath_Mobile_App_Printing.gflib
+using Workpath_Mobile_App_Printing.gfvar
+
+T1984992424_Validate_Cloud_Workpath_Mobile_App_Printing_behavior_in_SafeQ
+{
+    Workpath_Mobile_App_Printing.T1984992424_Validate_Cloud_Mobile_App_Printing_behavior_in_SafeQ (${Site},${Username},${Password},${Package_name},${Platformtool_Path},${Print_Queue_Name},${Document_Name})
+}

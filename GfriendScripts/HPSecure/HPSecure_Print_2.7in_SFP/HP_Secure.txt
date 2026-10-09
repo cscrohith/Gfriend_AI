@@ -1,0 +1,11 @@
+﻿using JediOmni
+using Windows
+using Web
+using HP_Secure_Library.gflib
+using HP_Secure_Variable.gfvar
+
+HP_Secure_Job_Count_Check
+{
+    HP_Secure_Library.HP_Secure_Flow(${Job_Path},${Queue_Name},${EWS_Site},${EWS_Password},${BADGE_INDEX})
+    HP_Secure_Library.JobCount_Check(${EWS_Site},${EWS_Password},${Jobcountupdate_Maxtime})
+}

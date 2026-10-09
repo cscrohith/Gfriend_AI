@@ -1,0 +1,169 @@
+﻿using JediOmni
+using Vision
+using BadgeBox
+
+SetupAzureVision
+{
+    Encrypt(https://rg-central.azure.com/,${AzureEndpointEncryptedValue})
+    Encrypt(7rfjsYSDaABhZHxbkoWFBSArOaC42axyD8Xf,${SubscriptionKeyEncryptedValue})
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (block)
+    Sleep (10)
+    
+    //Clear Authentication    
+    JediOmni.Press Home Key
+    Sleep (5)
+    If: Vision.Is Text Exist (Sign Out)
+    {
+        Vision.Click Text (Sign Out)  
+    }
+    //Click on OK button if Sign in failed error message is seen
+    If: JediOmni.Wait For Object (hpid-button-signinfailed-ok,10)
+    {
+        JediOmni.Touch ID (hpid-button-signinfailed-ok)     
+    }
+    
+    If: JediOmni.Wait For Object (hpid-control-signin,5) 
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Wait For Object (hp-button-signin-or-signout,5) 
+        {
+            JediOmni.Touch ID (hp-button-signin-or-signout)            
+            JediOmni.Wait For Text Gone (Signing out,30)
+            Sleep (2)
+        }
+        Fail:
+        {
+            Return With Fail (Fail to Sign Out)
+        }
+    }
+    If: Vision.Is Text Exist (My quick actions)
+    {
+        //Logout for 8 inch
+        Vision.Click XY Location (990,22,10,9)
+        If: Vision.Is Text Exist (Sign In)
+        {
+            Pass (ClearAuth) 
+        }
+        Fail:
+        {
+            //Logout for 10 inch
+            Vision.Click XY Location (1250,33,2,27)
+            Sleep (5)
+        }
+        
+    }
+    JediOmni.Reset
+    
+    //Badge authentication
+    BadgeBox.Scan Badge (0)
+    Sleep (20)
+    
+    //
+    If: Vision.Is Text Exist (Secure Print & Scan)
+    {
+        Vision.Click Text (Secure Print & Scan)
+        If: Vision.Is Text Exist (My print jobs)
+        {
+            //If this is true, it means the app is loaded
+        }        
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (AppLoad)
+        Fail (Failed to click Secure Print & Scan)
+    }
+    sleep(5)
+    
+    If: Vision.Is Text Exist (My quick actions)
+    {
+        //To Print all the Documents
+        If: Equals IgnoreCase (N,Y)
+        {
+            Sleep (5)
+            
+            //Click on Print Button
+            Vision.Click Text (Print all)
+            If:Vision.Is Text Exist (Cancel printing)
+            {
+                pass(Printing available jobs)
+            }
+            Fail:
+            {
+                Fail(Print jobs not available)
+            }
+            While:Vision.Is Text Exist (Cancel printing): 50
+            {
+                Sleep (1)
+            }
+            If: Vision.Is Text Exist (My quick actions)
+            {
+                Pass(Print all)
+            }            
+        }
+        //To Print Only 1 Document
+        Fail:
+        { 
+            If: Vision.Is Text Exist (My print jobs)
+            {
+                Vision.Click Text (My print jobs)
+                sleep(5)
+                //Selecting the first job
+                If: Vision.Click Next To Text (WAITING,0,46)
+                {
+                    If: Vision.Is Text Exist (Select all)
+                    {
+                        //Click on Print button
+                        Vision.Click XY Location (582,730,136,41)
+                        While:Vision.Is Text Exist (Cancel printing): 50
+                        {
+                            Sleep (1)
+                        }
+                        Pass (Jobs printed successfully)
+                    }
+                    Fail:
+                    {
+                        Fail(Print jobs not available)
+                    }
+                }
+            }
+        }        
+    }    
+    Fail:
+    {
+        Fail (Failed to load Print Home Page in the device) 
+    }
+    
+    //Sign out
+    If: Vision.Is Text Exist (Sign In)
+    {
+        Pass (ClearAuth) 
+    }
+    Fail:
+    {
+        //Soignout for 8 inch
+        Vision.Click XY Location (995,28,34,34)
+        Sleep (5)
+    }
+    If: Vision.Is Text Exist (Sign In)
+    {
+        Pass (ClearAuth) 
+    }
+    Fail:
+    {
+        //signout for 10 inch
+        Vision.Click XY Location (1250,33,2,27)
+        If: Vision.Is Text Exist (Sign In)
+        {
+            Pass (ClearAuth) 
+        }  
+        Fail:
+        {
+            Fail (Failed to signout)
+        }       
+    }   
+}

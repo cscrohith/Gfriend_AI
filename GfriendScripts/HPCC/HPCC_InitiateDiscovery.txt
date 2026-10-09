@@ -1,0 +1,84 @@
+﻿/// <File>HPCC_InitiateDiscovery.txt</File>
+/// <Modified>2021-08-10</Modified>
+/// <Description>Initiate device discovery by a master device in HP Command Center (HPCC)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${MasterDevice_ID}=VNBDL5E027
+
+// varibles used to allow several discoveries to be initiated with a specified delay
+${DiscoveryRepetitionCount}=1
+${DiscoveryRepetitionDelay}=150
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC.gfvar
+
+Using HPCC_Library.gflib
+
+//Using JediOmni
+
+/// <Name>InitiateDiscovery</Name>
+/// <Description>Initiate device discovery by a master device in HP Command Center (HPCC)</Description>
+/// <Notes></Notes>
+InitiateDiscovery
+{
+//    // remove the "-" from the device as it is a non-allowed character in HPCC
+//    Set Variable (${MasterDevice_ID},${DUT_ID})
+//    Replace (${MasterDevice_ID},-,)
+    
+    // Sign in
+    If: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In Failed!)
+        Stop Test Case
+    }
+    
+    // Access the customer Device Discovery page
+    If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+    {
+        Sleep (${Short_Wait_Time})
+        
+        // repetitions if specified
+        Repeat:${DiscoveryRepetitionCount}
+        {
+            // initiate secondary device discovery
+            If: HPCC_Library.InitiateMasterDeviceDiscovery(${MasterDevice_ID},,)
+            {
+            }
+            Fail:
+            {
+                Fail (Initiate master device discovery Failed!)
+            }
+            Error:
+            {
+                Error (Error occured while initiating master device discovery!)
+            }
+            
+            // add delay between repetitions
+            If: Equals (${DiscoveryRepetitionCount},${R})
+            {
+                // last iteration no deley
+            }
+            Fail:
+            {
+                Sleep (${DiscoveryRepetitionDelay})
+            }
+        }
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In for initiating master device discovery Failed!)
+    }
+    
+    HPCC_Library.SignOut()
+    
+    Web.Close
+}

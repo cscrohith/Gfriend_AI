@@ -1,0 +1,33 @@
+﻿//According to user, change the url and name of the solution 
+${Name_of_solution}= HPSecure
+//${STF_AzureEndpoint}=
+//${STF_AzureKey}=
+
+//Username/Password parameters
+//${STF_UserName}=
+//${STF_UserPassword}=
+
+//For BADGE Authentication, provide the variable (${BADGE_AUTH}) value as Y
+${BADGE_AUTH} = N
+
+//And provide desired value to ${BADGE_INDEX}
+${STF_BadgeIndex}= 
+
+//To Print the jobs, provide the variable (${PRINT_RELEASE}) value as Y
+//To delete the jobs, provide the variable (${PRINT_RELEASE}) value as N
+${PRINT_RELEASE}= Y
+
+//To click on PrintAll option
+//To Print all the jobs, provide the variable (${SelectAllOption}) value as Y
+//To Print one job, provide the variable (${SelectAllOption}) value as N
+${SelectAllOption}= N
+
+//To click on select All inside Review documents
+//To Print all the jobs, provide the variable (${SelectAllJobs}) value as Y
+//To Print one job, provide the variable (${SelectAllJobs}) value as N
+${SelectAllJobs}= N
+
+//To Delete all the jobs, provide the variable (${DeleteAllJobs}) value as Y
+//To Delete one job, provide the variable (${DeleteAllJobs}) value as N
+${DeleteAllJobs}= N
+

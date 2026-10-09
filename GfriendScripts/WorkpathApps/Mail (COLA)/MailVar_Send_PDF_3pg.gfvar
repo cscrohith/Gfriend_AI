@@ -1,0 +1,6 @@
+﻿${Email_Destination} = ron.pridmore@hp.com
+${Email_Subject} = Emal App Test - PDF 3 pg
+${Email_Body} = This is a test of the new Email app
+${Email_ScanFilename} = EmailAppTestScan
+${Email_ScanFileType} = PDF
+${Email_NumPages} = 3

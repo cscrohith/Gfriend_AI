@@ -1,0 +1,992 @@
+﻿///<File>DeviceAuth.gflib</File>
+///<Modified>2021-02-17</Modified>
+///<Description>Library of device authentication related routines</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+Using JediOmni
+Using Oxpd
+
+///<Name>AdminSignIn</Name>
+///<Description>Authenticate with the local admin</Description>
+///<Parameters>Admin_PW: admin password</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+AdminSignIn (${Admin_PW})
+{
+    // check for need to clear auth
+    If: JediOmni.Wait For Text (Sign Out,0)
+    {
+        DeviceAuth.SignOut
+    }
+    
+    // check for need to enter sign in screen
+   
+    //If: JediOmni.Wait For Text (Sign In,0)
+    If: Wait For Object (hpid-control-signin,0)
+    {
+        JediOmni.Touch ID (hpid-control-signin)
+    }
+
+    If: JediOmni.Wait For Object (hpid-dropdown-agent,3)
+    {
+        // check for access type Local Device
+        JediOmni.Get Text (hpid-dropdown-agent, ${Buffer})
+        If: Equals (${Buffer},Local Device)
+        {
+        }
+        Fail:
+        {
+            // select the Local Device option
+            JediOmni.Touch ID (hpid-dropdown-agent)
+            JediOmni.Wait For Object (hpid-dropdown-agent-hp_EmbeddedPin_v1,2)
+            JediOmni.Touch ID (hpid-dropdown-agent-hp_EmbeddedPin_v1)
+        }
+        
+        // complete the sign in
+        JediOmni.Wait For Object (hpid-signin-dropdown-PinDropDown,1)
+        JediOmni.Touch ID (hpid-signin-dropdown-PinDropDown)
+        JediOmni.Wait For Object (hpid-signin-list-item-AdminItem,1)
+        JediOmni.Touch ID (hpid-signin-list-item-AdminItem)
+        
+        // short delay to allow the appropriate code textbox to display 
+        // (there are actually 2 with same id)
+        Sleep (1)
+        JediOmni.Enter Access Code (${Admin_PW})
+        
+        // press the keyboard OK button
+        If: JediOmni.Wait For Object (hpid-keyboard-key-done,0)
+        {
+            JediOmni.Touch ID (hpid-keyboard-key-done)
+            Sleep (2)
+        }
+        
+        // press the Sign In button if showing
+        If: JediOmni.Wait For Object (hpid-button-signin-ok,1)
+        {
+            JediOmni.Touch ID (hpid-button-signin-ok)
+        }
+    }
+}
+
+///<Name>SignIn_Windows</Name>
+///<Description>Sign In on device with Windows auth</Description>
+///<Parameters>ID: UserID/Username</Parameters>
+///<Parameters>Pw: UPassword</Parameters>
+///<Parameters>Domain: Domain</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SignIn_Windows (${ID},${Pw},${Domain})
+{
+    // clear any existing auth
+    If: DeviceAuth.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+
+    // press the Sign In button
+    If: JediOmni.Touch ID (hpid-control-signin)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clicking the Sign In button!)
+    }
+    Error:
+    {
+        Return With Error (Error while clicking the Sign In button!)
+    }
+    
+    // check for Windows as default
+    If: JediOmni.Wait For Text (Windows,2)
+    {// Windows is default, no additional action
+    }
+    Fail:
+    {
+        // Windows is not the default, check the dropdown list
+        JediOmni.Wait For Object (hpid-dropdown-agent,3)
+        JediOmni.Touch ID (hpid-dropdown-agent)
+        JediOmni.Wait For Object (hpid-dropdown-agent-hp_EmbeddedWindows_v1,2)
+        
+        // select Windows auth
+        If: JediOmni.Touch ID (hpid-dropdown-agent-hp_EmbeddedWindows_v1)
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Failed selecting Windows authentication type!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Windows authentication type!)
+        }
+    }
+    
+    // select domain if specified
+    If: Equals (${Domain},)
+    {
+    }
+    Fail:
+    {
+        // check for the specified domain as default
+        JediOmni.Wait For Object (hpid-signin-dropdown-DomainDropDown,3)
+        JediOmni.Get Text (hpid-signin-dropdown-DomainDropDown,${SetDomain})
+        //        If: JediOmni.Wait For Text (${Domain},0)
+        //        If: JediOmni.Check Screen Contains Partial Text (${Domain})
+        If: Contains Ignore Case (${SetDomain},${Domain})
+        {// specified domain is default, no additional action
+        }
+        Fail:
+        {
+            // select the domain
+            JediOmni.Touch ID (hpid-signin-dropdown-DomainDropDown)
+            JediOmni.Touch Text (${Domain})
+        }
+    }
+    
+    // complete the sign in
+    JediOmni.Wait For Object (hpid-signin-textbox-UserNameTextBox,3)
+    JediOmni.Touch ID (hpid-signin-textbox-UserNameTextBox)
+    JediOmni.Input Text (hpid-signin-textbox-UserNameTextBox,${ID})
+    JediOmni.Touch ID (hpid-signin-textbox-PasswordTextBox)
+    JediOmni.Input Text (hpid-signin-textbox-PasswordTextBox,${Pw})
+    
+    JediOmni.Wait For Object (hpid-button-signin-ok,2)
+    JediOmni.Touch ID (hpid-button-signin-ok)
+}
+
+///<Name>HPAC_Agent_Code_Entry</Name>
+///<Description>Enter the user code for HPAC Agent auth</Description>
+///<Parameters>ID: User Code</Parameters>
+///<Precondition></Precondition>
+///<Notes>Called from routine SignIn_HPAC in this library</Notes>
+HPAC_Agent_Code_Entry(${ID})
+{// enter the user code for HPAC auth
+    JediOmni.Wait For Object (hpid-signin-textbox-authentication-code,2)
+    JediOmni.Touch ID (hpid-signin-textbox-authentication-code)
+    JediOmni.Input Text (hpid-signin-textbox-authentication-code,${ID})
+    
+    JediOmni.Wait For Object (hpid-button-signin-ok,2)
+    JediOmni.Touch ID (hpid-button-signin-ok)
+}
+
+///<Name>SignIn_HPAC</Name>
+///<Description>Sign In on device with HPAC Agent auth</Description>
+///<Parameters>ID: UserID</Parameters>
+///<Precondition></Precondition>
+///<Notes>Handles HPAC sign in with code for PIC, IRM, DRA or agentless IRM</Notes>
+SignIn_HPAC (${ID})
+{
+    // clear any existing auth
+    If: DeviceAuth.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+
+    If: JediOmni.Touch ID (hpid-control-signin)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clicking the Sign In button!)
+    }
+    Error:
+    {
+        Return With Error (Error while clicking the Sign In button!)
+    }
+    
+    JediOmni.Wait For Object (hpid-dropdown-agent,3)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    Sleep (1)
+    
+    // try HPAC Agentless (IRM Auth) then HPAC-DRA, then HAPC-IFM, then HPAC-PIC authentication
+    If: JediOmni.Wait For Text (IRM Auth,0)
+    {
+        JediOmni.Touch Text (IRM Auth)
+        Oxpd.Get Browser Engine
+        If: Oxpd.Wait For Text (Code,10)
+        {// enter the code and complete in the OXPD screen
+            Oxpd.Touch Id (authentication_screen-request-code_userCode)
+            Oxpd.Input Text (${ID})
+            JediOmni.Touch ID (hpid-keyboard-key-done)
+            Oxpd.Touch Id (authentication_screen-request-code_accept)
+            Oxpd.Return Browser Engine
+        }
+        Fail:
+        {
+            Fail (Failed entering the ID Code for HPAC agentless authentication!)
+        }
+        Error:
+        {
+            Fail (Failed entering the ID Code for HPAC agentless authentication!)
+        }
+    }
+    Fail:
+    {
+        If: JediOmni.Wait For Text (HPAC - DRA,0)
+        {// HPAC -DRA
+            JediOmni.Touch Text (HPAC - DRA)
+            DeviceAuth.HPAC_Agent_Code_Entry(${ID})
+        }
+        Fail:
+        {// HPAC-IRM
+            If: JediOmni.Wait For Text (HPAC - IRM,0)
+            {
+                JediOmni.Touch Text (HPAC - IRM)
+                DeviceAuth.HPAC_Agent_Code_Entry(${ID})
+            }
+            Fail:
+            {// HPAC-PIC
+                If: JediOmni.Wait For Text (HPAC - PIC,0)
+                {
+                    JediOmni.Touch Text (HPAC - PIC)
+                    DeviceAuth.HPAC_Agent_Code_Entry(${ID})
+                }
+                Fail:
+                {// no HPAC auth found
+                    Fail (Failed to find HPAC-DRA, HPAC-IRM or HPAC-PIC authentication type!)
+                }
+                Error:
+                {
+                    Error (Error while selecting HPAC authentication type!)
+                }
+            }
+            Error:
+            {
+                Error (Error while selecting HPAC authentication type!)
+            }
+        }
+        Error:
+        {
+            Error (Error while selecting HPAC authentication type!)
+        }
+    }
+    Error:
+    {
+        Error (Error while selecting HPAC authentication type!)
+    }
+}
+
+///<Name>SignIn_Papercut</Name>
+///<Description>Sign In on device with Papercut auth</Description>
+///<Parameters>ID: UserID/Username</Parameters>
+///<Parameters>Code: User Code</Parameters>
+///<Parameters>Pw: Password/Username</Parameters>
+///<Precondition></Precondition>
+///<Notes>Handles Papercut authentication with codee or user/password for L1 agent or agentless</Notes>
+SignIn_Papercut (${ID},${Code},${Pw})
+{
+    // clear any existing auth
+    If: DeviceAuth.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+
+    If: JediOmni.Touch ID (hpid-control-signin)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clicking the Sign In button!)
+    }
+    Error:
+    {
+        Return With Error (Error while clicking the Sign In button!)
+    }
+    
+    JediOmni.Wait For Object (hpid-dropdown-agent,3)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    Sleep (1)
+    
+    // try to select the PaperCut agent auth
+    If: JediOmni.Touch ID (hpid-dropdown-agent-PaperCut_AuthenticationAgent_v1)
+    {// handle the PaperCut agent sign in
+        If: JediOmni.Wait For Object (hpid-signin-textbox-UserNameTextBox,1)
+        {// username & pasword
+            JediOmni.Touch ID (hpid-signin-textbox-UserNameTextBox)
+            JediOmni.Input Text (hpid-signin-textbox-UserNameTextBox,${ID})
+            JediOmni.Touch ID (hpid-signin-textbox-PasswordTextBox)
+            JediOmni.Input Text (hpid-signin-textbox-PasswordTextBox,${Pw})
+        }
+        If: JediOmni.Wait For Object (hpid-signin-textbox-UserIDTextBox,1)
+        {// usercode
+            JediOmni.Touch ID (hpid-signin-textbox-UserIDTextBox)
+            JediOmni.Input Text (hpid-signin-textbox-UserIDTextBox,${Code})
+        }
+        
+        JediOmni.Wait For Object (hpid-button-signin-ok,2)
+        JediOmni.Touch ID (hpid-button-signin-ok)
+        
+        // handle the PaperCut user account info popup if it shows
+        If: JediOmni.Wait For Object (hpid-button-Ok,3)
+        {
+            JediOmni.Touch ID (hpid-button-Ok)
+        }
+    }
+    Fail:
+    {// try to press the PaperCut option
+        If: JediOmni.Touch Text (PaperCut)
+        {
+        }
+        Fail:
+        {// second try
+            If: JediOmni.Touch Text (Papercut)
+            {
+            }
+            Fail:
+            {
+                Return With Fail (Failed while selecting PaperCut authentication type!)
+            }
+            Error:
+            {
+                Return With Error (Error while selecting PaperCut authentication type!)
+            }
+        }
+        Error:
+        {
+            Return With Error (Error while selecting PaperCut authentication type!)
+        }
+
+        // handle the PaperCut OXPd sign in
+        //        Sleep (1)
+        Oxpd.Get Browser Engine
+        // attempt to enter username
+        If: Oxpd.Touch Id (username-input)
+        {// username & password
+            Oxpd.Input Text (${ID})
+            JediOmni.Touch ID (hpid-keyboard-key-done)
+            Oxpd.Touch Id (password-input)
+            Oxpd.Input Text (${Pw})
+            JediOmni.Touch ID (hpid-keyboard-key-done)
+        }
+        Fail:
+        {// attempt to enter id
+            If: Oxpd.Touch Id (id-input)
+            {
+                Oxpd.Input Text (${Code})
+                JediOmni.Touch ID (hpid-keyboard-key-done)
+            }
+            Fail:
+            {
+                Oxpd.Return Browser Engine
+                Return With Fail (Failed to enter username/password or ID for PaperCut auth!)
+            }
+        }
+        
+        Oxpd.Touch Id (login-submit)
+        Oxpd.Return Browser Engine
+    }
+}
+
+///<Name>SignIn_SafeCom</Name>
+///<Description>Sign In on device with SafeCom auth</Description>
+///<Parameters>ID: UserID/Username</Parameters>
+///<Parameters>Code: User Code</Parameters>
+///<Parameters>Pw: Password/Username</Parameters>
+///<Parameters>Domain: Domain/Username</Parameters>
+///<Precondition></Precondition>
+///<Notes>Handles SafeCom authentication with codee or user/password for L1 agent or agentless</Notes>
+SignIn_SafeCom (${ID},${Code},${Pw},${Domain})
+{
+    // clear any existing auth
+    If: DeviceAuth.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+
+    If: JediOmni.Touch ID (hpid-control-signin)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clicking the Sign In button!)
+    }
+    Error:
+    {
+        Return With Error (Error while clicking the Sign In button!)
+    }
+    
+    JediOmni.Wait For Object (hpid-dropdown-agent,3)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    Sleep (1)
+    
+    // try to select the SafeCom agent auth
+    If: JediOmni.Touch ID (hpid-dropdown-agent-SafeCom_AuthAgent_v2)
+    {// check for Code auth
+        If: JediOmni.Wait For Object (hpid-signin-textbox-99900,1)
+        {// usercode
+            JediOmni.Touch ID (hpid-signin-textbox-99900)
+            JediOmni.Input Text (hpid-signin-textbox-99900,${Code})
+        }
+        // check for username/password auth
+        If: JediOmni.Wait For Object (hpid-signin-textbox-99903,0)
+        {// username & pasword
+            JediOmni.Touch ID (hpid-signin-textbox-99903)
+            JediOmni.Input Text (hpid-signin-textbox-99903,${ID})
+            If: JediOmni.Touch ID (hpid-signin-textbox-99919)
+            {// enter the domain if it is visible
+                JediOmni.Input Text (hpid-signin-textbox-99919,${Domain})
+            }
+            JediOmni.Touch ID (hpid-signin-textbox-99918)
+            JediOmni.Input Text (hpid-signin-textbox-99918,${Pw})
+        }
+        
+        JediOmni.Wait For Object (hpid-button-signin-ok,2)
+        JediOmni.Touch ID (hpid-button-signin-ok)
+    }
+    Fail:
+    {// try to press the KOFAX option
+        If: JediOmni.Touch Text (KOFAX)
+        {// handle the SafeCom OXPd sign in
+            //            Sleep (1)
+            Oxpd.Get Browser Engine
+            // attempt to enter code
+            If: Oxpd.Touch Id (aVXNlcklE)
+            {// code
+                Oxpd.Input Text (${Code})
+                JediOmni.Touch ID (hpid-keyboard-key-done)
+            }
+            Fail:
+            {// attempt to enter username/password/domain
+                If: Oxpd.Touch Id (aVXNlcm5hbWU)
+                {
+                    Oxpd.Input Text (${ID})
+                    JediOmni.Touch ID (hpid-keyboard-key-done)
+                    Oxpd.Touch Id (aUGFzc3dvcmQ)
+                    Oxpd.Input Text (${Pw})
+                    JediOmni.Touch ID (hpid-keyboard-key-done)
+                    
+                    If: Oxpd.Check Screen Not Contains Text (${Domain})
+                    {
+                        If: Oxpd.Touch Id (aRG9tYWlu)
+                        {
+                            // this needs to be done in a better way
+                            // when there is the capability to clear
+                            // the text of an element in the Oxpd library
+//                            // clear the existing domain
+//                            Repeat:30
+//                            {
+//                                JediOmni.Touch ID (hpid-keyboard-key-right)
+//                                Oxpd.Press BackSpace Key
+//                            }
+                            Oxpd.Input Text (${Domain})
+                            JediOmni.Touch ID (hpid-keyboard-key-done)
+                        }
+                    }
+                }
+                Fail:
+                {
+                    Return With Fail (Failed identifying SafeCom/Kofax UC auth type!)
+                }
+                Error:
+                {
+                    Return With Error (Error identifying SafeCom/Kofax UC auth type!)
+                }
+            }
+            
+            //Oxpd.Touch Id (btnLogin_wrapper)
+            Oxpd.Touch Id (btnLogin)
+            Oxpd.Return Browser Engine
+        }
+        Fail:
+        {
+            Fail (Failed selecting SafeCom auth type!)
+        }
+        Error:
+        {
+            Error (Error seleting SafeCom auth type!)
+        }
+    }
+    Error:
+    {
+        Error (Error while selecting SafeCom authentication type!)
+    }
+}
+
+///<Name>VerifySignInStatus</Name>
+///<Description>Check if a specified user signed in</Description>
+///<Parameters>ID: UserID/Username</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+VerifySignInStatus(${ID})
+{
+    JediOmni.Press Home Key
+    If: JediOmni.Wait For Text (Sign In,3)
+    {
+        If: Equals (${ID},)
+        {// Pass, not signed in and no user specified
+        }
+        Fail:
+        {
+            Fail (User ${ID} not signed in!)
+        }
+    }
+    Fail:
+    {
+        If: JediOmni.Wait For Text (${ID},0)
+        {// Pass, signed with specified user
+        }
+        Fail:
+        {
+            Fail (User ${ID} not signed in!)
+        }
+    }
+}
+
+///<Name>WaitForCloudConnection</Name>
+///<Description>Check for the message for HPID SIO cloud connection,
+///then wait for it to clear</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes>Called from several routines in this library</Notes>
+WaitForCloudConnection
+{
+    If: JediOmni.Wait For Text (Connecting to,10)
+    {
+        If: JediOmni.Wait For Text Gone (Connecting to,30)
+        {
+        }
+        Fail:
+        {
+            Fail (Failed to clear Connect to the HP Cloud!)
+        }
+    }
+    
+    // check for the conection to cloud failed
+    If: JediOmni.Wait For Text (Failed to Connect,0)
+    {// failed to connect message seen
+        Fail (Failed to Connect to the HP Cloud!)
+    }
+}
+
+///<Name>UnLinkHpidAccount</Name>
+///<Description>Unlink the signed in user from associated HPID account</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+UnLinkHpidAccount
+{
+    // press the User ID
+    If: JediOmni.Touch ID (hpid-cloud-status-button)
+    {// cloud SIO enabled, linked or not
+        // check for which screen displays
+        If: JediOmni.Wait For Object (hpid-hpcloud-unlinking-view,2)
+        {// unlink screen
+            // check for the list of linked accounts
+            If: JediOmni.Wait For Object (hpid-hpcloud-unlinking-account-list,0)
+            {
+                // select the first account to unlink
+                JediOmni.Touch (#hpid-hpcloud-unlinking-account-list li.hp-listitem:first-child)
+                
+            }
+            JediOmni.Wait For Object (hpid-hpcloud-unlink-button,5)
+            JediOmni.Touch ID (hpid-hpcloud-unlink-button)
+            JediOmni.Wait For Object (hpid-hpcloud-unlinking-confirmation-unlink-button,1)
+            JediOmni.Touch ID (hpid-hpcloud-unlinking-confirmation-unlink-button)
+        }
+
+        If: JediOmni.Wait For Object (hpid-hpid-welcome-view,2)
+        {// link welcome screen
+            // already unlinked, skip the re-link
+            JediOmni.Touch ID (hpid-hpid-skip-button)
+        }
+        If: DeviceAuth.WaitForCloudConnection
+        {
+        }
+        Fail:
+        {// failed to connect message seen
+           Return With Fail (Unlinking Failed to Connect to the HP Cloud!)
+        }
+    }
+    // unlink complete, or not linked, or no cloud SIO
+}
+
+///<Name>Check_HPID_SIO_PIN</Name>
+///<Description>Check for and handle the SIO PIN entry screen</Description>
+///<Parameters>hpid_pin: HPID PIN for 2FA</Parameters>
+///<Precondition></Precondition>
+///<Notes>Called from routine Check_HPID_SIO in this library</Notes>
+Check_HPID_SIO_PIN(${hpid_pin})
+{
+    // check for the HPID PIN screen
+    If: JediOmni.Wait For Object (hpid-hpid-enter-pin-view,1)
+    {// handle the PIN
+        JediOmni.Wait For Object (hpid-hpid-pin-textbox,2)
+        JediOmni.Touch ID (hpid-hpid-pin-textbox)
+        Sleep (1)
+        JediOmni.Input Text (hpid-hpid-pin-textbox,${hpid_pin})
+        // slight delay to ensure keyboard has fully disappeared
+        Sleep (1)
+        JediOmni.Touch ID (hpid-hpid-signin-button)
+        
+        // check for the cloud connection screen
+        If: DeviceAuth.WaitForCloudConnection
+        {
+            // check for an invalid PIN
+            If: JediOmni.Wait For Text (Invalid PIN,0)
+            {
+                JediOmni.Capture Screen Shot (Check_HPID_SIO_PIN_Fail.png)
+                JediOmni.Touch ID (hpid-button-Ok)
+                If: JediOmni.Wait For Object (hpid-hpid-enter-pin-view,2)
+                {
+                    JediOmni.Touch ID (hpid-hpid-enter-pin-cancel-button)
+                }
+                Fail (Fail authenticating with HPID SIO 2 factor - invalid PIN!)
+            }
+            Fail:
+            {
+                // check for too many invalid PIN entries
+                If: JediOmni.Wait For Text (An invalid PIN was entered too many times in a row.,0)
+                {
+                    JediOmni.Capture Screen Shot (Check_HPID_SIO_PIN_Fail.png)
+                    JediOmni.Touch ID (hpid-button-Ok)
+                    If: JediOmni.Wait For Object (hpid-hpid-enter-pin-view,2)
+                    {
+                        JediOmni.Touch ID (hpid-hpid-enter-pin-cancel-button)
+                    }
+                    Fail (Fail authenticating with HPID SIO 2 factor - invalid PIN!)
+                }
+            }
+        }
+        Fail:
+        {// failed to connect message seen
+            Fail (Fail authenticating with HPID SIO 2 factor PIN!)
+        }
+    }
+}
+
+///<Name>ShowKeyboardForHPID</Name>
+///<Description>Press down the screen unitl the virtual keyboard shows
+///this is a work-around for the HPID sign in screen used to link for SIO</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+ShowKeyboardForHPID
+{
+    While:!JediOmni.Wait For Object (hpid-keyboard,0):9 
+    {
+        JediOmni.Touch Position (50,${R}0)
+        Sleep (1)
+    }
+}
+
+///<Name>Check_HPID_LinkScreen</Name>
+///<Description>Check for, and handle, the HPID link screen</Description>
+///<Parameters>ID: HPID UserID</Parameters>
+///<Parameters>Pw: HPID Password</Parameters>
+///<Parameters>PIN: HPID PIN for 2FA</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+Check_HPID_LinkScreen(${ID},${Pw},${PIN})
+{// check for, and handle, the HPID link screen
+    // check for HPID Link Welcome screen
+    If: JediOmni.Wait For Object (hpid-hpid-welcome-view,1)
+    {
+        // perform the HPID account linking
+        // make sure the agreement checkbox is visible
+        While:!JediOmni.Wait For Object (hpid-hpid-agree-statement-checkbox,0):4
+        {
+            JediOmni.Drag (50,80,50,20)
+        }
+        If: JediOmni.Touch ID (hpid-hpid-agree-statement-checkbox)
+        {
+            JediOmni.Touch ID (hpid-hpid-link-button)
+        
+            // wait for the hpid auth screen to show
+            If: JediOmni.Wait For Object (hpid-hpid-credential-view,30)
+            {
+                // wait for the HPID auth screen
+                // without the OXPd library this is necessary to be sure
+                // screen is displayed
+                Sleep (20)
+
+                // use this to attempt press on the userID textbox
+                // watching for the keyboard screen to show
+//                While:!JediOmni.Wait For Object (hpid-keyboard-key-done,0):9 
+//                {
+//                    JediOmni.Touch Position (50,${R}0)
+//                }
+//Wait For User Confirm (?)
+                JediOmni.Drag (10,50,10,30)
+                DeviceAuth.ShowKeyboardForHPID
+                
+//Wait For User Confirm (?)
+                // enter the username
+                JediOmni.Input Text (hpid-hpid-credential-view,${ID})
+                Sleep (1)
+
+//                // press the NEXT button
+//                // not using the OXPd library this needs to be done by position
+//                JediOmni.Touch Position (50,75)
+                
+                // press the keyboard Enter key to go to the password screen
+//Wait For User Confirm (?)
+                DeviceAuth.ShowKeyboardForHPID
+//Wait For User Confirm (?)
+                JediOmni.Touch ID (hpid-keyboard-key-enter)
+
+                // delay for the password screen
+                Sleep (10)
+                // the keyboard should still be visible
+//Wait For User Confirm (?)
+                DeviceAuth.ShowKeyboardForHPID
+//Wait For User Confirm (?)
+                JediOmni.Input Text (hpid-hpid-credential-view,${Pw})
+                Sleep (1)
+
+//                // press the SIGN IN button
+//                // not using the OXPd library this needs to be done by position
+//                JediOmni.Touch Position (50,70)
+                
+                // press the keyboard Enter key to go to complete the linking
+//Wait For User Confirm (?)
+                DeviceAuth.ShowKeyboardForHPID
+//Wait For User Confirm (?)
+                JediOmni.Touch ID (hpid-keyboard-key-enter)
+
+                // wait for the connecting to HP Cloud message to clear (if it is showing)
+                DeviceAuth.WaitForCloudConnection
+            
+                // check for HPID create PIN screen
+                If: JediOmni.Wait For Object (hpid-hpid-create-pin-view,20)
+                {// enter the PIN
+                    // make sure the PIN textbox is visible
+                    While:!JediOmni.Wait For Object (hpid-hpid-pin-textbox,0):4
+                    {
+                        JediOmni.Drag (80,80,80,20)
+                    }
+                    JediOmni.Touch ID (hpid-hpid-pin-textbox)
+                    JediOmni.Input Text (hpid-hpid-pin-textbox,${PIN})
+                    // make sure the PIN textbox is visible
+                    While:!JediOmni.Wait For Object (hpid-hpid-confirm-pin-textbox,0):4
+                    {
+                        JediOmni.Drag (80,80,80,20)
+                    }
+                    JediOmni.Touch ID (hpid-hpid-confirm-pin-textbox)
+                    JediOmni.Input Text (hpid-hpid-confirm-pin-textbox,${PIN})
+                    // press the Continue button
+                    JediOmni.Touch ID (hpid-hpid-create-pin-continue-button)
+
+                    // wait for the connecting to HP Cloud message to clear (if it is showing)
+                    If: DeviceAuth.WaitForCloudConnection
+                    {// check for PIN creation failure (incorrect or same as last PIN for user)
+                        If: JediOmni.Wait For Text (did not meet history or complexity,2)
+                        {
+                            JediOmni.Capture Screen Shot (Check_HPID_LinkScreen_Fail.png)
+                            @JediOmni.Touch Text (OK)
+                            Sleep (1)
+                            @JediOmni.Touch ID (hpid-hpid-create-pin-cancel-button)
+                            Return With Fail (PIN creation failed while linking the HPID account!)
+                        }
+                    }
+                }
+            
+                // check for HPID Linked screen
+                If: JediOmni.Wait For Object (hpid-hpcloud-linked-view,20)
+                {// press the Done button
+                    JediOmni.Touch ID (hpid-hpcloud-linked-view-done-button)
+                }
+                Fail:
+                {
+                    Fail (Failed finding the HPID link completed screen!)
+                }
+            }
+            Fail:
+            {
+                Fail (Failed finding the HPID auth screen!)
+            }
+        }
+        Fail:
+        {
+            Fail (Failed initiating the HPID link!)
+        }
+    }
+}
+
+///<Name>Check_HPID_SIO</Name>
+///<Description>Check for HPID SIO screens and make appropriate calls to handle</Description>
+///<Parameters>HpidUser: HPID UserID</Parameters>
+///<Parameters>HpidPW: HPID Password</Parameters>
+///<Parameters>HpidPIN: HPID PIN for 2FA</Parameters>
+///<Precondition></Precondition>
+///<Notes>Called from routine CheckSignInCompletion in this library</Notes>
+Check_HPID_SIO(${HpidUser},${HpidPW},${HpidPIN})
+{
+    // check for and handle the HPID PIN screen
+    If: DeviceAuth.Check_HPID_SIO_PIN(${HpidPIN})
+    {
+        // check for and handle the HPID Link screen (to create the initial link)
+        If: DeviceAuth.Check_HPID_LinkScreen(${HpidUser},${HpidPW},${HpidPIN})
+        {
+        }
+        Fail:
+        {
+            Fail (Failed linking to the HPID account!)
+        }
+    }
+    Fail:
+    {// handling of the HPID SIO PIN entry failed
+        Fail (Fail handling the SIO PIN entry!)
+    }
+}
+
+///<Name>CheckSignInCompletion</Name>
+///<Description>Check for completion of Sign In, handling HPID link, PIN and others 
+///as necessary</Description>
+///<Parameters>HpidUser: HPID UserID</Parameters>
+///<Parameters>HpidPW: HPID Password</Parameters>
+///<Parameters>HpidPIN: HPID PIN for 2FA</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+CheckSignInCompletion(${HpidUser},${HpidPW},${HpidPIN})
+{
+    If: JediOmni.Wait For Text (Signing In,2)
+    {
+        JediOmni.Wait For Text Gone (Signing In,20)
+    }
+    
+    // check for the SIO connecting to HP Cloud message to clear (if it is showing)
+    If: JediOmni.Wait For Text (Connecting to,2)
+    {
+        JediOmni.Wait For Text Gone (Connecting to,30)
+    }
+
+    // check for the SIO connect to cloud failed message
+    IF:JediOmni.Wait For Text (Failed to Connect,0)
+    {// failed to connect message seen
+        Fail (Failed to Connect to the HP Cloud!)
+    }
+    Fail:
+    {// either no cloud SIO or no cloud SIO connection failure
+        // check for and handle the HPID SIO screens for PIN or SIO Linkging
+        If: DeviceAuth.Check_HPID_SIO(${HpidUser},${HpidPW},${HpidPIN})
+        {
+            // check for signed in w/o cloud SIO
+            If: JediOmni.Wait For Object (hpid-label-username,2)
+            {// no further action
+            }
+            Fail:
+            {
+                // verify signed in with cloud SIO
+                If: JediOmni.Wait For Object (hpid-cloud-status-button,0)
+                {// signed in with cloud SIO enabled
+                }
+                Fail:
+                {
+                    Fail (Fail signing in!)
+                }
+            }
+        }
+        Fail:
+        {// handling of the HPID SIO PIN entry failed
+            Fail (Fail handling the SIO PIN entry!)
+        }
+    }
+}
+
+///<Name>SignOut</Name>
+///<Description>Sign out any user on the device</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SignOut
+{
+    // make sure at Home screen
+    While:!JediOmni.Wait For Object (.hp-homescreen,0):5
+    {
+        JediOmni.Press Home Key
+    }
+    
+    // check that any notification banner is not displayed
+    If: JediOmni.Wait For Object (hpid-control-signin,10)
+    {
+    }
+    
+    // sign out if necessary
+    If: JediOmni.Wait For Text (Sign In,3)
+    {// all good, no action needed
+        Return With Pass (SignOut completed!)
+    }
+    
+    If: JediOmni.Touch Text (Sign Out)
+    {
+        If: JediOmni.Wait For Text (Signing out,5)
+        {
+            JediOmni.Wait For Text Gone (Signing out,20)
+        }
+        Return With Pass (SignOut completed!)
+    }
+    Fail:
+    {
+       Return With Fail (Failed clicking Sign Out!)
+    }
+}
+
+///<Name>ClearAuth</Name>
+///<Description>make sure at Home screen, signed out and reset</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+ClearAuth
+{
+    If: DeviceAuth.SignOut
+    {
+        JediOmni.Reset
+        Return With Pass (ClearAuth completed!)
+    }
+    Fail:
+    {
+        JediOmni.Reset
+        Return With Fail (Fail signing out!)
+    }
+}
+
+///<Name>VerifyUserSIO_Linked</Name>
+///<Description>Verifiy that the current device user is actively linked to an
+///HPID account. Return Pass if the the user has been linked and
+///the link is active</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+VerifyUserSIO_Linked
+{
+    // if the element with id="hpid-cloud-status-button" is visible
+    // with the class "hp-linked-cloud", indicate an active link
+    // then Pass, else Fail
+    If: JediOmni.Wait For Object(#hpid-cloud-status-button.hp-linked-cloud,0)
+    {
+        Return With Pass (User SIO Linked!)
+    }
+    Fail:
+    {
+        Return With Fail (User NOT SIO Linked!)
+    }
+}

@@ -1,0 +1,15 @@
+﻿// App variables
+${ButtonText} = HP for Dropbox \(Special Edition\)
+${ButtonID} = hpid-7b46da50-5533-49c1-86ae-0e4dfca0548e-homescreen-button
+
+// App user varibles
+${AppUserID}=RDLLabBoise@gmail.com
+${AppPassword}=1qaz2wsx#EDC
+//${AppPassword}=007L@z3r
+
+${SaveSIO_AppCredentials}=Y
+${VerifySIOConnectDuringAppOpen}=N
+
+// General variables
+${BackOutOfApp} = Y
+${DeviceSignOut} = Y

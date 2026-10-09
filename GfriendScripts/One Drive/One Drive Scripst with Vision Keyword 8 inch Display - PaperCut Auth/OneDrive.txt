@@ -1,0 +1,84 @@
+﻿using JediOmni
+using Vision
+using Files.gfvar
+using One_Drive.gflib
+  
+Setup_AzureVision
+{
+    One_Drive.AzureVision(${STF_AzureEndpoint},${STF_AzureKey})
+}
+
+ClearAuth
+{
+    If: One_Drive.ClearAuth(${SignIn_Or_SignOut_ID})
+    {
+        Pass (ClearAuth) 
+    }
+}
+
+PaperCut_SignIn
+{
+    If: One_Drive.PaperCut_SignIn(${User_Name},${Password})
+    {
+        Pass (Windows Sign In Successfull)    
+    }
+    Fail:
+    {
+        Fail (PaperCut Sign In failed)
+        //Stop Test Suite 
+    }
+}
+   
+One_Drive_SignIn
+{
+    If: One_Drive.One_Drive_SignIn(${Email},${EmailPasswordPart1},${EmailPasswordPart2})
+    {
+        Pass (One Drive Sign In Successful) 
+    }
+    Fail:
+    {
+        Fail (One Drive Sign In Failed)
+        One_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+        //Stop Test Suite 
+    }
+}
+  
+One_Drive_Print
+{
+    If: One_Drive.One_Drive_Print(${Doc_Name},${File_Name})
+    {
+        Pass (Print Doc Successful) 
+    }
+    Fail:
+    {
+        Fail (fail to print Doc) 
+        One_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+        //Stop Test Suite
+    }
+}
+ 
+One_Drive_SignOut
+{
+    If: One_Drive.One_Drive_SignOut
+    {
+        Pass (Sign Out Successful) 
+    }
+    Fail:
+    {
+        Fail (Fail to Sign Out) 
+        One_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+        Stop Test Suite
+    }
+}  
+   
+SignOut
+{
+    If: One_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+    {
+        Pass (Sign Out Successful)
+    }  
+    Fail:
+    {
+        Fail (Fail to Sign Out)
+    }
+} 

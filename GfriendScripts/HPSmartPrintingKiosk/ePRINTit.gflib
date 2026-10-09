@@ -1,0 +1,294 @@
+﻿using Web
+using Windows
+using JediOmni
+using Android
+using Info
+//////////////////////////////////////////////////
+//Routine:         Portal Login
+//Description:     user to login to the portal send job to the solution
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+
+ePRINTit Portal(${STF_Username},${STF_Password},${path},${URL})
+{
+    Web.Open with Chrome (${URL},50)
+        
+    //Click on Email
+    If:  Web.Wait For Object (//*[@id="Username"],50)
+    {
+         Web.Click Object ( //*[@id="Username"])
+         Web.Set Text (//*[@id="Username"],${STF_Username})
+         
+    }
+     Fail:
+     {
+         Fail (Unable to open Portal)
+         Stop Test Suite
+     }
+   
+    //Click on Password
+    If: Web.Wait For Object (//*[@id="Password"],50)
+    {
+         Web.Click Object ( //*[@id="Password"])
+         Web.Set Text ( //*[@id="Password"],${STF_Password})
+    } 
+    
+   
+    //Click on Login
+    If: Web.Wait For Object (//*[@id="content"]/div[2]/form/div[3],5)
+    {
+        Web.Click Object ( //*[@id="content"]/div[2]/form/div[3])
+    } 
+        
+    Fail:   
+    {   
+        Fail (Failed to login)  
+        Stop Test Suite  
+    }
+    //selecting UAT Cloud printer
+    If: Web.Wait For Text (UAT Cloud Printer,60)
+    {
+        Web.Click Text (UAT Cloud Printer) 
+    }
+    Fail:
+    {
+        Fail (Unable to find the UAT Cloud Printer)
+        Stop Test Suite
+    }
+    
+    //Operation on Choose files
+    If: Web.Wait For Object (//*[@id="printFileChooser"],10)
+        {
+            //click on Choose file butto 
+            Web.Click Non button Object (//*[@id="printFileChooser"])
+            Sleep (5)         
+        }
+  
+    //Selecting documnent to print from the Windows explorer 
+    If: Windows.Select File at Dialog (${path})
+    {
+        //contiune 
+        Sleep (5)
+    } 
+     
+    Fail:
+    {
+        Fail ("Windows explorer error")
+        Stop Test Suite
+    }
+    
+    
+    //Submitting the job 
+    If: Web.Wait For Object (//*[@id="submitJobBtn"],5)
+    {
+        Web.Click Object (//*[@id="submitJobBtn"])
+    } 
+    Fail:
+    {
+        Fail (fail to click on submit button)
+        Stop Test Suite
+    }
+    If: Web.Wait For Object (//*[@id="jobs_result_table"]/tbody/tr/td[6]/span,100)
+    {
+       //continue 
+        Sleep(5)
+    } 
+    Fail:
+    {
+        Fail (Print Job is not completed from the portal)
+        Stop Test Suite 
+    }
+    Web.Close
+} 
+
+//////////////////////////////////////////////////
+//Routine:         device Login
+//Description:     user to login to the device to print the same job sent from portal
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+ 
+  ePRINTit Device(${PIN},${STF_Username},${STF_Password},${STF_Document_name},${PIN_AUTH})
+ {
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_SecondButtonPress)
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_ProcessingJob)
+     
+    JediOmni.Press Home Key
+    JediOmni.Reset 
+    JediOmni.Enable Paperless Mode    
+    
+    
+    //Click on Solution and login with PIN
+    JediOmni.Wait For Object (hpid-7180456f-7ef4-46cd-afcd-55701541085b-homescreen-button,50)
+   
+    JediOmni.Touch ID (hpid-7180456f-7ef4-46cd-afcd-55701541085b-homescreen-button)
+    //AppButtonPress doesn't need start marker 
+    Info.Mark End (STF_AppButtonPress,1)
+   
+   //If previous iteration logout isn't happened properly error page will appear, sometimes need to click on refresh button to get the error popup
+    If: Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/refresh_btn'],10)
+    {
+        Android.Touch XPath (Wait For XPath (//node[@resource-id='com.hp.kiosk:id/refresh_btn'])
+    }
+    //waiting and click on error popup ok button 
+    If: Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/error_ok_btn'],10)
+    {
+        Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/error_ok_btn'])
+        //click on the signout button
+       Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/logoutBtn'],100)
+       Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/logoutBtn'])
+       
+       //waiting and clicking on yes button to confirm to logout
+       Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/confirm_cancel_btn'],100)
+       Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/confirm_cancel_btn'])
+        
+    }
+    
+    //choosing authentication to login to the solution 
+    Info.Mark Start (STF_Authentication,3)
+    If: Equals IgnoreCase (${PIN_AUTH},Y)
+    Info.Mark Start (STF_EnterCredentials,4)
+    {
+        //entering PIN to authenticate
+        If: Android.Wait For XPath (//node[@resource-id='com.hp.auth.regus:id/pinText'],50)
+        {
+            Android.Touch XPath (//node[@resource-id='com.hp.auth.regus:id/pinText'])
+            Android.Input Text (${PIN})
+        
+                //Login Button press
+            Android.Touch XPath (//node[@resource-id='com.hp.auth.regus:id/loginBtn'])  
+        }
+        Fail:
+        {
+          Fail (Unable to authenticate with Pin)
+          Stop Test Suite
+        }
+        
+    }
+    
+    Fail:
+    Info.Mark Start (STF_EnterCredentials,4)
+    {
+       //click on username and password
+       If: Android.Wait For XPath (//node[@resource-id='com.hp.auth.regus:id/emailTxtView'],100)
+       {
+            Android.Touch XPath (//node[@resource-id='com.hp.auth.regus:id/emailTxtView'])
+            Android.Wait For XPath (//node[@resource-id='Username'],50)
+       
+            //clicking username text box and entering username 
+            Android.Touch XPath (//node[@resource-id='Username'])
+            Android.Input Text (${STF_Username})
+       
+            //clicking password text box and entering password
+            Android.Touch XPath (//node[@resource-id='Password'])
+            Android.Input Text (${STF_Password})
+       
+            //click on Login Button
+            Android.Touch XPath (//node[@text='LOGIN'])  
+       }
+       
+        Fail:
+        {
+            Fail (unable to authenticate with username and password)
+            Stop Test Suite
+        }
+
+   }
+   Info.Mark End (STF_EnterCredentials,4) 
+   Info.Mark End (STF_Authentication,3)
+   
+   //waiting to print icon to appear 
+   If: Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/recyclerView']/node[2]/node[1]/node[1],100)
+   
+   {    
+       //Clicking on print icon
+       If: Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/recyclerView']/node[2]/node[1]/node[1],10)
+       {
+         Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/recyclerView']/node[2]/node[1]/node[1])
+       //SceondButtonPress doesn't need start marker 
+       Info.Mark End (STF_SecondButtonPress,6)  
+       }
+        Fail:
+        {
+           Fail (Failed to click on the print icon)
+           Stop Test Suite 
+        }
+       //if error pop up comes click on ok and refresh button untill job page to load compeletly 
+       While:!Android.Wait For XPath (//node[@text='Job Name'],10):7
+       {
+           Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/error_ok_btn'],15)
+           Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/error_ok_btn'])
+           Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/refresh_btn'],15)
+           Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/refresh_btn'])
+       } 
+        If: Android.Wait For XPath (//node[@text='Job Name'],5)
+          {
+             Info.Mark End (STF_AppShown,17)
+           //defaultly all the document will to selected so deselect all the print document 
+           Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/selectAllCheckbox'])
+           
+           Info.Mark Start (STF_ProcessingJob,7)
+           //waiting and select the document which was sent from portal 
+           Android.Wait For Text (${STF_Document_name},50)
+           Android.Touch Text (${STF_Document_name})
+           
+           //click on the Start button to print the job 
+           Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/start_tab_start_btn'])
+           
+           //wait till the print job to complete    
+           Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/loading_msg_textview'],100)
+           Info.Mark End (STF_ProcessingJob,7)  
+          } 
+        Fail:
+        {
+            Fail (Failed to select the job and print)
+        }
+       //click on the signout button
+       If: Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/logoutBtn'],100)
+       {
+            Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/logoutBtn'])
+       
+            //waiting and clicking on yes button to confirm to logout
+            Android.Wait For XPath (//node[@resource-id='com.hp.kiosk:id/confirm_cancel_btn'],100)
+            Android.Touch XPath (//node[@resource-id='com.hp.kiosk:id/confirm_cancel_btn'])
+            Android.Wait For XPath (//hierarchy[@rotation='0']/node[3],300)
+            JediOmni.Press Home Key  
+       }
+       Fail:
+       {
+           Fail (Failed while logging-out)
+       }
+      
+       
+   }
+   Fail:
+   {
+       Fail (Print icon is not seen within wait time)
+   }
+   Info.Draw Time Graph (STF_AppShown)
+   Info.Draw Time Graph (STF_AppButtonPress)
+   Info.Draw Time Graph (STF_SecondButtonPress)
+   Info.Draw Time Graph (STF_Authentication)
+   Info.Draw Time Graph (STF_EnterCredentials)
+   Info.Draw Time Graph (STF_ProcessingJob)
+}
+
+
+

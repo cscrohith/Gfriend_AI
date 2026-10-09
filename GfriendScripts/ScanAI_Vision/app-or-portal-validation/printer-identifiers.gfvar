@@ -1,0 +1,46 @@
+﻿//Azure Vision End Point and Subscription key
+${AzureEndpoint}=https://azure.com/
+${SubscriptionKey}=7rfjsYSDaABh
+
+//Total scans is alway one plus the scan count i.e. 6 if scan count is 5.
+${ScanCount} = 5
+
+//Clearing Settings toast message
+${ClearingSettingsMsg} = Clearing Settings
+
+//Application Name
+${HPScanAIEnhanced} = HP Scan AI Enhanced
+
+${ScanAIApplicationIcon} = hpid-627b8ca8-0e68-11ed-861d-0242ac120002-homescreen-button
+
+//DemoWorkflowProjectUnderTest
+${DemoProjectUnderTest} =Demo Project - App or Portal Validation
+
+${ProjectUnderTest} =Demo Project - App or Portal Validation
+
+//'Start New Job' button
+${StartNewJobbutton} = START NEW JOB
+
+${ScanButton} = hpid-button-scan
+
+${DoneButton} = hpid-button-done
+
+//for Cancel Upload to Aluma portal
+${CancelUpload} =Cancel Job
+
+${CheckToHideKeyboard} =//node[@index='20']
+
+//'Next Step Button'
+${NextStepButton} =NEXT STEP
+
+//'Continue On Desktop Button'
+${ContinueOnDesktopButton} =CONTINUE ON DESKTOP
+
+//'Text Feild for giving Task Name'
+${TaskNameTextFeild} =Task name
+
+//'Continue' button for sending to Aluma portal 
+${ContinueSendingToPortal} =CONTINUE
+
+//'Finish' button to end workflow execution
+${FinishSendingToPortal} =FINISH

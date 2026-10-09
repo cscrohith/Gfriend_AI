@@ -1,0 +1,393 @@
+﻿///<File>WP_Box_Print_1_File.txt</File>
+///<Modified>2021-09-23</Modified>
+///<Description>Perform a print job in the HP for Box workpath app.
+///Optionally authenticate on the device. Handle SIO as necessary.</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+Using WP_Box.gfvar
+Using WP_BoxAuth.gfvar
+Using WP_Box_Print_1_File.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\..\Device\Device_Library.gflib
+//Using DeviceAuth.gflib
+Using ..\..\DeviceAuth\DeviceAuth.gflib
+//Using Common_LIbrary.gflib
+Using ..\..\Common\Common_LIbrary.gflib
+
+Using WP_Box_Library.gflib
+Using WP_BoxPrint_Library.gflib
+
+Using JediOmni
+
+///<Name>OpenApp</Name>
+///<Description>Authenticate on device, if specified, and open the Box app</Description>
+///<Notes>WP_BoxAuth.gfvar contains the needed authentication and User variables. 
+///WP_Box.gfvar contains needed app variables.
+///If this script is run from STF/STB the variables with names beginning
+///with STF_ can be commented to use the values from the STF/STB virtual worker user.
+///This routing handles SIO 2FA as needed</Notes>
+OpenApp
+{
+    // get the user code/PIN to use
+    DeviceAuth.GenerateUserCode (${STF_UserName})
+    
+    // intialize variable used to indicate whether to perform subsequent test cases
+    Set Variable (${ContinueNextTestCase},Y)
+    
+    // authenticate if specified
+    If: Equals IgnoreCase (${AuthenticationType},Windows)
+    {
+        // sign in with Windows
+        If: DeviceAuth.SignIn_Windows (${STF_UserName},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Windows authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Windows authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},HPAC)
+    {
+        // sign in with HPAC
+        If: DeviceAuth.Sign_In_HPAC (${UserCode},${STF_UserName},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},SafeCom)
+    {
+        // sign in with SafeCom
+        If: DeviceAuth.SignIn_SafeCom (${STF_UserName},${UserCode},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},Papercut)
+    {
+        // sign in with Papercut
+        If: DeviceAuth.Sign_In_PaperCut (${STF_UserName},${UserCode},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+    }
+    // if got to here either authentication was successful
+    // or not authentication type specified
+    
+    // open the app
+    If: Device_Library.LaunchApp(${ButtonID},${ButtonText})
+    {
+        Sleep (${Very_Short_Wait_Time})
+        // check for and handle SIO 2 factor auth PIN
+        If: DeviceAuth.Check_HPID_SIO(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        {
+            // handle the app opening (EULA, Sign In and Guide screen)
+            If: WP_Box_Library.HandleAppOpening(${AppUserID},${AppPassword},${SaveSIO_AppCredentials})
+            {
+            }
+            Fail:
+            {
+                Set Variable (${ContinueNextTestCase},N)
+                Fail (Fail while handling the opening of Box app!)
+            }
+            Error:
+            {
+                Set Variable (${ContinueNextTestCase},N)
+                Error (Error occurred while handling the opening of Box app!)
+            }
+        }
+        Fail:
+        {
+            // clear out of the app
+            //Sleep (${Minimal_Wait_Time})
+            //JediOmni.Press Home Key
+            Set Variable (${ContinueNextTestCase},N)
+            Fail (Launch Box app failed!)
+            //Stop Test Suite
+        }
+        Error:
+        {
+            Set Variable (${ContinueNextTestCase},N)
+            Error (Error occurred while launching Box app!)
+            //Stop Test Suite
+        }
+    }
+    Fail:
+    {
+        Set Variable (${ContinueNextTestCase},N)
+        Fail (Launch Box app failed!)
+        //Stop Test Suite
+    }
+    Error:
+    {
+        Set Variable (${ContinueNextTestCase},N)
+        Error (Error occurred while launching Box app!)
+        //Stop Test Suite
+    }
+}
+
+///<Name>PrintJob</Name>
+///<Description>Perform a print job. Optionally set print options. Optionally repeat the print job.</Description>
+///<Notes>WP_Box_Print_1_File.gfvar contains needed app print variables.</Notes>
+PrintJob
+{
+    // end test case if specified to
+    If: Equals (${ContinueNextTestCase},N)
+    {
+        Stop Test Case
+    }
+    
+    // repeat print job the number of times specified
+    Repeat: ${Print_Repetitions}
+    {
+        // locate the folder if specified
+        If: Common_LIbrary.CheckVariableContainsValue (${Print_Folder})
+        {
+            // search for the folder
+            If: WP_Box_Library.SearchFolder(${Print_Folder})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail searching for folder ${Print_Folder} while performing print job!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error searching for folder ${Print_Folder} while performing print job!)
+                Stop Test Case
+            }
+        }
+
+        // select the file
+        If: WP_Box_Library.SearchFile(${Print_Filename})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail searching for file ${Print_Filename} while performing print job!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error searching for file ${Print_Filename} while performing print job!)
+            Stop Test Case
+        }
+
+        If: Equals IgnoreCase (${Print_SkipOptions},Y)
+        {
+            // specified to skip setting options
+        }
+        Fail:
+        {
+            // set the output sides option
+            If: WP_BoxPrint_Library.SetPrintOption_OutputSides (${Print_OutputSides})
+            {
+            }
+            Fail:
+            {
+                Fail (Set print option Output Sides failed!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Output Sidesd!)
+                Stop Test Case
+            }
+
+            // set the Color/Black option
+            If: WP_BoxPrint_Library.SetPrintOption_ColorBlack (${Print_Color})
+            {
+            }
+            Fail:
+            {
+                Fail (Set print option Color failed!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Color!)
+                Stop Test Case
+            }
+
+            // set the paper size option
+            If: WP_BoxPrint_Library.SetPrintOption_PaperSelection_PaperSize (${Print_PaperSize})
+            {
+            }
+            Fail:
+            {
+                Fail (Set print option Paper Size failed!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Paper Size!)
+                Stop Test Case
+            }
+
+            // set the paper type option
+            If: WP_BoxPrint_Library.SetPrintOption_PaperSelection_PaperType (${Print_PaperType})
+            {
+            }
+            Fail:
+            {
+                Fail (Set print option Paper Type failed!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Paper Type!)
+                Stop Test Case
+            }
+
+            // set the paper tray option
+            If: WP_BoxPrint_Library.SetPrintOption_PaperSelection_PaperTray (${Print_PaperTray})
+            {
+            }
+            Fail:
+            {
+                Fail (Set print option Paper Tray failed!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Paper Tray!)
+                Stop Test Case
+            }
+
+            // set the collate option
+            If: WP_BoxPrint_Library.SetPrintOption_PaperSelection_Collate (${Print_Collate})
+            {
+            }
+            Fail:
+            {
+                Fail (Set print option Collate failed!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Collate failed!)
+                Stop Test Case
+            }
+            
+            // set the number of copies option
+            If: WP_BoxPrint_Library.SetPrintOption_Copies(${Print_NumberOfCopies})
+            {
+            }
+            Fail:
+            {
+                Fail (Set print option Number Of Copies failed!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Number Of Copies!)
+                Stop Test Case
+            }
+        }
+
+        Sleep (${Minimal_Wait_Time})
+        
+        // complete the print job
+        If: WP_BoxPrint_Library.Perform_PrintJob (${Print_JobCompleteTimeout})
+        {
+            WP_Box_Library.ReturnToMainFolder
+        }
+        Fail:
+        {
+            Fail (Print job failed!)
+        }
+        Error:
+        {
+            Error (Error occurred while performing print job!)
+        }
+    }
+    
+    Pass (Print Job complete!)
+}
+
+///<Name>ExitAppSignOut</Name>
+///<Description>Exit the Box app and sign out</Description>
+///<Notes>WP_Box.gfvar contains needed app exit variables.</Notes>
+ExitAppSignOut
+{
+    // exit the app
+    If: WP_Box_Library.AppExit (${BackOutOfApp})
+    {
+    }
+    Fail:
+    {
+        Fail (Box app exit failed!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Box app exit errored!)
+        Stop Test Case
+    }
+    
+    // sign out on the device if specified
+    If: Equals IgnoreCase(${DeviceSignOut},Y)
+    {
+        If: DeviceAuth.SignOut
+        {
+        }
+        Fail:
+        {
+            Fail (Fail while signing out!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error while signing out!)
+            Stop Test Case
+        }
+    }
+    
+    Pass (Exit App complete!)
+}

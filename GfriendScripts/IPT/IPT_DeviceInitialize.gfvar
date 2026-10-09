@@ -1,0 +1,21 @@
+﻿// device parameters
+${DUT_Address}=15.86.229.220
+//${DUT_Address}=15.86.231.33
+${DUT_AdminPW}=!QAZ2wsx
+// proxy parameters
+${Enable_WebServices}=N
+${Device_ProxyServer}=web-proxy.austin.hpicorp.net
+${Device_ProxyPort}=8080
+${Device_ProxyExceptionsList}=*.etl.boi.rd.hpicorp.net;15.13.*;127.0.0.1;15.86.*
+
+// Date/time parameters
+${Set_DateTime}=Y
+${DateTime_TimeZone}=Mountain Time
+${DateTime_AdjustDaylightSavings}=Y
+${DateTime_DateFormat}=MM_DD_YYYY
+${DateTime_TimeFormat}=HOUR_12
+${DateTime_SynchToTimeServer}=Y
+${DateTime_TimeServerAddress}=etl.boi.rd.hpicorp.net
+${DateTime_TimeServerPort}=1230
+${DateTime_TimeServerPeriod}=24
+

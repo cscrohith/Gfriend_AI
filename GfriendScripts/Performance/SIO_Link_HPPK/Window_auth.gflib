@@ -1,0 +1,73 @@
+﻿using Android
+using JediOmni
+using Info
+
+
+WinAuthLogin(${ID},${Pw})
+{//1.Winauthlogin start
+    If:JediOmni.Wait For Text (Sign In,30) 
+    {// 1. If Start
+      JediOmni.Touch Text (Sign In) 
+      sleep(2)
+      JediOmni.Touch ID (hpid-dropdown-agent)     
+      sleep(3)
+      JediOmni.Touch Text (Windows) 
+      sleep(1)
+      JediOmni.Touch ID (hpid-signin-textbox-UserNameTextBox)
+      JediOmni.Input Text (hpid-signin-textbox-UserNameTextBox,${ID})
+      sleep(1)
+      JediOmni.Touch ID (hpid-signin-textbox-PasswordTextBox)
+      JediOmni.Input Text (hpid-signin-textbox-PasswordTextBox,${Pw})  
+      sleep(1)
+      JediOmni.Touch ID (hpid-button-signin-ok)
+    
+      
+    }//1. If End
+    
+    
+}//1.Winauthlogin end
+
+
+LinkHPaccount(${ID},${Pw})
+{
+    If: JediOmni.Wait For Object (hpid-hpid-agree-statement-checkbox,30)
+    {
+        JediOmni.Touch ID (hpid-hpid-agree-statement-checkbox)
+        If: JediOmni.Wait For Object (hpid-hpid-link-button,10)
+        {
+            JediOmni.Touch ID (hpid-hpid-link-button)
+        }
+        
+    }
+}
+
+
+UnlinkHPaccount()
+{
+    
+}
+
+
+WinAuthLogout
+{
+    
+       
+    If:JediOmni.Wait For Text (Sign Out,60)
+    {
+        If:Android.Wait For Object (iv_dots_bg,5)
+        {
+            Android.Wait For Object Gone (iv_dots_bg,10)
+        }
+        Sleep (2)
+        JediOmni.Touch Text (Sign Out)
+    }
+    Fail:
+    {
+        JediOmni.Press Home Key
+        JediOmni.Reset
+        Sleep (5)
+        JediOmni.Touch Text (Sign Out)
+    }
+    
+    Sleep (3)
+}

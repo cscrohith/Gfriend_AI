@@ -1,0 +1,78 @@
+﻿using JediOmni
+using HP_Advance_Secure_Pull_Print_Library.gflib
+using HP_Advance_Secure_Pull_Print_Variables.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         HP Advance Secure Pull Print Flow
+// Description:     HP Advance Secure Pull Print Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+HP Advance Secure Pull Print Flow
+{ 
+    If: Equals IgnoreCase (${PIN_AUTH},Y)
+    {
+	HP_Advance_Secure_Pull_Print_Library.GenerateUserCode(${STF_UserName})
+        If: HP_Advance_Secure_Pull_Print_Library.HPAdvancePinLogin(${UserCode},${LAZY_AUTH})
+        {
+            If:HP_Advance_Secure_Pull_Print_Library.HPAdvanceSecurePullPrint(${PRINT_RELEASE_ACTION},${LAZY_AUTH})
+            {
+                HP_Advance_Secure_Pull_Print_Library.ExitApp
+            }
+            Fail:
+            {
+                Fail(Fail occurred during pull print operation)
+            }
+            Error:
+            {
+                Error(Error occurred during pull print operation)
+            }   
+        }
+        Fail:
+        {
+            Fail (Failed while Signing In Pin Authentication!)
+        }
+        Error:
+        {
+            Error (Error while Signing In Pin Authentication!)
+        }
+    }
+    
+    Fail:
+    {
+        If: HP_Advance_Secure_Pull_Print_Library.HPAdvanceUserNamePasswordLogin(${STF_UserName},${STF_UserPassword},${LAZY_AUTH})
+        {
+            If:HP_Advance_Secure_Pull_Print_Library.HPAdvanceSecurePullPrint(${PRINT_RELEASE_ACTION},${LAZY_AUTH})
+            {
+                HP_Advance_Secure_Pull_Print_Library.ExitApp
+            }
+            Fail:
+            {
+                Fail(Fail occurred during pull print operation)
+            }
+            Error:
+            {
+                Error(Error occurred during pull print operation)
+            }
+        }
+        Fail:
+        {
+                Fail (Failed while Signing In Username\Password Authentication!)
+        }
+        Error:
+        {
+                Error (Error while Signing In Username\Password Authentication!)
+        }
+     }
+    
+    //Signing Out
+    HP_Advance_Secure_Pull_Print_Library.SignOut
+   
+}

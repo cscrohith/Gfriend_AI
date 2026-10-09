@@ -1,0 +1,38 @@
+﻿using Vision
+using printer-validation-testcases.gflib
+using portal-validation-testcases.gflib
+using printer-identifiers.gfvar
+using web-portal-identifiers.gfvar
+
+SetupAzureVision
+{
+    printer-validation-testcases.AzureVision(${AzureEndpoint},${SubscriptionKey})
+}
+
+AppOrPortalValidation
+{
+    printer-validation-testcases.Setup(${CancelScanNotifictaion},${YesButton_CancelScanNotification},${ClearingSettingsMsg})
+    printer-validation-testcases.Open_HPScanAIEnhanced(${HPScanAIEnhanced},${ScanAIApplicationIcon},${DemoProjectUnderTest})
+    printer-validation-testcases.Select_WorkflowProject(${DemoProjectUnderTest},${ProjectUnderTest},${StartNewJobbutton})
+    printer-validation-testcases.Scan_DocMultipleTime(${ScanButton},${CancelScan},${DoneButton})
+    printer-validation-testcases.Wait_UploadDocumentsToAlumaPortal(${CancelUpload})
+    printer-validation-testcases.Click_NextStepButton(${NextStepButton})
+    printer-validation-testcases.Wait_DocumentSeparationScreen(${ContinueOnDesktopButton})
+    printer-validation-testcases.Click_ContinueOnDesktopButton(${ContinueOnDesktopButton})
+    printer-validation-testcases.Input_ProjectIdentifierName(${TaskNameTextFeild})
+    printer-validation-testcases.Click_Continue_SendToAlumaPortal(${ContinueSendingToPortal})
+    printer-validation-testcases.Click_Finish(${FinishSendingToPortal})
+    printer-validation-testcases.Wait_WorkflowProjectsListPage(${DemoProjectUnderTest})
+    portal-validation-testcases.OpenAlumaWebApplication(${AlumaPortalUrl})
+    portal-validation-testcases.LoginToAlumaWebApplication(${EmailTextFeild},${UserEmail},${PasswordTextFeild},${UserPassword},${SignInWithEmailButton})
+    portal-validation-testcases.OpenValidationPage(${ValidationButton})
+    portal-validation-testcases.SelectDemoProjectForValidation
+    portal-validation-testcases.PerformDocumentSeperation_AlumaPortal(${Document3},${MoveArrowAtDocument3},${Document4},${MoveArrowAtDocument4},${Document3Page1},${SeparateDocument3And4})
+    portal-validation-testcases.PerformDocumentFeildsValidation_AlumaPortal(${Document0},${MoveToNextDocument},${FeildViewButton},${InputTextFeild_Fornitore},${InputValue},${InputTextFeild_PartitaIva})
+    portal-validation-testcases.CompleteReview(${ThumbnailViewButton},${ReviewCompleteButton},${SubmitAndOpenNextTaskDropdown},${SubmitAndReturnToTaskList})    
+}
+
+Teardown
+{
+    printer-validation-testcases.Teardown
+}

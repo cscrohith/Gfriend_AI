@@ -1,0 +1,261 @@
+﻿using Vision
+using Info
+using JediOmni
+using Oxpd
+using BadgeBox
+
+AzureVisionSetup(${AzureEndpoint},${SubscriptionKey})
+{
+    Encrypt(${AzureEndpoint},${AzureEndpointEncryptedValue})
+    Encrypt(${SubscriptionKey},${SubscriptionKeyEncryptedValue})
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+}
+
+Authentication(${USERNAME},${PASSWORD},${BADGE_AUTH},${BADGE_INDEX})
+{
+   If: Equals IgnoreCase (${BADGE_AUTH},Y)
+   {
+       VasionPrintTC.BadgeBoxSignIn(${BADGE_INDEX})
+   }
+   Fail:
+   {  
+       VasionPrintTC.CredentialsLogin(${USERNAME},${PASSWORD})
+   }
+}
+
+CredentialsLogin(${USERNAME},${PASSWORD})
+{
+   Vision.Crop Screenshot (top,15)
+   Info.Start Time Check (STF_Authentication)
+   Info.Start Time Check (STF_EnterCredentials)
+   Info.Start Time Check (STF_AppButtonPress)
+   Info.Start Time Check (STF_AppShown)
+   If: Vision.Is Text Exist (PrinterLogic)
+   {
+        Vision.Click Text (PrinterLogic)
+        Info.Mark End (STF_AppButtonPress,1)
+   } 
+   Fail:
+   {
+        Return With Fail (PrinterLogic not available)
+        Stop Test Case
+   } 
+   Vision.Stop Crop
+   Oxpd.Get Browser Engine
+   Info.Mark Start (STF_Authentication,2)
+   Sleep (2)
+   Vision.Crop Screenshot (top,15)
+   If:Vision.Is Text Exist (Username)
+   {
+        Info.Mark Start (STF_EnterCredentials,3)
+        Vision.Click Text (Username)
+	Vision.Stop Crop
+        Oxpd.Input Text (${USERNAME})
+        Vision.Crop Screenshot (top,15)
+        Vision.Click Text (OK)
+	Vision.Stop Crop
+        Sleep (1)
+	Vision.Crop Screenshot (top,15)
+        Vision.Click Text (Password)
+	Vision.Stop Crop
+        Oxpd.Input Text (${PASSWORD})
+	Vision.Crop Screenshot (top,15)
+        Vision.Click Text (OK)
+	Vision.Stop Crop
+        Sleep (1)
+	Vision.Crop Screenshot (top,15)
+        Vision.Click Text (Log In)
+	Vision.Stop Crop
+        Info.Mark End (STF_EnterCredentials,3)
+        Sleep (2)
+        Vision.Crop Screenshot (right,15)
+        If: Vision.Is Text Exist (Page)
+        {
+            Vision.Stop Crop
+            Info.Mark End (STF_Authentication,2)
+            Return With Pass (Login was Successful)
+        }
+        Fail:
+        {
+            Fail (Sign In was not Successful)
+            Stop Test Case
+        }
+        Info.Mark End (STF_AppShown,4)
+   }
+   Fail:
+   {
+       Fail (Not entered into Username and Password Authentication screen) 
+   }
+}
+
+BadgeBoxSignIn(${BADGE_INDEX})
+{
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    Vision.Crop Screenshot (top,15)
+    If: Vision.Is Text Exist (PrinterLogic)
+    {
+        Vision.Click Text (PrinterLogic)
+        Info.Mark End (STF_AppButtonPress,1)
+    } 
+    Fail:
+    {
+        Return With Fail (PrinterLogic not available)
+        Stop Test Case
+    }
+    Vision.Stop Crop
+    Oxpd.Get Browser Engine
+    Info.Mark Start (STF_Authentication,2)
+    Sleep (2)
+    Vision.Crop Screenshot (top,15)
+    If:Vision.Is Text Exist (SCAN BADGE)
+    {
+       Vision.Stop Crop
+       Info.Mark Start (STF_EnterCredentials,3)
+       BadgeBox.Scan Badge (${BADGE_INDEX})
+       Info.Mark End (STF_EnterCredentials,3)
+       Sleep (2)
+       Vision.Crop Screenshot (top,15)
+       If: Vision.Is Text Exist (Page)
+       {
+           Vision.Stop Crop
+           Info.Mark End (STF_Authentication,2)
+           Return With Pass (Login was Successful)
+       }
+       Fail:
+       {
+           Fail (Sign In was not Successful)
+           Stop Test Case
+       }
+       Info.Mark End (STF_AppShown,4)
+    }
+   Fail:
+   {
+       Return with Fail (Not entered into Badge box Authentication screen)
+   }
+}
+
+Execute_PullPrint(${PRINT_ALL},${ActivityId},${XValueForSelectAll},${YValueForSelectAll},${XValueForPrintButton},${YValueForPrintButton})
+{
+    Info.Start Time Check (STF_ProcessingJob)
+    Vision.Crop Screenshot (top,15)
+    //"Title" refers to the header shown when jobs are available
+    If: Vision.Is Text Exist (Title)
+    {
+       //To Print all the Jobs
+       Info.Mark Start (STF_ProcessingJob,6)
+       If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            //Clicks on select all checkbox
+            Vision.Click Next To Text (Title,${XValueForSelectAll},${YValueForSelectAll})
+            Sleep (1)
+            //Clicks on Print button
+            Vision.Click Next To Text (Page 1 of,${XValueForPrintButton},${YValueForPrintButton})
+        } 
+        //To Print Only 1 Job
+        Fail:
+        {
+          If: Vision.Is Text Exist (Title)
+          {
+              //Clicking on first job using Activity Id
+              VasionPrintTC.ClickOnPrintJob(${ActivityId})
+              Sleep (1)
+              //Clicks on Print button
+              Vision.Click Next To Text (Page 1 of,${XValueForPrintButton},${YValueForPrintButton})
+          } 
+        }
+        Vision.Stop Crop
+        Sleep (2)
+        Info.Mark End (STF_ProcessingJob,6)
+    }
+   Fail:
+   {
+       Fail (No Jobs found)
+   }
+}
+
+Execute_Delete(${PRINT_ALL},${ActivityId},${XValueForSelectAll},${YValueForSelectAll},${XValueForDeleteButton},${YValueForDeleteButton})
+{
+    Info.Start Time Check (STF_ProcessingJob)
+    Vision.Crop Screenshot (top,15)
+    //"Title" refers to the header shown when jobs are available
+    If: Vision.Is Text Exist (Title)
+    {
+        //To Delete all the Jobs
+        Info.Mark Start (STF_ProcessingJob,6)
+        If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            //Clicks on select all checkbox
+            Vision.Click Next To Text (Title,${XValueForSelectAll},${YValueForSelectAll})
+            Sleep (1)
+            //Clicks on Delete button
+            Vision.Click Next To Text (Page 1 of,${XValueForDeleteButton},${YValueForDeleteButton})
+        }
+        //To Delete Only 1 Job
+        Fail:
+        {
+            If: Vision.Is Text Exist (Title)
+            {
+              //Clicking on first job using Activity Id
+              VasionPrintTC.ClickOnPrintJob(${ActivityId})
+              Sleep (1)
+              //Clicks on Delete button
+              Vision.Click Next To Text (Page 1 of,${XValueForDeleteButton},${YValueForDeleteButton})
+            }
+        }
+        Vision.Stop Crop
+        Sleep (2)
+        Info.Mark End (STF_ProcessingJob,6)
+    }
+    Fail:
+    {
+        Fail (No Jobs found)
+    }  
+}
+
+ClickOnPrintJob(${JobName})
+{
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (block)
+    Substring (${JobName},0,4,${VasionPrintJOBID_1})
+    Substring (${JobName},1,4,${VasionPrintJOBID_2})
+    Substring (${JobName},2,4,${VasionPrintJOBID_3})
+    Substring (${JobName},3,4,${VasionPrintJOBID_4})
+    Substring (${JobName},4,4,${VasionPrintJOBID_5})
+    Repeat:5
+    {
+        Concatenate Variables And Store Result (${VasionPrintJOBID_},${R},${newvalue})
+        If: Vision.Is Text Exist (${newvalue})
+        {
+            Vision.Click Text (${newvalue})
+            Return With Pass (Print Job ID Clicked)
+        }
+        Fail:
+        {
+            //If Activity ID not present on screen checks for Ready text and clicks on it 
+            If: Vision.Is Text Exist (Ready)
+            {
+                Vision.Click Text with index (Ready,1)
+                Return With Pass (Print Job ID Clicked)
+            }
+            Fail:
+            {
+                Return With Fail ( Print Job Not Found)
+            }
+        }
+    }         
+}
+
+Teardown()
+{
+    //clicking on Home button
+    JediOmni.Press Home Key
+    Sleep (2)
+    Vision.Crop Screenshot (right,15)
+    Vision.Click Text (Reset)
+    Vision.Stop Crop
+}

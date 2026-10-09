@@ -1,0 +1,18 @@
+//Printer Queue name
+${PrinterQueuename} = 
+//INF path
+${inf_Path} = 
+//Driver name
+${Driver_Name} = 
+//gets the count before printing or before sending the job
+${Before} =
+//gets the count After printing or before sending the job
+${After} = 
+﻿//navigate back from job list page
+${home_button1} = 
+//navigate back to home screen
+${home_button2} =
+${Second_BADGE_INDEX}=1
+${User1_BADGE_INDEX}=0
+${User2_BADGE_INDEX}=1
+${WaitTime_SignIn_SignOut}=50

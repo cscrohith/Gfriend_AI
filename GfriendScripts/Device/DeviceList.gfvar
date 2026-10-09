@@ -1,0 +1,13 @@
+﻿// IP addresses of devices to be used by scripts that will handle multiple devices
+// Add IP addresses only to the variables to be used, leave other variables' values blank
+// or comment out the variable definitiion, to skip
+${Device_IP_1}=15.86.229.220
+${Device_IP_2}=
+${Device_IP_3}=
+${Device_IP_4}=
+${Device_IP_5}=
+${Device_IP_6}=
+${Device_IP_7}=
+${Device_IP_8}=
+${Device_IP_9}=
+${Device_IP_10}=

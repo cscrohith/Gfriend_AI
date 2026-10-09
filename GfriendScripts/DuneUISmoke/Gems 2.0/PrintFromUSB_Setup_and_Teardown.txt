@@ -1,0 +1,11 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+using ..\Common\Common_Print_Library.gflib
+
+TC_PrintFromUSB_SelectFile
+{
+     Common_Print_Library.PrintFromUSB_Setup
+     Common_Print_Library.PrintFromUSB_SelectFile
+     Common_Print_Library.PrintFromUSB_Teardown
+}

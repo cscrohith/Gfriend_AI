@@ -1,0 +1,42 @@
+﻿//${AuthenticationType}=NONE
+${AuthenticationType}=Windows
+//${AuthenticationType}=HPAC
+//${AuthenticationType}=SafeCom
+//${AuthenticationType}=PaperCut
+
+// user variables, when run in STF/STB these can be commented to use those supplied by the GFriend plugin
+${STF_UserName}=u00009
+//${STF_UserName}=u05201
+${STF_UserPassword}=1qaz2wsx
+${STF_Domain}=etl.boi.rd.hpicorp.net
+
+${UserCode}=00009
+//${UserCode}=05201
+
+// HPID SIO linking user variables
+${HPID_UserID}=rdltestacct04@gmail.com
+//${HPID_UserID}=rdl.etl.boise+u05201@gmail.com
+${HPID_Password}=007L@z3r
+${HPID_PIN}=454545
+
+// app button variables
+//${ButtonText} = HP for Box \(Special Edition\)
+//${ButtonID} = hpid-eaf8f7de-39ca-405f-90fc-e2430e07de4c-homescreen-button
+
+//${ButtonText} = HP for DropBox \(Special Edition\)
+//${ButtonID} = hpid-7b46da50-5533-49c1-86ae-0e4dfca0548e-homescreen-button
+
+${ButtonText} = HP for Google Drive \(Special Edition\)
+${ButtonID} = hpid-f655491f-ba6b-4729-bd6d-e97016af65ab-homescreen-button
+
+//${ButtonText} = HP for OneDrive \(Special Edition\)
+//${ButtonID} = hpid-3ddad548-de39-4b7e-9cb9-ccbeee6c9f15-homescreen-button
+
+//${ButtonText} = HP for OneDrive Business
+//${ButtonID} = hpid-b29e8358-e9ae-4aad-a12a-1ac01be19603-homescreen-button
+
+//${ButtonText} = HP for SharePoint Online
+//${ButtonID} = hpid-4dd5ee1c-ab45-4254-89f4-911296b90d81-homescreen-button
+
+// General variables
+${DeviceSignOut} = Y

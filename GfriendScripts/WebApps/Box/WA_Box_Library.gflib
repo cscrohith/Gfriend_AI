@@ -1,0 +1,932 @@
+﻿/// <File>WA_Box_Library</File>
+/// <Modified>2021-09-10</Modified>
+/// <Description>Library of common routines for use with the 
+///   HP for Box Web App</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+Using JediOmni
+Using Oxpd
+
+/// <Name>CheckForLoadingIcon</Name>
+/// <Description>Check for the loading icon to appear then disappear</Description>
+/// <Parameters></Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes>This is called by multiple routines in this and other Box libraries</Notes>
+CheckForLoadingIcon
+{
+    If: Oxpd.Wait For XPath (//*[\(@id="loadingIcon" or @id="loading"\) and not\(@hidden\)],${Short_Wait_Time})
+    {
+        Oxpd.Wait For XPath Gone (//*[\(@id="loadingIcon" or @id="loading"\) and not\(@hidden\)],${Long_Wait})
+    }
+}
+
+/// <Name>CheckForServerLoss</Name>
+/// <Description>Check for loss of server connection message</Description>
+/// <Parameters></Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes>This is called by multiple routines in this and other Box libraries
+///    For error handler:
+///      "serverAccessLost": "Server access has been lost. Please try again",
+///      "unableToRetrieveData": "Unable to retrieve data from the cloud services",
+///      "unableToPreviewData": "Unable to preview data from the cloud services",
+///      "downloadFailed": "Failed to download",
+///      "WPPFailed": "App could not load, WPP Authorization failed.",
+///      "HPCCFailed": "App could not load, HPCC Authorization failed.",
+///      "ValidatePrinterMessageFailed": "App could not load, Validate Printer Message failed.",
+///      "PrinterEntityDiscoveryFailed": "App could not load, Printer Entity Discovery failed.",
+///      "PrinterUUIDFailed": "App could not load, not able to get printer uuid"</Notes>
+CheckForServerLoss
+{ 
+    If: Oxpd.Wait For Css (#genericModel[style*="block"],${Minimal_Wait_Time})
+    {
+        Set Variable (${Error_Text}, )
+        @Oxpd.Get Text (Text,${Error_Text})
+        // clear the popup message
+        @Oxpd.Touch Id (done-button)
+        //@Oxpd.Touch Text (OK)
+        //@Oxpd.Touch Text (DONE)
+        //@Oxpd.Touch Text (Done)
+        If: Contains Ignore Case (${Error_Text},Server access has been lost)
+        {
+            Return With Fail (Fail - Server access lost while in app!)
+        }
+        If: Contains Ignore Case (${Error_Text},Unable to retrieve data)
+        {
+            Return With Fail (Fail - Unable to retrieve data from cloud services while in app!)
+        }
+        If: Contains Ignore Case (${Error_Text},Unable to preview data)
+        {
+            Return With Fail (Fail - Unable to preview data from cloud services while in app!)
+        }
+        If: Contains Ignore Case (${Error_Text},App could not load)
+        {
+            Return With Fail (Fail - App could not load!)
+        }
+    }
+    Fail:
+    {
+        Return With Pass (Check for Server Loss complete!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (CheckForServerLoss_Error.png)
+        Return With Error (Error checking for Server access lost!)
+    }
+}
+
+/// <Name>HandleAppEula</Name>
+/// <Description>Handle the EULA screen</Description>
+/// <Parameters></Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes></Notes>
+HandleAppEula
+{
+    // the Eula page is displayed, handle it
+    Oxpd.Touch Css (label.checkbox)
+    // press the Continue button.
+    Oxpd.Touch Id (continue-button)
+    
+    // wait for the privacy page
+    If: Oxpd.Wait For Css (#IHaveReadPrivacyPolicy,${Very_Short_Wait_Time})
+    {
+        // the privacy policy page is displayed, handle it
+        Oxpd.Touch Css (label.checkbox)
+        // press the Continue button.
+        Oxpd.Touch Id (continue-button)
+        
+        Return With Pass (Handle App Eula complete!)
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (HandleAppEula_Fail.png)
+        Return With Fail (Fail waiting for the Privacy Policy screen to display in Box app!)
+    }
+}
+
+/// <Name>EnterLoginUserID</Name>
+/// <Description>Enter the userID</Description>
+/// <Parameters>Login_UserID : UserID</Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes></Notes>
+EnterLoginUserID(${Login_UserID})
+{
+    // check for the email entry
+    //    If: Oxpd.Wait For Css (#login,${Minimal_Wait_Time})
+    If: Oxpd.Wait For Text Contains (Email Address,${Long_Wait})
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserID_Fail.png)
+        Return With Fail (Fail entering UserID in to Box app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserID_Error.png)
+        Return With Error (Error entering UserID in to Box app!)
+    }
+    
+    // enter the user's email
+    If: Oxpd.Touch ID (login)
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserID_Fail.png)
+        Return With Fail (Fail entering UserID in to Box app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserID_Error.png)
+        Return With Error (Error entering UserID in to Box app!)
+    }
+    
+    If: JediOmni.Wait For Object (hpid-keyboard-key-done,${Very_Short_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        // force the keyboard to display
+        Oxpd.Press Enter Key
+        JediOmni.Wait For Object (hpid-keyboard-key-done,${Very_Short_Wait_Time})
+    }
+    
+    If: Oxpd.Input Text (${Login_UserID})
+    {
+        // close the keyboard
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        Sleep (${Minimal_Wait_Time})
+        
+        Return With Pass (Enter Login UserID complete!)
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserID_Fail.png)
+        Return With Fail (Fail entering UserID in to Box app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserID_Error.png)
+        Return With Error (Error entering UserID in to Box app!)
+    }
+}
+
+/// <Name>EnterLoginUserPW</Name>
+/// <Description>Enter the user's password</Description>
+/// <Parameters>Login_PW : Password</Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes></Notes>
+EnterLoginUserPW(${Login_PW})
+{
+    // password input
+    //    If: Oxpd.Wait For Css (#password,${Minimal_Wait_Time})
+    If: Oxpd.Wait For Text Contains (Password,${Minimal_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Fail.png)
+        Return With Fail (Fail entering Password in to Box app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Error.png)
+        Return With Error (Error entering Password in to Box app!)
+    }
+    
+    If: Oxpd.Touch ID (password)
+    {
+        If: JediOmni.Wait For Object (hpid-keyboard-key-done,${Very_Short_Wait_Time})
+        {
+        }
+        Fail:
+        {
+            // force the keyboard to display
+            Oxpd.Press Enter Key
+            JediOmni.Wait For Object (hpid-keyboard-key-done,${Very_Short_Wait_Time})
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Fail.png)
+        Return With Fail (Fail entering Password in to Box app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Error.png)
+        Return With Error (Error entering Password in to Box app!)
+    }
+    
+    If: Oxpd.Input Text (${Login_PW})
+    {
+        // close the keyboard
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        Sleep (${Minimal_Wait_Time})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Fail.png)
+        Return With Fail (Fail entering Password in to Box app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Error.png)
+        Return With Error (Error entering Password in to Box app!)
+    }
+    
+    // press the Sign in button and wait for it to disappear
+    If: Oxpd.Touch Css (input[name="login_submit"])
+    {
+        //    If: Oxpd.Wait For Text Gone (Sign in,${Long_Wait})
+        If: Oxpd.Wait For Css Gone (input[name="login_submit"],${Long_Wait})
+        {
+            Return With Pass (Enter Login User Password complete!)
+        }
+        Fail:
+        {
+            // Login failed
+            JediOmni.Capture Screen Shot (EnterLoginUserPW_Fail.png)
+            Return With Fail (Fail signing in to Box app!)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Fail.png)
+        Return With Fail (Fail entering Password in to Box app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Error.png)
+        Return With Error (Error entering Password in to Box app!)
+    }
+}
+
+/// <Name>AppLogin</Name>
+/// <Description>Log In to the app</Description>
+/// <Parameters>ID : UserID</Parameters>
+/// <Parameters>Pw : Password</Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes></Notes>
+AppLogin(${ID},${Pw})
+{
+    // check for the Box sign in page to display
+    //    If: Oxpd.Wait For Css (form.login_form,${Long_Wait})
+    If: JediOmni.Wait For Text (Customer Log In,${Long_Wait})
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Fail.png)
+        Return With Fail (Fail accessing the sign page in Box app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterLoginUserPW_Error.png)
+        Return With Error (Error accessing the sign page in Box app!)
+    }
+    
+    // enter user ID
+    If: WA_Box_Library.EnterLoginUserID(${ID})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail entering userID signing in to Box app!)
+    }
+    Error:
+    {
+        Return With Error (Error entering userID signing in to Box app!)
+    }
+
+    // enter password
+    If: WA_Box_Library.EnterLoginUserPW(${Pw})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail entering password signing in to Box app!)
+    }
+    Error:
+    {
+        Return With Error (Error entering password signing in to Box app!)
+    }
+    
+    // check for page to allow account access
+    If: Oxpd.Wait For Text Contains (Grant access to Box,${Wait_Time})
+    {
+        // scroll to the Grant access button
+        While:!Oxpd.Wait For CSS (#consent_accept_button,${Minimal_Wait_Time}):6
+        {
+            Set Variable (${Scroll_Down},Y)
+            If: Oxpd.Wait For Css (#consent_reject_button,${Minimal_Wait_Time})
+            {
+                JediOmni.Drag (10,35,10,60)
+                Set Variable (${Scroll_Down},N)
+            }
+            If: Oxpd.Wait For Css (.footer,1)
+            {
+                JediOmni.Drag (10,35,10,60)
+                Set Variable (${Scroll_Down},N)
+            }
+            If: Equals (${Scroll_Down},Y)
+            {
+                JediOmni.Drag (10,60,10,35)
+            }
+            Sleep (${Very_Short_Wait_Time})
+        }
+        
+        If: Oxpd.Touch Id (consent_accept_button)
+        {
+            Oxpd.Wait For Css Gone (#consent_accept_button,${Long_Wait})
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (EnterLoginUserPW_Fail.png)
+            Return With Fail (Fail entering password signing in to Box app!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (EnterLoginUserPW_Error.png)
+            Return With Error (Error entering password signing in to Box app!)
+        }
+    }
+    
+    Return With Pass (App Login complete!)
+}
+
+/// <Name>ClearGuide</Name>
+/// <Description>Clear the app guide screen</Description>
+/// <Parameters></Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes></Notes>
+ClearGuide
+{
+    // clear the guide screen if shown
+    If: Oxpd.Wait For Xpath (//*[@id="guide" and not\(@hidden\)],${Minimal_Wait_Time})
+    {
+        // set the checkbox to not show again and close
+        Oxpd.Touch Css (.checkbox)
+        Oxpd.Touch ID (close-guide)
+        Oxpd.Wait For Xpath (//*[@id="guide" and @hidden="hidden"],${Short_Wait_Time})
+        
+        Return With Pass (Clear Guide complete!)
+    }
+}
+
+/// <Name>HandleSaveCredentials</Name>
+/// <Description>Handle the save credentials screen</Description>
+/// <Parameters>SaveYN : Y to save the credentials</Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes></Notes>
+HandleSaveCredentials(${SaveYN})
+{
+    // check the option to not show again
+    OXPd.Touch ID (rememberCheckBox)
+    If: Equals(${SaveYN},Y)
+    {
+        Oxpd.Touch Xpath (//*[@id="RememberMe"]//descendant::button[text\(\)="Save"])
+    }
+    Fail:
+    {
+        Oxpd.Touch Xpath (//*[@id="RememberMe"]//descendant::button[text\(\)="No thanks"])
+    }
+    
+    Return With Pass (HandleSaveCredentials complete!)
+}
+
+/// <Name>HandleAppOpening</Name>
+/// <Description>Handle the app opening</Description>
+/// <Parameters>UserID : UserID/Username</Parameters>
+/// <Parameters>UserPW : Password</Parameters>
+/// <Parameters>SaveAccountYN : Y to save the credentials</Parameters>
+/// <Parameters>VerifySIOConnect : Y to check for successful SIO connection
+///        if the Terms/Privacy, or EULA page shows SIO connecion
+///        is not successful and routing returns with Fail
+///    N - ignore checking SIO connection</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+HandleAppOpening(${UserID},${UserPW},${SaveAccountYN},${VerifySIOConnect})
+{
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (HandleAppOpening_Fail.png)
+        Return With Fail (Fail while handling the Box app opening!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (HandleAppOpening_Error.png)
+        Return With Error (Error while handling the Box app opening!)
+    }
+    
+    If: Oxpd.Wait For Css (.loading-page,${Short_Wait_Time})
+    {
+        Oxpd.Wait For Css (#genericModel[style*="block"]\, #header.storage-box,${Long_Wait})
+    }
+
+    If: Oxpd.Wait For Xpath (//*[@id="TermsOfUseAndPrivacyPolicy" and "${VerifySIOConnect}"="Y"],${Minimal_Wait_Time})
+    {
+        JediOmni.Capture Screen Shot (HandleAppOpening_Fail.png)
+        Oxpd.Return Browser Engine
+        Return With Fail (SIO connection Failed!)
+    }
+    
+    // check for EULA screen
+    If: Oxpd.Wait For Css (#TermsOfUseAndPrivacyPolicy,${Minimal_Wait_Time})
+    {
+        If: WA_Box_Library.HandleAppEula
+        {
+        }
+        Fail:
+        {
+            WA_Box_Library.CheckForServerLoss
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while handling the EULA and Privacy Policy pages!)
+        }
+        Error:
+        {
+            WA_Box_Library.CheckForServerLoss
+            Oxpd.Return Browser Engine
+            Return With Error (Error while handling the EULA and Privacy Policy pages!)
+        }
+    }
+    
+    // check for popup stating leaving HP environment
+    If: Oxpd.Wait For Css (#genericModel[style*="block"],${Minimal_Wait_Time})
+    {
+        // press Done on the popup
+        Oxpd.Touch Id (done-button)
+        Oxpd.Wait For Css Gone (#genericModel[style*="block"],${Wait_Time})
+        
+        // check for need to sign in
+        //        If: Oxpd.Wait For Xpath (//*[@name="login_form"],${Minimal_Wait_Time})
+        If: JediOmni.Wait For Text (Customer Log In,${Minimal_Wait_Time})
+        {
+            // attempt to sign in
+            If: WA_Box_Library.AppLogin(${UserID},${UserPW})
+            {
+            }
+            Fail:
+            {
+                WA_Box_Library.CheckForServerLoss
+                Oxpd.Return Browser Engine
+                Return With Fail (Fail while signin in to the Box app!)
+            }
+            Error:
+            {
+                WA_Box_Library.CheckForServerLoss
+                Oxpd.Return Browser Engine
+                Return With Error (Error while signin in to the Box app!)
+            }
+        }
+    }
+    
+    // login complete, wait for the app main page to display
+    // check for app main screen
+    If: Oxpd.Wait For Css (#header.storage-box,${Long_Wait})
+    {
+        WA_Box_Library.CheckForLoadingIcon
+        
+        If: Oxpd.Wait For Css (#RememberMe[style~="block;"],${Minimal_Wait_Time})
+        {
+            // handle the option to save app credentials
+            If: WA_Box_Library.HandleSaveCredentials(${SaveAccountYN})
+            {
+            }
+            Fail:
+            {
+                WA_Box_Library.CheckForServerLoss
+                Oxpd.Return Browser Engine
+                Return With Fail (Fail while saving app credentials Box app!)
+            }
+            Error:
+            {
+                WA_Box_Library.CheckForServerLoss
+                Oxpd.Return Browser Engine
+                Return With Error (Error while saving app credentials Box app!)
+            }
+        }
+        
+        // clear the guide if shown
+        If: WA_Box_Library.ClearGuide
+        {
+            Oxpd.Return Browser Engine
+            Return With Pass (Handle App Opening complete!)
+        }
+        Fail:
+        {
+            WA_Box_Library.CheckForServerLoss
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail accessing the Box app main screen!)
+        }
+        Error:
+        {
+            WA_Box_Library.CheckForServerLoss
+            Oxpd.Return Browser Engine
+            Return With Error (Error accessing the Box app main screen!)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (HandleAppOpening_Fail.png)
+        WA_Box_Library.CheckForServerLoss
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail accessing the Box app main screen!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (HandleAppOpening_Error.png)
+        WA_Box_Library.CheckForServerLoss
+        Oxpd.Return Browser Engine
+        Return With Error (Error accessing the Box app main screen!)
+    }
+}
+
+/// <Name>AppExit</Name>
+/// <Description>exit out of the app</Description>
+/// <Parameters>BackOut_YN : Y to backout, else sign out</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+AppExit (${BackOut_YN})
+{
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (AppExit_Fail.png)
+        Return With Fail (Fail while exiting Box app!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (AppExit_Error.png)
+        Return With Error (Error while exiting Box app!)
+    }
+    
+    // check for server connection loss
+    If: WA_Box_Library.CheckForServerLoss
+    {
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while exiting Box app!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while exiting Box app!)
+    }
+    
+    // ensure at the main folder
+    // since the ReturnToMainFolder routine
+    // gets/returns the browser, must release
+    // it here and get it again after
+    Oxpd.Return Browser Engine
+    WA_Box_Library.ReturnToMainFolder
+    Oxpd.Get Browser Engine
+    
+    // initiate backout or signout as specified
+    If: Equals IgnoreCase (${BackOut_YN},Y)
+    {
+        // backout
+        If: Oxpd.Touch Css (.back)
+        {
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (AppExit_Fail.png)
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while backing out of Box app!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (AppExit_Error.png)
+            Oxpd.Return Browser Engine
+            Return With Error (Error while backing out of Box app!)
+        }
+    }
+    Fail:
+    {
+        // signout
+        If:  Oxpd.Touch ID(toggleDropdown)
+        {
+            Sleep (${Minimal_Wait_Time})
+            Oxpd.Touch ID(SignOut)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (AppExit_Fail.png)
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while signing out of Box app!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (AppExit_Error.png)
+            Oxpd.Return Browser Engine
+            Return With Error (Error while signing out of Box app!)
+        }
+    }
+    
+    If: Oxpd.Wait For Css (#listViewExit[style*="block"],${Short_Wait_Time})
+    {
+        Oxpd.Touch Id (Exit)
+    }
+    If: Oxpd.Wait For Css (#listViewExitWithoutSignout[style*="block"],${Minimal_Wait_Time})
+    {
+        Oxpd.Touch Id (Exit1)
+    }
+    
+    Oxpd.Return Browser Engine
+    
+    JediOmni.Wait For Object (hpid-homescreen-logo-icon,${Wait_Time})
+    JediOmni.Press Home Key
+    Sleep (${Very_Short_Wait_Time})
+    Return With Pass (App Exit complete!)
+}
+
+/// <Name>ReturnToMainFolder</Name>
+/// <Description>Return to the app main screen</Description>
+/// <Parameters></Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes></Notes>
+ReturnToMainFolder
+{
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (ReturnToMainFolder_Fail.png)
+        Return With Fail (Fail while returning to the main folder!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (ReturnToMainFolder_Error.png)
+        Return With Error (Error while returning to the main folder!)
+    }
+    
+    WA_Box_Library.CheckForServerLoss
+    
+    // job has completed
+    While:!Oxpd.Wait For XPath (//*[@id="StorageLogo" and not\(@hidden\)],${Minimal_Wait_Time}):10
+    {
+        Oxpd.Touch Css (.back)
+        
+        WA_Box_Library.CheckForLoadingIcon
+    }
+    
+    Oxpd.Return Browser Engine
+    
+    Return With Pass (Return to Main Folder complete!)
+}
+
+/// <Name>EnterSearch</Name>
+/// <Description>Enter the search text</Description>
+/// <Parameters>SearchText : text to search</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+EnterSearch(${SearchText})
+{
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterSearch_Fail.png)
+        Return With Fail (Fail while entering search text!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterSearch_Error.png)
+        Return With Error (Error while entering search text!)
+    }
+
+    If: OXPd.Touch ID (searchInput)
+    {
+        // delay to allow the keyboard to be visible and available
+        Sleep (${Very_Short_Wait_Time})
+        
+        OXPd.Input Text (${SearchText})
+        
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        WA_Box_Library.CheckForLoadingIcon
+
+        Oxpd.Return Browser Engine
+        Return With Pass (Search entry complete!)
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (EnterSearch_Fail.png)
+        WA_Box_Library.CheckForServerLoss
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while entering search text!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (EnterSearch_Error.png)
+        WA_Box_Library.CheckForServerLoss
+        Oxpd.Return Browser Engine
+        Return With Error (Error while entering search text!)
+    }
+}
+
+/// <Name>SearchFolder</Name>
+/// <Description>Search for a folder and select it</Description>
+/// <Parameters>FolderName : folder name</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SearchFolder(${FolderName})
+{
+    If: WA_Box_Library.EnterSearch(${FolderName})
+    {
+        If: Oxpd.Get Browser Engine
+        {
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SearchFolder_Fail.png)
+            Return With Fail (Fail while searching for folder!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SearchFolder_Error.png)
+            Return With Error (Error while searching for folder!)
+        }
+        
+        // check for app/connection issue messages
+        If: WA_Box_Library.CheckForServerLoss
+        {
+        }
+        Fail:
+        {
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while searching for folder!)
+        }
+        Error:
+        {
+            Oxpd.Return Browser Engine
+            Return With Error (Error while searching for folder!)
+        }
+
+        If: Oxpd.Wait For Xpath (//*[@id="file-listing"]/ul/li/div,${Long_Wait})
+        {
+            Sleep (${Very_Short_Wait_Time})
+            Oxpd.Touch Xpath (//*[@id="file-listing"]/ul/li/div)
+            WA_Box_Library.CheckForLoadingIcon
+
+            // verify that the specified folder was entered
+            // this does not work as of 11/23
+//            //            Oxpd.Get Text (listViewHeaderContent,${EnteredFolderName})
+//            Oxpd.Get Text (storage-description,${EnteredFolderName})
+//            Replace (${EnteredFolderName},",)
+//            Trim (${EnteredFolderName})
+//            
+//            If: Equals IgnoreCase (${EnteredFolderName},${FolderName})
+//            {// success
+                Oxpd.Return Browser Engine
+                Return With Pass (Search Folder complete!)
+//            }
+//            Fail:
+//            {
+//                WA_Box_Library.CheckForServerLoss
+//                JediOmni.Capture Screen Shot (SearchFolder_Fail.png)
+//                Oxpd.Return Browser Engine
+//                Return With Fail (Fail while searching for folder!)
+//            }
+//            Error:
+//            {
+//                WA_Box_Library.CheckForServerLoss
+//                JediOmni.Capture Screen Shot (SearchFolder_Error.png)
+//                Oxpd.Return Browser Engine
+//                Return With Error (Error while searching for folder!)
+//            }
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SearchFolder_Fail.png)
+            WA_Box_Library.CheckForServerLoss
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while searching for folder '${FolderName}'!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SearchFolder_Error.png)
+            WA_Box_Library.CheckForServerLoss
+            Oxpd.Return Browser Engine
+            Return With Error (Error while searching for folder '${FolderName}'!)
+        }
+    }
+    Fail:
+    {
+        WA_Box_Library.CheckForServerLoss
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while searching for folder '${FolderName}'!)
+    }
+    Error:
+    {
+        WA_Box_Library.CheckForServerLoss
+        Oxpd.Return Browser Engine
+        Return With Error (Error while searching for folder '${FolderName}'!)
+    }
+}
+
+/// <Name>SearchFolder</Name>
+/// <Description>Search for a folder and select it</Description>
+/// <Parameters>FileName : file name</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SearchFile(${FileName})
+{
+    If: WA_Box_Library.EnterSearch(${FileName})
+    {
+        If: Oxpd.Get Browser Engine
+        {
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SearchFile_Fail.png)
+            Return With Fail (Fail while searching for file!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SearchFile_Error.png)
+            Return With Error (Error while searching for file!)
+        }
+        
+        // check for app/connection issue messages
+        If: WA_Box_Library.CheckForServerLoss
+        {
+        }
+        Fail:
+        {
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while searching for a file!)
+        }
+        Error:
+        {
+            Oxpd.Return Browser Engine
+            Return With Error (Error while searching for a file!)
+        }
+
+        If: Oxpd.Wait For Xpath (//*[@id="file-listing"]/ul/li/div,${Long_Wait})
+        {
+            Sleep (${Very_Short_Wait_Time})
+            Oxpd.Touch Xpath (//*[@id="file-listing"]/ul/li/div)
+            
+            If: Oxpd.Wait For Css (#PrintOptions,${Long_Wait})
+            {// success
+                Oxpd.Return Browser Engine
+                Return With Pass (Search File complete!)
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (SearchFile_Fail.png)
+                WA_Box_Library.CheckForServerLoss
+                Oxpd.Return Browser Engine
+                Return With Fail (Fail while searching for a file '${FileName}'!)
+            }
+            Error:
+            {
+                JediOmni.Capture Screen Shot (SearchFile_Error.png)
+                WA_Box_Library.CheckForServerLoss
+                Oxpd.Return Browser Engine
+                Return With Error (Error while searching for a file '${FileName}'!)
+            }
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SearchFile_Fail.png)
+            WA_Box_Library.CheckForServerLoss
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while searching for a file '${FileName}'!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SearchFile_Error.png)
+            WA_Box_Library.CheckForServerLoss
+            Oxpd.Return Browser Engine
+            Return With Error (Error while searching for a file '${FileName}'!)
+        }
+    }
+    Fail:
+    {
+        WA_Box_Library.CheckForServerLoss
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while searching for a file '${FileName}'!)
+    }
+    Error:
+    {
+        WA_Box_Library.CheckForServerLoss
+        Oxpd.Return Browser Engine
+        Return With Error (Error while searching for a file '${FileName}'!)
+    }
+}

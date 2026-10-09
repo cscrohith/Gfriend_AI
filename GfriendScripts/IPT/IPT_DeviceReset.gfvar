@@ -1,0 +1,6 @@
+﻿// device parameters
+//${DUT_Address} = 15.86.229.220
+//${DUT_AdminPW} = !QAZ2wsx
+// password check/set parameters, in case no password set
+${CheckBlankPassword} = Y
+${SetPasswordWhenBlank} = Y

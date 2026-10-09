@@ -1,0 +1,11 @@
+﻿// App variables
+${ButtonText} = HP for SharePoint Online \(Special Edition\)
+${ButtonID} = hpid-4dd5ee1c-ab45-4254-89f4-911296b90d81-homescreen-button
+
+// App user varibles
+${AppUserID}=RDLLabBoise@outlook.com
+${AppPassword}=007L@z3r
+
+// General variables
+${BackOutOfApp} = Y
+${DeviceSignOut} = Y

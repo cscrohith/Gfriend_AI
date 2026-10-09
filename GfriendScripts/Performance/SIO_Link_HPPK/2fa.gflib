@@ -1,0 +1,181 @@
+﻿// ++++++++++++++++++++  File Name  ++++++++++++++++++++
+// 2fa.gflib
+//
+// ++++++++++++++++++++ Description ++++++++++++++++++++
+// To measure 2fa functionality
+// ++++++++++++++++++++ Prerequisites ++++++++++++++++++++
+// On device non-whitelisted auth agent such as HPAC and Safecom must be installed.
+//
+// ++++++++++++++++++++ Test Scenario ++++++++++++++++++++
+// 
+//
+// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2019-11-07 Initial Version
+// V1.1 2020-02-20 Because of 2FA BS change,update accordingly
+
+using Android
+using JediOmni
+using Info
+
+
+
+
+login_hpac_new(${id})
+{
+    //  If: JediOmni.Wait For Text (Sign Out,3)
+    {
+        //  Sleep (1)
+    }
+    //  Fail:
+    {
+        // Authentication with HP AC auth
+        If:JediOmni.Wait For Text (Sign In,30) 
+        {
+          JediOmni.Touch Text (Sign In) 
+          sleep(2)
+          JediOmni.Touch ID (hpid-dropdown-agent)     
+          sleep(3)
+          JediOmni.Touch ID(hpid-dropdown-agent-XAC_AuthenticationAgent4_v0) 
+          sleep(1)
+          JediOmni.Touch ID (hpid-signin-textbox-authentication-code)
+          JediOmni.Input Text (hpid-signin-textbox-authentication-code,${id})
+          sleep(1)
+          JediOmni.Touch ID (hpid-button-signin-ok)
+        }    
+        Sleep(2)
+    } 
+}
+
+login_safecom_new(${id})
+{
+    //  If: JediOmni.Wait For Text (Sign Out,3)
+    {
+        //  Sleep (1)
+    }
+    //  Fail:
+    {
+        // Authentication with HP AC auth
+        If:JediOmni.Wait For Text (Sign In,30) 
+        {
+          JediOmni.Touch Text (Sign In) 
+          sleep(2)
+          JediOmni.Touch ID (hpid-dropdown-agent)     
+          sleep(3)
+          JediOmni.Touch ID(hpid-dropdown-agent-SafeCom_AuthAgent_v2) 
+          sleep(1)
+          JediOmni.Touch ID (hpid-signin-textbox-99900)
+          JediOmni.Input Text (hpid-signin-textbox-99900,${id})
+          sleep(1)
+          JediOmni.Touch ID (hpid-button-signin-ok)
+        }
+        Sleep(2)
+    } 
+}
+
+login_hpac(${id},${pin})
+{
+    //  If: JediOmni.Wait For Text (Sign Out,3)
+    {
+        //  Sleep (1)
+    }
+    //  Fail:
+    {
+        // Authentication with HP AC auth
+        If:JediOmni.Wait For Text (Sign In,30) 
+        {
+          JediOmni.Touch Text (Sign In) 
+          sleep(2)
+          JediOmni.Touch ID (hpid-dropdown-agent)     
+          sleep(3)
+          JediOmni.Touch ID(hpid-dropdown-agent-XAC_AuthenticationAgent4_v0) 
+          sleep(1)
+          JediOmni.Touch ID (hpid-signin-textbox-authentication-code)
+          JediOmni.Input Text (hpid-signin-textbox-authentication-code,${id})
+          sleep(1)
+          JediOmni.Touch ID (hpid-button-signin-ok)
+        }
+      
+        // Input 6-pin code
+        If: JediOmni.Wait For Object (hpid-hpid-pin-textbox,30)
+        {
+            JediOmni.Touch ID (hpid-hpid-pin-textbox)
+            JediOmni.Input Text (hpid-hpid-pin-textbox,${pin})
+            Sleep (2)
+            JediOmni.Touch ID (hpid-hpid-signin-button)
+        }
+       
+        Sleep(2)
+    } 
+}
+
+login_safecom(${id},${pin})
+{
+    //  If: JediOmni.Wait For Text (Sign Out,3)
+    {
+        //  Sleep (1)
+    }
+    //  Fail:
+    {
+        // Authentication with HP AC auth
+        If:JediOmni.Wait For Text (Sign In,30) 
+        {
+          JediOmni.Touch Text (Sign In) 
+          sleep(2)
+          JediOmni.Touch ID (hpid-dropdown-agent)     
+          sleep(3)
+          JediOmni.Touch ID(hpid-dropdown-agent-SafeCom_AuthAgent_v2) 
+          sleep(1)
+          JediOmni.Touch ID (hpid-signin-textbox-99900)
+          JediOmni.Input Text (hpid-signin-textbox-99900,${id})
+          sleep(1)
+          JediOmni.Touch ID (hpid-button-signin-ok)
+        }
+      
+        // Input 6-pin code
+        If: JediOmni.Wait For Object (hpid-hpid-pin-textbox,30)
+        {
+            JediOmni.Touch ID (hpid-hpid-pin-textbox)
+            JediOmni.Input Text (hpid-hpid-pin-textbox,${pin})
+            Sleep (2)
+            JediOmni.Touch ID (hpid-hpid-signin-button)
+        }
+       
+        Sleep(2)
+    } 
+}
+
+login_equitrac(${id},${pin})
+{
+    //  If: JediOmni.Wait For Text (Sign Out,3)
+    {
+        //  Sleep (1)
+    }
+    //  Fail:
+    {
+        // Authentication with HP AC auth
+        If:JediOmni.Wait For Text (Sign In,30) 
+        {
+          JediOmni.Touch Text (Sign In) 
+          sleep(2)
+          JediOmni.Touch ID (hpid-dropdown-agent)     
+          sleep(3)
+          JediOmni.Touch ID(hpid-dropdown-agent-EqSolution_EquitracAuthAgent_v1) 
+          sleep(1)
+          JediOmni.Touch ID (hpid-signin-textbox-prompt2)
+          JediOmni.Input Text (hpid-signin-textbox-prompt2,${id})
+          sleep(1)
+          JediOmni.Touch ID (hpid-button-signin-ok)
+        }
+      
+        // Input 6-pin code
+        If: JediOmni.Wait For Object (hpid-hpid-pin-textbox,30)
+        {
+            JediOmni.Touch ID (hpid-hpid-pin-textbox)
+            JediOmni.Input Text (hpid-hpid-pin-textbox,${pin})
+            Sleep (2)
+            JediOmni.Touch ID (hpid-hpid-signin-button)
+        }
+       
+        Sleep(2)
+    } 
+}

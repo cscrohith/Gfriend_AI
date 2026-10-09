@@ -1,0 +1,466 @@
+﻿using Android
+using JediOmni
+using Windows
+using Web
+using BadgeBox
+using Preparation
+
+Device_Reboot
+{
+    Web.Open with Chrome (${DUT_Address},30)
+    Sleep (2)
+    Web.Wait For Object (//*[@id="EwsLogin"],10)
+    Web.Click Object (//*[@id="EwsLogin"])
+    Sleep (2)
+    Web.Wait For Object (//*[@id="PasswordTextBox"],10)
+    Sleep (2)
+    Web.Set Text (//*[@id="PasswordTextBox"],${DUT_AdminPW})
+    Sleep (2)
+    Web.Wait For Object (//*[@id="signInOk"],10)
+    Web.Click Object (//*[@id="signInOk"])
+    Sleep (2)
+    Web.Wait For Object (//*[@id="Information"],10)
+    Web.Click Object (//*[@id="Information"])
+    Sleep (2)
+    Web.Wait For Object (//*[@id="RemoteControlPanelConnect"],10)
+    Web.Click Object (//*[@id="RemoteControlPanelConnect"])
+    Sleep (2)
+    Web.Wait For Object (//*[@id="LaunchButton"],10)
+    Web.Click Object (//*[@id="LaunchButton"])
+    If: JediOmni.Wait For Object (hpid-button-Ok,5)
+    {
+        JediOmni.Touch ID (hpid-button-Ok)
+    }
+    Sleep (5)
+    Windows.Send Special Key ([ENTER])
+    Sleep (2)
+    Windows.Send Special Key ([ENTER])
+    Web.Close
+    JediOmni.Wait Until Boot
+    Web.Open with Edge (${DUT_Address},50)
+    While:Web.Wait For Object (//*[@id="reload-button"],5):50
+    {
+        Web.Click Object (//*[@id="reload-button"])
+    }
+    Windows.Send Special Key ([F5])
+    Web.Wait For Object (//*[@id="Information"],50)
+    Web.Wait For Text (Information,50)
+    Web.Click Text (Information)
+    Pass (EWS page is Ready!)
+    Sleep (10)
+    If: JediOmni.Press Home Key
+    {
+        
+    }
+    If: JediOmni.Wait For Object (hpid-control-signin,30)
+    {
+        Pass (Device control panel on home screen)
+    } 
+}
+
+Device_Username_Login(${Device_Username},${Device_Password})
+{
+    JediOmni.Reset
+    JediOmni.Press Home Key
+    JediOmni.Wait For Text (Sign In,10)
+    JediOmni.Touch ID (hpid-control-signin)
+    JediOmni.Wait For Object (hpid-dropdown-agent,20)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    
+    //and waits and selects the SafQcolud login
+    JediOmni.Wait For Object (hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1,5)
+    JediOmni.Touch ID (hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1)
+    Common_WorkPath_Library.Handles_Please_Wait()
+    If: Android.Wait For XPath (//node[@resource-id='android:id/ok'],10)
+    {
+        Android.Touch XPath (//node[@resource-id='android:id/ok'])
+    }
+    //we can see the error message after clicking on the SafeQ login button
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/terminal_error_textview'],20)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/error_fragment_reset_button'])
+        Common_WorkPath_Library.Solution_Error_Handling()
+        If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/authentication_username_textinputlayout'],20)
+        {
+            Pass (Username Page is seen )
+        }
+        
+    }
+    
+    //inputs text on the username test box 
+    Android.Input Text With XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/authentication_username_textinputlayout'],${Device_Username})
+    
+    Android.Press Enter Key
+    //We can the the error message after entering te username 
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/terminal_error_textview'],20)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/error_fragment_reset_button'])
+        Common_WorkPath_Library.Solution_Error_Handling()
+        If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/authentication_username_textinputlayout'],20)
+        {
+            Pass (Username Page is seen )
+        }
+    }
+    
+    //inputs text in the password text box 
+    Android.Input Text With XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/authentication_password_edittext'],${Device_Password})
+    Android.Press Enter Key
+    
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/btn_login'])
+     
+}
+Device_Logout
+{
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity'],20)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity'])
+    } 
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    
+}
+
+//Give here hpk file path 
+WorkPath_Installation()               
+{
+    Preparation.Install HPK (C:\Users\rdladmin.AMBLR\Desktop\app-hcp-release2025.07.14.hpk)   
+}
+
+Portal_Login(${Site},${Username},${Password})
+{
+    If: Web.Open with Chrome (${Site},180)
+    {
+        //contiune  
+    }
+    
+    Fail:
+        { 
+            Fail (Failed opening the browser!)
+            Stop Test Case
+        }
+
+    
+   //Sign-In with Credentials
+    If: Web.Wait For Object (//input[@type='text'][1],120)
+    {
+        Web.Set Text (//input[@type='text'][1],${Username})   
+    }
+    Fail:
+    {
+        Fail (Chrome browser unable to SafeQ site).
+        Stop Test Case
+    }
+    
+    Web.Click Object (//input[@type='password'])
+    Web.Set Text (//input[@type='password'],${Password})
+    Web.Click Object (//*[@id="loginSubmit"])
+    
+    //waits for complete page to load 
+    If: Web.Wait For Object (//div[@data-test-id='userMenu']//button,30)
+    {
+        Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],10)
+    }
+    Fail:
+    {
+        Fail (Login Failed)
+        Stop Test Suite
+    }
+    Sleep (10)
+    
+}
+
+EWS_Login(${EWS_Site},${EWS_Password})
+{
+    If: Web.Open with Edge (${EWS_Site},180)
+    {
+        //contiune  
+    }
+    Fail:
+        { 
+            Fail (Failed opening the browser!)
+            Stop Test Case
+        }
+   //Sign-In with Credentials
+
+    If: Web.Wait For Object (//*[@id="EwsLogin"],120)
+    {
+        Web.Click Object (//*[@id="EwsLogin"]) 
+        Web.Wait For Object (//*[@id="PasswordTextBox"],30)
+        Web.Click Object (//*[@id="PasswordTextBox"])     
+        Web.Set Text (//*[@id="PasswordTextBox"],${EWS_Password})   
+    }
+
+    Fail:
+    {
+        Fail (Edge browser unable to open EWS site).
+        Stop Test Case
+    }
+
+    Web.Click Object (//*[@id="signInOk"])
+
+    //waits for complete page to load 
+    If: Web.Wait For Object (//*[@id="EwsLogoff"],30)
+    {
+        Pass (Login Successfull)
+    }
+    Fail:
+    {
+        Fail (Login Failed)
+        Stop Test Case
+    }
+}
+
+
+Send_Jobs(${Job_Path},${Queue_Name})
+{
+   
+    If: Windows.Print File To Print Queue (${Job_Path},${Queue_Name})
+    {
+        Pass (Print job is sent) 
+    } 
+    Fail:
+    {
+        Fail (Print job failed to send)
+    }
+    Error:
+    {
+        Error (Error sending in Print job)
+    }
+}
+
+Pull_Print_Operations()
+
+{ 
+    //clicks on the secure print icon
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    
+    //My Print Jobs Button
+    Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print)
+    
+    Sleep (10)
+    //clicks on the reload jobs 
+      Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1],10) 
+       Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1])
+  
+       Sleep (10)
+    // checks if job list empty or not 
+    If:Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_problem_text'],20) 
+    {
+        Fail (Joblist is  Empty)
+        Stop Test Case
+    }
+    Fail:
+    {
+        Pass (Joblist is not Empty)
+        //contiune 
+    }
+    Sleep (5)
+    //selects the first jobs
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],10)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+    
+    //clicks on the Print button
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2],10)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+    
+    
+    If: Android.Wait For Text (Your print job has been sent to the printer, 30)
+    {
+        Pass (Print job is Released successfully)
+        
+    }
+    Fail:
+    {
+        Fail (Print job is failed to release)
+    }
+                         
+    
+    
+}
+
+Device_PIN_Login(${Device_PIN})
+{
+    JediOmni.Reset
+    JediOmni.Press Home Key
+    JediOmni.Wait For Text (Sign In,10)
+    JediOmni.Touch ID (hpid-control-signin)
+    JediOmni.Wait For Object (hpid-dropdown-agent,20)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    
+    //and waits and selects the SafQcolud login
+    JediOmni.Wait For Object (hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1,5)
+    JediOmni.Touch ID (hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1)
+    Common_WorkPath_Library.Handles_Please_Wait()
+    If: Android.Wait For XPath (//node[@resource-id='android:id/ok'],10)
+    {
+        Android.Touch XPath (//node[@resource-id='android:id/ok'])
+    }
+    
+    
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/terminal_error_textview'],20)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/error_fragment_reset_button'])
+        Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/authentication_pin_textinputlayout']/node[1],20)
+    }
+    Common_WorkPath_Library.Solution_Error_Handling()
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/authentication_pin_textinputlayout']/node[1],20)
+    {
+       Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/authentication_pin_edittext'])
+       Common_WorkPath_Library.Solution_Error_Handling()
+       Android.Input Text (${Device_PIN})
+       Android.Wait For XPath (//node[@index='11'],10)
+       Android.Touch XPath (//node[@index='11'])
+    }
+   
+   If: JediOmni.Wait For Text (Sign Out,20)
+   {
+       Pass (PIN authentication done)
+   }
+   Fail:
+   {
+       Fail (PIN authentication failed)
+       Stop Test Case
+   }
+   
+}
+
+Workpath_Configure(${Device_IP})
+{
+    Web.Wait For Object (//*[@data-test-id='searchInput'],10)
+    Web.Click Object (//*[@data-test-id='searchInput'])
+    Web.Append Text (//*[@data-test-id='searchInput'],${Device_IP})
+            
+    Sleep (15)
+    //Clicks on the Select all    
+    Web.Click Object (//input[@data-test-id='selectAll'])
+                      
+    Sleep (5)
+    //click on the configure
+    Web.Click Object (//button[@data-test-id='configure']) 
+}
+
+Solution_Error_Handling
+{
+    If: Android.Wait For XPath (//node[@text='Device has not been registered to SAFEQ Cloud yet'],10)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/exit_app'])
+        Sleep (5)
+        JediOmni.Touch Text (Cancel)
+        JediOmni.Reset
+        JediOmni.Wait For Text (Sign In,10)
+        JediOmni.Touch ID (hpid-control-signin)
+        JediOmni.Wait For Object (hpid-dropdown-agent,20)
+        JediOmni.Touch ID (hpid-dropdown-agent)
+    
+        //and waits and selects the SafQcolud login
+        JediOmni.Wait For Object (hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1,5)
+        JediOmni.Touch ID (hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1)
+    }
+    
+}
+
+Badgebox_Login(${BADGE_INDEX})
+{
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    While:!JediOmni.Wait For Text (Sign Out,10): 10
+    {
+        Sleep(5)
+    }
+ 
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        Pass (Badge SigIN Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignIn)
+        Stop Test Case   
+    }
+}
+
+Badgebox_LogOut(${BADGE_INDEX},${WaitTime})
+{
+    
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+  
+    While:!JediOmni.Wait For Text (Sign In,10): ${WaitTime}
+    {
+        Sleep(5)
+    }
+
+    If: JediOmni.Wait For Text (Sign In,10)
+    {
+        Pass (Badge Sign Out Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignOut)
+        Stop Test Case   
+    }
+}
+
+T1984992422_Paper_Out_and_Direct_IP_Print_Trays
+{
+    If:JediOmni.Wait For Text (Tray,40)
+    {
+        Pass (Trays are empty)
+    }
+    Fail:
+    {
+        Fail (Tray are not empty)
+    }
+    JediOmni.Touch (.hp-button-active-jobs:last)
+    JediOmni.Wait For Object (hpid-button-cancel-all,10)
+    JediOmni.Touch ID (hpid-button-cancel-all)
+    JediOmni.Wait For Object (hpid-button-yes,10)
+    JediOmni.Touch ID (hpid-button-yes)
+    JediOmni.Wait For Object (hpid-active-jobs-exit,40)
+    JediOmni.Touch ID (hpid-active-jobs-exit)
+    If: JediOmni.Wait For Object (hpid-message-center-exit-button),20)
+    {
+       JediOmni.Touch ID (hpid-message-center-exit-button) 
+    }
+}
+
+DirectIP_Print_Send_Jobs(${Printer_Name})
+{
+    If: Windows.Print File To Print Queue (C:\Users\rdladmin.AMBLR\Desktop\notepad.txt,${Printer_Name})
+    {
+        Pass (Print job is sent) 
+    } 
+    Fail:
+    {
+        Fail (Print job failed to send)
+    }
+    Error:
+    {
+        Error (Error sending in Print job)
+    }
+}
+ 
+Large_File_Job(${Excel_File_Name},${Pdf_Name},${pptx_Name},${TXT_Name},${Word_Name},${JPG_Name},${GIF_Name},${BMP_Name},${Queue_Name},${App_Name})
+{
+    Windows.Print File To Print Queue(${Excel_File_Name},${Queue_Name})
+    Windows.Print File To Print Queue(${pptx_Name},${Queue_Name})
+    Windows.Print File To Print Queue(${TXT_Name},${Queue_Name})
+    Windows.Print File To Print Queue(${Word_Name},${Queue_Name})
+    Windows.Print PDF or Image With Application (${App_Name},${JPG_Name},${Queue_Name})
+    Windows.Print PDF or Image With Application (${App_Name},${GIF_Name},${Queue_Name})
+    Windows.Print PDF or Image With Application (${App_Name},${BMP_Name},${Queue_Name})
+}
+
+Enable_Paperless_Mode
+{
+    JediOmni.Enable Paperless Mode
+}
+Handles_Please_Wait
+{
+    If:Android.Wait For XPath (//node[@class='android.widget.ProgressBar'],30) 
+    {
+        Android.Wait For XPath Gone (//node[@class='android.widget.ProgressBar'],30)
+    }
+
+   
+}

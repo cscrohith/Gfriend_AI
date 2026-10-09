@@ -1,0 +1,1139 @@
+﻿using Dune
+using Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+Scan_OpenOption
+{
+    //Options checks will starts from here
+    If: Dune.Wait For (#optionsButton,3)
+    {
+        Common_Library.ClickIdWithDefaultDelay(#optionsButton)
+    }
+    Fail:
+    {
+        Return With Fail (unable to click on option button )
+        Dune.Go To Home Screen
+    }
+}
+
+Scan_ContentType
+{
+    If: Dune.Wait For (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox,3)
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Content type)
+    }
+}
+
+Scan_ContentType_Mixed
+{
+    //clicks on Mixed option
+    Common_Library.SwipeAndClick(#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsmixed,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_ContentType_Photo
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+
+    //clicks on Photo option
+    Common_Library.SwipeAndClick(#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsphoto,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_ContentType_Text
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+
+    //clicks on text option
+    Common_Library.SwipeAndClick(#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstext,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_ContentType_Image
+{
+    Common_Library.ClickIdWithDefaultDelay(#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+
+    //clicks on image option
+    Common_Library.SwipeAndClick(#scan_contentTypeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsimage,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_ColorMode
+{
+    If: Dune.Wait For (#scanMenuListlist1 #scan_colorModeWithAutoDetectComboBox,3)
+    {
+        //for Citrine and Jasper
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Color Mode)
+    }
+}
+
+Scan_ColorMode_AutomaticColorOrBlack
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+
+    //clicks on black and white option
+    Common_Library.SwipeAndClick(#scan_colorModeWithAutoDetectComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstreatNonColorAsBlackAndWhite1,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_ColorMode_Grayscale
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+
+    //clicks on Grayscale option
+    Common_Library.SwipeAndClick(#scan_colorModeWithAutoDetectComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstreatNonColorAsGrayscale8,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_ColorMode_Color
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+    //clicks on color option
+    Common_Library.SwipeAndClick(#scan_colorModeWithAutoDetectComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionscolor,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_ColorMode_BlackandWhite
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+     //clicks on black and white option
+     Common_Library.SwipeAndClick(#scan_colorModeWithAutoDetectComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsblackAndWhite,${DefaultDeltaValue},${ScreenRenderDelay} )
+    //Dune.Wait For (#okButton,3)
+    //Common_Library.ClickIdWithDefaultDelay (#okButton)
+    }
+
+Scan_ColorMode_GrayscaleOnly
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+
+    //clicks on grayscale only  option
+    Common_Library.SwipeAndClick(#scan_colorModeWithAutoDetectComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsgrayscale,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_BlankPagemsuppression
+{
+    //blank Page suppression
+    If: Dune.Wait For (#scanMenuListlist1 #scan_blankPageSuppressionComboBox,3)
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Blank page suppression type)
+    }
+}
+
+Scan_BlankPagemsuppression_Off
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+
+    //clicks on off option
+    Common_Library.ValidateandCheck (#scan_blankPageSuppressionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsfalse_)
+}
+
+Scan_BlankPagemsuppression_ON
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+
+    //clicks on On option
+    Common_Library.ValidateandCheck (#scan_blankPageSuppressionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionstrue_)
+}
+
+Scan_ScanMode
+{
+    //Scan Mode only Citrine and Jasper
+    If: Dune.Wait For (#scanMenuListlist1 #scan_scanModeSettingsTextImage,3)
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_scanModeSettingsTextImage)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Scan Mode)
+    }
+}
+
+Scan_ScanMode_BookMode
+{
+    //clicks on book mode option
+    Common_Library.ValidateandCheck(#copy_scanModeList, #comboBoxScrollBar, #scan_scanModebookMode)
+}
+
+Scan_ScanMode_Standard
+{
+    Common_Library.ValidateandCheck(#copy_scanModeList, #comboBoxScrollBar, #scan_scanModestandard)
+
+    Common_Library.ClickIdWithDefaultDelay (#footerDoneButton)
+}
+
+Scan_Resolution
+{
+    //Resolution
+    If: Dune.Wait For (#scanMenuListlist1 #scan_resolutionSettingsComboBox,3)
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Resolution)
+    }
+}
+
+Scan_Resolution_75dpi
+{
+    //clicks on 75dpi option
+    Common_Library.SwipeAndClick(#scan_resolutionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionse75Dpi,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_Resolution_150dpi
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+
+    //clicks on 150dpi option
+    Common_Library.SwipeAndClick(#scan_resolutionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionse150Dpi,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_Resolution_200dpi
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+
+    //clicks on 200dpi option
+    Common_Library.SwipeAndClick(#scan_resolutionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionse200Dpi,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_Resolution_300dpi
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+
+    //clicks on 300dpi option
+    Common_Library.SwipeAndClick(#scan_resolutionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionse300Dpi,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_Resolution_400dpi
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+
+    //clicks on 400dpi option
+    Common_Library.SwipeAndClick(#scan_resolutionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionse400Dpi,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_Resolution_600dpi
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+
+    Common_Library.SwipeAndClick(#scan_resolutionComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionse600Dpi,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+Scan_Email_OriginalSide
+{
+    //Original side_Citrine and Jasper
+    If: Dune.Wait For (#scanMenuListlist1 #scan_2sidedOriginalSettingsComboBox,5)
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_2sidedOriginalSettingsComboBox #scan_2sidedOriginalComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the  Original side)
+    }
+}
+Scan_Email_OriginalSide_1Sided
+{
+    //clicks on 1 sided option
+    Common_Library.ValidateandCheck (#scan_2sidedOriginalComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionssimplex)
+}
+
+Scan_Email_OriginalSide_2Sided
+{
+      Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_2sidedOriginalSettingsComboBox #scan_2sidedOriginalComboBox)
+    //clicks on 2 sided option
+    Common_Library.ValidateandCheck(#scan_2sidedOriginalComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsduplex)
+}
+
+Scan_OriginalSide
+{
+    //Original side_Citrine and Jasper
+    If: Dune.Wait For (#scanMenuListlist1 #ScanSettingsOriginalSides_2infoBlockRow,5)
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #ScanSettingsOriginalSides #ScanSettingsOriginalSides_2infoBlockRow)
+    }
+    Fail:
+    {
+        Fail (Unable to select the  Original side)
+    }
+}
+
+Scan_OriginalSide_1Sided
+{
+    //clicks on 1 sided option
+    Common_Library.ValidateandCheck(#ScanSettingsOriginalSidesView, #comboBoxScrollBar, #RadioButtonOptionssimplex)
+}
+
+Scan_OriginalSide_2Sided
+{
+    //clicks on 2 sided option
+    Common_Library.ValidateandCheck(#ScanSettingsOriginalSidesView, #comboBoxScrollBar, #RadioButtonOptionsduplex)
+    Common_Library.ClickIdWithDefaultDelay (#ScanSettingsOriginalSidesView #BackButton)
+}
+
+Scan_OriginalSize
+{
+    //Original size
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_originalSizeSettingsTextImage,${DefaultDeltaValue},${ScreenRenderDelay})
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuList #scanMenuListlist1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_firstinfoBlockRow)
+        }
+    Fail:
+    {
+        Fail (Unable to select the  Original size)
+    }
+}
+
+Scan_OriginalSize_AnySize
+{
+    //clicks on any size option
+    Common_Library.SwipeAndClick(#scanMenuList, #scan_originalSizeMenuSelectionList, #anyscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_MixedLetterOrLegal
+{
+    //clicks on Mixed Letter/Legal option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #com_dot_hp_dot_ext_dot_mediaSize_dot_mixed_dash_letter_dash_legalscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_MixedLetterOrLedger
+{
+    //clicks on Mixed Letter/Ledger option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #com_dot_hp_dot_ext_dot_mediaSize_dot_mixed_dash_letter_dash_ledgerscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_MixedA4OrA3
+{
+     //clicks on Mixed A4/A3
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #com_dot_hp_dot_ext_dot_mediaSize_dot_mixed_dash_a4_dash_a3scan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_Letter8dot5x11in
+{
+    //clicks on option Letter 8 dot 5x11in
+    Common_Library.SwipeAndClick(#scanMenuList, #scan_originalSizeMenuSelectionList, #com_dot_hp_dot_ext_dot_mediaSize_dot_na_letter_8_dot_5x11in_dot_rotatedscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_LetterMediaSize8dot5x11in
+{
+    //clicks on option Letter ▭ (8.5x11 in.)
+    Common_Library.SwipeAndClick(#scanMenuList, #scan_originalSizeMenuSelectionList, #na_letter_8_dot_5x11inscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_Legal_8dot5x14in
+{
+    //clicks on legal 8.5x14in option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_legal_8_dot_5x14inscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_Executive_7dot25x10dot5i
+{
+    //clicks on executive 7.25x10.5in option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_executive_7_dot_25x10_dot_5inscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_Invoice5dot5x85dotin
+{
+    //clicks on invoice 5.5x8.5in option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_invoice_5_dot_5x8_dot_5inscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_Ledger_11x17in
+{
+    //clicks on ledger 11x17in option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_ledger_11x17inscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+
+}
+
+Scan_OriginalSize_5x7in
+{
+    //clicks on 5x7in option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_5x7_5x7inscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_5x8in
+{
+    //clicks on 5x8in option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_index_dash_5x8_5x8inscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_Oficio_8dot5x13in
+{
+    //clicks on foolscap 8.5x13in option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_foolscap_8_dot_5x13inscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_Oficio_216x340in
+{
+    //clicks on Oficio216x340 option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #na_oficio_8_dot_5x13_dot_4inscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_A3_297x420mm
+{
+    //clicks on a3 297x420mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #iso_a3_297x420mmscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_A4_210x297mm
+{
+    //clicks on a4 210x297mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #iso_a4_210x297mmscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_A4_MediaSize_148x210mm
+{
+    //clicks on a5 148x210mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #com_dot_hp_dot_ext_dot_mediaSize_dot_iso_a4_210x297mm_dot_rotatedscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_A5_210x297mm
+{
+    //clicks on a5 210x297mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #iso_a5_148x210mmscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_A5_MediaSize_148x210mm
+{
+    //clicks on a5 148x210mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #com_dot_hp_dot_ext_dot_mediaSize_dot_iso_a5_148x210mm_dot_rotatedscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_A6_105x148mm
+{
+    //clicks on a6_105x148mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #iso_a6_105x148mmscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_Ra4_215x305mm
+{
+    //clicks on ra4 215x305mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #iso_ra4_215x305mmscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_B4_257x364mm
+{
+    //clicks on b4 257x364mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #jis_b4_257x364mmscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_B5JIS_182x257mm
+{
+    //clicks on b5 182x257mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #jis_b5_182x257mmscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_B5JIS_MediaSize_182x257mm1
+{
+
+    //clicks on b5 182x257mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #com_dot_hp_dot_ext_dot_mediaSize_dot_jis_b5_182x257mm_dot_rotatedscan_originalSize,${DeltaValue},${ScreenRenderDelay})
+}
+
+Scan_OriginalSize_B6JIS_128x182mm
+{
+    //clicks on b6 128x182mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #jis_b6_128x182mmscan_originalSize,${DeltaValue},${ScreenRenderDelay})
+}
+
+Scan_OriginalSize_16k_195x270mm
+{
+    //clicks on 16k 195x270mm option
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #om_16k_195x270mmscan_originalSize,${DeltaValue},${ScreenRenderDelay})
+}
+
+Scan_OriginalSize_16k_177x273
+{
+    //clicks on 16k(177x273)
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #om_16k_184x260mmscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_OriginalSize_DoublePostCardJIS_148x200mm
+{
+    //clicks on jpn oufuku 148x200mm
+    Common_Library.SwipeAndClick(#scan_originalSizeMenuSelectionList, #scan_originalSizeMenuSelectionListScrollBar, #jpn_oufuku_148x200mmscan_originalSize,${DeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_Sharpness
+{
+    //Sharpness
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_sharpnessSettingsSlider,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValueAndWaitForTransition (#scan_sharpnessMenuSlider,5,${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Fail (Unable to set the Sharpness)
+    }
+}
+
+Scan_LighterDarker
+{
+    //LighterDarker
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_lighterDarkerSettingsSlider,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValueAndWaitForTransition (#scan_lighterDarkerMenuSlider,5,${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Fail (Unable to slide the LighterDarker)
+    }
+}
+
+Scan_Contrast
+{
+    //Contrast
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_contrastSettingsSlider,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        //sets the slider to 8 value
+        Dune.SetSliderValueAndWaitForTransition (#scan_contrastMenuSlider,8,${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Fail (Unable to set the Contrast)
+    }
+}
+
+Scan_BackgroundCleanup
+{
+    //Background Cleanup
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_backGroundCleanUpSettingsSlider,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        //sets the slider to 8 value
+        Dune.SetSliderValueAndWaitForTransition (#scan_backGroundCleanUpMenuSlider,8,${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Fail (Unable to set the Background Cleanup)
+    }
+}
+
+Scan_AutomaticTone
+{
+    //Automatic Tone
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_autoToneSettingsView,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        //Check the Automatice tone Checkbox
+        Common_Library.ClickIdWithDefaultDelay  (#scan_autoToneSettingsView #scan_autoToneMenuCheckbox)
+        //sets the slider to 5 value
+        Dune.SetSliderValueAndWaitForTransition (#scan_autoToneSettingsView #scan_autoToneLevelMenuSlider,5,${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Fail (Unable to set the Automatic Tone)
+    }
+}
+
+Scan_FileTypes
+{
+    //FileTypes
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_fileFormatSettingsComboBox,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the automatically straighten)
+    }
+}
+
+Scan_FileTypes_JPEG
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+
+    //clicks on JPEG option
+    Common_Library.SwipeAndClick(#scan_fileFormatComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsjpeg,${DefaultDeltaValue} ,${ScreenRenderDelay})
+}
+
+Scan_FileTypes_TIFF
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+
+    //clicks on tiff option
+    Common_Library.SwipeAndClick(#scan_fileFormatComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsmtiff,${DefaultDeltaValue} ,${ScreenRenderDelay})
+}
+
+Scan_FileTypes_PDFA
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+
+    //clicks on PDFA option
+    Common_Library.SwipeAndClick(#scan_fileFormatComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionspdfa,${DefaultDeltaValue} ,${ScreenRenderDelay})
+}
+
+Scan_FileTypes_PDF
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+
+    //clicks on PDF option
+    Common_Library.SwipeAndClick(#scan_fileFormatComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionspdf,${DefaultDeltaValue} ,${ScreenRenderDelay})
+}
+
+Scan_MultipleFiles
+{
+    //Save as multiple files
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #ScanSettingSaveMultipleFiles,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #ScanSettingSaveMultipleFiles)
+
+        Common_Library.ClickIdWithDefaultDelay (#ScanSaveMultipleFilesView #BackButton)
+    }
+    Fail:
+    {
+        Fail (Unable to select the save as Multiple files)
+    }
+}
+
+Scan_EraseEdges
+{
+    //Erase Edges
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #ScanSettingsEraseEdges,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        Common_Library.ClickIdWithDefaultDelay (#ScanSettingsEraseEdges_2infoBlockRow)
+
+        //clear setting
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuList #ScanSettingsEraseEdgesView #clearButton)
+
+        Sleep (2)
+        //Unit of Measurement as Inches
+        Common_Library.ClickIdWithDefaultDelay (#cUnitofMillimeteritemContainerTextImage #contentItem)
+
+        Dune.Wait For (#comboListInchesImageContainer,1)
+        Dune.Click (#comboListInchesImageContainer)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Erase Edges)
+    }
+}
+
+Scan_EraseEdges_Millimeters
+{
+    //Millimeters
+    Common_Library.ClickIdWithDefaultDelay (#cUnitOfMeasureInchesitemContainerTextImage #contentItem)
+
+    Dune.Wait For (#comboListMillimeterImageContainer,1)
+    Dune.Click (#comboListMillimeterImageContainer)
+}
+
+Scan_EraseEdges_ApplySameWidth
+{
+    //click  on Apply Same width
+    Common_Library.ClickIdWithDefaultDelay (#sameWidthAllEdgesCheckbox)
+
+    Common_Library.ClickIdWithDefaultDelay (#sameWidthAllEdgesCheckbox)
+}
+
+Scan_EraseEdges_MirrorFrontSide
+{
+    //Click on Mirror Front Side
+    Dune.SwipeVerticallyAndWaitForTransition (#ScanSettingsEraseEdgesView, #ScanSettingsEraseEdgesViewScrollBar, #mirrorFrontSideView,${DefaultDeltaValue},${ScreenRenderDelay} )
+    Common_Library.ClickIdWithDefaultDelay (#mirrorFrontSideCheckbox)
+
+    Common_Library.ClickIdWithDefaultDelay (#mirrorFrontSideCheckbox)
+}
+
+Scan_EraseEdges_FrontSide
+{
+    //Front Side
+    Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListverticalLayout, #ScanSettingsEraseEdgesViewScrollBar, #topEdgeSpinBoxControlModel,${DefaultDeltaValue},${ScreenRenderDelay} )
+
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListverticalLayout #topEdgeSpinBoxControlModel #SpinBoxTextInput)
+
+    Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+    Common_Library.ClickIdWithDefaultDelay (#key1PositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#enterKeyPositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListverticalLayout #bottomEdgeSpinBoxControlModel #SpinBoxTextInput)
+
+    Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+    Common_Library.ClickIdWithDefaultDelay (#key2PositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#enterKeyPositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListverticalLayout #leftEdgeSpinBoxControlModel #SpinBoxTextInput)
+
+    Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+    Common_Library.ClickIdWithDefaultDelay (#key3PositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#enterKeyPositiveIntegerKeypad)
+
+    Repeat:2
+    {
+        Dune.Swipe By ControlId (#ScanSettingsEraseEdgesViewScrollBar,^)
+    }
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListverticalLayout #rightEdgeSpinBoxControlModel #SpinBoxTextInput)
+
+    Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+    Common_Library.ClickIdWithDefaultDelay (#key4PositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#enterKeyPositiveIntegerKeypad)
+}
+
+Scan_EraseEdges_BackSide
+{
+    //Back Side
+    Dune.SwipeVerticallyAndWaitForTransition (#ScanSettingsEraseEdgesView, #ScanSettingsEraseEdgesViewScrollBar, #eraseBackRightEdgeSpinBox,0.035, ${ScreenRenderDelay} )
+
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListverticalLayout #eraseBackTopEdgeSpinBoxControlModel #SpinBoxTextInput)
+
+    Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+    Common_Library.ClickIdWithDefaultDelay (#key1PositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#enterKeyPositiveIntegerKeypad)
+
+    Dune.SwipeVerticallyAndWaitForTransition (#ScanSettingsEraseEdgesView, #ScanSettingsEraseEdgesViewScrollBar, #eraseBackRightEdgeSpinBox,${DefaultDeltaValue},${ScreenRenderDelay} )
+
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListverticalLayout #eraseBackBottomEdgeSpinBoxControlModel #SpinBoxTextInput)
+
+    Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+    Common_Library.ClickIdWithDefaultDelay (#key2PositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#enterKeyPositiveIntegerKeypad)
+
+    Dune.SwipeVerticallyAndWaitForTransition (#ScanSettingsEraseEdgesView, #ScanSettingsEraseEdgesViewScrollBar, #eraseBackRightEdgeSpinBox,0.035, ${ScreenRenderDelay} )
+
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListverticalLayout #eraseBackLeftEdgeSpinBoxControlModel #SpinBoxTextInput)
+
+    Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+    Common_Library.ClickIdWithDefaultDelay (#key3PositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#enterKeyPositiveIntegerKeypad)
+
+    Repeat:2
+    {
+        Dune.Swipe By ControlId (#ScanSettingsEraseEdgesViewScrollBar,^)
+    }
+
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListverticalLayout #eraseBackRightEdgeSpinBoxControlModel #SpinBoxTextInput)
+
+    Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+    Common_Library.ClickIdWithDefaultDelay (#key3PositiveIntegerKeypad)
+
+    Common_Library.ClickIdWithDefaultDelay (#enterKeyPositiveIntegerKeypad)
+
+    //Clicks on Done button
+    Common_Library.ClickIdWithDefaultDelay (#eraseEdgeDoneButton)
+}
+
+Scan_PdfEncryption
+{
+    // pdfEncryption
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_pdfEncryptionSettingsSwitch,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        //clicks the option twice
+        Repeat:2
+        {
+            Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_pdfEncryptionMenuSwitch)
+        }
+    }
+    Fail:
+    {
+        Fail (Unable to select the PDF Encryption)
+    }
+}
+
+Scan_HighCompression
+{
+    //High Compression
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_highCompressionSettingsSwitch,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        //clicks on the option of High compression
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_highCompressionMenuSwitch)
+    }
+    Fail:
+    {
+        Fail (Unable to select the High Compression)
+    }
+}
+
+Scan_Orientation
+{
+    //Orientation
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_contentOrientationSettingsComboBox,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_contentOrientationSettingsComboBox #scan_contentOrientationComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the orientation)
+    }
+}
+
+Scan_Orientation_Landscape
+{
+    //clicks on landscape option
+    Common_Library.SwipeAndClick(#scan_contentOrientationComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionslandscape,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_Orientation_Portrait
+{
+     Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_contentOrientationSettingsComboBox #scan_contentOrientationComboBox)
+    //clicks on Portrait option
+    Common_Library.SwipeAndClick(#scan_contentOrientationComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsportrait,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_FileSize
+{
+    //File Size
+    If: Dune.SwipeVerticallyAndWaitForTransition (#scanMenuListlist1, #scanMenuListlist1ScrollBar, #scan_qualityAndFileSizeSettingsComboBox,${DefaultDeltaValue},${ScreenRenderDelay} )
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+    }
+    Fail:
+    {
+        Fail (Unable to select the File Size)
+    }
+}
+
+Scan_FileSize_High
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+
+    //clicks on High option
+    Common_Library.SwipeAndClick(#scan_qualityAndFileSizeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionshigh,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_FileSize_Medium
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+
+    //clicks on Medium option
+    Common_Library.SwipeAndClick(#scan_qualityAndFileSizeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsmedium,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_FileSize_Low
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+
+    //clicks on low option
+    Common_Library.SwipeAndClick(#scan_qualityAndFileSizeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionslow,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_FileSize_Highest
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+
+    //clicks on Hightest option
+    Common_Library.SwipeAndClick(#scan_qualityAndFileSizeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionshighest,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_FileSize_Lowest
+{
+    Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+
+    //clicks on Lowest option
+    Common_Library.SwipeAndClick(#scan_qualityAndFileSizeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionslowest,${DefaultDeltaValue},${ScreenRenderDelay} )
+}
+
+Scan_ExecuteManager(${AppType})
+{
+    // Closing the option panel and click on Send button
+    If: Dune.Wait For (#scanMenuListlist1 #closeButton,2)
+    {
+        Common_Library.ClickIdWithDefaultDelay (#scanMenuListlist1 #closeButton)
+        Common_Library.SleepTimeWithCustomDelay (2)
+    }
+    //clicks on Send button
+    Common_Library.ClickIdWithDefaultDelay (#sendButtonDetailRightBlock)
+    Common_Library.SleepTime
+    //waiting and clicking Done button
+    Dune.Wait For (#finish,20)
+    Common_Library.ClickIdWithDefaultDelay (#finish)
+    Common_Library.SleepTime
+    Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,20)
+    Dune.Wait For Active Job Gone (${AppType},25)
+    Common_Library.SleepTimeWithCustomDelay (10)
+    Dune.Go To Home Screen
+    Common_Library.SleepTimeWithCustomDelay (2)
+    //clicks on Sign out
+    Dune.Click (#SignInButton)
+    Dune.Click Id(#userInfoSignInButton)
+}
+
+Scan_Options_Teardown
+{
+    Dune.Click And Wait For Transition (#closeButton,${ScreenRenderDelay})
+    Dune.Click And Wait For Transition (#BackButton,${ScreenRenderDelay})
+    Dune.Click And Wait For Transition (#HomeButton,${ScreenRenderDelay})
+    Dune.Click And Wait For Transition (#StatusButtonResetSettings,${ScreenRenderDelay})
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    }
+}
+
+Scan_Teardown
+{
+    Dune.Click And Wait For Transition (#HomeButton,${ScreenRenderDelay})
+    Dune.Click And Wait For Transition (#StatusButtonResetSettings,${ScreenRenderDelay})
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+        Common_Library.SleepTime
+    }
+}
+
+Scan_Options_ScanMode_Teardown
+{
+    //ScanMode
+    If:Dune.Wait For (#GenericStructureView #BackButton,1)
+    {
+        Dune.Click Id (#GenericStructureView #BackButton)
+    }
+    Common_Scan_Library.Scan_Options_Teardown
+}
+
+Scan_Options_OriginalSide_Teardown
+{
+   //OriginalSide
+   If:Dune.Wait For(#ScanSettingsOriginalSidesView #BackButton,1)
+    {
+        Dune.Click Id (#ScanSettingsOriginalSidesView #BackButton)
+    }
+   Common_Scan_Library.Scan_Options_Teardown
+}
+
+Scan_Options_EraseEdges_Teardown
+{
+    //Erase Edges
+    If:Dune.Wait For(#ScanSettingsEraseEdgesView #BackButton,1)
+    {
+        Dune.Click Id (#ScanSettingsEraseEdgesView #BackButton)
+    }
+    Common_Scan_Library.Scan_Options_Teardown
+    }
+
+Scan_ContentType_Scroll
+{
+    Common_Scan_Library.Scan_ContentType
+}
+
+Scan_Resolution_Scroll
+{
+    Common_Scan_Library.Scan_Resolution
+    Common_Scan_Library.Scan_Resolution_75dpi
+}
+
+ScanToEmail_Setup
+{
+    Common_Scan_Library.Navigate_ScanToEmail_App()
+    Common_Scan_Library.Scan_OpenOption()
+    Common_Library.SleepTimeWithCustomDelay (3)
+}
+
+ScanToFolder_Setup
+{
+    Common_Scan_Library.Navigate_ScanToFolder_App()
+    Common_Scan_Library.Scan_OpenOption()
+    Common_Library.SleepTimeWithCustomDelay (3)
+}
+
+ScanToSharePoint_Setup
+{
+    Common_Scan_Library.Navigate_To_ScanToSharePoint_App()
+    Common_Scan_Library.Scan_OpenOption()
+    Common_Library.SleepTimeWithCustomDelay (3)
+}
+
+ScanToUSB_Setup
+{
+    Common_Scan_Library.Navigate_To_ScanToUSB_App()
+    Common_Scan_Library.Scan_OpenOption()
+    Common_Library.SleepTimeWithCustomDelay (3)
+}
+
+Navigate_ScanToEmail_App
+{
+    //Navigate to Scan Folder
+    If:Dune.Navigate To Application On Home Screen (${ScanFolderID})
+    {
+        Common_Library.SleepTime
+        //clicks on Scan Folder
+        Dune.Click And Wait For Transition (${ScanFolderID},${ScreenRenderDelay})
+        //wait and clicks on Scan to Email app
+        Dune.Wait For (#b8460c9e-43c8-4290-a0f8-8ce450867f09,5)
+        Dune.Click And Wait For Transition  (#b8460c9e-43c8-4290-a0f8-8ce450867f09,${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Return With Fail (Scan To Email app button was not found on device home screen.)
+        Stop Test Suite
+     }
+    Common_Library.SleepTime
+}
+
+Navigate_ScanToFolder_App
+{
+    //Navigate to Scan Folder
+    If:Dune.Navigate To Application On Home Screen (${ScanFolderID})
+    {
+        Common_Library.SleepTime
+        //clicks on Scan Folder
+        Dune.Click And Wait For Transition (${ScanFolderID},${ScreenRenderDelay})
+        //wait and clicks on Scan to NetworkFolder app
+        Dune.Wait For (#65acca51-619d-4e29-b1d0-6414e52f908b,5)
+        Dune.Click And Wait For Transition (#65acca51-619d-4e29-b1d0-6414e52f908b,${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Return With Fail (Scan To Folder app button was not found on device home screen.)
+        Stop Test Suite
+     }
+    Common_Library.SleepTime
+}
+
+Navigate_To_ScanToSharePoint_App
+{
+    //Navigate to Scan Folder
+    If:Dune.Navigate To Application On Home Screen (${ScanFolderID})
+    {
+        Common_Library.SleepTime
+        //clicks on Scan Folder
+        Dune.Click And Wait For Transition (${ScanFolderID},${ScreenRenderDelay})
+        //wait and clicks on Scan to SharePoint app
+        Dune.Wait For (#a3d696df-b7ff-4d3d-9969-5cd7f18c0c92,5)
+        Common_Library.ClickIdWithDefaultDelay (#a3d696df-b7ff-4d3d-9969-5cd7f18c0c92 #launcherButton)
+    }
+    Fail:
+    {
+        Return With Fail (Scan To SharePoint app button was not found on device home screen.)
+        Stop Test Suite
+     }
+    //CLICKING ON QUICKSET
+    If: Dune.Wait For (${STSQuickSetName},10)
+    {
+        Common_Library.ClickIdWithDefaultDelay (${STSQuickSetName})
+        Dune.Wait For (#fileNameTextField,5)
+    }
+    Fail:
+    {
+        Return With Fail (Scan to SharePoint app is not opened)
+    }
+}
+
+Navigate_To_ScanToUSB_App
+{
+    //Navigate to Scan Folder in the home screen
+    If:Dune.Navigate To Application On Home Screen (${ScanFolderID})
+    {
+        Common_Library.SleepTime
+        //clicks on Scan Folder
+        Dune.Click And Wait For Transition (${ScanFolderID},${ScreenRenderDelay})
+        //wait and clicks on Scan to USB app
+        Dune.Wait For (#df4a8a01-7659-486f-95d5-e125ccd1529a,5)
+        Dune.Click And Wait For Transition(#df4a8a01-7659-486f-95d5-e125ccd1529a,${ScreenRenderDelay})
+    }
+    Fail:
+    {
+        Return With Fail (Scan To USB app button was not found on device home screen.)
+        Stop Test Suite
+     }
+    Common_Library.SleepTime
+}
+
+ScanToEmail_EnterDestinationEmailAddress
+{
+    //entering To address, From address
+    If: Dune.Wait For (#emailToFieldDestination #toEditor #emailTextFieldContainer,10)
+    {
+        //clicks on To address text field
+        Common_Library.ClickIdWithDefaultDelay(#emailToFieldDestination #toEditor #emailTextFieldContainer)
+        //types the Email address
+
+        Dune.GenericKeyPadClick (${ToAddress})
+        Common_Library.SleepTime
+        //waits and clicks on save file name
+        Dune.Wait For (#fileNameTextField,2)
+        Common_Library.ClickIdWithDefaultDelay (#fileNameTextField)
+        //gives the randow file name as number
+        Get Random Number (01,1000,${FileName})
+        Common_Library.SleepTime
+        Dune.Set Text (#fileNameTextField,${FileName})
+        Common_Library.SleepTime
+        If: Dune.Wait For (#enterKey1,1)
+        {
+            Common_Library.ClickIdWithDefaultDelay (#enterKey1)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Unable to update to Address)
+    }
+}
+
+ScanToFolder_FileName
+{
+    //entering Filename
+    If: Dune.Wait For (#folderLandingView #DetailPanelverticalLayout #scanFileNameFieldDestination,10)
+    {
+        Common_Library.ClickIdWithDefaultDelay(${STNQuickSetName})
+        Dune.Wait For (#fileNameTextField,10)
+        Common_Library.ClickIdWithDefaultDelay(#fileNameTextField)
+        Get Random Number (01,1000,${FileName})
+        Common_Library.SleepTime
+        Dune.Set Text (#fileNameTextField,${FileName})
+        Common_Library.SleepTime
+        If: Dune.Wait For (#enterKey1,2)
+        {
+            Common_Library.ClickIdWithDefaultDelay(#enterKey1)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Unable to update File name)
+    }
+}
+
+ScanToSharePoint_FileName
+{
+    If: Dune.Wait For (#fileNameTextField,5)
+    {
+        Common_Library.ClickIdWithDefaultDelay (#fileNameTextField)
+        Get Random Number (01,1000,${FileName})
+        Common_Library.SleepTime
+        Dune.Set Text (#fileNameTextField,${FileName})
+        Common_Library.SleepTime
+        If: Dune.Wait For (#enterKey1,2)
+        {
+            Common_Library.ClickIdWithDefaultDelay (#enterKey1)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Unable to update File name)
+    }
+}
+
+ScanToUSB_FileName
+{
+    //entering To address, From address
+    If: Dune.Wait For (#fileNameTextField,10)
+    {
+        Common_Library.ClickIdWithDefaultDelay (#fileNameTextField)
+
+        Get Random Number (01,1000,${FileName})
+        Common_Library.SleepTime
+        Dune.Set Text (#fileNameTextField,${FileName})
+        Common_Library.SleepTime
+        If: Dune.Wait For (#enterKey1,2)
+        {
+            Common_Library.ClickIdWithDefaultDelay (#enterKey1)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Scan to USB app is not opened)
+    }
+}

@@ -1,0 +1,45 @@
+﻿// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2019-11-07 Initial Version
+// V1.1 2019-11-28 Add SecureAccess account variables
+// V1.2 2019-12-10 Add Device SIO account
+// V1.3 2019-12-20 Add repeat count variables
+
+${ID_Sage}= hpid-b6438ea9-1454-44f4-84e3-7a4c60e74b8a-homescreen-button
+${ID_Sharepoint}= hpid-a206482f-df58-4b28-893b-f120a1d9989b-homescreen-button
+${ID_OneDriveBusiness}=hpid-7fbeabca-cc3e-46ef-92cd-d4a00c9ee935-homescreen-button
+${ID_OneDrivePersonal}=hpid-3f553433-a6e9-4a70-838e-4873d18edb7f-homescreen-button
+${ID_Google}=hpid-66029bd4-93b5-42a2-9945-4bbc723c80a1-homescreen-button
+${ID_iManage}=hpid-a92bf006-1b76-474f-870b-e80d35921781-homescreen-button
+${ID_Concur}=hpid-d89fa35e-9979-430c-9b62-d9a4b783da1d-homescreen-button
+${ID_Clio}=hpid-66a9808c-dfce-438a-9723-a8f9f017710d-homescreen-button
+${ID_Box}=hpid-ef9beb16-aceb-4b55-924b-45a5583748c4-homescreen-button
+${ID_Dropbox}=hpid-a8f9c6f8-6734-42cb-bf1f-dd7b8fb628ae-homescreen-button
+${ID_Scan2SMB}=hpid-368da5fe-2c81-4217-b36d-23247cea0c9f-homescreen-button
+${ID_Scan2FTP}=hpid-968afa31-a6d2-425b-8651-74b44daf4dda-homescreen-button
+${ID_Scan2Email}=hpid-d3b13d6d-ef1f-464c-bb67-8cc52c1bb026-homescreen-button
+${windows_id}=u00001
+${windows_pw}=Swtest134
+${deviceSIO_id}=u00002
+${deviceSIO_pw}=Swtest134
+${secureaccess_id}=test
+${secureaccess_pw}=admin@12
+${2fa_id}=00006
+${2fa_pw}=223344
+${iteration} = 1
+${smb_ip} = \\130.31.193.187\smb
+${smb_id} = administrator
+${smb_pw} = admin@12
+${smb_domain} = HPSEOUL
+${ftp_ip} = 130.31.193.187
+${ftp_id} = test
+${ftp_pw} = admin@12
+${auth_method}=windows
+${2fa_count} = 500
+${2fa_min_fail_count} = 26
+${aging_count} =1
+${IManage_switch} = on
+${ODB_switch}= off
+${Googl_Swich} = off
+${SharePoint_switch} = off
+${ODP_switch} = off
+${Sleep time} = 60

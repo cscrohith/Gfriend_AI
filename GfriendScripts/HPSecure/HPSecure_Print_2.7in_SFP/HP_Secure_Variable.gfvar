@@ -1,0 +1,12 @@
+﻿//Index where the card is kept
+${BADGE_INDEX} =
+//File Job Path
+${Job_Path}=
+//Print queue name
+${Queue_Name} =
+//Time needed to get the final job count from EWS page
+${Jobcountupdate_Maxtime}=
+//IP address of printer
+${EWS_Site}=
+//Administrator password of printer
+${EWS_Password}=

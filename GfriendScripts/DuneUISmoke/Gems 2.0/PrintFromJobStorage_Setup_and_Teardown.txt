@@ -1,0 +1,59 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+using ..\Common\Common_Print_Library.gflib
+
+TC_PrintFromJobStorage_SelectsTheSpecifiedFolder
+{
+   Common_Print_Library.PrintFromJobStorage_Setup
+   Common_Print_Library.PrintFromJobStorage_SelectsTheSpecifiedFolder
+   Common_Print_Library.PrintFromJobStorage_Teardown
+}
+
+TC_PrintFromJobStorage_SelectFile
+{
+   Common_Print_Library.PrintFromJobStorage_Setup
+   Common_Print_Library.PrintFromJobStorage_SelectsTheSpecifiedFolder
+   Common_Print_Library.PrintFromJobStorage_SelectFile
+   Common_Print_Library.PrintFromJobStorage_Teardown 
+}
+
+TC_PrintFromJobStorage_ExpandButtonForNumberOfCopies
+{
+   Common_Print_Library.PrintFromJobStorage_Setup
+   Common_Print_Library.PrintFromJobStorage_SelectsTheSpecifiedFolder
+   Common_Print_Library.PrintFromJobStorage_SelectFile
+   Common_Print_Library.PrintFromJobStorage_ExpandButtonForNumberOfCopies
+   Common_Print_Library.PrintFromJobStorage_Teardown 
+}
+
+TC_PrintFromJobStorage_NumberOfCopies
+{
+   Common_Print_Library.PrintFromJobStorage_Setup
+   Common_Print_Library.PrintFromJobStorage_SelectsTheSpecifiedFolder
+   Common_Print_Library.PrintFromJobStorage_SelectFile
+   Common_Print_Library.PrintFromJobStorage_ExpandButtonForNumberOfCopies
+   Common_Print_Library.PrintFromJobStorage_NumberOfCopies
+   Common_Print_Library.PrintFromJobStorage_NumberOfCopies_Teardown
+}
+
+TC_PrintFromJobStorage_NumberOfCopies_PlusButton
+{
+   Common_Print_Library.PrintFromJobStorage_Setup
+   Common_Print_Library.PrintFromJobStorage_SelectsTheSpecifiedFolder
+   Common_Print_Library.PrintFromJobStorage_SelectFile
+   Common_Print_Library.PrintFromJobStorage_ExpandButtonForNumberOfCopies
+   Common_Print_Library.PrintFromJobStorage_NumberOfCopies_PlusButton
+   Common_Print_Library.PrintFromJobStorage_NumberOfCopies_Teardown
+}
+
+TC_PrintFromJobStorage_NumberOfCopies_MinusButton
+{
+   Common_Print_Library.PrintFromJobStorage_Setup
+   Common_Print_Library.PrintFromJobStorage_SelectsTheSpecifiedFolder
+   Common_Print_Library.PrintFromJobStorage_SelectFile
+   Common_Print_Library.PrintFromJobStorage_ExpandButtonForNumberOfCopies
+   Common_Print_Library.PrintFromJobStorage_NumberOfCopies_PlusButton
+   Common_Print_Library.PrintFromJobStorage_NumberOfCopies_MinusButton
+   Common_Print_Library.PrintFromJobStorage_NumberOfCopies_Teardown
+}

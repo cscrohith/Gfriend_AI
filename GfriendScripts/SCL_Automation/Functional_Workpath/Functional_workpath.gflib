@@ -1,0 +1,3392 @@
+﻿using Android
+using JediOmni
+using Web
+using Windows
+
+T1984992393_Validate_SafeQ_Cloud_Scan_To_Email
+{
+    
+    JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,20)
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/quick_action_1_text'],20)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/quick_action_1_text'])
+    JediOmni.Wait For Object (hpid-button-continue,20)
+    JediOmni.Touch ID (hpid-button-continue)
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/scan_job_name'],20)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/scan_cancel'])
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/quick_action_1_text'],20)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/quick_action_1_text'])
+    JediOmni.Wait For Object (hpid-button-continue,20)
+    JediOmni.Touch ID (hpid-button-continue)
+    If: Android.Wait For Text (Workflow processed successfully,10)
+    {
+        Pass (Scan to Email successful.Please Check the Inbox and verify that the "Scan to Email" job arrived successfully")
+    }
+    Fail:
+    {
+        Fail (Scan to Email Unsuccessful)
+    }
+}
+
+T1984992418_Validate_pull_print_Functionality_JobDetails
+{
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1],300)
+    {
+        //Reload Jobs
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1])
+    }
+    //To set Job details
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],200)
+    {
+        //First Job settings
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1]/node[3])
+        //Dropdown Sides
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/exposed_dropdown']/node[1])
+        //Sides--> selecting to the flip on short edge
+        Android.Touch XPath (//node[@text='Flip on Short Edge'])
+        //To set Copies
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/number_picker_text_input_layout']/node[1])
+        Android.Input Text (2)
+        //Color Mode selecting to Black & White button
+        //Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/select_two_button_two'])
+        Android.Press Tab Key
+        //Print
+        If:Android.Wait For Text (Print,30)
+        {
+            Android.Touch Text (Print)  
+            Pass (Print job is Released successfully)
+        }
+        Fail:
+        {
+            Fail (No documents available to print)
+        }
+    }
+}
+
+T1984992418_Validate_pull_print_functionality_Single_Print_SelectAll_Print
+{
+    //Reload Jobs
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1])
+    //One Job Print
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],10)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+        //Print button
+        If:Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+        {
+            Pass (Print job are Releasing successfully)
+        }
+    }
+    Fail:
+    {
+        Fail (No documents available to print)
+    }
+    //SelectAll Print
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],10)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+        //Select All the jobs
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/select_all'])
+        //Print button
+        If:Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+        {
+            Pass (Print job are Releasing successfully)
+        }
+    }
+    Fail:
+    {
+        Fail (No documents available to print)
+    }
+}
+
+T1984992418_Validate_Pull_Print_functionality_Signle_Job_Delete_SelectAll_Delete
+{
+    Android.Press Home Key
+    //Secure Print & Scan
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button) 
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print'],10)
+    {
+        //My print jobs button
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print']) 
+    }
+    //Reload Jobs
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1])
+    //One job Delete
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],40)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+        //Delete button
+        If:Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/delete,10)
+        {
+            If:Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/delete)
+            {
+                Pass (Jobs are deleted successfully) 
+            }
+        }
+    }
+    Fail:
+    {
+        Fail (No documents available to Delete)
+    }   
+    //Select All jobs Delete
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],10)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+        //Select All the jobs
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/select_all'])     
+        //Delete button
+        If:Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/delete,10)
+        {
+            If:Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/delete)
+            {
+                Pass (Jobs are deleted successfully) 
+            }
+        }
+    }
+    Fail:
+    {
+        Fail (No documents available to delete)
+    } 
+}
+
+T1984992404_Validate_Print_Queue_Creation-Direct_Print(${Direct_Print_Queue_Name},${Printer_Name})
+{
+    Sleep (2)
+    //Printers button
+    If:Web.Wait For Object (//div[@data-test-id='label' and text()='Printers'],10)
+    {
+        Web.Click Object (//div[@data-test-id='label' and text()='Printers'])
+        Sleep(2)
+        //Print queues button
+        Web.Wait For Object (//a[@data-test-id='link.input_ports'],20)
+        Web.Click Object (//a[@data-test-id='link.input_ports'])
+        //Add button
+        Web.Wait For Object (//a[@role='button' and text()='Add'],10)
+        Web.Click Object (//a[@role='button' and text()='Add'])
+        //Name Textbox
+        Web.Wait For Object (//input[@data-test-id='data.name'],10)
+        Web.Click Object (//input[@data-test-id='data.name'])
+        Sleep (2)
+        Web.Set Text (//input[@data-test-id='data.name'],${Direct_Print_Queue_Name})
+        Sleep(2)
+        //Queuetype dropdown
+        Web.Wait For Object(//div[text()='Queue type']/following::span[@aria-label='select'][1],10)
+        Web.Click Object (//div[text()='Queue type']/following::span[@aria-label='select'][1])
+        //Direct Print Queue
+        Web.Wait For Object (//ul[contains(@class\,'k-list')]//li[text()='Direct print queue'],10)
+        Web.Click Object (//ul[contains(@class\,'k-list')]//li[text()='Direct print queue'])
+        //Select Printer dropdrown
+        Web.Wait For Object (//div[text()='Printer']/following::span[@aria-label='select'][1],10)
+        Web.Click Object (//div[text()='Printer']/following::span[@aria-label='select'][1])
+        Sleep (2)
+        //Set Printer
+        Windows.Send Key (${Printer_Name})
+        Sleep (2)
+        Windows.Send Special Key ([ENTER])
+        //Save button
+        Web.Wait For Object (//input[@data-test-id='saveBtn'],10)
+        Web.Click Object (//input[@data-test-id='saveBtn'])  
+    }
+    Fail:
+    {
+        Fail (Failed to create Direct print queue)
+    }
+}
+
+T1984992404_Validate_Print_Queue_Creation-Pull_Print(${Pull_Print_Queue_Name},${Printer_Name})
+{
+    Sleep (2)
+    //Printers button
+    If: Web.Wait For Object (//div[@data-test-id='label' and text()='Printers'],10)
+    {
+        Web.Click Object (//div[@data-test-id='label' and text()='Printers'])
+        Sleep(2)
+        //Print queues button
+        Web.Wait For Object (//a[@data-test-id='link.input_ports'],20)
+        Web.Click Object (//a[@data-test-id='link.input_ports'])
+        Sleep (2)
+        //Add button
+        Web.Wait For Object (//a[@role='button' and text()='Add'],10)
+        Web.Click Object (//a[@role='button' and text()='Add'])
+        Sleep (2)
+        //Name Textbox
+        Web.Wait For Object (//input[@data-test-id='data.name'],10)
+        Web.Click Object (//input[@data-test-id='data.name'])
+        Web.Set Text (//input[@data-test-id='data.name'],${Pull_Print_Queue_Name})
+        //Queuetype dropdown
+        Web.Wait For Object(//div[text()='Queue type']/following::span[@aria-label='select'][1],10)
+        Web.Click Object (//div[text()='Queue type']/following::span[@aria-label='select'][1])
+        //Pull Print Queue
+        Web.Wait For Object (//ul[@role='listbox']//li[text()='Pull print queue'],10)
+        Web.Click Object (//ul[@role='listbox']//li[text()='Pull print queue'])
+        Sleep (2)
+        //Save button
+        Web.Wait For Object (//input[@data-test-id='saveBtn'],10)
+        Web.Click Object (//input[@data-test-id='saveBtn'])
+        Sleep (2)
+        Web.Close
+    }
+    Fail:
+    {
+        Fail (Failed to create Pull print queue)  
+    }
+}
+
+SynchronizePrinter()
+{
+    Windows.Select Application (Taskbar) 
+    Windows.Wait For ID (SystemTrayIcon,10)
+    Windows.Click ID (SystemTrayIcon)
+    Windows.Select Application (System tray overflow window.)
+    Windows.Wait For ID (NotifyItemIcon,10)
+    Sleep(2)
+    Windows.Click By Tooltip (NotifyItemIcon,SAFEQ Cloud Client)
+    Windows.Select Application (Context)
+    Windows.Click Name (Synchronize printers now)
+}
+ 
+Validate_Pull_Job_Printed(${Job_Name})
+{
+    If: JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,10)
+    {
+       //Secure Print & Scan
+       JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    }
+    Fail:
+    {
+      Android.Press Home Key
+      //Secure Print & Scan
+      JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button) 
+    }
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print'],10)
+    {
+       //My print jobs button
+       Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print']) 
+    }
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1],30)
+    {
+        //Reload Jobs
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1])
+    }
+    //To select job from list
+    If: Android.Is Text Exists (${Job_Name})
+    {
+        Android.Touch Text (${Job_Name})
+    }
+    Fail:
+    {
+        Fail (No documents available to print)
+    }
+    //Print button
+    If:Android.Wait For Text (Print,30)
+    {
+        //Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+        Android.Touch Text (Print)
+        Pass (Print Job is released successfully)
+    }
+}
+
+Validate_Direct_Job_Printed(${Job_Name})
+{
+    //Peronal dropdown
+    Web.Wait For Object (//div[@data-test-id='label' and text()='Personal'],10)
+    Web.Click Object (//div[@data-test-id='label' and text()='Personal'])
+    Sleep (2)
+    //My Documents button
+    Web.Wait For Object (//div[@data-test-id='label'][normalize-space()='My documents'],10)
+    Web.Click Object (//div[@data-test-id='label'][text()='My documents'])
+    Sleep (2)
+    //Printed
+    Web.Wait For Object (//span[normalize-space()='Printed'],30)
+    Web.Click Object (//span[normalize-space()='Printed'])
+    Web.ScrollDownToParicularObject (//tr[@data-test-id='list'])
+    Web.ScrollDownToParicularObject ((//tr[@data-test-id='list'])[last()])
+    Windows.Send Special Key([DOWN])
+    Sleep (2)
+    //Checking Job name exists
+    If: Web.Wait For Text (${Job_Name},10)
+    {
+        Pass(Direct print queue job printed Successfully)
+    }
+    Fail:
+    {
+        Fail (Job is not created or printed)
+    }
+}
+
+T1993711401_Validate_Scanning_workflows_not_truncated(${Scan_to_Email})
+{
+    Sleep (2)
+    //Scanning button
+    Web.Wait For Object (//div[@data-test-id='label' and text()='Scanning'],50)
+    Web.Click Object (//div[@data-test-id='label' and text()='Scanning'])
+    //Edit button for Scan To Email
+    Web.Wait For Object (//tr[.//td[normalize-space()='Email (SMTP)']]//span[@data-title='Edit']//a,10)
+    Web.Click Object (//tr[.//td[normalize-space()='Email (SMTP)']]//span[@data-title='Edit']//a)
+    Sleep (2)
+    //Name textbox
+    Web.Wait For Object (//input[@data-test-id='name'],10)
+    Web.Click Object (//input[@data-test-id='name'])
+    Web.Set Text (//input[@data-test-id='name'],${Scan_to_Email})
+    Sleep (2)
+    //Save button
+    Web.Wait For Object (//input[@data-test-id='saveBtn'],10)
+    Web.Click Object (//input[@data-test-id='saveBtn'])
+    Sleep (2)
+    Web.Close
+    If: JediOmni.Wait For Text (Sign In,5)
+    {
+        Pass(User session logged out Successfully)
+    }
+    Fail:
+    {
+        Fail (User session is not logged out)
+    }    
+}
+
+Validate_ScanToEMail_Name_Updated(${Scan_to_Email})
+{
+    If: JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,10)
+    {
+       //Secure Print & Scan
+       JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    }
+    Fail:
+    {
+      Android.Press Home Key
+      //Secure Print & Scan
+      JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button) 
+    }
+    //My Scan workflows button
+    Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/scan,15)
+    Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/scan)
+    If:Android.Is Text Exists (${Scan_to_Email})
+    {
+        Pass (Name is not truncated.)
+    }
+}
+
+Validate_and_generate_the_SafeQ_report_Before_Print()
+{   
+    Web.Get Text (//div[@data-test-chart-name='Print Pages']//div[contains(@class\,'big_number_total')],${Before_Print}) 
+    Web.Close
+}
+
+Validate_and_generate_the_SafeQ_report_after_Print(${Before_Print})
+{
+    Web.Get Text (//div[@data-test-chart-name='Print Pages']//div[contains(@class\,'big_number_total')],${After_Print})
+    BuiltIn.Equals (${Before_Print},${After_Print})
+    If: BuiltIn.Has Value Increased (${Before_Print},${After_Print})
+    {
+        Pass (Print Jobs are increased successfully)
+    }
+    Fail:
+    {
+        Fail (Print Jobs are not increasing)
+    }
+    Web.Close
+}
+
+T1984992392_Validate_SafeQ_Cloud_Pull_Print_Options-Workpath_PrintAll
+{
+    If: JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,10)
+    {
+       //Secure Print & Scan
+       JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    }
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print'],300)
+    {
+        //My print jobs button
+        //Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print)
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print']) 
+    }
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1],300)
+    {
+        //Reload Jobs
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1])
+    }
+    //Home button
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/home_icon'],20)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/home_icon'])
+    }
+    If: JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,10)
+    {
+       //Secure Print & Scan
+       JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    }
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/printAll'],20)
+    {
+        //PrintAll Button
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/printAll'])
+        Pass (Print jobs are releasing)
+    }
+    Fail:
+    {
+        Fail (No documents available to print)
+    }
+}
+
+T1984992392_Validate_SafeQ_Cloud_Pull_Print_Options-Workpath_Threejobs
+{
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print'],300)
+    {
+        //My print jobs button
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print']) 
+    }
+     If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1],300)
+    {
+        //Reload Jobs
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1])
+    }
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1]/node[3],300)
+    {
+        Android.Touch ID With Index (com.ysoft.safeq.terminals.hp.hcp:id/print_list_item,1)
+        Android.Touch ID With Index (com.ysoft.safeq.terminals.hp.hcp:id/print_list_item,2)
+        Android.Touch ID With Index (com.ysoft.safeq.terminals.hp.hcp:id/print_list_item,3)
+    }
+    //Print button
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2],30)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+        Pass(Print jobs are releasing)
+    } 
+    Fail:
+    {
+        Fail (No documents available to print)
+    }
+}
+
+T1984992392_Validate_SafeQ_Cloud_Pull_Print_Options-Workpath()
+{
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1],300)
+    {
+        //Reload Jobs
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1])
+    }
+    //To set Job details
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],20)
+    {
+        //First Job settings
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1]/node[3])
+        //Dropdown Sides
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/exposed_dropdown']/node[1])
+        //Sides--> selecting to the flip on short edge
+        Android.Touch XPath (//node[@text='Flip on Short Edge'])
+        //To set Copies
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/number_picker_text_input_layout']/node[1])
+        Android.Input Text (2)
+        Android.Press Tab Key
+        //Print
+        Android.Touch XPath (//node[@class='android.widget.Button'])
+    }
+    If: Android.Wait For Text (Your print job has been sent to the printer, 30)
+    {
+        Pass (Print job is Released successfully)  
+    }
+    Fail:
+    {
+        Fail (No documents available to print)
+    }
+    //Delete one Job
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],10)
+    {
+        //FirstJob
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+        //Delete button
+        //Android.Touch XPath ( //node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/delete'])
+        If:Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/delete,10)
+        {
+            If:Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/delete)
+            {
+                Pass (Jobs are deleted successfully) 
+            }
+        }
+    }
+    Fail:
+    {
+        Fail (No documents available to print)
+    }   
+    //DeleteAll
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],10)
+    {
+        //FirstJob
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+        //Select All the jobs
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/select_all'])
+        //Delete button
+        If:Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/delete,10)
+        {
+            If:Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/delete)
+            {
+                Pass (Jobs are deleted successfully) 
+            }
+       }
+    }
+}
+
+T1984992403_Portal_Login_WaitForWindowsDownloadedFile(${Site},${Username},${Password},${SafeQExeFilePath})
+{
+    If: Web.Open with Edge (${Site},180)
+    {
+        Sleep (2)
+        //Username Filed
+        Functional_workpath.WaitAndClickTextbox(/html/body/div[1]/div/div/form/div[2]/div[3]/input,${Username},Username)
+        //Password Filed
+        Functional_workpath.WaitAndClickTextbox(/html/body/div[1]/div/div/form/div[2]/div[4]/input,${Password},Password)
+        //Submit Button
+        Functional_workpath.WaitAndClick(/html/body/div[1]/div/div/form/div[2]/div[5]/button,SubmitButton)
+        //Click PC Client
+        Functional_workpath.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[5]/a/div[2],PC Client)
+        Functional_workpath.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div/div[2]/div[2]/div[2]/div[2]/div/span[1],Click windows)
+        Functional_workpath.T1993711397_WaitForWindowsDownloadedFile(${SafeQExeFilePath})
+        Web.Close
+    }
+    Fail:
+    { 
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+}
+
+WaitAndClickTextbox(${Id},${Value},${Name})
+{
+    If: Web.Wait For Object (${Id},120)
+    {
+        Web.Set Text (${Id},${Value})
+    }
+    Fail:
+    {
+         Fail (${Name} filed is not available).
+         Stop Test Case
+    }
+}
+
+WaitAndClick(${Id},${Name})
+{
+    If: Web.Wait For Object (${Id},120)
+    {
+        Web.Click Object (${Id})
+    }
+    Fail:
+    {
+         Fail (${Name} filed is not available).
+         Stop Test Case
+    }
+}
+ 
+ T1993711397_WaitForWindowsDownloadedFile(${SafeQExeFilePath})
+ {
+     Web.Wait Until File Download Complete (${SafeQExeFilePath},safeq-cloud-client,300)
+ }
+
+ T1993711397_RunExeAsAdministrator(${SafeQExeFilePath})
+ {
+    Windows.Open Folder By Path (${SafeQExeFilePath})
+    Sleep (2)
+    Windows.Send Special Key ([DOWN])
+    Windows.Send Special Key ([UP])
+    Windows.Send Special Key (^+[ENTER])
+    Sleep (5)
+    Windows.Select Application (SAFEQ Cloud Client 2026.05.28.3 Setup,20)
+    If: Windows.Wait For Name (I Agree,10)
+    {
+        Windows.Click Name (I Agree)
+        Windows.Select Application (SAFEQ Cloud Client 2026.05.28.3 Setup)
+        Windows.Wait For Name (Finish,90)
+        Windows.Click Name (Finish)
+    } 
+    Fail:
+    {
+        Windows.Wait For ID (1202,10)
+        Windows.Click ID (1202)
+        Windows.Wait For Name (Next >,10)
+        Windows.Click Name (Next >)
+        Windows.Wait For Name (I Agree,10)
+        Windows.Click Name (I Agree)
+        Windows.Wait For Name (Finish,90)
+        Windows.Click Name (Finish)
+    }
+    Sleep (5)
+    Windows.Select Application (HP Automation)
+    // Because regular keywords are not working, we are resorting to windows keywords
+    Windows.Send Special Key ([TAB])
+    Windows.Send Key (a)
+    Windows.Send Key (d)
+    Windows.Send Key (m)
+    Windows.Send Key (i)
+    Windows.Send Key (n)
+    Windows.Send Special Key ([TAB])
+    Windows.Send Key (A)
+    Windows.Send Key (u)
+    Windows.Send Key (t)
+    Windows.Send Key (o)
+    Windows.Send Key (m)
+    Windows.Send Key (a)
+    Windows.Send Key (t)
+    Windows.Send Key (i)
+    Windows.Send Key (o)
+    Windows.Send Key (n)
+    Windows.Send Key (@)
+    Windows.Send Key (1)
+    Windows.Send Key (2)
+    Windows.Send Key (3)
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([ENTER]) 
+ }
+
+T1993711397_FetchPrintQueueNames_Tenent_Portal
+{
+    Web.Wait For Object (//*[@id="id25"]/div[3],10)
+    Web.Click Object (//*[@id="id25"]/div[3])
+    
+    Web.Wait For Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[1]/div/div/div/ul/li[2]/a,20)
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[1]/div/div/div/ul/li[2]/a)
+    
+    Web.Get Text (//table[@role='grid']//tr[@role='row'][1]/td[2],${Row1Value})
+    Set Variable (${print-queue-1},${Row1Value})
+    Web.Get Text (//table[@role='grid']//tr[@role='row'][2]/td[2],${Row2Value})
+    Set Variable (${print-queue-2},${Row2Value})
+    Web.Get Text (//table[@role='grid']//tr[@role='row'][3]/td[2],${Row3Value})
+    Set Variable (${print-queue-3},${Row3Value})
+    Sleep (5)
+}
+
+T1993711397_NavigateWindowsPrinters_and_Scanners_Validate_PrintQueueExists
+{
+    Run Command (cmd.exe /c powershell -NoProfile -Command "(Get-Printer | Select-Object -ExpandProperty Name) -contains '${print-queue-1}'", ${QueueExist_1}, 10)
+    If: Contains (${KEYWORD_OUTPUT},True)
+    {
+        Pass (Queue is Available)
+    }
+    
+    Run Command (cmd.exe /c powershell -NoProfile -Command "(Get-Printer | Select-Object -ExpandProperty Name) -contains '${print-queue-2}'", ${QueueExist_2}, 10)
+    If: Contains (${KEYWORD_OUTPUT},True)
+    {
+        Pass (Queue is Available)
+    }
+    
+    Run Command (cmd.exe /c powershell -NoProfile -Command "(Get-Printer | Select-Object -ExpandProperty Name) -contains '${print-queue-3}'", ${QueueExist_3}, 10)
+    If: Contains (${KEYWORD_OUTPUT},True)
+    {
+        Pass (Queue is Available)
+    }
+}
+
+T1993711397_PullPrintFirstJobOrSelectAll(${Final_Iteration})
+{
+    //clicks on the secure print icon
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    Sleep (1)
+    
+    //My Print Jobs Button
+    If: Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/print,50)
+    {
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print)
+    }
+    Fail:
+    {
+        Fail (Failed to select My Print Jobs Button)
+        Stop Test Case
+    }
+    Sleep (1)
+    
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],30)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+        
+        Sleep (1)
+        //If Final Iteration Select All
+        If: Equals IgnoreCase (${Final_Iteration},Y)
+        {
+            Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/select_all'])
+        }
+        Sleep (1)
+        
+        //clicks on the Print button
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+        
+        While:!Android.Wait For XPath Gone (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_cancel'],10)
+        {
+            Sleep (1)
+        }
+        
+        //conditions to check job is processed or not  
+        If:JediOmni.Wait For Active Job Gone (100)
+        {
+            Pass (Print job is sucessfully completed)
+        }
+        Fail:    
+        {
+            Fail (Print job is not completed)
+        }
+    }
+    Fail:
+    {
+        Fail (No documents available to Delete)
+    }
+}
+
+T1984992409_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Functionality(${File_Name1},${File_Name2})
+{
+    //Peronal dropdown
+    Web.Wait For Object (//div[@data-test-id='label' and text()='Personal'],70)
+    Web.Click Object (//div[@data-test-id='label' and text()='Personal'])
+    Sleep (2)
+    //My Documents button
+    Web.Wait For Object (//div[@data-test-id='label'][normalize-space()='My documents'],10)
+    Web.Click Object (//div[@data-test-id='label'][text()='My documents'])
+    Sleep (2)
+    //Waiting button
+    Web.Wait For Object (//span[normalize-space()='Waiting'],30)
+    Web.Click Object (//span[normalize-space()='Waiting'])
+    //Scrolling Down
+    Web.ScrollDownToParicularObject (//tr[@data-test-id='list'])
+    Web.ScrollDownToParicularObject ((//tr[@data-test-id='list'])[last()])
+    Windows.Send Special Key([DOWN])
+    Sleep (2)
+    //Checking file_name exists
+    If: Web.Wait For Text (${File_Name1},10)
+    {
+        Pass(Jobs are available in Waiting State)
+    }
+    If: Web.Wait For Text (${File_Name2},10)
+    {
+        Pass(Jobs are available in Waiting State)
+    }
+    Fail:
+    {
+        Fail (Jobs are not available in waiting state)
+    }
+}
+
+T1984992409_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Upload_Functionality(${File_Name1},${File_Name2},${File_Path1},${Pull_Print_Queue_Name})
+{
+    //Refresh status button
+    Web.Wait For Object (//a[normalize-space()='Refresh status'],10)
+    Web.Click Object (//a[normalize-space()='Refresh status'])
+    If: Web.Wait For Text (Refresh status,20)
+    {
+        Web.Click Text (Refresh status)
+    }
+    //Scrolling down
+    Web.ScrollDownToParicularObject (//tr[@data-test-id='list'])
+    Web.ScrollDownToParicularObject ((//tr[@data-test-id='list'])[last()])
+    Windows.Send Special Key([DOWN])
+    Sleep (2)
+    //Checking file_name exists
+    If: Web.Wait For Text (${File_Name1},10)
+    {
+        Pass(Jobs are available in Waiting State)
+    }
+    If: Web.Wait For Text (${File_Name2},10)
+    {
+        Pass(Jobs are available in Waiting State)
+    }
+    Fail:
+    {
+        Fail (Jobs are not available in waiting state)
+    }
+    //Upload documents to print button
+    Web.Drag File To Web (${File_Path1},//input[@data-test-id='uploadBtn'])
+    Sleep(3)
+    //Select pull print queue from Destination printer list box
+    Web.Click Object (//select[@data-test-id='printQueue']/preceding-sibling::span/span[@role='option'])
+    Windows.Send Key (${Pull_Print_Queue_Name})
+    //Web.Select Value From List Box (//select[@data-test-id='printQueue']/preceding-sibling::span/span[@role='option'],${Pull_Print_Queue_Name})
+    If: Web.Wait For Object (//button[normalize-space()='Send to secure queue'],30)
+    {
+        Web.Click Object (//button[normalize-space()='Send to secure queue'])
+    }
+}
+
+T1984992409_Validate_SafeQ_Cloud_Web_Portal_My_Documents_File_upload_Functionality(${File_Path2})
+{
+    Sleep (2)
+    If: Web.Wait For Object (//span[normalize-space()='Upload documents to print']/parent::div,20)
+    {
+        Web.Click Object (//span[normalize-space()='Upload documents to print']/parent::div)
+    }
+    //File explorer
+    Windows.Select Application (Open)
+    If: Windows.Wait For ID (1148,20)
+    {
+        Sleep (2)
+        Windows.Send Special Key (${File_Path2})
+    }
+    Sleep (1)
+    Windows.Send Special Key ([ENTER])
+    Sleep(2)
+    //Select pull print queue from Destination printer list box
+    //Web.Select Value From List Box (//select[@data-test-id='printQueue']/preceding-sibling::span/span[@role='option'],${Pull_Print_Queue_Name})
+    Web.Click Object (//select[@data-test-id='printQueue']/preceding-sibling::span/span[@role='option'])
+    Sleep(1)
+    //Windows.Send Key (${Pull_Print_Queue_Name})
+    If: Web.Wait For Object (//button[normalize-space()='Send to secure queue'],30)
+    {
+        Web.Click Object (//button[normalize-space()='Send to secure queue'])
+    }
+    Web.Close
+}
+
+Validate_SafeQ_Cloud_Web_Portal_My_Documents_File_upload_Functionality_Release_All
+{
+    JediOmni.Enable Paperless Mode
+    If: JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,10)
+    {
+       //Secure Print & Scan
+       JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    }
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print'],300)
+    {
+        //My print jobs button
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print']) 
+    }
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1],300)
+    {
+        //Reload Jobs
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[1])
+    }
+    //Home button
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/home_icon'],20)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/home_icon'])
+    }
+    Sleep (2)
+    If: JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,10)
+    {
+       //Secure Print & Scan
+       JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    }
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/printAll'],20)
+    {
+        //PrintAll Button
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/printAll'])
+        Pass (Print jobs are Releasing successfully)
+    }
+    Fail:
+    {
+        Fail (Print job is failed to release)
+    }   
+}
+      
+T1993711399_LargeFile_More_Than_10MB(${Job_Path_MB},${Pull_Print_Queue_Name})
+{
+    If: Windows.Print File To Print Queue (${Job_Path_MB},${Pull_Print_Queue_Name})
+    {
+        Pass (Print job is sent) 
+    } 
+    Fail:
+    {
+        Fail (Print job failed to send)
+    }
+    Error:
+    {
+        Error (Error sending in Print job)
+    }
+}
+
+T1993711399_LargeFile_More_Than_100Pages(${Job_Path_Pages},${Pull_Print_Queue_Name})
+{
+    If: Windows.Print File To Print Queue (${Job_Path_Pages},${Pull_Print_Queue_Name})
+    {
+        Pass (Print job is sent) 
+    } 
+    Fail:
+    {
+        Fail (Print job failed to send)
+    }
+    Error:
+    {
+        Error (Error sending in Print job)
+    }
+}
+
+T1993711399_Check_Previous_Job
+{
+    If: Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/print_cancel,10)
+    {
+        Fail(Job from previous iteration is carried over)
+    }
+}
+T1984992389_Validate_SafeQ_Cloud_Authentication_PIN_Workpath(${EWS_Password},${Device_PIN},${Device_IP})
+{
+    
+   If: Web.Wait For Object (//div[@data-test-id='userMenu']//button,30)
+    {
+        Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],10)
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Suite
+    }
+    //clicks on the embedded_templates
+    If: Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],30) 
+    {
+     Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+            Sleep (5)   
+    }
+    Fail:
+    {
+        Fail (unable to click on the Embedded Terminal Templtes)
+    }
+    Sleep (5)
+     Web.Click Object (//tr[.//td[contains(text()\,'Workpath')]]//a[contains(@class\,'k-grid-view')])
+    
+    
+    Sleep (5)
+    //clicks on the type of login dropdown
+    Web.Click Object (//select[@data-test-id='loginDropdown']/preceding::span[contains(@class\,'k-dropdown')][1])
+    
+    //waits and cliks on the PIN login
+    Web.Wait For Object (//li[contains(text()\,'PIN login')],10)
+    Web.Click Object (//li[contains(text()\,'PIN login')])
+    Sleep (10)
+    
+    //scroll and click on the save button
+    Web.ScrollDownToParicularObject (//*[@id="detail-view"])
+    If: Web.Wait For Object (//input[@data-test-id='saveBtn'],10)
+      {
+          Web.Click Object (//input[@data-test-id='saveBtn'])
+      } 
+      Fail:
+      {
+          Fail (unable to change PIN authentication)
+          Stop Test Case
+      }
+    
+    //waits and click on the users tab    
+      Web.Wait For Object (//div[@data-test-id='label' and normalize-space()='Users'],10)
+      Web.Click Object (//div[@data-test-id='label' and normalize-space()='Users'])
+      
+      //waits and click on the admin edit option
+      Web.Wait For Object (//tr[.//td[normalize-space()='rdladmin@amblr.com']]//a[contains(@class\,'k-grid')],10)
+      Sleep (5)
+      Web.Click Object (//tr[.//td[normalize-space()='rdladmin@amblr.com']]//a[contains(@class\,'k-grid')])
+      
+      Web.Wait For Object (//a[.//span[normalize-space()='General setup']],10)
+      
+      //scroll down to the PIN text box and the pin 
+      Web.ScrollDownToParicularObject (//input[@data-test-id='shortId'])
+      Web.Set Text (//input[@data-test-id='shortId'],${Device_PIN})
+      
+      
+      //scroll down and click the save button
+      Web.ScrollDownToParicularObject (//input[@data-test-id='saveBtn'])
+      If: Web.Wait For Object (//input[@data-test-id='saveBtn'],10)
+      {
+          Web.Click Object (//input[@data-test-id='saveBtn'])
+      } 
+      Fail:
+      {
+          Fail (unable to save the PIN)
+          Stop Test Case
+      }
+    
+      Sleep (5)
+      
+      //wait and clicks on the Printers tab 
+      Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],10)
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    
+    //clicks on the embedded_templates
+    If: Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],30) 
+    {
+     Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+        
+    }
+    Fail:
+    {
+        Fail (unable to click on the Embedded Terminal Templtes)
+        Stop Test Case
+    }
+    Sleep (10)
+    Web.ScrollDownToParicularObject (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a)
+    Web.Click Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a)
+    Sleep (5)
+    Web.Wait For Object (//*[@data-test-id='searchInput'],10)
+    Web.Click Object (//*[@data-test-id='searchInput'])
+    Web.Append Text (//*[@data-test-id='searchInput'],${Device_IP})
+            
+    Sleep (15)
+    //Clicks on the Select all    
+    Web.Click Object (//input[@data-test-id='selectAll'])
+                      
+    Sleep (5)
+    //click on the configure
+    Web.Click Object (//button[@data-test-id='configure'])
+    If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+          {
+               Pass (Device configured successfully )
+           }
+     Fail:
+           {
+              Web.Wait For Object (//a[.//span[@data-test-id='title' and normalize-space()='Embedded terminal templates']],10)
+               Web.Click Object (//a[.//span[@data-test-id='title' and normalize-space()='Embedded terminal templates']])
+               Web.Wait For Object (//tr[.//td[contains(normalize-space(),'Workpath')]]//span[@data-title='Edit']//a,10)
+               Web.Click Object (//tr[.//td[contains(normalize-space(),'Workpath')]]//span[@data-title='Edit']//a)
+               Web.Wait For Object (//input[@type='password' and @data-test-id='textField'],10)
+               Web.Clear Text Field (//input[@type='password' and @data-test-id='textField'])
+               Web.Set Text (//input[@type='password' and @data-test-id='textField'],${EWS_Password})
+               Web.ScrollDownToParicularObject (//input[@data-test-id='saveBtn' and @value='Save'])
+               Web.Click Object (//input[@data-test-id='saveBtn' and @value='Save'])
+               Sleep (5)
+               Web.Click Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a)
+               Sleep (5)
+               Web.Press PageUp Key (//*[@id="detail-view"])
+               Web.Wait For Object (//*[@data-test-id='searchInput'],10)
+               Web.Click Object (//*[@data-test-id='searchInput'])
+               Web.Append Text (//*[@data-test-id='searchInput'],${Device_IP})
+                    
+               Sleep (15)
+               //Clicks on the Select all    
+               Web.Click Object (//input[@data-test-id='selectAll'])
+                              
+               Sleep (5)
+               //click on the configure
+               Web.Click Object (//button[@data-test-id='configure'])
+               If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+                  {
+                       Pass (Device configured successfully )
+                   }
+                   Fail:
+                   {
+                       Fail (Configuration failed)
+                       Stop Test Case
+                   }
+           }
+}
+       
+      
+      
+T1984992390_Validate_SafeQ_Cloud_Authentication_Username_&_Password_Workpath(${EWS_Password},${Device_IP})
+{
+    If: Web.Wait For Object (//div[@data-test-id='userMenu']//button,30)
+    {
+        Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],10)
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Suite
+    }
+    //clicks on the embedded_templates
+    If: Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],30) 
+    {
+     Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+            Sleep (5)   
+    }
+    Fail:
+    {
+        Fail (unable to click on the Embedded Terminal Templtes)
+    }
+    Sleep (5)
+     Web.Click Object (//tr[.//td[contains(text()\,'Workpath')]]//a[contains(@class\,'k-grid-view')])
+    
+    
+    Sleep (5)
+    //clicks on the type of login dropdown
+    Web.Click Object (//select[@data-test-id='loginDropdown']/preceding::span[contains(@class\,'k-dropdown')][1])
+    Web.Wait For Object (//li[normalize-space()='Username+password or card login'],10)
+    Web.Click Object (//li[normalize-space()='Username+password or card login'])
+    Sleep (10)
+    Web.Press PageDown Key (//*[@id="detail-view"])
+    If: Web.Wait For Object (//input[@data-test-id='saveBtn'],10)
+      {
+          Web.Click Object (//input[@data-test-id='saveBtn'])
+      } 
+      Fail:
+      {
+          Fail (unable to change Username+password or card login authentication)
+          Stop Test Case
+      }
+    
+    Web.Press PageUp Key (//*[@id="detail-view"])
+    Sleep (10)
+    Web.Click Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a)
+    Sleep (5)
+    Web.Press PageUp Key (//*[@id="detail-view"])
+    Web.Wait For Object (//*[@data-test-id='searchInput'],10)
+    Web.Click Object (//*[@data-test-id='searchInput'])
+    Web.Append Text (//*[@data-test-id='searchInput'],${Device_IP})
+            
+    Sleep (15)
+    //Clicks on the Select all    
+    Web.Click Object (//input[@data-test-id='selectAll'])
+                      
+    Sleep (5)
+    //click on the configure
+    Web.Click Object (//button[@data-test-id='configure'])
+    Sleep (10)
+    If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+          {
+               Pass (Device configured successfully )
+           }
+     Fail:
+           {
+               Web.Wait For Object (//a[.//span[@data-test-id='title' and normalize-space()='Embedded terminal templates']],10)
+               Web.Click Object (//a[.//span[@data-test-id='title' and normalize-space()='Embedded terminal templates']])
+               Web.Wait For Object (//tr[.//td[contains(normalize-space(),'Workpath')]]//span[@data-title='Edit']//a,10)
+               Web.Click Object (//tr[.//td[contains(normalize-space(),'Workpath')]]//span[@data-title='Edit']//a)
+               Web.Wait For Object (//input[@type='password' and @data-test-id='textField'],10)
+               Web.Clear Text Field (//input[@type='password' and @data-test-id='textField'])
+               Web.Set Text (//input[@type='password' and @data-test-id='textField'],${EWS_Password})
+               Web.ScrollDownToParicularObject (//input[@data-test-id='saveBtn' and @value='Save'])
+               Web.Click Object (//input[@data-test-id='saveBtn' and @value='Save'])
+               Sleep (5)
+               Web.Click Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a)
+               Sleep (5)
+               Web.Wait For Object (//*[@data-test-id='searchInput'],10)
+               Web.Click Object (//*[@data-test-id='searchInput'])
+               Web.Append Text (//*[@data-test-id='searchInput'],${Device_IP})
+                    
+               Sleep (15)
+               //Clicks on the Select all    
+               Web.Click Object (//input[@data-test-id='selectAll'])
+                              
+               Sleep (5)
+               //click on the configure
+               Web.Click Object (//button[@data-test-id='configure'])
+               If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+                  {
+                       Pass (Device configured successfully )
+                   }
+                   Fail:
+                   {
+                       Fail (Configuration failed)
+                       Stop Test Case
+                   }
+           }   
+}
+ 
+
+      
+      
+T1984992391_Validate_SafeQ_Cloud_Device_Configuration_Workpath(${Device_IP},${Device_name},${Device_Serial_No})
+{
+     If: Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],5)
+    {
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Suite
+    }
+    
+    //waits for Add Printer button
+    If: Web.Wait For Object (//a[@role='button' and normalize-space()='Add printers'],30)
+    {
+        Sleep (10)
+        Web.Click Object (//a[@role='button' and normalize-space()='Add printers'])
+        
+       Web.Wait For Object (//span[text()='One printer (Advanced)'],30)
+       Web.Click Object (//span[text()='One printer (Advanced)'])
+        //Clicks on the name 
+        If:Web.Wait For Object (//input[@data-test-id='data.name'],30)
+        {
+            Web.Set Text(//input[@data-test-id='data.name'],${Device_name})
+        } 
+        Fail:
+        {
+            Fail (page is not in the add printers)
+            Stop Test Case
+        }
+        
+      
+        //Clicks on the IP address 
+        Web.Wait For Object (//input[@data-test-id='data.address'],10)
+        Web.Set Text (//input[@data-test-id='data.address'],${Device_IP})
+        
+        
+        // Open vendor dropdown
+         Web.Click Object (//select[@data-test-id='vendor']/parent::span)
+        
+
+        // Select HP
+         Web.Click Object (//li[normalize-space()='HP'])
+        
+        //Select Gateway Radiobutton
+        Web.ScrollDownToParicularObject (//span[@data-test-id='title' and normalize-space()='Release options'])
+        Web.Wait For Text (Gateway,30) 
+        Web.Click Object (//input[@data-test-id='connectionMethod_Gateway'])
+        Sleep (5)
+        //Updates Device serial number 
+        Web.ScrollDownToParicularObject (//*[@id="detail-view"])
+        Web.Wait For Object (//input[@data-test-id='data.deviceSerial'],30)
+        Web.Set Text (//input[@data-test-id='data.deviceSerial'],${Device_Serial_No})
+        Sleep (5)
+        
+        // Open template dropdown
+        Web.Click Object (//div[@data-test-id='terminalConfig']//span[@role='listbox'])
+        Sleep (3)
+        Web.Click Object (//label[normalize-space()='Embedded terminal template']/following::span[@role='listbox'][1])
+        Sleep (2)
+        
+        // Select Workpath
+        Web.Click Object (//li[normalize-space()='Workpath'])
+       
+        Sleep (5)
+        //Clicks on the save button
+        Web.ScrollDownToParicularObject (//*[@id="detail-view"])
+        Web.Click Object (//input[@value='Add'])
+        Web.Wait For Object (//a[@role='button' and normalize-space()='Add printers'],30)
+    }                        
+        If: Web.Wait For Text (${Device_IP},10)
+        {
+            Web.Press PageUp Key (//*[@id="detail-view"])
+            Web.Wait For Object (//span[@data-test-id='message'],10)
+            Pass (Printer details is saved successfully)
+        }
+        Fail:
+        {
+            Fail (Printer details is not saved)
+            Stop Test Suite
+        }
+        
+    //clicks on the ETT
+    Web.Press PageUp Key (//*[@id="detail-view"])
+    Sleep (5)
+    Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],30)
+    Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+    Sleep (5)
+    
+     //Selects Workpath
+      Web.Press PageUp Key (//*[@id="detail-view"])
+      If: Web.Wait For Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a,20)
+      {
+          Web.Click Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a) 
+      }
+      Fail:
+      {
+          Fail (Unale to find the deployment actions in the current page please do re-run the testcase and before re-run delete the device details)
+          Stop Test Case
+      }
+      
+      Sleep (5)
+      Common_WorkPath_Library.Workpath_Configure (${Device_IP})  
+      
+      
+      //Check if Configured
+      If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+            {
+                Pass (Device configured successfully)
+            }
+      Fail:
+            {
+               //Check if Failed
+               If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'failed')],10)
+                   {
+                        
+
+                      //Click Edit for particular IP
+                       Web.Click Object (//tr[@data-test-id='stateList' and .//span[@data-test-id='address' and normalize-space()='${Device_IP}']]//span[@data-test-id='edit'])
+
+                       //Click Advanced setup
+                       Web.Click Object (//a[.//span[normalize-space()='Advanced setup']])
+
+                        //Enter password
+                        Web.Set Text (//div[@data-test-id='adminPassword']//input[@type='password'],${Device_Password})
+
+                        //Save
+                        Web.Click Object (//input[@data-test-id='saveBtn'])
+                        Common_WorkPath_Library.Workpath_Configure (${Device_IP})
+
+                        Sleep (10)
+
+                        //Check again if Configured
+                        If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+                        {
+                            Pass (Device configured successfully after Advanced Setup)
+                        }
+                        Fail:
+                        {
+                            Fail (Configuration failed even after Advanced Setup)
+                            Stop Test Suite
+                        }
+        }
+}
+} 
+
+
+T1984992396_Validate_the_Workpath_Agentless_in_SafeQ_Cloud(${Device_IP},${Device_name},${Device_Serial_No})
+{
+     If: Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],5)
+    {
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Suite
+    }
+    
+    //waits for Add Printer button
+    If: Web.Wait For Object (//a[@role='button' and normalize-space()='Add printers'],30)
+    {
+        Sleep (10)
+        Web.Click Object (//a[@role='button' and normalize-space()='Add printers'])
+        
+       Web.Wait For Object (//span[text()='One printer (Advanced)'],30)
+       Web.Click Object (//span[text()='One printer (Advanced)'])
+        //Clicks on the name 
+        If:Web.Wait For Object (//input[@data-test-id='data.name'],30)
+        {
+            Web.Set Text(//input[@data-test-id='data.name'],${Device_name})
+        } 
+        Fail:
+        {
+            Fail (page is not in the add printers)
+            Stop Test Case
+        }
+        
+      
+        //Clicks on the IP address 
+        Web.Wait For Object (//input[@data-test-id='data.address'],10)
+        Web.Set Text (//input[@data-test-id='data.address'],${Device_IP})
+        
+        
+        // Open vendor dropdown
+         Web.Click Object (//select[@data-test-id='vendor']/parent::span)
+        
+
+        // Select HP
+         Web.Click Object (//li[normalize-space()='HP'])
+        
+        //Select Gateway Radiobutton
+        Web.ScrollDownToParicularObject (//span[@data-test-id='title' and normalize-space()='Release options'])
+        Web.Wait For Text (Gateway,30) 
+        Web.Click Object (//input[@data-test-id='connectionMethod_Gateway'])
+        Sleep (5)
+        //Updates Device serial number 
+        Web.ScrollDownToParicularObject (//*[@id="detail-view"])
+        Web.Wait For Object (//input[@data-test-id='data.deviceSerial'],30)
+        Web.Set Text (//input[@data-test-id='data.deviceSerial'],${Device_Serial_No})
+        Sleep (5)
+        
+        // Open template dropdown
+        Web.Click Object (//div[@data-test-id='terminalConfig']//span[@role='listbox'])
+        Sleep (3)
+        Web.Click Object (//label[normalize-space()='Embedded terminal template']/following::span[@role='listbox'][1])
+        Sleep (2)
+        
+        // Select Workpath
+        Web.Click Object (//li[normalize-space()='Workpath'])
+       
+        Sleep (5)
+        //Clicks on the save button
+        Web.ScrollDownToParicularObject (//*[@id="detail-view"])
+        Web.Click Object (//input[@value='Add'])
+        Web.Wait For Object (//a[@role='button' and normalize-space()='Add printers'],30)
+    }                        
+        If: Web.Wait For Text (${Device_IP},10)
+        {
+            Web.Press PageUp Key (//*[@id="detail-view"])
+            Web.Wait For Object (//span[@data-test-id='message'],10)
+            Pass (Printer details is saved successfully)
+        }
+        Fail:
+        {
+            Fail (Printer details is not saved)
+            Stop Test Suite
+        }
+        
+    //clicks on the ETT
+    Web.Press PageUp Key (//*[@id="detail-view"])
+    Sleep (5)
+    Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],30)
+    Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+    Sleep (5)
+    
+     //Selects Workpath
+      Web.Press PageUp Key (//*[@id="detail-view"])
+      If: Web.Wait For Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a,20)
+      {
+          Web.Click Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a) 
+      }
+      Fail:
+      {
+          Fail (Unale to find the deployment actions in the current page please do re-run the testcase and before re-run delete the device details)
+          Stop Test Case
+      }
+      
+      Sleep (5)
+      Common_WorkPath_Library.Workpath_Configure (${Device_IP})  
+      
+      
+      //Check if Configured
+      If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+            {
+                Pass (Device configured successfully)
+            }
+      Fail:
+            {
+               //Check if Failed
+               If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'failed')],10)
+                   {
+                        
+
+                      //Click Edit for particular IP
+                       Web.Click Object (//tr[@data-test-id='stateList' and .//span[@data-test-id='address' and normalize-space()='${Device_IP}']]//span[@data-test-id='edit'])
+
+                       //Click Advanced setup
+                       Web.Click Object (//a[.//span[normalize-space()='Advanced setup']])
+
+                        //Enter password
+                        Web.Set Text (//div[@data-test-id='adminPassword']//input[@type='password'],${Device_Password})
+
+                        //Save
+                        Web.Click Object (//input[@data-test-id='saveBtn'])
+                        Common_WorkPath_Library.Workpath_Configure (${Device_IP})
+
+                        Sleep (10)
+
+                        //Check again if Configured
+                        If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+                        {
+                            Pass (Device configured successfully after Advanced Setup)
+                        }
+                        Fail:
+                        {
+                            Fail (Configuration failed even after Advanced Setup)
+                            Stop Test Suite
+                        }
+        }
+}
+}
+            
+T1984992410_Validate_SafeQ_Authentication_Username_and_Password_Workpath_devices(${Device_IP},${Device_name},${Device_Serial_No})
+{
+     If: Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],5)
+    {
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Suite
+    }
+    
+    //waits for Add Printer button
+    If: Web.Wait For Object (//a[@role='button' and normalize-space()='Add printers'],30)
+    {
+        Sleep (10)
+        Web.Click Object (//a[@role='button' and normalize-space()='Add printers'])
+        
+       Web.Wait For Object (//span[text()='One printer (Advanced)'],30)
+       Web.Click Object (//span[text()='One printer (Advanced)'])
+        //Clicks on the name 
+        If:Web.Wait For Object (//input[@data-test-id='data.name'],30)
+        {
+            Web.Set Text(//input[@data-test-id='data.name'],${Device_name})
+        } 
+        Fail:
+        {
+            Fail (page is not in the add printers)
+            Stop Test Case
+        }
+        
+      
+        //Clicks on the IP address 
+        Web.Wait For Object (//input[@data-test-id='data.address'],10)
+        Web.Set Text (//input[@data-test-id='data.address'],${Device_IP})
+        
+        
+        // Open vendor dropdown
+         Web.Click Object (//select[@data-test-id='vendor']/parent::span)
+        
+
+        // Select HP
+         Web.Click Object (//li[normalize-space()='HP'])
+        
+        //Select Gateway Radiobutton
+        Web.ScrollDownToParicularObject (//span[@data-test-id='title' and normalize-space()='Release options'])
+        Web.Wait For Text (Gateway,30) 
+        Web.Click Object (//input[@data-test-id='connectionMethod_Gateway'])
+        Sleep (5)
+        //Updates Device serial number 
+        Web.ScrollDownToParicularObject (//*[@id="detail-view"])
+        Web.Wait For Object (//input[@data-test-id='data.deviceSerial'],30)
+        Web.Set Text (//input[@data-test-id='data.deviceSerial'],${Device_Serial_No})
+        Sleep (5)
+        
+        // Open template dropdown
+        Web.Click Object (//div[@data-test-id='terminalConfig']//span[@role='listbox'])
+        Sleep (3)
+        Web.Click Object (//label[normalize-space()='Embedded terminal template']/following::span[@role='listbox'][1])
+        Sleep (2)
+        
+        // Select Workpath
+        Web.Click Object (//li[normalize-space()='Workpath'])
+       
+        Sleep (5)
+        //Clicks on the save button
+        Web.ScrollDownToParicularObject (//*[@id="detail-view"])
+        Web.Click Object (//input[@value='Add'])
+        Web.Wait For Object (//a[@role='button' and normalize-space()='Add printers'],30)
+    }                        
+        If: Web.Wait For Text (${Device_IP},10)
+        {
+            Web.Press PageUp Key (//*[@id="detail-view"])
+            Web.Wait For Object (//span[@data-test-id='message'],10)
+            Pass (Printer details is saved successfully)
+        }
+        Fail:
+        {
+            Fail (Printer details is not saved)
+            Stop Test Suite
+        }
+        
+    //clicks on the ETT
+    Web.Press PageUp Key (//*[@id="detail-view"])
+    Sleep (5)
+    Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],30)
+    Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+    Sleep (5)
+    
+     //Selects Workpath
+      Web.Press PageUp Key (//*[@id="detail-view"])
+      If: Web.Wait For Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a,20)
+      {
+          Web.Click Object (//tr[td[normalize-space()='Workpath']]//span[@data-title='Deployment actions']//a) 
+      }
+      Fail:
+      {
+          Fail (Unale to find the deployment actions in the current page please do re-run the testcase and before re-run delete the device details)
+          Stop Test Case
+      }
+      
+      Sleep (5)
+      Common_WorkPath_Library.Workpath_Configure (${Device_IP})  
+      
+      
+      //Check if Configured
+      If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+            {
+                Pass (Device configured successfully)
+            }
+      Fail:
+            {
+               //Check if Failed
+               If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'failed')],10)
+                   {
+                        
+
+                      //Click Edit for particular IP
+                       Web.Click Object (//tr[@data-test-id='stateList' and .//span[@data-test-id='address' and normalize-space()='${Device_IP}']]//span[@data-test-id='edit'])
+
+                       //Click Advanced setup
+                       Web.Click Object (//a[.//span[normalize-space()='Advanced setup']])
+
+                        //Enter password
+                        Web.Set Text (//div[@data-test-id='adminPassword']//input[@type='password'],${Device_Password})
+
+                        //Save
+                        Web.Click Object (//input[@data-test-id='saveBtn'])
+                        Common_WorkPath_Library.Workpath_Configure (${Device_IP})
+
+                        Sleep (10)
+
+                        //Check again if Configured
+                        If: Web.Wait For Object (//span[@data-test-id='deployStatusStage' and normalize-space()='Configured'],120)
+                        {
+                            Pass (Device configured successfully after Advanced Setup)
+                        }
+                        Fail:
+                        {
+                            Fail (Configuration failed even after Advanced Setup)
+                            Stop Test Suite
+                        }
+        }
+}
+} 
+           
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Word_Document_For_Print
+//        
+// Description:     Send a word document kept in path {Working Directory}\print-documents\word-doc\testfile.docx
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\word-doc\
+//                  2. The test file should be named testfile.docx
+//                  3. Correct version of MS Word should be installed on computer
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+{
+    Sleep(10)
+    If:Windows.Open File For Print(${word-document-file},${print-queue-name})
+    {
+        Windows.Click ID (1)
+
+        //Because the Click Print button doesn't work with word documents
+        //This is an alternate approach to click the print button. i.e., Alt+F, P, P
+        //Click Alt+F Keys
+        If:Windows.Send Special Key (${alt-f})
+        {
+            Sleep(1)
+            // Click 'P' button on keyboard
+            If:Windows.Send Key (${p-key})
+            {
+                Sleep(1)
+                If:Windows.Send Key (${p-key})
+                {
+                    Sleep(1)
+                    Pass(File: ${word-document-file} sent to print queue successfully.)
+                    Sleep(5)
+                    //Windows.Close Application
+                }
+            }
+        }
+        Fail:
+        {
+            Fail(Failed to click print button)
+            Windows.Close Application ()
+        }
+        Error:
+        {
+            Error(Error trying to click print button
+            Windows.Close Application
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to open the word file in path: ${word-document-file})
+    }
+    Error:
+    {
+        Error(Error trying to send job to print queue)
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Excel_Document_For_Print
+//        
+// Description:     Send a excel document kept in path {Working Directory}\print-documents\excel-doc\testfile.txt
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\excel-doc\
+//                  2. The test file should be named testfile.xlsx
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+{
+    If:Windows.Open File For Print(${excel-document-file},${print-queue-name})
+    {
+        Windows.Click ID (1)
+
+        //Because the Click Print button doesn't work with excel documents
+        //This is an alternate approach to click the print button. i.e., Alt+F, P, P
+        //Click Alt+F Keys
+        If:Windows.Send Special Key (${alt-f})
+        {
+            Sleep(${ultra-short-wait})
+            // Click 'P' button on keyboard
+            If:Windows.Send Key (${p-key})
+            {
+                Sleep(${ultra-short-wait})
+                If:Windows.Send Key (${p-key})
+                {
+                    Sleep(${ultra-short-wait})
+                    Pass(File: ${excel-document-file} sent to print queue successfully.)
+                    Sleep(${medium-wait})
+                    //Windows.Close Application
+                    Sleep(${medium-wait})
+                }
+            }
+        }
+        Fail:
+        {
+            Fail(Failed to click print button)
+            Windows.Close Application
+        }
+        Error:
+        {
+            Error(Error trying to click print button
+            Windows.Close Application
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to open the word file in path: ${excel-document-file})
+    }
+    Error:
+    {
+        Error(Error trying to send job to print queue)
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Presentation_For_Print
+//        
+// Description:     Send a ppt document kept in path {Working Directory}\print-documents\ppt-doc\testfile.txt
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\ppt-doc\
+//                  2. The test file should be named testfile.pptx
+//                  3. Microsoft office suite should be installed on the computer
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+{
+    Sleep(${ultra-short-wait})
+    If:Windows.Open File For Print(${ppt-document-file},${print-queue-name})
+    {
+        Windows.Click ID (1)
+
+        //Because the Click Print button doesn't work with excel documents
+        //This is an alternate approach to click the print button. i.e., Alt+F, P, P
+        //Click Alt+F Keys
+        If:Windows.Send Special Key (${alt-f})
+        {
+            Sleep(1)
+            // Click 'P' button on keyboard
+            If:Windows.Send Key (${p-key})
+            {
+                Sleep(1)
+                If:Windows.Send Key (${p-key})
+                {
+                    Sleep(1)
+                    Pass(File: ${ppt-document-file} sent to print queue successfully.)
+                    Sleep(5)
+                    //Windows.Close Application
+                }
+            }
+        }
+        Fail:
+        {
+            Fail(Failed to click print button)
+            Windows.Close Application
+        }
+        Error:
+        {
+            Error(Error trying to click print button
+            Windows.Close Application
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to open the word file in path: ${ppt-document-file})
+    }
+    Error:
+    {
+        Error(Error trying to send job to print queue)
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_PDF_For_Print
+//        
+// Description:     Send a PDF document kept in path {Working Directory}\print-documents\pdf-doc\testfile.pdf
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\pdf-doc\.
+//                  2. User should update the value of variable '${pdf-document-file}' in file Common_Workflow_Variable.gfvar
+//                  2. The test file should be named testfile.pdf
+//                  3. Adobe acrobat reader should be installed on test computer.
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})
+{
+    If:Windows.Print File To Print Queue (${pdf-document-file},${print-queue-name})
+    {
+        // GFriend execution is too fast.
+        Sleep(${extra-long-wait})
+        // Close Adobe application
+        //Windows.Send Special Key (${alt-f4})
+    }
+    Fail:
+    {
+        Fail (Failed to open the PDF file or send it to the print queue. File path: ${pdf-document-file}, print queue: ${print-queue-name})
+    }
+    Error:
+    {
+        Error (Error while opening PDF file or sending it to the print queue. File path: ${pdf-document-file}, print queue: ${print-queue-name})
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Image_For_Print
+//        
+// Description:     Send an image document kept in path {Working Directory}\print-documents\image-doc\testfile.jpg
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\image-doc\
+//                  2. The test file should be named testfile.jpg
+//                  3. User should update the value of variable '${image-document-file}' in file Common_Workflow_Variable.gfvar
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+{
+    // Due to limitation in GFriend keywords, path for image file is hardcoded. User needs to update these paths to use the // correct file for printing. 
+    If:Windows.Print PDF or Image With Application (${mspaint-executable-path},${image-document-file},${print-queue-name})
+    {
+        // Windows opens 'Can't complete operation' notification box. Close it to proceed.
+        If:Windows.Is Exist(${cannot-complete-operation-OK-button})
+        {
+            Windows.Click ID (${cannot-complete-operation-OK-button})
+            Sleep(${short-wait})
+        }
+
+        // Click the 'Print' button.
+        If:Windows.Is Exist(${print-image-button})
+        {
+            Windows.Click ID (${print-image-button})
+            Sleep(${short-wait})
+        }
+        Fail:
+        {
+            Fail (Failed to click Print button on 'Printing from Win32 application' Print page. Please check if MS-Paint is availble in the path: ${mspaint-executable-path} and test image is available in path ${image-document-file} )
+        }
+        Error:
+        {
+            Error (Error while clicking Print button on 'Printing from Win32 application' Print page. Please check if MS-Paint is availble in the path: ${mspaint-executable-path} and test image is available in path ${image-document-file})
+        }
+    }
+    Fail:
+    {
+        Fail (Failed to click Print button on 'Printing from Win32 application' Print page. Please check if MS-Paint is availble in the path: ${mspaint-executable-path} and test image is available in path ${image-document-file} )
+    }
+    Error:
+    {
+        Error (Error while clicking Print button on 'Printing from Win32 application' Print page. Please check if MS-Paint is availble in the path: ${mspaint-executable-path} and test image is available in path ${image-document-file})
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Notepad_Document_For_Print
+//        
+// Description:     Send a notepad document kept in path {Working Directory}\print-documents\text-doc\testfile.txt
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\text-doc\
+//                  2. The test file should be named testfile.txt
+//                  3. The default application for .text files should be notepad.
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+{
+    If: Windows.Print File To Print Queue(${text-document-file},${print-queue-name})
+    {
+        // Give some time to actually open the file and send it.
+        Sleep(${medium-wait})
+        Pass (Print job is sent) 
+    } 
+    Fail:
+    {
+        Fail (Failed to send print job. File path: ${text-document-file} and print queue:c${print-queue-name})
+    }
+    Error:
+    {
+        Error (Error to send print job. File path: ${text-document-file} and print queue:c${print-queue-name})
+    }
+}
+
+
+// ************************************************************************************************************
+// *     Common Test case for operating printer.                                                              *              
+// ************************************************************************************************************
+Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+{
+    // During first iteration, the device is in sleep mode.
+    // It takes more time to wake and calliberate.
+    JediOmni.Is Awake
+
+    If:JediOmni.Wait For Text (${signout-text},${short-wait})
+    {
+        JediOmni.Touch ID(${jediomni-sign-out-button})
+        JediOmni.Wait For Enable of Object (${jediomni-sign-in-button},${medium-wait})
+    }
+
+    If: Android.Wait For XPath (${logout-button},${medium-wait})
+    {
+        Android.Touch XPath (${logout-button})
+        Sleep(${short-wait})
+    }
+    JediOmni.Reset
+    Sleep(${long-wait})
+}
+
+
+
+Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+{
+    Sleep(${medium-wait})
+    If: JediOmni.Wait For Enable of Object(${secure-print-and-scan-app-icon},${medium-wait})
+    {
+        If: JediOmni.Touch ID (${secure-print-and-scan-app-icon})
+        {
+            Sleep(${short-wait})
+        }
+        Fail:
+        {
+            Fail(Failed to click on 'SafeQ' application icon on printer homescreen.)
+        }
+        Error:
+        {
+            Error(Error while trying to click on 'SafeQ' application icon on printer homescreen.)
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to find the 'SafeQ' application on printer homescreen.)
+    }
+    Error:
+    {
+        Error(Error while trying to find the 'SafeQ' applicaiton on printer homescreen.)
+    }
+}
+
+Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+{
+    While:!Android.Wait For XPath (${my-print-jobs-app-icon},${short-wait}):${medium-wait} 
+    {
+        Sleep(${short-wait})
+    }
+    If: Android.Wait For XPath (${my-print-jobs-app-icon},${short-wait})
+    {
+        Return With Pass ('My Quick Actions' page loaded successfully)
+    }
+    Fail:
+    {
+        Return With Fail ('My Quick Actions' page not loaded successfully)
+    }
+    Error
+    {
+        Return With Error ('My Quick Actions' page not loaded successfully)
+    }
+}
+
+Open_Print_All(${print-all-app-icon},${short-wait})
+{
+    If: Android.Wait For XPath (${print-all-app-icon},${short-wait})
+    {
+        If: Android.Touch XPath (${print-all-app-icon})
+        {
+            Return With Pass ('Print All' icon clicked)
+        }
+        Fail:
+        {
+            Fail(Failed to touch xpath for 'Print All' app)
+        }
+        Error:
+        {
+            Error(Error while trying to touch 'Print All' app)
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to find the 'Print All' app)
+    }
+    Error:
+    {
+        Error(Failed to find the 'Print All' app)
+    }
+}
+
+Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+{
+    If: Android.Wait For XPath (${my-print-jobs-app-icon},${short-wait})
+    {
+        If: Android.Touch XPath (${my-print-jobs-app-icon})
+        {
+        }
+        Fail:
+        {
+            Fail(Failed to touch xpath for 'My Print Jobs' app)
+        }
+        Error:
+        {
+            Error(Error while trying to touch 'My Print Jobs' app)
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to find the 'My Print Jobs' app)
+    }
+    Error:
+    {
+        Error(Error while trying to find 'My Print Jobs' app)
+    }
+}
+
+Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+{
+   If:Android.Wait For XPath (${first-print-job-radio-button},${medium-wait})
+   {
+       Android.Touch XPath (${first-print-job-radio-button})
+   }
+   Fail:
+   {
+       Fail(Couldn't find the first job checkbox in ${medium-wait} seconds)
+   }
+   Error:
+   { 
+       Error(Couldn't find the first job checkbox in ${medium-wait} seconds)
+   }
+}
+
+Select_All_Print_Jobs(${first-print-job-radio-button},${select-all-printjobs-button},${medium-wait})
+{
+    Sleep(${medium-wait})
+    If:Android.Wait For XPath (${first-print-job-radio-button},${medium-wait})
+    {
+        Android.Touch XPath(${first-print-job-radio-button})
+        If: Android.Wait For XPath(${select-all-printjobs-button},${medium-wait})
+        {
+            Android.Touch XPath (${select-all-printjobs-button})
+        }
+        Fail:
+        {
+            Fail('Select All' option was not enabled)
+        }
+        Error:
+        {
+            Error('Select All' option was not enabled)
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to find the first job checkbox. It is required to enable 'Select All' checkbox.)
+    }
+    Error:
+    {
+        Error(Failed to find the first job checkbox. It is required to enable 'Select All' checkbox.)
+    }
+}
+
+Click_Print_Button(${print-button},${medium-wait})
+{
+    If:Android.Wait For XPath (${print-button},${medium-wait})
+    {
+        If:Android.Touch XPath (${print-button})
+        {
+            // Successfully  clicked the print button.
+        }
+        Fail:
+        {
+            Fail(Failed to click the 'Print' button)
+        }
+        Error:
+        {
+            Fail(Failed to click the 'Print' button)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the 'Print' button on the screen)
+    }
+    Error:
+    {
+        Error(Couldn't find the 'Print' button on the screen)
+    }
+}
+
+Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+{
+    If: Android.Wait For XPath Gone (${cancel-printing-button},${max-printing-wait})
+    {
+        Return With Pass (Printing completed)
+    }
+    Fail:
+    {
+        Return With Fail (Printing didn't complete in ${max-printing-wait} seconds)
+    }
+    Error:
+    {
+        Return With Error (Printing didn't complete in ${max-printing-wait} seconds)
+    }
+}
+
+Click_Delete_Button(${delete-button},${medium-wait})
+{
+    Sleep(${medium-wait})
+    If:Android.Wait For XPath (${delete-button},${medium-wait})
+    {
+        If:Android.Touch XPath (${delete-button})
+        {
+            // Successfully  clicked the print button.
+        }
+        Fail:
+        {
+            Fail(Failed to click the 'Delete' button)
+        }
+        Error:
+        {
+            Fail(Failed to click the 'Delete' button)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the 'Delete' button on the screen)
+    }
+    Error:
+    {
+        Error(Couldn't find the 'Delete' button on the screen)
+    }
+}
+
+Click_Reload_Button(${reload-print-jobs-button},${medium-wait})
+{
+    If:Android.Wait For XPath (${reload-print-jobs-button},${medium-wait})
+    {
+        If:Android.Touch XPath (${reload-print-jobs-button})
+        {
+            // Successfully  clicked the print button.
+        }
+        Fail:
+        {
+            Fail(Failed to click the 'Reload Jobs' button)
+        }
+        Error:
+        {
+            Fail(Failed to click the 'Reload Jobs' button)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the 'Reload Jobs' button on the screen)
+    }
+    Error:
+    {
+        Error(Couldn't find the 'Reload Jobs' button on the screen)
+    }
+}
+
+Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+{
+    If:Android.Wait For XPath (${first-print-job-settings},${medium-wait})
+    {
+        If:Android.Touch XPath (${first-print-job-settings})
+        {
+            // Continue
+        }
+        Fail:
+        {
+            Fail(Failed to click the 'Reload Jobs' button)
+        }
+        Error:
+        {
+            Fail(Failed to click the 'Reload Jobs' button)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the 'Reload Jobs' button on the screen)
+    }
+    Error:
+    {
+        Error(Couldn't find the 'Reload Jobs' button on the screen)
+    }
+}
+
+Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+{
+    If:Android.Wait For XPath (${sides-selection-dropdown},${medium-wait})
+    {
+        If:Android.Touch XPath (${sides-selection-dropdown})
+        {
+            // Continue
+        }
+        Fail:
+        {
+            Fail(Failed to open the 'Sides' setting dropdown)
+        }
+        Error:
+        {
+            Fail(Failed to open the 'Sides' setting dropdown)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the 'Sides' setting dropdown on the screen)
+    }
+    Error:
+    {
+        Error(Couldn't find the 'Sides' setting dropdown on the screen)
+    }  
+}
+
+Select_OneSided_Setting_In_Sides_Dropdown(${one-sided-dropdown-item},${medium-wait})
+{
+   If:Android.Wait For XPath (${one-sided-dropdown-item},${medium-wait})
+    {
+        If:Android.Touch XPath (${one-sided-dropdown-item})
+        {
+            // Continue
+        }
+        Fail:
+        {
+            Fail(Failed to select 'One-Sided' dropdown option)
+        }
+        Error:
+        {
+            Fail(Failed to select 'One-Sided' dropdown option)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the 'One-Sided' dropdown option on the screen)
+    }
+    Error:
+    {
+        Error(Couldn't find the 'One-Sided' dropdown option on the screen)
+    } 
+}
+
+Select_FlipOnLongEdge_Setting_In_Sides_Dropdown(${flip-on-long-edge-dropdown-item},${medium-wait})
+{
+   If:Android.Wait For XPath (${flip-on-long-edge-dropdown-item},${medium-wait})
+    {
+        If:Android.Touch XPath (${flip-on-long-edge-dropdown-item})
+        {
+            // Continue
+        }
+        Fail:
+        {
+            Fail(Failed to select 'Flip On Long Edge' dropdown option)
+        }
+        Error:
+        {
+            Fail(Failed to select 'Flip On Long Edge' dropdown option)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the 'Flip On Long Edge' dropdown option on the screen)
+    }
+    Error:
+    {
+        Error(Couldn't find the 'Flip On Long Edge' dropdown option on the screen)
+    } 
+}
+
+Select_FlipOnShortEdge_Setting_In_Sides_Dropdown(${flip-on-short-edge-dropdown-item},${medium-wait})
+{
+   If:Android.Wait For XPath (${flip-on-short-edge-dropdown-item},${medium-wait})
+    {
+        If:Android.Touch XPath (${flip-on-short-edge-dropdown-item})
+        {
+            // Continue
+        }
+        Fail:
+        {
+            Fail(Failed to select 'Flip On Short Edge' dropdown option)
+        }
+        Error:
+        {
+            Fail(Failed to select 'Flip On Short Edge' dropdown option)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the 'Flip On Short Edge' dropdown option on the screen)
+    }
+    Error:
+    {
+        Error(Couldn't find the 'Flip On Short Edge' dropdown option on the screen)
+    } 
+}
+
+Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+{
+    If:Android.Wait For XPath (${increase-copy-count},${medium-wait})
+    {
+        If:Android.Touch XPath (${increase-copy-count})
+        {
+            // Continue
+        }
+        Fail:
+        {
+            Fail(Failed to click '+' button in Setting)
+        }
+        Error:
+        {
+            Fail(Failed to click '+' button in Setting)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the '+' button in Setting)
+    }
+    Error:
+    {
+        Error(Couldn't find the '+' button in Setting)
+    }
+}
+
+Decrease_Copy_Count_In_Settings(${decrease-copy-count},${medium-wait})
+{
+    If:Android.Wait For XPath (${decrease-copy-count},${medium-wait})
+    {
+        If:Android.Touch XPath (${decrease-copy-count})
+        {
+            // Continue
+        }
+        Fail:
+        {
+            Fail(Failed to click '-' button in Setting)
+        }
+        Error:
+        {
+            Fail(Failed to click '-' button in Setting)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the '-' button in Setting)
+    }
+    Error:
+    {
+        Error(Couldn't find the '-' button in Setting)
+    }
+}
+
+Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+{
+   If:Android.Wait For XPath (${job-details-print-button},${medium-wait})
+    {
+        If:Android.Touch XPath (${job-details-print-button})
+        {
+            // Continue
+        }
+        Fail:
+        {
+            Fail(Failed to click '-' button in Setting)
+        }
+        Error:
+        {
+            Fail(Failed to click '-' button in Setting)
+        }
+    }
+    Fail:
+    {
+        Fail(Couldn't find the '-' button in Setting)
+    }
+    Error:
+    {
+        Error(Couldn't find the '-' button in Setting)
+    } 
+}
+
+T1984992405_Enable_Printer_HP_SIO
+{    
+    //Login to printer and release 1 job
+    Functional_workpath.Send_Jobs (${Job_Path},${Queue_Name})
+    Functional_workpath.HPCC_Device_PIN_Login (${Device_PIN})
+    Functional_workpath.HPCC_Print_Release
+    
+    //Portal login to HPCC
+    Functional_workpath.HPCC_Portal_Login(${HPCC_Site},${HPCC_User},${HPCC_Pwd})
+    Sleep (5)
+    //Click on Signin once button
+    //Web.Click Object (//*[@id="app"]/div[5]/div[2]/div[3]/div/div[2]/div[2]/div[3]/div/div[1]/div[1]/img)
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[4]/button,10)
+    //Press enable button
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/button[1])
+    //Select HP provider from dropdown
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/div[1]/div[2]/div)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/div[1]/div[2]/div/ul/li[1])
+    //Uncheck the box then click next button
+    If: Web.IsClickable (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    {
+        //Continue
+    }
+    Fail:
+    {
+        Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/div[2]/label[1])
+        Sleep (2)
+        Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    }
+    //Type the device name to search for it
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/input,15)
+    Sleep (5)
+    Web.Set Text (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/input,${HPCC_Printer})
+    Sleep (5)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/span[2])
+    //Select model
+    Sleep (2)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[2]/div[2]/div/div[1]/div/div[1]/div[2]/div/div/div[1]/span/span[2]/span)
+    //Click next
+    Web.IsClickable (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    Sleep (2)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    //Click enable
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2],10)
+    Sleep (2)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    //Click done button
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button,15)
+    Sleep (2)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button)
+    //Wait for SIO to be enabled
+    Sleep (300)
+    Web.Close
+    //Run after 2FA enabled
+    Functional_workpath.Send_Jobs(${Job_Path},${Queue_Name})
+    Functional_workpath.Validate_Printer_SIO
+    Functional_workpath.HPCC_SIO_Disable
+}
+
+T1984992405_Enable_Printer_Azure_SIO
+{
+    //Login to printer and release 1 job
+    Functional_workpath.Send_Jobs (${Job_Path},${Queue_Name})
+    Functional_workpath.HPCC_Device_PIN_Login (${Device_PIN})
+    Functional_workpath.HPCC_Print_Release
+    
+    //Portal login to HPCC
+    Functional_workpath.HPCC_Portal_Login(${HPCC_Site},${HPCC_User},${HPCC_Pwd})
+    //Click on Signin once button
+    //Web.Click Object (//*[@id="app"]/div[5]/div[2]/div[3]/div/div[2]/div[2]/div[3]/div/div[1]/div[1]/img)
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[4]/button,10)
+    //Press enable button
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/button[1])
+    //Open the dropdown
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/div[1]/div[2]/div)
+    //Select Azure
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/div[1]/div[2]/div/ul/li[3])
+    Web.Set Text (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/div[2]/div/div[2]/input,${Azure_Tenant})
+    //Click next button
+    If: Web.IsClickable (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    {
+        Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    }
+    Fail:
+    {
+        Fail (Next button not clickable try again)
+    }
+    //Type the device name to search for it
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/input,15)
+    Web.Set Text (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/input,${HPCC_Printer})
+    Sleep (3)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/span[2])
+    Sleep (4)
+    //Select model
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[2]/div[2]/div/div[1]/div/div[1]/div[2]/div/div/div[1]/span/span[2]/span)
+    Sleep (5)
+    //Click next
+    Web.IsClickable (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    //Click enable
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2],10)
+    Sleep (2)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    //Click done button
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button,15)
+    Sleep (2)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button)
+    //Wait for SIO to be enabled
+    Sleep (300)
+    Web.Close
+    //Run after 2FA enabled
+    Functional_workpath.Send_Jobs(${Job_Path},${Queue_Name})
+    Functional_workpath.Validate_Printer_SIO
+    Functional_workpath.HPCC_SIO_Disable
+}
+
+T1984992405_Enable_Printer_Google_SIO
+{
+    //Login to printer and release 1 job
+    Functional_workpath.Send_Jobs (${Job_Path},${Queue_Name})
+    Functional_workpath.HPCC_Device_PIN_Login (${Device_PIN})
+    Functional_workpath.HPCC_Print_Release
+    
+    //Portal login to HPCC
+    Functional_workpath.HPCC_Portal_Login(${HPCC_Site},${HPCC_User},${HPCC_Pwd})
+    //Click on Signin once button
+    //Web.Click Object (//*[@id="app"]/div[5]/div[2]/div[3]/div/div[2]/div[2]/div[3]/div/div[1]/div[1]/img)
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[4]/button,10)
+    //Press enable button
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/button[1])
+    //Open the dropdown
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/div[1]/div[2]/div)
+    //Select Google
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/div[1]/div[2]/div/ul/li[2])
+    Web.Set Text (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/div[2]/div/div[2]/input,${Google_domain})
+    //Click next button
+    If: Web.IsClickable (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    {
+        Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    }
+    Fail:
+    {
+        Fail (Next button not clickable try again)
+    }
+    //Type the device name to search for it
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/input,15)
+    Web.Set Text (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/input,${HPCC_Printer})
+    Sleep (2)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/span[2])
+    Sleep (5)
+    //Select model
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[2]/div[2]/div/div[1]/div/div[1]/div[2]/div/div/div[1]/span/span[2]/span)
+    Sleep (3)
+    //Click next
+    Web.IsClickable (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    Sleep (2)
+    //Click enable
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2],10)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    Sleep (3)
+    //Click done button
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button,15)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button)
+    //Wait for SIO to be enabled
+    Sleep (300)
+    Web.Close
+    //Run after 2FA enabled
+    Functional_workpath.Send_Jobs(${Job_Path},${Queue_Name})
+    Functional_workpath.Validate_Printer_SIO
+    Functional_workpath.HPCC_SIO_Disable
+}
+
+HPCC_Device_PIN_Login(${Device_PIN})
+{
+    JediOmni.Reset
+    JediOmni.Press Home Key
+    JediOmni.Wait For Text (Sign In,10)
+    JediOmni.Touch ID (hpid-control-signin)
+    JediOmni.Wait For Object (hpid-dropdown-agent,20)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    //and waits and selects the SafQcolud login
+    JediOmni.Wait For Object (hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1,5)
+    JediOmni.Touch ID (hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+    Vision.Wait For Text (PIN,10)
+    //Vision.Click Text (Username)
+    Vision.Click XY Location (712,447,10,10)
+    JediOmni.Input Text (${Device_PIN})
+    Sleep (2)
+    Vision.Click XY Location (822,710,1,1)
+    JediOmni.Wait For Text (Sign Out,30)
+}
+
+HPCC_Print_Release
+{
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    Vision.Set Text Grouping (block)
+    Vision.Wait For Text (My print jobs,25)
+    Vision.Click Text (My print jobs)
+    Sleep (2)
+    Vision.Wait For Text (Print,20)
+    Vision.Click XY Location (37,164,10,10)
+    Sleep (3)
+    Vision.Click Text with index (Print,2)
+    Vision.Wait For Text Gone (Cancel printing,30)
+    Sleep (5)
+    Vision.Click XY Location (1245,32,5,5)
+}
+
+Send_Jobs(${Job_Path},${Queue_Name})
+{
+   
+    If: Windows.Print File To Print Queue (${Job_Path},${Queue_Name})
+    {
+        Pass (Print job is sent) 
+    } 
+    Fail:
+    {
+        Fail (Print job failed to send)
+    }
+    Error:
+    {
+        Error (Error sending in Print job)
+    }
+}
+
+
+HPCC_Portal_Login(${HPCC_Site},${HPCC_User},${HPCC_Pwd})
+{
+    If: Web.Open with Chrome (${HPCC_Site},180)
+    {
+        //continue
+    }
+    
+    Fail:
+    { 
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+
+    Sleep (5)
+    //Sign-In with Credentials
+    If: Web.Wait For Object (//*[@id="username-label"],120)
+    {
+        Web.Set Text (//*[@id="username"],${HPCC_User})   
+    }
+    Fail:
+    {
+        Fail (Chrome browser unable to SafeQ site).
+        Stop Test Case
+    }
+    //Click on use password
+    Web.Click Object (//*[@id="user-name-form-submit"])
+    
+    //Wait for password screen
+    If: Web.Wait For Object (//*[@id="password"],10)
+    {
+        Web.Set Text (//*[@id="password"],${HPCC_Pwd})
+    }
+
+    Web.Click Object (//*[@id="sign-in"])
+    
+    //waits for complete page to load 
+    If: Web.Wait For Object (//*[@id="email"],30)
+    {
+        Web.Wait For Object (//*[@id="goHomeButton"]/img,10)
+    }
+    Fail:
+    {
+        Fail (Login Failed)
+        Stop Test Case
+    }
+    Web.Refresh
+    Web.Click Object (//*[@id="app"]/div[5]/div[2]/div[2]/div[1]/div[1]/a/div/div/p)
+    Web.Wait For Object (//*[@id="app"]/div[5]/div[2]/div[3]/div/div/div[1]/div/div[2],10)
+    Web.ScrollDownToParicularObject (//*[@id="app"]/div[5]/div[2]/div[4]/div)
+    Sleep (2)
+    Web.Click Text With Index (Automation-BLR,2)
+    Web.Wait For Text (Automation-BLR,20)
+    Sleep (3)
+    //Scroll down to Sign in once
+    Web.ScrollDownToParicularObject (//*[@id="showManageSignInOnceForLinkModalButton"])
+}
+
+HPCC_SIO_Disable
+{
+    Functional_workpath.HPCC_Portal_Login(${HPCC_Site},${HPCC_User},${HPCC_Pwd})
+    //Click on Signin once button
+    //Web.Click Object (//*[@id="app"]/div[5]/div[2]/div[3]/div/div[2]/div[2]/div[3]/div/div[1]/div[1]/img)
+    //Press disable button
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/button[2])
+    //Type the device name to search for it
+    Sleep (5)
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/input,15)
+    Web.Set Text (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/input,${HPCC_Printer})
+    Sleep (2)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[1]/div/div/div[3]/div/span[2])
+    //Select model
+    Sleep (5)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[2]/div[3]/div/section/div/section/div[2]/div[2]/div/div[1]/div/div[1]/div[2]/div/div/div[1]/span/span[2]/span)
+    //Click next
+    Sleep (3)
+    Web.IsClickable (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    //Click Disable
+    Sleep (3)
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2],10)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button[2])
+    //Click done button
+    Sleep (3)
+    Web.Wait For Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button,15)
+    Web.Click Object (/html/body/div/div[3]/div/div/div[2]/div/div/div[2]/div[3]/div/button)
+    Sleep (30)
+    Web.Close
+}
+
+Validate_Printer_SIO
+{
+    //Login to device by user or pin or badge
+    Functional_workpath.HPCC_Device_PIN_Login (${Device_PIN})
+    //Enter 2FA SIO pin
+    JediOmni.Wait For Text Gone (Connecting to the HP cloud,30)
+    Sleep (10)
+    JediOmni.Touch ID (hpid-cloud-status-button)
+    Sleep (3)
+    JediOmni.Touch ID (hpid-hpid-pin-textbox)
+    JediOmni.Input Text (${SIO_Pin})
+    JediOmni.Input Text (hpid-hpid-pin-textbox,${SIO_Pin})
+    Sleep (5)
+    JediOmni.Touch ID (hpid-hpid-signin-button)
+    
+   If: JediOmni.Wait For Text (Sign Out,20) 
+   {
+       Pass (PIN authentication done)
+   }
+   Fail:
+   {
+       //Fail (PIN authentication failed)
+       //Stop Test Case
+   }
+   JediOmni.Wait For Text Gone (Connecting to the HP cloud,30)
+    Sleep (10)
+   //Release print job
+   Functional_workpath.HPCC_Print_Release
+}
+
+T1984992407_Mono_Color_Report_Device_Print${IsColorMFP}
+{
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select printers from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[9]/a/div)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-162"]/div/div,${web_report})
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_162-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_162-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[22]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadData(${DownLoadFolderPath})
+    
+    //Now do job multiple times
+    Functional_workpath.PrintForColorAndMonoDevices(${IsColorMFP})
+    
+    //Check again
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select printers from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[9]/a/div)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-162"]/div/div,${web_reportAfterOperation})
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_162-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_162-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[22]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadDataAfterOperation(${DownLoadFolderPath})
+}
+
+T1984992407_Mono_Color_Report_Device_Scan${IsColorMFP}
+{
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select printers from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[9]/a/div)
+    Sleep (2)
+    //Open scan report
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[2]/span)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-185"]/div/div,${web_report})
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_185-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_185-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[14]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadData(${DownLoadFolderPath})
+    
+    //Now do job multiple times
+    Functional_workpath.ScanForColorAndMonoDevices(${IsColorMFP})
+    
+    //Check again
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select printers from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[9]/a/div)
+    Sleep (2)
+    //Open scan report
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[2]/span)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-185"]/div/div,${web_reportAfterOperation})
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_185-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_185-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[14]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadDataAfterOperation(${DownLoadFolderPath})
+}
+
+T1984992407_Mono_Color_Report_User_Print${IsColorMFP}
+{
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select users from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[8]/a/div)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-162"]/div/div,${web_report})
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_162-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_162-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    Web.Click Object (/html/body/div[14]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadData(${DownLoadFolderPath})
+    
+    //Now do job multiple times
+    Functional_workpath.PrintForColorAndMonoDevices(${IsColorMFP})
+    
+    //Check again
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select users from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[8]/a/div)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-162"]/div/div,${web_reportAfterOperation})
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_162-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_162-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    Web.Click Object (/html/body/div[14]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadDataAfterOperation(${DownLoadFolderPath})
+}
+
+T1984992407_Mono_Color_Report_User_Scan${IsColorMFP}
+{
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select users from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[8]/a/div)
+    Sleep (2)
+    //Open scan report
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[2]/span)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-180"]/div/div,${web_report})
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_180-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_180-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[13]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadData(${DownLoadFolderPath})
+    
+    //Now do job multiple times
+    Functional_workpath.ScanForColorAndMonoDevices(${IsColorMFP})
+    
+    //Check again
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select users from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[8]/a/div)
+    Sleep (2)
+    //Open scan report
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[2]/span)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-180"]/div/div,${web_reportAfterOperation})
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_180-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_180-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[13]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadDataAfterOperation(${DownLoadFolderPath})
+}
+
+T1984992407_Mono_Color_Report_Department_Print${IsColorMFP}
+{
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select users from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[8]/a/div)
+    Sleep (2)
+    //Select departments
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[1]/ul/li[2]/a/span)
+    Sleep (3)
+    //Open Print and copy report, below line is commented but can be uncommented in case, website Department opens to scan instead of print
+    //Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[1]/span)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-141"]/div/div[1],${web_report})
+    If: Equals (${web_report},${null_value})
+    {
+        Set Variable (${web_report},0)
+    }
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_141-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_141-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[13]/div/ul/li[2]/span[2]) 
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadData(${DownLoadFolderPath})
+    
+    //Now do job multiple times
+    Functional_workpath.PrintForColorAndMonoDevices(${IsColorMFP})
+    
+    //Check again
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select users from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[8]/a/div)
+    Sleep (2)
+    //Select departments
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[1]/ul/li[2]/a/span)
+    Sleep (3)
+    //Open Print and copy report if scan is pre selected
+    //Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[1]/span)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-141"]/div/div[1],${web_reportAfterOperation})
+    If: Equals (${web_reportAfterOperation},${null_value})
+    {
+        Set Variable (${web_reportAfterOperation},0)
+    }
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_141-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_141-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[13]/div/ul/li[2]/span[2]) 
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadDataAfterOperation(${DownLoadFolderPath})
+}
+
+T1984992407_Mono_Color_Report_Department_Scan${IsColorMFP}
+{
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select users from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[8]/a/div)
+    Sleep (2)
+    //Select departments
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[1]/ul/li[2]/a/span)
+    Sleep (3)
+    //Open scan report
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[2]/span)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-147"]/div/div[1],${web_report})
+    If: Equals (${web_report},${null_value})
+    {
+        Set Variable (${web_report},0)
+    }
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_147-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_147-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[13]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadData(${DownLoadFolderPath})
+    
+    //Now do job multiple times
+    Functional_workpath.ScanForColorAndMonoDevices(${IsColorMFP})
+    
+    //Check again
+    Common_WorkPath_Library.Portal_Login(${Site},${Username},${Password})
+    Sleep (10)
+    //Open dropdown for reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[3])
+    Sleep (2)
+    //Select users from reports
+    Web.Click Object (/html/body/div[1]/div[3]/div[2]/div/div[8]/a/div)
+    Sleep (2)
+    //Select departments
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[1]/ul/li[2]/a/span)
+    Sleep (3)
+    //Open scan report
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[2]/span)
+    Sleep (3)
+    //Copy report from web
+    Web.Get Text (//*[@id="chart-id-147"]/div/div[1],${web_reportAfterOperation})
+    If: Equals (${web_reportAfterOperation},${null_value})
+    {
+        Set Variable (${web_reportAfterOperation},0)
+    }
+    //Download report
+    Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+    Web.Click Object (//*[@id="slice_147-controls"]/div)
+    Web.Wait For Object (//*[@id="slice_147-menu"]/li[4]/div/span[1],10)
+    Web.Click Object (/html/body/div[4]/div/ul/li[4]/div/span[1])
+    //Click download as .xlsx
+    Web.Click Object (/html/body/div[13]/div/ul/li[2]/span[2])
+    Sleep (10)
+    Functional_workpath.VerifyReportDownloadDataAfterOperation(${DownLoadFolderPath})
+}
+
+VerifyReportDownloadData(${DownLoadFolderPath})
+{
+    Web.Close
+    //Check the downlaoded report
+    Windows.Open Folder By Path (${DownLoadFolderPath})
+    Windows.Send Special Key ([HOME])
+    Windows.Send Special Key ([DOWN])
+    Windows.Send Special Key ([HOME])
+    Sleep (1)
+    Get Random Number (100,10000,${random_last})
+    Concatenate Variable Values And Store Result (\PR_,${random_last},${ExcelName})
+    Windows.Send Special Key ([F2])
+    Sleep (1)
+    Windows.Send Key (${ExcelName})
+    Sleep (1)
+    Windows.Send Special Key ([ENTER])
+    Sleep (1)
+    Concatenate Variable Values And Store Result (${DownLoadFolderPath},${ExcelName},${PathAndFileNamePrefix})
+    Concatenate Variable Values And Store Result (${PathAndFileNamePrefix},.xlsx,${StoreCompleteFilePath})
+    //Read value from excel sheet
+    Sleep (1)
+    SpreadSheet.SetExcelPath(${StoreCompleteFilePath})
+    SpreadSheet.Set Worksheet(Sheet1)
+    If: SpreadSheet.Read Cell Value By Index(2,2,${result})
+    {
+        //Continue
+        Pass (Value is ${result})
+    }
+    Fail:
+    {
+        SpreadSheet.Read Cell Value By Index(1,2,${result})
+    }
+    
+    Windows.Send Special Key (^w)
+    If: Equals (${web_report},${result})
+    {
+        Pass (The results are same)
+    }
+    Fail:
+    {
+        Pass (The results are different)
+    }
+}
+
+VerifyReportDownloadDataAfterOperation(${DownLoadFolderPath})
+{
+    Web.Close
+    //Check the downlaoded report
+    Windows.Open Folder By Path (${DownLoadFolderPath})
+    Windows.Send Special Key ([HOME])
+    Windows.Send Special Key ([DOWN])
+    Windows.Send Special Key ([HOME])
+    Sleep (1)
+    Get Random Number (100,10000,${random_lastAfterOperation})
+    Concatenate Variable Values And Store Result (\PR_,${random_lastAfterOperation},${ExcelNameAfterOperation})
+    Windows.Send Special Key ([F2])
+    Sleep (1)
+    Windows.Send Key (${ExcelNameAfterOperation})
+    Sleep (1)
+    Windows.Send Special Key ([ENTER])
+    Sleep (1)
+    Concatenate Variable Values And Store Result (${DownLoadFolderPath},${ExcelNameAfterOperation},${PathAndFileNamePrefixAfterOperation})
+    Concatenate Variable Values And Store Result (${PathAndFileNamePrefixAfterOperation},.xlsx,${StoreCompleteFilePathAfterOperation})
+    //Read value from excel sheet
+    Sleep (1)
+    SpreadSheet.SetExcelPath(${StoreCompleteFilePathAfterOperation})
+    SpreadSheet.Set Worksheet(Sheet1) 
+    If: SpreadSheet.Read Cell Value By Index(2,2,${resultAfterOperation})
+    {
+        //Continue
+        Pass (Value is ${resultAfterOperation})
+    }
+    Fail:
+    {
+        SpreadSheet.Read Cell Value By Index(1,2,${resultAfterOperation})
+    }
+    
+    Windows.Send Special Key (^w)
+    If: Equals (${web_reportAfterOperation},${resultAfterOperation})
+    {
+        Pass (The results are same)
+    }
+    Fail:
+    {
+        Pass (The results are different)
+    }
+}
+
+PrintForColorAndMonoDevices(${IsColorMFP})
+{
+    Common_WorkPath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Sleep (5)
+    Common_WorkPath_Library.Device_PIN_Login(${Device_PIN})
+    //clicks on the Secure print and scan button button
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/print_text,15)
+    Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print_text)
+    //click first job
+    Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/print_list_item_checkbox,15)
+    Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print_list_item_checkbox)
+    //click settings for first job
+    Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print_detail_button)
+    //In Mono, no options for color change. So, repeat 10 times for Mono
+    If: Equals (${IsColorMFP},N)
+    {
+        Repeat:10
+        {
+            Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/number_picker_plus)
+        }
+        Android.Touch Text (Print)
+        Android.Wait For Object Gone (com.ysoft.safeq.terminals.hp.hcp:id/print_cancel,45)
+        Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity,10)
+        Sleep (5)
+        //After printing, Signout
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/home_icon)
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity)
+    }
+    
+    //Repeat for 10 times for Color printer only
+    If: Equals (${IsColorMFP},Y)
+    {
+        //For color printer, select mono
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/select_two_button_two)
+        Repeat:10
+        {
+            Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/number_picker_plus)
+            
+        }
+        Android.Touch Text (Print)
+        Android.Wait For Object Gone (com.ysoft.safeq.terminals.hp.hcp:id/print_cancel,45)
+        Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity,10)
+        Sleep (5)
+        //click new first job
+        Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/print_list_item_checkbox,15)
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print_list_item_checkbox)
+        //click settings for first job
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print_detail_button)
+        //For color printer, select color
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/select_two_button_one)
+        Repeat:10
+        {
+            Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/number_picker_plus)
+        }
+        Android.Touch Text (Print)
+        Android.Wait For Object Gone (com.ysoft.safeq.terminals.hp.hcp:id/print_cancel,45)
+        Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity,10)
+        Sleep (5)
+        //After printing, Signout
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity)
+    }
+}
+
+ScanForColorAndMonoDevices(${IsColorMFP})
+{
+    Common_WorkPath_Library.Device_PIN_Login(${Device_PIN})
+    //clicks on the Secure print and scan button button
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    //Press Scan workflows button
+    Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/scan_text,15)
+    Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/scan_text)
+    
+    //Repeat for 10 times for Mono and color
+    If: Equals (${IsColorMFP},N)
+    {
+        //click the desired workflow seting
+        Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/scan_workflow_is_editable,15)
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/scan_workflow_is_editable)
+        Repeat:10
+        {
+            //press dropdown button
+            Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/text_input_end_icon)
+            Android.Wait For XPath (//node[@text='Black and white'],5)
+            //Select mono
+            Android.Touch XPath (//node[@text='Black and white'])
+            //Press scan
+            Android.Touch Text (Scan)
+            If: JediOmni.Wait For Object (hpid-button-continue,10)
+            {
+                JediOmni.Touch ID (hpid-button-continue)
+            }
+            Android.Wait For Object Gone (com.ysoft.safeq.terminals.hp.hcp:id/scan_cancel,45)
+            Sleep (3)
+        }
+        //After printing, Signout
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity)
+    }
+    //Repeat for 10 times for Color only
+    If: Equals (${IsColorMFP},Y)
+    {
+        //click the desired workflow seting
+        Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/scan_workflow_is_editable,15)
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/scan_workflow_is_editable)
+        Repeat:10
+        {
+            //press dropdown button
+            Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/text_input_end_icon)
+            Android.Wait For XPath (//node[@text='Black and white'],5)
+            //Select mono
+            Android.Touch XPath (//node[@text='Black and white'])
+            //Press scan
+            Android.Touch Text (Scan)
+            If: JediOmni.Wait For Object (hpid-button-continue,10)
+            {
+                JediOmni.Touch ID (hpid-button-continue)
+            }
+            Android.Wait For Object Gone (com.ysoft.safeq.terminals.hp.hcp:id/scan_cancel,45)
+            Sleep (3)
+        }
+        Repeat:10
+        {
+            //press dropdown button
+            Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/text_input_end_icon)
+            //Select color
+            Android.Wait For XPath (//node[@text='Full color'],5)
+            Android.Touch XPath (//node[@text='Full color'])
+            //Press scan
+            Android.Touch Text (Scan)
+            If: JediOmni.Wait For Object (hpid-button-continue,10)
+            {
+                JediOmni.Touch ID (hpid-button-continue)
+            }
+            Android.Wait For Object Gone (com.ysoft.safeq.terminals.hp.hcp:id/scan_cancel,45)
+            Sleep (3)
+            //press dropdown button
+            Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/text_input_end_icon)
+        }
+        //After printing, Signout
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/logout_secondactivity)
+    }
+}
+
+T1984992395_Validate_SafeQ_Cloud_Sharepoint_Behavior_Workpath_only
+{ 
+    // Click Secure Print & Scan
+    JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,20)
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    // Click My Scan Workflows
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/scan'],40)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/scan'])
+    // Click Scan To SharePoint
+    Android.Wait For Text (Scan To SharePoint,20)
+    Android.Touch Text (Scan To SharePoint)
+    // Original Size screen - use the default selected page size and click Continue
+    JediOmni.Wait For Object (hpid-button-continue,20)
+    JediOmni.Touch ID (hpid-button-continue)
+    // Verify workflow completion
+    If: Android.Wait For Text (Workflow processed successfully,20)
+    {
+        Pass (Scan to SharePoint successful. Please check the configured SharePoint destination and verify that the scanned document was uploaded successfully)
+    }
+    Fail:
+    {
+        Fail (Scan to SharePoint Unsuccessful)
+    }
+}
+
+T1984992394_Validate_SafeQ_Cloud_OneDrive_Behavior_Workpath_only
+{
+    // Click Secure Print & Scan
+    JediOmni.Wait For Object (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button,20)
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    // Click My Scan Workflows
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/scan'],40)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/scan'])
+    // Click Scan To OneDrive
+    Android.Wait For Text (Scan To OneDrive,10)
+    Android.Touch Text (Scan To OneDrive)
+    //select folder
+    Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/scan_workflow_item_addon_button,10)
+    Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/scan_workflow_item_addon_button)
+    //click on Apps Folder
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/dialog_scan_folder_recycleview']/node[1],20)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/dialog_scan_folder_recycleview']/node[1])
+    //click Confirm Button
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2],10)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+    //click on Scan Button
+    Android.Wait For XPath (//node[@class='android.widget.Button'],10)
+    Android.Touch XPath (//node[@class='android.widget.Button'])
+    // Original Size screen - use the default selected page size and click Continue
+    JediOmni.Wait For Object (hpid-button-continue,20)
+    JediOmni.Touch ID (hpid-button-continue)
+    // Verify workflow completion
+    If: Android.Wait For Text (Workflow processed successfully,20)
+    {
+        Pass (Scan to OneDrive successful. Please check the configured OneDrive destination and verify that the scanned document was uploaded successfully)
+    }
+    Fail:    
+    {
+        Fail (Scan to Ondrive Unsuccessful)
+    }
+}
+
+IPP_Port(${ControlPanelPath})    
+{
+       // IPP Port Driver installation process
+        Windows.Open With Path (${ControlPanelPath})
+        Windows.Select Application (Control Panel)
+        Windows.Wait For Name (Devices and Printers,5)
+        Windows.Click Name (Devices and Printers)
+        Windows.Wait For Name (Add a printer,5)
+        //Devices and Printers
+        Windows.Select Application (Devices and Printers)
+        Windows.Click Name (Add a printer)
+        Windows.Wait For Name (Add a printer,5)
+        Windows.Select Application (Add a device)
+        Windows.Click Name (The printer that I want isn't listed)
+        Windows.Click Name (Select a shared printer by name)
+        Windows.Wait For Name (Select a shared printer by name,5)
+        //Provide here serverdomain and port
+        Windows.Set Text With Send Key (4655,Serverdomain\port)
+        Windows.Click Name (Next)
+}
+
+Printing_Properties(${IPP_Printername})
+{
+        Windows.Select Application (Devices and Printers)
+        Windows.Wait For Name (Add a printer,5)
+        Windows.Right Click Name With Mouse (${IPP_Printername})
+        Windows.Wait For Name (${IPP_Printername},5)
+        Windows.Select Application (Context)
+        Sleep (5)
+        Windows.Click ID (31008)
+        //need to select here the staple feature and printing properties
+}
+
+Printer_and_Printerqueue_Settings
+{
+    Web.Click Object (//*[@id="id11c"]/div[2])
+    Sleep (2)
+    Web.Click Object (//*[@id="id189"])
+    Web.Wait For Object (//*[@id="id1a7"]/div[2],5)
+    Web.Click Object (//*[@id="id1a7"]/div[2])
+    Web.Click Object (//*[@id="id1aa"]/div)
+    Web.Wait For Object (//*[@id="eop-id-32132"],5)
+    Web.Click Object (//*[@id="eop-id-32132"])
+    // Go to section and add colour to it and continue
+}
+

@@ -1,0 +1,344 @@
+﻿/// <File>Copy.txt</File>
+/// <Modified>2021-07-09</Modified>
+/// <Description>Perform an embedded copy job.
+///   Optionally authenticate on the device. Handle SIO as necessary.</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+Using Auth.gfvar
+Using Copy.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using DeviceAuth.gflib
+Using ..\..\DeviceAuth\DeviceAuth.gflib
+//Using Scan_Library.gflib
+Using ..\..\EmbeddedApps\Scan_Library.gflib
+
+Using Copy_Library.gflib
+
+Using JediOmni
+
+/// <Name>OpenApp</Name>
+/// <Description>Authenticate on device, if specified, and open the Copy app</Description>
+/// <Notes>Auth.gfvar contains the needed authentication and User variables. 
+///   WA_Box.gfvar contains needed app variables.
+///   If this script is run from STF/STB the variables with names beginning
+///   with STF_ can be commented to use the values from the STF/STB virtual worker user.
+///   This routing handles SIO 2FA as needed</Notes>
+OpenApp
+{
+    // get the user code/PIN to use
+    DeviceAuth.GenerateUserCode (${STF_UserName})
+    
+    // authenticate if specified
+    If: Equals IgnoreCase (${AuthenticationType},Windows)
+    {
+        // sign in with Windows
+        If: DeviceAuth.SignIn_Windows (${STF_UserName},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Windows authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Windows authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},HPAC)
+    {
+        // sign in with HPAC
+        If: DeviceAuth.Sign_In_HPAC (${UserCode},${STF_UserName},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},SafeCom)
+    {
+        // sign in with SafeCom
+        If: DeviceAuth.SignIn_SafeCom (${STF_UserName},${UserCode},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},Papercut)
+    {
+        // sign in with Papercut
+        If: DeviceAuth.Sign_In_PaperCut (${STF_UserName},${UserCode},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+    }
+    // if got to here either authentication was successful
+    // or not authentication type specified
+    
+    // open the app
+    If: Copy_Library.OpenApp(${STF_UserName},${STF_UserPassword},${UserCode},${HPID_UserID},${HPID_Password},${HPID_PIN})
+    {
+        Sleep (${Very_Short_Wait_Time})
+        
+    }
+    Fail:
+    {
+        JediOmni.Press Home Key
+        Fail (Launch Copy app failed!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        JediOmni.Press Home Key
+        Error (Error occurred while launching Copy app!)
+        Stop Test Suite
+    }
+    
+    Pass (Open App complete!)
+}
+
+/// <Name>CopyJob</Name>
+/// <Description>Perform a Copy job. Optionally set scan options. Optionally repeat the Copy job.</Description>
+/// <Notes>Copy.gfvar contains needed app scan options variables.</Notes>
+CopyJob
+{
+    // repeat scan job the number of times specified
+    Repeat: ${Copy_Repetitions}
+    {
+        // open the options screen and set the options, if no specified to skip
+        If: Equals IgnoreCase (${Copy_SkipOptions_YN},Y)
+        {
+            // specified to skip setting options
+        }
+        Fail:
+        {
+            If: Scan_Library.OpenScanOptions
+            {
+                // set the Original Sides option
+                If: Scan_Library.SetScanOption_OriginalSides (${Copy_OriginalSides},${Copy_OriginalSidesFlipUp_YN})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option Original Sides!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option Original Sides!)
+                    Stop Test Case
+                }
+                
+                // set the Output Sides option
+                If: Scan_Library.SetScanOption_OutputSides (${Copy_OutputSides},${Copy_OutputSidesFlipUp_YN})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option Output Sides!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option Output Sides!)
+                    Stop Test Case
+                }
+                
+                
+                
+                
+                // set the Original Size option
+                If: Scan_Library.SetScanOption_OriginalSize (${Copy_OriginalSize})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option Original Size!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option Original Size!)
+                    Stop Test Case
+                }
+              
+                // set the Color/Black option
+                If: Scan_Library.SetScanOption_ColorBlack (${Copy_Color})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option Color/Black!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option Color/Black!)
+                    Stop Test Case
+                }
+                
+                // set the Orienation option
+                If: Scan_Library.SetScanOption_Orientation (${Copy_ContentOrientation})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option Orienation!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option Orienation!)
+                    Stop Test Case
+                }
+                
+                Scan_Library.CloseScanOptions
+            }
+            Fail:
+            {
+                Fail (Fail occurred while opening the scan options!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while opening the scan options!)
+                Stop Test Case
+            }
+        }
+        
+        // set number of copies
+        If: Copy_Library.SetNumberOfCopies (${Copy_NumberCopies})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail occurred while setting number of copies!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error occurred while setting number of copies!)
+            Stop Test Case
+        }
+        
+        // scan the pages with preview if specified
+        If: Equals IgnoreCase (${Copy_ScanPreview_YN},Y)
+        {
+            If: Scan_Library.ScanPages (${Copy_Pages})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail occurred while scanning pages!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while scanning pages!)
+                Stop Test Case
+            }
+        }
+        
+        // complete the copy job
+        If: Copy_Library.CompleteCopyJob (${Copy_JobCompleteTimeout})
+        {
+            Pass (CopyJob completed!)
+        }
+        Fail:
+        {
+            Fail (Fail while completing Copy job!)
+        }
+        Error:
+        {
+            Error (Error while completing Copy job!)
+        }
+    }
+}
+
+
+/// <Name>ExitAppSignOut</Name>
+/// <Description>Exit the Copy app and sign out</Description>
+/// <Notes>WA_Box.gfvar contains needed app exit variables.</Notes>
+ExitAppSignOut
+{
+    // exit the app
+    If: Copy_Library.AppExit
+    {
+    }
+    Fail:
+    {
+        Fail (Copy app exit failed!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Copy app exit errored!)
+        Stop Test Case
+    }
+    
+    // sign out on the device if specified
+    If: Equals IgnoreCase(${DeviceSignOut},Y)
+    {
+        If: DeviceAuth.SignOut
+        {
+        }
+        Fail:
+        {
+            Fail (Fail while signing out!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error while signing out!)
+            Stop Test Case
+        }
+    }
+    
+    Pass (Exit App complete!)
+}
+
+Test
+{
+//    Scan_Library.SelectScanOption (hpid-option-sides,Sides)
+    Repeat:10
+    {
+        Scan_Library.SetScanOption_OriginalSides (1-sided,Y)
+    }
+}

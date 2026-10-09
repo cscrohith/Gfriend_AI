@@ -1,0 +1,2899 @@
+﻿using Dune
+using Common_Variables.gfvar
+
+//function for the options to check 
+ValidateandCheck(${ListID},${ScrollBar},${ElementID})
+{     
+    If: Dune.Wait For visibility (${ListID},${ElementID},1)
+    {          
+        Dune.Click Id (${ListID} ${ElementID})
+    }
+    Fail:
+    {              
+        Dune.SwipeVerticallyAndWaitForTransition (${ListID},${ScrollBar},${ElementID},0.05,700)
+        Dune.Wait For (${ListID} ${ElementID},1)        
+        Common_Library.ClickIdWithDefaultDelay(${ListID} ${ElementID})
+    }   
+}
+
+SwipeAndClick(${ListID},${ScrollBar},${ElementID},${Delta},${SpeedValue})
+{            
+        Dune.SwipeVerticallyAndWaitForTransition (${ListID},${ScrollBar},${ElementID},${Delta},${SpeedValue})
+        Common_Library.ClickIdWithDefaultDelay(${ListID} ${ElementID})
+}
+    
+ValidateandCheckWithDeltaValue(${ListID},${ScrollBar},${ElementID},${Delta})
+{    
+    If: Dune.Wait For visibility (${ListID},${ElementID},1)
+    {         
+        Common_Library.ClickIdWithDefaultDelay(${ListID} ${ElementID})
+    }
+    Fail:
+    {  
+        Dune.SwipeVerticallyAndWaitForTransition (${ListID},${ScrollBar},${ElementID},${Delta},700)
+        Common_Library.SleepTime
+        Dune.Wait For (${ListID} ${ElementID},1)
+        Common_Library.ClickIdWithDefaultDelay(${ListID} ${ElementID})
+    }  
+}
+
+SleepTime
+{
+    Sleep (${SleepTime}) 
+}
+
+SleepTimeWithCustomDelay(${CustomSleepTime})
+{
+    Sleep (${CustomSleepTime}) 
+}
+
+ClickIdWithDefaultDelay(${ClickElementId})
+{
+    Dune.Click Id And Wait For Transition (${ClickElementId},${ScreenRenderDelay})
+}
+//function for the copy pulgin to check the original size          
+ScrollToOriginalSize(${ListID},${ScrollBar},${OptionID})
+{    
+    Dune.SwipeVerticallyAndWaitForTransition (${ListID},${ScrollBar},${OptionID},0.05)
+    Common_Library.SleepTime
+    Dune.Click Id (${OptionID})
+    Common_Library.SleepTime    
+}
+                        
+//checkes the device in the home screen 
+CheckHomeScreen
+{    
+    //waiting for the sign out button if sign out exits clicks on signout
+    If: Dune.Wait For (#SignInButton #TextView, 3)
+    {
+        //clicking on sign out button 
+        Dune.Click Id And Wait For Transition(#SignInButton #TextView, ${ScreenRenderDelay})
+        Dune.Click (#userInfoSignInButton)
+    } 
+    Fail:
+    { 
+        Dune.Go To Home Screen
+    }
+    Common_Library.SleepTime 
+}
+
+//Eager authentication 
+AuthenticationEager(${UserName},${Password}) 
+{   
+    //below id is sigin in or signout i'ds 
+    Dune.Wait For (#SignInButton,3)        
+    Dune.Click Id And Wait For Transition (#SignInButton,${ScreenRenderDelay})
+    Dune.Wait For (#windowsSignInComboBox,5)
+    
+    Dune.Set Text (#windowsUsernameInputField,${UserName})  
+    Common_Library.SleepTime
+    Dune.Set Text (#windowsPasswordInputField,${Password})
+    Common_Library.SleepTime 
+    Dune.Click (#windowsSignInButton)    
+ 
+    //wait for toastmessage to disappear
+    If: Dune.Wait For (#SignInButton #TextView,8)
+    {
+        While: Dune.Wait For (#infoTextToastMessage,5) {
+            Common_Library.SleepTime
+        } 
+    }
+    Fail:
+    {
+        Return With Fail (unable to login)
+        Stop Test Case
+    }
+}
+    
+Scan_Option_Validation_For_Citrine_and_Jasper 
+{   
+    //Options checks will starts from here
+    If: Dune.Wait For (#optionsButton,3)
+    {
+        Dune.Click Id (#optionsButton)
+    }
+    Fail:
+    {
+        Return With Fail (unable to click on option button )
+        Dune.Go To Home Screen
+    }
+        
+    //content type option 
+    Sleep (2)
+    If: Dune.Wait For (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox,3)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        Sleep (1) 
+        //clicks on Mixed option 
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmixed)
+        Dune.Click Id (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on Photo option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsphoto)
+        Dune.Click Id (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on text option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstext)
+        Dune.Click Id (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on image option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsimage)
+    }
+    Fail:
+    {
+       Fail (Unable to select the Content type)
+    }
+       
+    //blank Page suppression only for Citrine and Jasper
+    Sleep (2)
+    If: Dune.Wait For (#scanMenuListlist1 #scan_blankPageSuppressionComboBox,3)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+        Sleep (1)
+        //clicks on off option
+        Common_Library.ValidateandCheck (#scan_blankPageSuppressionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsfalse_)
+        Dune.Click Id (#scanMenuListlist1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+        Sleep (1)
+        //clicks on On option
+        Common_Library.ValidateandCheck (#scan_blankPageSuppressionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstrue_)  
+    }
+    Fail:
+    {
+        Fail (Unable to select the Blank page suppression type)
+    }
+          
+    //color mode for Citrine and Jasper 
+    Sleep (2)
+    If: Dune.Wait For (#scanMenuListlist1 #scan_colorModeWithAutoDetectComboBox,3)
+    {
+        //for Citrine and Jasper
+                     
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        //clicks on black and white option
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstreatNonColorAsBlackAndWhite1)
+                      
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        //clicks on Grayscale option 
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstreatNonColorAsGrayscale8)
+                    
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        //clicks on color option
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscolor)
+                      
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        //clicks on black and white option
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsblackAndWhite)        
+                
+        Sleep (1)      
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        //clicks on grayscale only  option
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsgrayscale)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Color Mode)
+    }
+              
+              
+    //Scan Mode only Citrine and Jasper
+    Sleep (2)
+    If: Dune.Wait For (#scanMenuListlist1 #scan_scanModeSettingsTextImage,3)
+    {
+        sleep(1)
+        Dune.Click Id (#scanMenuListlist1 #scan_scanModeSettingsTextImage)
+        //clicks on book mode option
+        Common_Library.ValidateandCheck(#copy_scanModeList,#comboBoxScrollBar,#scan_scanModebookMode)
+       Dune.Click Id (#footerDoneButton)
+
+        Sleep (1)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_scanModeSettingsTextImage,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_scanModeSettingsTextImage )
+        //clicks on standard option
+        
+        Common_Library.ValidateandCheck(#copy_scanModeList,#comboBoxScrollBar,#scan_scanModestandard)
+        Dune.Click Id (#footerDoneButton)  
+    }
+    Fail:
+    {
+        Fail (Unable to select the Scan Mode)
+    }
+              
+    //Resolution 
+    Sleep (2)  
+    If: Dune.Wait For (#scanMenuListlist1 #scan_resolutionSettingsComboBox,3)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 75dpi option
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse75Dpi)
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 150dpi option
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse150Dpi)
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 200dpi option
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse200Dpi)
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 300dpi option
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse300Dpi)
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 400dpi option
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse400Dpi)
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 600dpi option
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse600Dpi)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Resolution)
+    }
+          
+          
+    //Original side_Citrine and Jasper
+    Sleep (2)
+    If: Dune.Wait For (#scanMenuListlist1 #ScanSettingsOriginalSides_2infoBlockRow,5) 
+    {
+        Dune.Click Id (#scanMenuListlist1 #ScanSettingsOriginalSides #ScanSettingsOriginalSides_2infoBlockRow)
+        //clicks on 1 sided option
+        Common_Library.ValidateandCheck(#ScanSettingsOriginalSidesView,#comboBoxScrollBar,#RadioButtonOptionssimplex)
+        Dune.Click Id (#ScanSettingsOriginalSidesView #BackButton)
+        Sleep (1)
+        Dune.Click Id (#scanMenuListlist1 #ScanSettingsOriginalSides #ScanSettingsOriginalSides_2infoBlockRow)
+        //clicks on 2 sided option
+        Common_Library.ValidateandCheck(#ScanSettingsOriginalSidesView,#comboBoxScrollBar,#RadioButtonOptionsduplex)
+        Dune.Click Id (#ScanSettingsOriginalSidesView #BackButton)
+    }
+    Fail:
+    {
+        Fail (Unable to select the  Original side)
+    }
+         
+    //Original size
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on any size option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsany,${DeltaValue})
+          
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on Mixed Letter/Legal option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_mixed_dash_letter_dash_legal,${DeltaValue})
+          
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on Mixed Letter/Ledger option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_mixed_dash_letter_dash_ledger,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on Mixed A4/A3
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_mixed_dash_a4_dash_a3,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on option Letter 8 dot 5x11in
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_letter_8_dot_5x11in,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on option Letter ▭ (8.5x11 in.)
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_na_letter_8_dot_5x11in_dot_rotated,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on legal 8.5x14in option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_legal_8_dot_5x14in,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on executive 7.25x10.5in option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_executive_7_dot_25x10_dot_5in,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on invoice 5.5x8.5in option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_invoice_5_dot_5x8_dot_5in,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on ledger 11x17in option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_ledger_11x17in,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on 5x7 5x7in option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_5x7_5x7in,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on index-5x8 5x8in option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_index_dash_5x8_5x8in,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on foolscap 8.5x13in option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_foolscap_8_dot_5x13in,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on oficio 8.5x13.4in option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_oficio_8_dot_5x13_dot_4in,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on a3 297x420mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsiso_a3_297x420mm,${DeltaValue})
+           
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on a4 210x297mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsiso_a4_210x297mm,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on a5 148x210mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_iso_a4_210x297mm_dot_rotated,${DeltaValue})
+             
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on a4 210x297mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsiso_a5_148x210mm,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on a5 148x210mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_iso_a5_148x210mm_dot_rotated,${DeltaValue})
+           
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on a6_105x148mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsiso_a6_105x148mm,${DeltaValue})
+            
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on ra4 215x305mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsiso_ra4_215x305mm,${DeltaValue})
+           
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on b4 257x364mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsjis_b4_257x364mm,${DeltaValue})
+             
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on b5 182x257mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsjis_b5_182x257mm,${DeltaValue})
+             
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on b5 182x257mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_jis_b5_182x257mm_dot_rotated,${DeltaValue})
+           
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on b6 128x182mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsjis_b6_128x182mm,${DeltaValue})
+             
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on 16k 195x270mm option
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsom_16k_195x270mm,${DeltaValue})
+             
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on 16k7.75x10.75in
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsroc_16k_7_dot_75x10_dot_75in,${DeltaValue})
+             
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on jpn oufuku 148x200mm
+        Common_Library.ValidateandCheckWithDeltaValue(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsjpn_oufuku_148x200mm,${DeltaValue})
+    }
+    Fail:
+    {
+        Fail (Unable to select the  Original size)
+    }
+    
+         
+   //LighterDarker
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_lighterDarkerSettingsSlider,0.05)
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_lighterDarkerMenuSlider,5)
+    }
+    Fail:
+    {
+        Fail (Unable to slide the LighterDarker)
+    }
+
+    //Sharpness
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_sharpnessSettingsSlider,0.05)
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_sharpnessMenuSlider,5)
+    }
+    Fail:
+    {
+        Fail (Unable to set the Sharpness)
+    }
+        
+    //Contrast
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_contrastSettingsSlider,0.05)
+    {
+        //sets the slider to 8 value
+        Dune.SetSliderValue (#scan_contrastMenuSlider,8)
+    }
+    Fail:
+    {
+        Fail (Unable to set the Contrast)
+    } 
+    
+    //Background Cleanup
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_backGroundCleanUpSettingsSlider,0.05)
+    {
+        //sets the slider to 8 value
+        Dune.SetSliderValue (#scan_backGroundCleanUpMenuSlider,8)
+    }
+    Fail:
+    {
+        Fail (Unable to set the Background Cleanup)
+    }
+    
+    //Automatic Tone
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_autoToneSettingsView,0.05)
+    {
+        //Check the Automatice tone Checkbox
+        Dune.Click (#scan_autoToneSettingsView #scan_autoToneMenuCheckbox)
+        Sleep (2)
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_autoToneSettingsView #scan_autoToneLevelMenuSlider,5)
+    }
+    Fail:
+    {
+        Fail (Unable to set the Automatic Tone)
+    }
+         
+    //FileTypes
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_fileFormatSettingsComboBox,0.05)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+        //clicks on JPEG option
+        Common_Library.ValidateandCheck(#scan_fileFormatComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsjpeg)
+        Sleep (1)
+        Dune.Click Id (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+        //clicks on tiff option
+        Common_Library.ValidateandCheck(#scan_fileFormatComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmtiff)
+        Sleep (1)
+        Dune.Click Id (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+        //clicks on PDFA option
+        Common_Library.ValidateandCheck(#scan_fileFormatComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionspdfa)
+        Sleep (1)
+        Dune.Click Id (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+        //clicks on PDF option
+        Common_Library.ValidateandCheck(#scan_fileFormatComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionspdf)    
+                
+    }
+    Fail:
+    {
+        Fail (Unable to select the automatically straighten)
+    }
+         
+    //Save as multiple files
+    Sleep (2) 
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#ScanSettingSaveMultipleFiles,0.05)
+    {
+        Dune.Click Id (#scanMenuListlist1 #ScanSettingSaveMultipleFiles)
+        Sleep (1)
+        Dune.Click Id (#ScanSaveMultipleFilesView #BackButton)
+    }
+    Fail:
+    {
+        Fail (Unable to select the save as Multiple files)
+    }
+
+    //Erase Edges
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_eraseEdgesSettingsTextImage,0.05)
+    {
+        Dune.Click Id (#scan_eraseEdgesSettingsTextImage_2infoBlockRow)
+        Sleep (1)
+        
+        //clear setting 
+        Dune.Click Id (#scanMenuList #ScanSettingsEraseEdgesView #clearButton)
+        //Unit of Measurement as Inches
+        Dune.Click Id (#SettingsSpiceComboBox #contentItem)
+        Dune.Wait For (#comboListInches,1)
+        Dune.Click (#comboListInches)
+        Sleep (1)
+        
+        //Millimeters
+        Dune.Click Id (#SettingsSpiceComboBox #contentItem)
+        Dune.Wait For (#comboListMillimeter,1)
+        Dune.Click (#comboListMillimeter)
+        
+        //click  on Apply Same width
+        Dune.Click Id (#sameWidthAllEdgesCheckbox)
+        Sleep (2)
+        Dune.Click Id (#sameWidthAllEdgesCheckbox)
+       
+        //Click on Mirror Front Side
+        Dune.SwipeVertically (#ScanSettingsEraseEdgesView,#ScanSettingsEraseEdgesViewScrollBar,#mirrorFrontSideView,0.05)
+        Dune.Click Id (#mirrorFrontSideCheckbox)
+        Sleep (1)
+        Dune.Click Id (#mirrorFrontSideCheckbox)      
+       
+        //Front Side
+        Dune.SwipeVertically (#scanMenuListverticalLayout,#ScanSettingsEraseEdgesViewScrollBar,#topEdgeSpinBoxControlModel,0.05)
+        Dune.Click Id (#scanMenuListverticalLayout #topEdgeSpinBoxControlModel #SpinBoxTextInput)
+        Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+        Dune.Click Id (#key1PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+        
+        Dune.Click Id (#scanMenuListverticalLayout #bottomEdgeSpinBoxControlModel #SpinBoxTextInput
+        Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+        Dune.Click Id (#key2PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+        
+        Dune.Click Id (#scanMenuListverticalLayout #leftEdgeSpinBoxControlModel #SpinBoxTextInput
+        Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+        Dune.Click Id (#key3PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+        
+        Dune.SwipeVertically (#ScanSettingsEraseEdgesView,#ScanSettingsEraseEdgesViewScrollBar,#rightEdgeSpinBoxControlModel,0.05)
+        Dune.Click Id (#scanMenuListverticalLayout #rightEdgeSpinBoxControlModel #SpinBoxTextInput
+        Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+        Dune.Click Id (#key4PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+        
+        //Back Side
+        Dune.SwipeVertically (#ScanSettingsEraseEdgesView,#ScanSettingsEraseEdgesViewScrollBar,#eraseBackTopEdgeSpinBox,0.05)
+        Dune.Click Id (#scanMenuListverticalLayout #eraseBackTopEdgeSpinBoxControlModel #SpinBoxTextInput)
+        Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+        Dune.Click Id (#key1PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+        
+        Dune.SwipeVertically (#ScanSettingsEraseEdgesView,#ScanSettingsEraseEdgesViewScrollBar,#eraseBackBottomEdgeSpinBox,0.05)
+        Dune.Click Id (#scanMenuListverticalLayout #eraseBackBottomEdgeSpinBoxControlModel #SpinBoxTextInput)
+        Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+        Dune.Click Id (#key2PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+        
+        Dune.SwipeVertically (#ScanSettingsEraseEdgesView,#ScanSettingsEraseEdgesViewScrollBar,#eraseBackRightEdgeSpinBox,0.05)
+        Dune.Click Id (#scanMenuListverticalLayout #eraseBackLeftEdgeSpinBoxControlModel #SpinBoxTextInput)
+        Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+        Dune.Click Id (#key3PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+        
+        Dune.SwipeVertically (#ScanSettingsEraseEdgesView,#ScanSettingsEraseEdgesViewScrollBar,#eraseBackRightEdgeSpinBox,0.05)
+        Dune.Click Id (#scanMenuListverticalLayout #eraseBackRightEdgeSpinBoxControlModel #SpinBoxTextInput)
+        Dune.Wait For (#backspaceKeyPositiveIntegerKeypad,2)
+        Dune.Click Id (#key3PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+        
+        //Clicks on Done button
+        Dune.Click Id (#eraseEdgeDoneButton)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Erase Edges)
+    }
+         
+    // pdfEncryption
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_pdfEncryptionSettingsSwitch,0.05)
+    {
+        //clicks the option twice 
+        Repeat:2
+        {
+            Dune.Click Id (#scanMenuListlist1 #scan_pdfEncryptionMenuSwitch)
+            Sleep (1)
+        }   
+    }
+    Fail:
+    {
+        Fail (Unable to select the PDF Encryption)
+    }
+         
+    //High Compression
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_highCompressionSettingsSwitch,0.05)
+    {
+        //clicks on the option of High compression
+        Dune.Click Id (#scanMenuListlist1 #scan_highCompressionMenuSwitch)   
+    }
+    Fail:
+    {
+        Fail (Unable to select the High Compression)
+    }
+       
+         
+    // Orientation
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_contentOrientationSettingsComboBox,0.05)
+    { 
+        Dune.Click Id (#scanMenuListlist1 #scan_contentOrientationSettingsComboBox #scan_contentOrientationComboBox)
+        //clicks on landscape option
+        Common_Library.ValidateandCheck(#scan_contentOrientationComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionslandscape)
+        Dune.Click Id (#scanMenuListlist1 #scan_contentOrientationSettingsComboBox #scan_contentOrientationComboBox)
+        //clicks on Portrait option
+        Common_Library.ValidateandCheck(#scan_contentOrientationComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsportrait)
+    }
+    Fail:
+    {
+        Fail (Unable to select the orientation)
+    } 
+         
+    //File Size
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_qualityAndFileSizeSettingsComboBox,0.05)
+    {     
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on High option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionshigh)
+              
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on Medium option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmedium)
+              
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on low option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionslow)
+              
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on Hightest option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionshighest)
+              
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on Lowest option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionslowest)       
+    }
+    Fail:
+    {
+        Fail (Unable to select the File Size)
+    }
+         
+    // Closing the option panel and click on Send button
+    Sleep (2)
+    If: Dune.Wait For (#scanMenuListlist1 #closeButton,2)
+    {
+        Dune.Click Id (#scanMenuListlist1 #closeButton)
+        Sleep (2)
+        //clicks on Send button 
+        Dune.Click Id (#sendButtonDetailRightBlock)
+        //waiting and clicking Done button
+        Dune.Wait For (#finish,20)
+        Dune.Click Id (#finish)
+        Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,5)
+        Dune.Wait For Active Job Gone (scanemail,25)
+        Sleep (10)
+        Dune.Go To Home Screen
+        Sleep (2)
+        //clicks on sigin
+        Dune.Click (#StatusButtonSignOut)
+    }
+}
+     
+Copy_Option_Validation_for_Citrine_and_Jasper
+{
+    If: Dune.Wait For (#optionsDetailPanelButton,3)
+    {
+        Dune.Click Id (#optionsDetailPanelButton)  
+    }
+    Fail:
+    {
+        Return With Fail (Unable to click opyions buttion copy Application)
+    }
+        
+    //content type option only for Citrine and Jasper in copy plugin
+    Sleep (2)
+    If: Dune.Wait For (#copySettingsPage_list1 #scan_contentTypeComboBox,3)
+    {
+        Sleep (1)
+        Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on Photo option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsphoto)
+        Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on text option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstext)
+        Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on image option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsimage)
+        Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeComboBox)
+        //clicks on Mixed option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmixed)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Content type)
+    }
+      
+    //blank Page suppression only for Citrine and Jasper in copy plugin
+    Sleep (2)
+    If: Dune.Wait For (#copySettingsPage_list1 #scan_blankPageSuppressionComboBox,3)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #scan_blankPageSuppressionComboBox)
+        Sleep (1)
+        //clicks on on option
+        Common_Library.ValidateandCheck(#scan_blankPageSuppressionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstrue_)
+        Dune.Click Id (#copySettingsPage_list1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+        Sleep (1)
+        //clicks on off option
+        Common_Library.ValidateandCheck(#scan_blankPageSuppressionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsfalse_) 
+    }
+    Fail:
+    {
+        Fail (Unable to select the Blank page suppression type)
+    }
+    
+    //Scan mode for Citrine and Jasper for copy pulgin
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_scanModeSettingsTextImage_firstinfoBlockRow,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #scan_scanModeSettingsTextImage_firstinfoBlockRow)
+        Dune.Wait For (#copy_scanModeList #scan_scanModestandardImageContainer,3)
+        Dune.Click Id (#copy_scanModeList #bookMode)
+        Sleep (2)
+        Dune.Click Id (#copy_scanModeList #scan_scanModestandardImageContainer)
+        Dune.Click Id (#footerDoneButton)
+    }
+    Fail:
+    {
+        Fail (unable to select scan mode)
+    }
+           
+    //color mode for Citrine and Jasper for copy plugin 
+    Sleep (2)
+    If: Dune.Wait For (#copySettingsPage_list1 #scan_colorModeComboBox,3)
+    {
+        //for Citrine and Jasper
+                  
+        Dune.Click Id (#copySettingsPage_list1 #scan_colorModeComboBox )
+        //clicks on color option
+        Common_Library.ValidateandCheck(#scan_colorModeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscolor)
+                  
+        Dune.Click Id (#copySettingsPage_list1 #scan_colorModeComboBox) 
+        //clicks on grayscale option
+        Common_Library.ValidateandCheck(#scan_colorModeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsgrayscale)
+                  
+        Dune.Click Id (#copySettingsPage_list1 #scan_colorModeComboBox)
+        //clicks on autodetect option
+        Common_Library.ValidateandCheck(#scan_colorModeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsautoDetect)    
+    }
+    Fail:
+    {
+        Fail (Unable to select the Color Mode)
+    }
+         
+    //Side option for Citrine and Jasper only for copy plugin
+     Sleep (2)
+     If: Dune.Wait For (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox,5) 
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+        //clicks on 1 to 2 sided option
+        Common_Library.ValidateandCheckWithDeltaValue(#SettingsSpiceComboBoxpopupList,#copySettingsPage_list1ScrollBar,#Copy1to2Sided,${DeltaValueCopy})
+        
+        // this below option is available only if we select copy1to2sided option 
+        Common_Library.ValidateandCheck(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_pageFlipUpEnabledMenuSwitch)
+        
+        Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+        //clicks on 2 to 2 sided option
+        Common_Library.ValidateandCheckWithDeltaValue(#SettingsSpiceComboBoxpopupList,#comboBoxScrollBar,#Copy2to2Sided,${DeltaValueCopy})
+        //this below option is available only if we select Copy2to2Sided option 
+        Common_Library.ValidateandCheck(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_pageFlipUpEnabledMenuSwitch)
+        
+        //Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+        //clicks on 1 to 1 sided option
+        Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+        Common_Library.ValidateandCheckWithDeltaValue(#SettingsSpiceComboBoxpopupList,#comboBoxScrollBar,#Copy2to1Sided,${DeltaValueCopy})
+        
+        Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+        //clicks on 2 to 1 sided  option
+        Common_Library.ValidateandCheckWithDeltaValue(#SettingsSpiceComboBoxpopupList,#comboBoxScrollBar,#Copy1to1Sided,${DeltaValueCopy})
+    }
+    Fail:
+    {
+        Fail (Unable to select the Side)
+    }
+
+    //Original size
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+        
+        //clicks on Letter
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_letter_8_dot_5x11inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on Executive (7.25x10.5 in.)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_executive_7_dot_25x10_dot_5inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 4x6 in.
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_index_dash_4x6_4x6inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 5x8 in.
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_index_dash_5x8_5x8inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on A4 (210x297 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#iso_a4_210x297mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on A5 (148x210 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#iso_a5_148x210mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on A5 ▭ (148x210 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#com_dot_hp_dot_ext_dot_mediaSize_dot_iso_a5_148x210mm_dot_rotatedscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on A6 (105x148 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#iso_a6_105x148mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on B5 (JIS) (182x257 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#jis_b5_182x257mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on B6 (JIS) (128x182 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#jis_b6_128x182mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on Oficio (216x340 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_oficio_8_dot_5x13_dot_4inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 16k (195x270 mm
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#om_16k_195x270mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 16k (184x260 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#om_16k_184x260mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 16K (197x273 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#roc_16k_7_dot_75x10_dot_75inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on Double Postcard (JIS) (148X200 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#jpn_oufuku_148x200mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on Statement (5.5X8.5 in.)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_invoice_5_dot_5x8_dot_5inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 16K (195x270 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#om_16k_195x270mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on any size option
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#anyscan_originalSize)
+    }
+    Fail:
+    {
+        Fail (Unable to find the  Original size)
+    }
+  
+    //Ligher and darker 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_lighterDarkerSettingsSlider,0.05) 
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_lighterDarkerMenuSlider,9)
+    }
+    Fail:
+    {
+        Fail (Unable to find the LighterDarker)
+    }
+    
+    //Sharpness
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_sharpnessSettingsSlider,0.05) 
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_sharpnessMenuSlider,5)
+    }
+    Fail:
+    {
+        Fail (Unable to find the Sharpness)
+    }
+    
+    //Contrast
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_contrastSettingsSlider,0.05) 
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_contrastMenuSlider,9)
+    }
+    Fail:
+    {
+        Fail (Unable to find the Contrast)
+    }
+     
+    //Background cleanup
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_backGroundCleanUpSettingsSlider,0.05) 
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_backGroundCleanUpMenuSlider,9)
+    }
+    Fail:
+    {
+        Fail (Unable to find the Background cleanup)
+    }
+    
+    //number of copies 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copy_numberOfCopiesSettingsSpinBox,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #SpinBoxTextInput)
+        Dune.Wait For (#enterKeyPositiveIntegerKeypad,3)
+        Dune.Click Id (#key2PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)   
+    }
+    Fail:
+    {
+        Fail (Unable to scroll to copies)
+    }
+        
+    //collate options 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copy_collateToggleSettingsSwitch,0.05)
+    {
+        Repeat:2
+        {
+            Dune.Click Id (#copy_collateToggleMenuSwitch)
+        }
+    }
+    Fail:
+    {
+        Fail (Unable to find the collate option)
+    }
+      
+    //ouput scale options 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copySettingResize,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copySettingResize)
+        Dune.Wait For (#copyResizeView #none,3)
+        Common_Library.ValidateandCheck (#copyResizeView,#copyResizeViewScrollBar,#fitToPage)
+        Dune.Click Id (#custom)
+        Dune.Click Id (#fullPage)
+        Dune.Click Id (#legalToLetter)
+        Dune.Click Id (#a4ToLetter)
+        Dune.Click Id (#letterToA4)
+        Dune.Click Id (#none)
+        Dune.Click (#copyResizeView #BackButton)
+    }
+    Fail:
+    {
+        Fail (Unable to find the output scale)
+    }
+      
+    //Pages per sheet options 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copySettingPagesPerSheet,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copySettingPagesPerSheet)
+        Dune.Wait For (#copy_pagesPerSheetView,3)
+        Dune.Click Id (#copy_pagesPerSheetView #oneUp)
+        Sleep (1)
+        Dune.Click Id (#copy_pagesPerSheetView #fourRightThenDown)
+        Sleep (1)
+        Dune.Click Id (#copy_pagesPerSheetView #fourDownThenRight)
+        Sleep (1)
+        Dune.Click Id (#copy_pagesPerSheetView #AddPageBorders)
+        Sleep (1)
+        Dune.Click Id (#copy_pagesPerSheetView #twoUp)
+        Dune.Click Id (#copy_pagesPerSheetView #BackButton)
+    }
+    Fail:
+    {
+        Fail (unable to find pages per sheet option)
+    }
+      
+    //Paper slection options 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copyPaperSelection,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copyPaperSelection)
+        Dune.Wait For (#copy_paperSelectionMenuList,3)
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        Dune.Wait For (#copy_mediaSizeMenuSelectionList,3)
+        //clicks on letter(8.5x11 in.)
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_letter_8_dot_5x11incopy_mediaSize)
+         
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Legal(8.5x14 in.)
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_legal_8_dot_5x14incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on executive(7.25x10.5 in.)
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_executive_7_dot_25x10_dot_5incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Letter8Point5x11
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#com_dot_hp_dot_ext_dot_mediaSize_dot_na_letter_8_dot_5x11in_dot_rotatedcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Statement
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_invoice_5_dot_5x8_dot_5incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on OficioEightPointFiveByThirteen
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_foolscap_8_dot_5x13incopy_mediaSize)
+
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Ledger
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_ledger_11x17incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on FourXSix
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_index_dash_4x6_4x6incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on FiveXSeven
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_5x7_5x7incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on FiveXEight
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_index_dash_5x8_5x8incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on A4
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_a4_210x297mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on A4TwoTen
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#com_dot_hp_dot_ext_dot_mediaSize_dot_iso_a4_210x297mm_dot_rotatedcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on A5
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_a5_148x210mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on A6
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_a6_105x148mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on RA4
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_ra4_215x305mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on SRA4
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_sra4_225x320mmcopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on B4    
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#jis_b4_257x364mmcopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on B5
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#jis_b5_182x257mmcopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on B6
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#jis_b6_128x182mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on TenxFifteen
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#om_small_dash_photo_100x150mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Oficio216x340
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_oficio_8_dot_5x13_dot_4incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Oficio216x340
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#om_16k_195x270mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Sixteen184x260
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#om_16k_184x260mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Sixteen197x273
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#roc_16k_7_dot_75x10_dot_75incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on PostcardJis
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#jpn_hagaki_100x148mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on DoublePostcard
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#jpn_oufuku_148x200mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeHashTen
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_number_dash_10_4_dot_125x9_dot_5incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeMonarch
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_monarch_3_dot_875x7_dot_5incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeB5
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_b5_176x250mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeC5
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_c5_162x229mmcopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeDL
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_dl_110x220mmcopy_mediaSize)
+         
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Any
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#anycopy_mediaSize)  
+    }
+    Fail:
+    {
+        Fail (unable to find Paper slection)
+    }
+      
+    //Paper type options 
+    Sleep (2)
+    If: Dune.Wait For (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage,3)
+    { 
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        Dune.Wait For (#copy_paperTypeMenuSelectionList,3)
+        
+        //selects anysize       
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#anycopy_paperType)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects HpMatteNinety  
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_matte_dash_90gsmcopy_paperType)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects HPMatteOneTwenty
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_matte_dash_120gsmcopy_paperType)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects HPBrochureMatte
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_matte_dash_160gsmcopy_paperType)
+         
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects Light 
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_lightweightcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects HpEcoEFFICIENT
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_EcoSMARTLitecopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  MidWeight
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_midweightcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Heavy
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_heavyweightcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  ExtraHeavy
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_extra_dash_heavycopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Cardstock
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#cardstockcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  HeavyGlossy
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_heavy_dash_glossycopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects ExtraHeavyGlossy
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_extra_dash_heavy_dash_glosscopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  ColorTransparency
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#transparencycopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Labels
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#labelscopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  StationeryLetterhead
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_letterheadcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Envelope
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#envelopecopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects StationeryPreprinted 
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_preprintedcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects StationeryPrepunched
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_prepunchedcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Colored
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_coloredcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Bond
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_bondcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Recycled
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_recycledcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects Automatic
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationerycopy_paperType)
+         
+    }
+    Fail:
+    {
+        Fail (unable to find Paper type)
+    }
+      
+    //trays options 
+    Sleep (2)
+    If: Dune.Wait For (#copy_paperSelectionMenuList #copy_paperSourceComboBox,3)
+    {
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+        If: Dune.Wait For (#copy_paperSourceComboBoxpopupList,3)
+        {
+            //clicks on tray 1 
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstray_dash_1)
+            
+            Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+            //click on tray2  
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstray_dash_2)
+            
+            Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+            //clicks on tray3 
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstray_dash_3)
+            
+            Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+            //clicks on tray4 
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstray_dash_4)
+            
+            Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+            //clicks on Automatic 
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsauto_)
+            
+            Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+            //clicks on tray5  
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstray_dash_5)         
+        } 
+        Dune.Wait For (#copy_paperSelectionMenuList #BackButton,3)
+        Dune.Click Id (#copy_paperSelectionMenuList #BackButton)
+    }
+    Fail:
+    {
+        Fail (unable to find Paper tray)
+    }
+    
+    //we are resetting the option because of booklet option
+    If:Dune.Wait For (#copySettingsPage_list1 #closeButton,2)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #closeButton)
+        Dune.Go To Home Screen
+        Dune.Wait For (#cedab422-33b3-4638-b6a1-604e54525215,3)
+        Dune.Click (#cedab422-33b3-4638-b6a1-604e54525215)
+        Dune.Wait For (#optionsDetailPanelButton,3)
+        Dune.Click Id (#optionsDetailPanelButton)   
+    }
+    
+    //Booklet option
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copySettingBooklet,0.05)
+    { 
+        Dune.Click Id (#copySettingsPage_list1 #copySettingBooklet)
+        Dune.Wait For (#copy_bookletView #CheckBoxOptionsbookletFormatImageContainer,3)
+        Dune.Click Id (#copy_bookletView #CheckBoxOptionsbookletFormatImageContainer)
+        Dune.Wait For (#CheckBoxOptionsbordersOnEachPageImageContainer,3)
+        Dune.Click Id (#CheckBoxOptionsbordersOnEachPageImageContainer) 
+        Dune.Click Id (#doneButton)
+    }
+    Fail:
+    {
+        Fail (Unable to select the booklet)
+    }
+     
+    // Closing the option panel and click on Send button
+    Sleep (2)
+    If: Dune.Wait For (#copySettingsPage_list1 #closeButton,2)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #closeButton)
+         
+        //click on copy button
+        Dune.Wait For (#mainActionButtonOfDetailPanel,5)
+        Dune.Click Id (#mainActionButtonOfDetailPanel)
+        //clicks on done button, this button is available when we select the options other than 1 to 2 sided 
+        Sleep (3)
+        If: Dune.Wait For (#doneButton,30)
+        {
+            //this button will be avaliable only if we select original side as 2 to 1 sided 
+            Dune.Click Id (#doneButton)
+        } 
+        Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,5)
+        Dune.Wait For Active Job Gone (Copy,25)
+        Sleep (7)
+        Dune.Go To Home Screen
+        Sleep (2)
+        Dune.Click (#StatusButtonSignOut)
+    }
+}
+
+Fax_Option_Validation_For_Citrine_and_Jasper
+{
+    //Options checks will starts from here
+    If: Dune.Wait For (#faxAllOptionsButton,3)
+    {
+        Dune.Click Id (#faxAllOptionsButton)
+    }
+    Fail:
+    {
+        Return With Fail (unable to click on option button )
+        Dune.Go To Home Screen
+    }
+    
+    //Original side
+    Sleep (2)
+    If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #originalSidesSettings_2infoBlockRow,5) 
+    {
+        Dune.Click(#faxSettingsPageMenuListListViewlist1 #originalSidesSettings_2infoBlockRow)
+        //Clicks on 2 sided option
+        Common_Library.ValidateandCheck(#faxSettingsPageMenuListListView,#comboBoxScrollBar,#RadioButtonOptionsduplexImageContainer)
+        Dune.Click Id (#faxSettingsPageMenuListListView #BackButton)
+
+        Sleep (1)
+        Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #originalSidesSettings_2infoBlockRow)
+        //clicks on 1 sided option
+        Common_Library.ValidateandCheck(#faxSettingsPageMenuListListView,#comboBoxScrollBar,#RadioButtonOptionssimplexImageContainer)
+        Dune.Click Id (#faxSettingsPageMenuListListView #BackButton)
+    }
+    Fail:
+    {
+        Fail (Unable to select the  Original side)
+    }
+     
+    //Original size
+    Sleep (2)
+    If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox,5)
+    {
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         //Click on Letter (8.5x11 in.) option
+         Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList, #comboBoxScrollBar, #ComboBoxOptionsna_letter_8_dot_5x11in)
+         
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         //Click on Letter ▭ (8.5x11 in.) option
+         Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList, #comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_na_letter_8_dot_5x11in_dot_rotated)
+         
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         //Click on Legal (8.5x14 in.) option
+         Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList, #comboBoxScrollBar,#ComboBoxOptionsna_legal_8_dot_5x14in)
+         
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         //Click on A4 (210x297 mm) option
+         Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList, #comboBoxScrollBar,#ComboBoxOptionsiso_a4_210x297mm)
+         
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         //Click on A4 ▭ (210x297 mm)
+         Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList, #comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_na_letter_8_dot_5x11in_dot_rotated)
+         
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         //Click on Ledger (11x17 in.)
+         Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList, #comboBoxScrollBar,#ComboBoxOptionsna_ledger_11x17in)
+         
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         //Click on A3 (297x420 mm)
+         Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList, #comboBoxScrollBar,#ComboBoxOptionsiso_a3_297x420mm)
+     }
+     Fail:
+     {
+         Fail (Unable to select the  Original size)
+     }
+     
+     //LighterDarker for FAX
+     Sleep (2)
+     If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #scan_lighterDarkerSettingsSlider #scan_lighterDarkerMenuSlider,5)
+     {
+         //sets the slider to 5 value
+         Dune.SetSliderValue (#scan_lighterDarkerMenuSlider,7)
+     }
+     Fail:
+     {
+         Fail (Unable to slide the LighterDarker)
+     }
+     
+     //ContentType for FAX
+     Sleep (2)
+     If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox,5)
+     {
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+         Sleep (1) 
+         //clicks on Mixed option 
+         Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmixed)
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+         //clicks on Photo option
+         Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsphoto)
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+         //clicks on text option
+         Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstext)
+     }
+     Fail:
+     {
+         Fail (Unable to select the Content type)
+     }
+     
+     //Resolution for FAX
+     Sleep (2)
+     If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#fax_resolutionSettingsComboBox,0.05)
+     {
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #fax_resolutionSettingsComboBox #fax_resolutionComboBox)
+         //clicks fine (200X200 dpi) option
+         Common_Library.ValidateandCheck(#fax_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsfine)
+         
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #fax_resolutionSettingsComboBox #fax_resolutionComboBox)
+         //clicks standard (200X100 dpi) option
+         Common_Library.ValidateandCheck(#fax_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsstandard)
+         
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #fax_resolutionSettingsComboBox #fax_resolutionComboBox)
+         //clicks Superfine (300X300 dpi) option
+         Common_Library.ValidateandCheck(#fax_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionssuperfine)
+     }
+     Fail:
+     {
+         Fail (Unable to set the Cover page option)
+     }
+       //cover page for FAX
+     Sleep (2)
+     If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#fax_includeCoverPageSettingsSwitch,0.05)
+     {
+         Dune.Click Id (#fax_includeCoverPageMenuSwitch)
+     }
+     Fail:
+     {
+         Fail (Unable to set the Cover page option)
+     }
+     //Notification
+     Sleep (2)
+     If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#FaxSendNotification,0.05)
+     {
+         //Clicks on Notification Option
+         Dune.Click Id (#FaxSendNotification_2infoBlockRow)
+         Sleep (1)
+         
+         //Clicks on Notify after job finishes
+         Dune.Click Id (#onJobCompleted)
+         Sleep (1)
+         
+         //Clicks on  Notify only if job successfull
+         Dune.Click Id (#onJobFailed)
+          
+         Sleep (1)
+         //cliks on Include Thumbnail
+         Dune.Click Id (#includeThumbnailSpiceCheckBox)
+         Sleep (1)
+         
+         // Clicks on Do not Notify
+         Dune.Click Id (#never)
+         
+         //Clicks on Done button
+         Dune.Click Id (#doneButton)
+     }
+     Fail:
+     {
+         Fail (Unable to click on Notification)
+     }
+     
+     // Closing the option panel and click on Send button
+     Sleep (2)
+     If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #closeButton,2)
+     {
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #closeButton)
+         Sleep (2)
+         //clicks on Send button 
+         Dune.Click Id (#sendFaxButtonFooterMain)
+         //waiting and clicking Done button
+         Dune.Wait For (#finish,20)
+         Dune.Click Id (#finish)
+         Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,5)
+         Dune.Wait For Active Job Gone (scanFax,70)
+         Sleep (5)
+         Dune.Go To Home Screen
+         Sleep (2)
+         //clicks on Sign out 
+         Dune.Click (#StatusButtonSignOut)
+     }
+}
+
+PrintFromUSB_Workflow_For_Citrine_and_Jasper
+{
+   //Below is waiting for Print app
+   If: Dune.Wait For (#PrintFolderGUID,10)
+   {
+       //clicks on Print App
+       Dune.Click (#PrintFolderGUID)
+       sleep(1)
+        
+       //waiting on Print From USB 
+       If:Dune.Wait For (#c93bc831-99a8-454c-b508-236fc3a2a08f,10)
+       {
+           Dune.Click (#c93bc831-99a8-454c-b508-236fc3a2a08f)
+       }
+       Fail:
+       {
+           Return With Fail (Unable to click on Print From USB)
+           Stop Test Suite
+       }
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on Print Application)
+       Stop Test Suite
+   }
+   
+   //SelectFile
+   sleep(1)     
+   If: Dune.Wait For visibility (#scrollAreaGridLayout,${PrintFromUSBFileName},1)
+   {
+       Dune.Click Id (${PrintFromUSBFileName})
+   }
+   Fail:
+   {
+       Dune.SwipeVertically (#scrollAreaGridLayout,#scrollAreaGridLayoutverticalScroll,${PrintFromUSBFileName},0.05)
+       Dune.Wait For (${PrintFromUSBFileName},10)
+       Dune.Click Id (${PrintFromUSBFileName})
+       Sleep (2)
+   }
+   
+   //ExecutePrintJob
+   sleep(1)
+   If:  Dune.Wait For (#printUsbBtn,10)
+   {
+       Dune.Click Id (#printUsbBtn)
+       Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,10)
+       If: Dune.Wait For Active Job Gone(usbPrint,10)
+       {
+           Sleep (6)
+           Dune.Go To Home Screen
+           Sleep (2)
+           Dune.Click (#StatusButtonSignOut)
+       }
+       Fail:
+       {
+           Return With Fail (Unable to click on Print Application)
+           Stop Test Suite 
+       }
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on Print Application)
+       Stop Test Suite 
+   }
+}
+ 
+PrintFromJobStorage_Workflow_For_Citrine_and_Jasper
+{
+    Wait For User Confirm (Scroll to next screen for Print from Job Storage)
+
+    //waiting for Print From Job Storage app
+    If: Dune.Wait For (#86DCD04A-5F44-4EAE-83C3-1C3C3F12E32B,10)
+    {
+       //clicks on Print From Job Storage app
+       Dune.Click (#86DCD04A-5F44-4EAE-83C3-1C3C3F12E32B)
+       sleep(1)      
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on Print Application)
+       Stop Test Suite
+   }
+   
+   //Selects the specified folder
+   sleep(2)     
+   If: Dune.Wait For visibility (#JobStorageAppApplicationStackView,${PrintFromJobStorageFolderName},1)
+   {
+       Dune.Click Id (${PrintFromJobStorageFolderName})
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on ${PrintFromJobStorageFolderName})
+       Stop Test Suite
+   }
+   
+   //Selects the file from Job Storage
+   If: Dune.Wait For (#CheckBoxView,10)
+   {
+       Dune.Click Id (#CheckBoxView)
+   }
+   Fail:
+   {
+       Return With Fail (No jobs are avilable to select)
+       Stop Test Suite
+   }
+   
+   
+   //ExecutePrintJob
+   sleep(1)
+   If: Dune.Wait For (#printButton,10)
+   {
+       Dune.Click Id (#printButton)
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on Print Application)
+       Stop Test Suite
+   }
+   
+   //Number of copies
+   Sleep (2)
+   If: Dune.Wait For (#SpiceViewlist1 #SpinBoxTextInput,10) 
+   {
+        Dune.Click Id (#SpiceViewlist1 #SpinBoxTextInput)
+        Dune.Wait For (#enterKeyPositiveIntegerKeypad,3)
+        Dune.Click Id (#key2PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+    }
+    Fail:
+    {
+        Fail (Unable to click on copies)
+    }
+   
+   sleep(1)
+   If:  Dune.Wait For (#printButtonSubmission,10)
+   {
+       Dune.Click Id (#printButtonSubmission)
+       
+       Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,10)  
+       If: Dune.Wait For Active Job Gone(usbPrint,10)
+       {
+           Sleep (6)
+           Dune.Go To Home Screen
+           Sleep (2)
+           Dune.Click (#StatusButtonSignOut)
+       }
+       Fail:
+       {
+           Return With Fail (Unable to click on Print Application)
+           Stop Test Suite 
+       }
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on Print Application)
+       Stop Test Suite
+   }
+}
+
+Scan_Option_Validation_For_Camden_and_Busch
+{
+    //Options checks will starts from here
+    If: Dune.Wait For (#optionsButton,3)
+    {
+        Dune.Click Id (#optionsButton)
+    }
+    Fail:
+    {
+        Return With Fail (unable to click on option button )
+        Dune.Go To Home Screen
+    }
+        
+    //content type option 
+    Sleep (2)
+    If: Dune.Wait For (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox,3)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        Sleep (1) 
+        //clicks on Mixed option 
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmixed)
+        Dune.Click Id (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on Photo option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsphoto)
+        Dune.Click Id (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on text option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstext)
+        Dune.Click Id (#scanMenuListlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on image option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsimage)
+    }
+    Fail:
+    {
+       Fail (Unable to select the Content type)
+    }
+       
+   //blank Page suppression only for Camden and Busch
+    Sleep (2)
+    If: Dune.Wait For (#scanMenuListlist1 #scan_blankPageSuppressionComboBox,3)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+        Sleep (1)
+        //clicks on off option
+        Common_Library.ValidateandCheck (#scan_blankPageSuppressionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsfalse_)
+        Dune.Click Id (#scanMenuListlist1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+        Sleep (1)
+        //clicks on On option
+        Common_Library.ValidateandCheck (#scan_blankPageSuppressionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstrue_)  
+    }
+    Fail:
+    {
+        Fail (Unable to select the Blank page suppression type)
+    }
+          
+    //color mode 
+    Sleep (2)
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_colorModeWithAutoDetectComboBox,0.05)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        //clicks on black and white option
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstreatNonColorAsBlackAndWhite1)
+                      
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        sleep(1)
+        //clicks on Grayscale option 
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstreatNonColorAsGrayscale8)
+         
+        sleep(1)        
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        sleep(1)
+        //clicks on color option
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscolor)
+        
+          
+        Sleep (1)
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        //clicks on black and white option
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsblackAndWhite)
+                
+        Sleep (1)      
+        Dune.Click Id (#scanMenuListlist1 #scan_colorModeWithAutoDetectSettingsComboBox #scan_colorModeWithAutoDetectComboBox)
+        //clicks on grayscale only  option
+        Common_Library.ValidateandCheck(#scan_colorModeWithAutoDetectComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsgrayscale)
+    }
+    Fail:
+    {
+        Fail (Unable to scroll to the Color Mode)
+    }
+              
+              
+    //Scan Mode
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_scanModeSettingsTextImage,0.05)
+    {
+        sleep(1)
+        Dune.Click Id (#scanMenuListlist1 #scan_scanModeSettingsTextImage)
+        //clicks on book mode option
+        Common_Library.ValidateandCheck(#copy_scanModeList,#comboBoxScrollBar,#scan_scanModebookMode)
+       Dune.Click Id (#footerDoneButton)
+
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_scanModeSettingsTextImage,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_scanModeSettingsTextImage )
+        //clicks on standard option
+        
+        Common_Library.ValidateandCheck(#copy_scanModeList,#comboBoxScrollBar,#scan_scanModestandard)
+        Dune.Click Id (#footerDoneButton)   
+    }
+    Fail:
+    {
+        Fail (Unable to select the Scan Mode)
+    }    
+              
+    //Resolution 
+    Sleep (2)  
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_resolutionSettingsComboBox,0.05)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 75dpi option
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse75Dpi)
+        
+        Sleep (1)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_resolutionSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 150dpi option
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse150Dpi)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_resolutionSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 200dpi option
+        Sleep(1)
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse200Dpi)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_resolutionSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 300dpi option
+        Sleep (1)
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse300Dpi)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_resolutionSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_resolutionSettingsComboBox #scan_resolutionComboBox)
+        //clicks on 400dpi option
+        Sleep (1)
+        Common_Library.ValidateandCheck(#scan_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionse400Dpi)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Resolution)
+    }
+          
+          
+    //Original side
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_2sidedOriginalSettingsComboBox,0.05)
+    {
+        Sleep(1)
+        Dune.Click Id (#scanMenuListlist1 #scan_2sidedOriginalSettingsComboBox)        
+        //clicks on 1 sided option
+        Dune.Click Id (#scan_2sidedOriginalComboBoxpopupList #ComboBoxOptionssimplex)
+        Sleep (1)
+        
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_2sidedOriginalSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_2sidedOriginalSettingsComboBox)       
+        //clicks on 2 sided option
+        Dune.Click Id (#scan_2sidedOriginalComboBoxpopupList #ComboBoxOptionsduplex)
+    }
+    Fail:
+    {
+        Fail (Unable to select the  Original side)
+    }
+         
+    //Original size
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+    {   
+        Sleep (2)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        Sleep(2)
+        //clicks on Mixed Letter/Legal option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_mixed_dash_letter_dash_legal)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on Any option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsany)
+        
+        Sleep (2)  
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on Mixed Letter/Ledger option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionscom_dot_hp_dot_ext_dot_mediaSize_dot_mixed_dash_letter_dash_ledger)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on option Letter 8 dot 5x11in
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_letter_8_dot_5x11in)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on executive 7.25x10.5in option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_executive_7_dot_25x10_dot_5in)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on invoice 5.5x8.5in option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_invoice_5_dot_5x8_dot_5in)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05) 
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on 5x7 5x7in option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_5x7_5x7in)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on index-5x8 5x8in option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsna_index_dash_5x8_5x8in)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05) 
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on a4 210x297mm option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsiso_a4_210x297mm)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on b5 182x257mm option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsjis_b5_182x257mm)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05) 
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on b6 128x182mm option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsjis_b6_128x182mm)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on 16k 195x270mm option
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsom_16k_195x270mm)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on 16k7.75x10.75in
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsroc_16k_7_dot_75x10_dot_75in)
+        
+        Sleep (2)
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_originalSizeSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+        //clicks on jpn oufuku 148x200mm
+        Common_Library.ValidateandCheck(#scan_originalSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsjpn_oufuku_148x200mm)
+    }
+    Fail:
+    {
+        Fail (Unable to select the  Original size)
+    }
+                  
+    //LighterDarker
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_lighterDarkerSettingsSlider,0.05)
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_lighterDarkerMenuSlider,5)    
+    }
+    Fail:
+    {
+        Fail (Unable to slide the LighterDarker)
+    }
+         
+    //FileTypes
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_fileFormatSettingsComboBox,0.05)
+    {
+        Dune.Click Id (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+        //clicks on JPEG option
+        Common_Library.ValidateandCheck(#scan_fileFormatComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsjpeg)
+        Sleep (1)
+        
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_fileFormatSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+        //clicks on tiff option
+        Common_Library.ValidateandCheck(#scan_fileFormatComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmtiff)
+        Sleep (1)
+        
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_fileFormatSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+        //clicks on PDFA option
+        Common_Library.ValidateandCheck(#scan_fileFormatComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionspdfa)
+        Sleep (1)
+        
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_fileFormatSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_fileFormatSettingsComboBox #scan_fileFormatComboBox)
+        //clicks on PDF option
+        Common_Library.ValidateandCheck(#scan_fileFormatComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionspdf)            
+    }
+    Fail:
+    {
+        Fail (Unable to select the automatically straighten)
+    }
+         
+    //Save as multiple files
+    Sleep (2) 
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#ScanSettingSaveMultipleFiles,0.05)
+    {
+        Dune.Click Id (#scanMenuListlist1 #ScanSettingSaveMultipleFiles)
+        Sleep (1)
+        Dune.Click Id (#ScanSaveMultipleFilesView #BackButton)
+    }
+    Fail:
+    {
+        Fail (Unable to select the save as Multiple files)
+    }
+         
+    // PDEncryption
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_pdfEncryptionSettingsSwitch,0.05)
+    {
+        //clicks the option twice 
+        Repeat:2
+        {
+            Dune.Click Id (#scanMenuListlist1 #scan_pdfEncryptionMenuSwitch)
+            Sleep (1)
+        }   
+    }
+    Fail:
+    {
+        Fail (Unable to select the PDF Encryption)
+    }
+         
+    //High Compression
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_highCompressionSettingsSwitch,0.05)
+    {
+        //clicks on the option of High compression
+        Dune.Click Id (#scanMenuListlist1 #scan_highCompressionMenuSwitch)   
+    }
+    Fail:
+    {
+        Fail (Unable to select the High Compression)
+    }
+       
+    // Orientation
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_contentOrientationSettingsComboBox,0.05)
+    { 
+        Dune.Click Id (#scanMenuListlist1 #scan_contentOrientationSettingsComboBox #scan_contentOrientationComboBox)
+        //clicks on landscape option
+        Common_Library.ValidateandCheck(#scan_contentOrientationComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionslandscape)
+        
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_contentOrientationSettingsComboBox,0.05)
+        Dune.Click Id (#scanMenuListlist1 #scan_contentOrientationSettingsComboBox #scan_contentOrientationComboBox)
+        //clicks on Portrait option
+        Common_Library.ValidateandCheck(#scan_contentOrientationComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsportrait)
+    }
+    Fail:
+    {
+        Fail (Unable to select the orientation)
+    } 
+         
+    //File Size
+    Sleep (2)
+    If: Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_qualityAndFileSizeSettingsComboBox,0.05)
+    {    
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on High option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionshigh)
+        
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_qualityAndFileSizeSettingsComboBox,0.05)      
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on Medium option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmedium)
+        
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_qualityAndFileSizeSettingsComboBox,0.05)      
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on low option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionslow)
+        
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_qualityAndFileSizeSettingsComboBox,0.05)      
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on Hightest option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionshighest)
+        
+        Dune.SwipeVertically (#scanMenuListlist1,#scanMenuListlist1ScrollBar,#scan_qualityAndFileSizeSettingsComboBox,0.05)      
+        Dune.Click Id (#scanMenuListlist1 #scan_qualityAndFileSizeSettingsComboBox #scan_qualityAndFileSizeComboBox)
+        //clicks on Lowest option
+        Common_Library.ValidateandCheck(#scan_qualityAndFileSizeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionslowest)      
+    }
+    Fail:
+    {
+        Fail (Unable to select the File Size)
+    }
+         
+    // Closing the option panel and click on Send button
+    Sleep (2)
+    If: Dune.Wait For (#scanMenuListlist1 #closeButton,2)
+    {
+        Dune.Click Id (#scanMenuListlist1 #closeButton)
+        Sleep (2)
+        //clicks on Send button 
+        Dune.Click Id (#sendButtonDetailRightBlock)
+        //waiting and clicking Done button
+        Dune.Wait For (#finish,20)
+        Dune.Click Id (#finish)
+        Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,5)
+        Dune.Wait For Active Job Gone (scanemail,25)
+        Sleep (10)
+        Dune.Go To Home Screen
+        Sleep (2)
+        //clicks on sign out
+        Dune.Click (#StatusButtonSignOut)
+    }
+}
+
+
+Fax_Option_Validation_For_Camden_and_Busch
+{
+    //Options checks will starts from here
+    If: Dune.Wait For (#faxAllOptionsButton,3)
+    {
+        Dune.Click Id (#faxAllOptionsButton)
+    }
+    Fail:
+    {
+        Return With Fail (unable to click on option button )
+        Dune.Go To Home Screen
+    }
+    
+    //Original side
+    Sleep (2)
+    If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #scan_2sidedOriginalSettingsComboBox,5) 
+    {
+        Dune.Click(#faxSettingsPageMenuListListViewlist1 #scan_2sidedOriginalSettingsComboBox)
+        //Clicks on 2 sided option
+        Dune.Click Id (#ComboBoxOptionsduplex)
+        Sleep (1)
+        
+        Dune.Click(#faxSettingsPageMenuListListViewlist1 #scan_2sidedOriginalSettingsComboBox)
+        //clicks on 1 sided option
+        Dune.Click Id (#ComboBoxOptionssimplex)
+    }
+    Fail:
+    {
+        Fail (Unable to select the  Original side)
+    }
+     
+    //Original size
+    Sleep (2)
+    If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox,5)
+    {
+         Sleep (1)
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         Sleep (1)
+         //Click on Letter (8.5x11 in.) option
+         Dune.Click Id (#ComboBoxOptionsna_letter_8_dot_5x11in)
+        
+         Sleep (1)
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         Sleep (1)
+         //Click on Legal (8.5x14 in.) option
+         Dune.Click Id (#ComboBoxOptionsna_legal_8_dot_5x14in)
+         
+         Sleep (1)
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_originalSizeSettingsComboBox #scan_originalSizeComboBox)
+         Sleep (1)
+         //Click on A4 (210x297 mm) option
+         Dune.Click Id (#ComboBoxOptionsiso_a4_210x297mm)
+     }
+     Fail:
+     {
+         Fail (Unable to select the  Original size)
+     }
+     
+     //LighterDarker for FAX
+     Sleep (2)
+     If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#scan_lighterDarkerSettingsSlider,0.05)
+     {
+         //sets the slider to 5 value
+         Dune.SetSliderValue (#scan_lighterDarkerMenuSlider,7)
+     }
+     Fail:
+     {
+         Fail (Unable to slide the LighterDarker)
+     }
+     
+     //ContentType for FAX
+     Sleep (2)
+     If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#scan_contentTypeSettingsComboBox,0.05)
+     {
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+         Sleep (1) 
+         //clicks on Mixed option 
+         Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmixed)
+         
+         Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#scan_contentTypeSettingsComboBox,0.05)
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+         //clicks on Photo option
+         Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsphoto)
+         
+         Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#scan_contentTypeSettingsComboBox,0.05)
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+         //clicks on text option
+         Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstext)
+     }
+     Fail:
+     {
+         Fail (Unable to select the Content type)
+     }
+     
+     //Resolution for FAX
+     Sleep (2)
+     If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#fax_resolutionSettingsComboBox,0.05)
+     {
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #fax_resolutionSettingsComboBox #fax_resolutionComboBox)
+         //clicks fine (200X200 dpi) option
+         Common_Library.ValidateandCheck(#fax_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsfine)
+         
+         Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#fax_resolutionSettingsComboBox,0.05)
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #fax_resolutionSettingsComboBox #fax_resolutionComboBox)
+         //clicks standard (200X100 dpi) option
+         Common_Library.ValidateandCheck(#fax_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsstandard)
+         
+         Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#fax_resolutionSettingsComboBox,0.05)
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #fax_resolutionSettingsComboBox #fax_resolutionComboBox)
+         //clicks Superfine (300X300 dpi) option
+         Common_Library.ValidateandCheck(#fax_resolutionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionssuperfine)
+     }
+     Fail:
+     {
+         Fail (Unable to set the Cover page option)
+     } 
+     
+     //Notification
+     Sleep (2)
+     If: Dune.SwipeVertically (#faxSettingsPageMenuListListViewlist1,#faxSettingsPageMenuListListViewlist1ScrollBar,#FaxSendNotification,0.05)
+     {
+         //Clicks on Notification Option
+         Dune.Click Id (#FaxSendNotification_2infoBlockRow)
+         Sleep (1)
+         
+         //Clicks on Notify after job finishes
+         Dune.Click Id (#onJobCompleted)
+         Sleep (1)
+         
+         //Clicks on  Notify only if job successfull
+         Dune.Click Id (#onJobFailed)
+          
+         Sleep (1)
+         //cliks on Include Thumbnail
+         Dune.SwipeVertically (#FaxSendNotificationViewlist1,#FaxSendNotificationViewlist1ScrollBar,#includeThumbnailCheckBoxViewModel,0.05)
+         Dune.Click Id (#includeThumbnailSpiceCheckBox)
+         Sleep (1)
+         
+         // Clicks on Do not Notify
+         Dune.SwipeVertically (#FaxSendNotificationViewlist1,#FaxSendNotificationViewlist1ScrollBar,#never,0.05)
+         Dune.Click Id (#never)
+         //Clicks on Done button
+         Dune.Click Id (#doneButton)
+     }
+     Fail:
+     {
+         Fail (Unable to click on Notification)
+     }     
+     
+     // Closing the option panel and click on Send button
+     Sleep (2)
+     If: Dune.Wait For (#faxSettingsPageMenuListListViewlist1 #closeButton,2)
+     {
+         Dune.Click Id (#faxSettingsPageMenuListListViewlist1 #closeButton)
+         Sleep (2)
+         //clicks on Send button 
+         Dune.Click Id (#sendFaxButtonFooterMain)
+         //waiting and clicking Done button
+         Dune.Wait For (#finish,20)
+         Dune.Click Id (#finish)
+         Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,5)
+         Dune.Wait For Active Job Gone (scanFax,60)
+         Sleep (5)
+         Dune.Go To Home Screen
+         Sleep (2)
+         //clicks on Sign out 
+         Dune.Click (#StatusButtonSignOut)
+     }
+}
+
+
+PrintFromUSB_Workflow_For_Camden_and_Busch
+{
+    //Below is waiting for Print app
+   If: Dune.Wait For (#PrintFolderGUID,10)
+   {
+       //clicks on Print App
+       Dune.Click (#PrintFolderGUID)
+       sleep(1)
+        
+       //waiting on Print From USB 
+       If: Dune.Wait For (#c93bc831-99a8-454c-b508-236fc3a2a08f,10)
+       {
+           Dune.Click (#c93bc831-99a8-454c-b508-236fc3a2a08f)
+       }
+       Fail:
+       {
+           Return With Fail (Unable to click on Print From USB)
+           Stop Test Suite
+       }
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on Print Application)
+       Stop Test Suite
+   }
+   
+   //SelectFile
+   sleep(1)     
+   If: Dune.Wait For visibility (#scrollAreaGridLayout,${PrintFromUSBFileName},1)
+   {
+       Dune.Click Id (${PrintFromUSBFileName})
+   }
+   Fail:
+   {
+       Dune.SwipeVertically (#SpiceListViewView,#SpiceListViewViewScrollBar,${PrintFromUSBFileName},0.05)
+       Dune.Wait For (${PrintFromUSBFileName},10)
+       Dune.Click Id (${PrintFromUSBFileName})
+       Sleep (2)
+   }
+   
+   //Click on continue button
+   sleep(1)
+   If:  Dune.Wait For (#continueButton,10)
+   {
+       Dune.Click Id (#continueButton)
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on Print Application)
+       Stop Test Suite
+   }
+   
+   //ExecutePrintJob
+   Sleep (1)
+   If: Dune.Wait For(#printModeBtn,2)
+   {
+       Dune.Click Id (#DetailPanelverticalLayout #FooterView #FooterViewRight #printUsbBtnFD)
+       Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,10)
+       If: Dune.Wait For Active Job Gone(usbPrint,120)
+       {
+           Sleep (6)
+           Dune.Go To Home Screen
+           Sleep (2)
+           Dune.Click (#StatusButtonSignOut)
+       }
+       Fail:
+       {
+           Return With Fail (Job did not complete)
+           Stop Test Suite 
+       }
+   }
+   Fail:
+   {
+       Return With Fail (Unable to click on Print Application)
+       Stop Test Suite 
+   }
+}
+
+
+Copy_Option_Validation_for_Camden_and_Busch
+{
+    If: Dune.Wait For (#optionsDetailPanelButton,3)
+    {
+        Dune.Click Id (#optionsDetailPanelButton)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to click options buttion copy Application)
+    }
+        
+    //content type option
+    Sleep (2)
+    If: Dune.Wait For (#copySettingsPage_list1 #scan_contentTypeComboBox,3)
+    {
+        Sleep (1)
+        Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on Photo option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsphoto)
+        
+        Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on text option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstext)
+        
+        Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeSettingsComboBox #scan_contentTypeComboBox)
+        //clicks on image option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsimage)
+        
+        Dune.Click Id (#copySettingsPage_list1 #scan_contentTypeComboBox)
+        //clicks on Mixed option
+        Common_Library.ValidateandCheck(#scan_contentTypeComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmixed)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Content type)
+    }
+      
+    //blank Page suppression
+    Sleep (2)
+    If: Dune.Wait For (#copySettingsPage_list1 #scan_blankPageSuppressionComboBox,3)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #scan_blankPageSuppressionComboBox)
+        Sleep (1)
+        //clicks on off option
+        Common_Library.ValidateandCheck(#scan_blankPageSuppressionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsfalse_)
+        Dune.Click Id (#copySettingsPage_list1 #scan_blankPageSuppressionSettingsComboBox #scan_blankPageSuppressionComboBox)
+        Sleep (1)
+        //clicks on On option
+        Common_Library.ValidateandCheck(#scan_blankPageSuppressionComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstrue_)  
+    }
+    Fail:
+    {
+        Fail (Unable to select the Blank page suppression type)
+    }
+    //Scan mode for Citrine and Jasper for copy pulgin
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_scanModeSettingsTextImage_firstinfoBlockRow,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #scan_scanModeSettingsTextImage_firstinfoBlockRow)
+        Dune.Wait For (#copy_scanModeList #scan_scanModestandardImageContainer,3)
+        Dune.Click Id (#copy_scanModeList #bookMode)
+        Sleep (2)
+        Dune.Click Id (#copy_scanModeList #scan_scanModestandardImageContainer)
+        Dune.Click Id (#footerDoneButton)
+    }
+    Fail:
+    {
+        Fail (unable to select scan mode)
+    }
+    
+         
+    //Side option
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copy_sidesMenuComboBox,0.05)
+    If: Dune.Wait For (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox,5) 
+    {    
+        Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+        //clicks on 1 to 2 sided option
+        Common_Library.ValidateandCheck(#SettingsSpiceComboBoxpopupList,#copySettingsPage_list1ScrollBar,#Copy1to2Sided)
+         
+        // this below option is available only if we select copy1to2sided option 
+        Common_Library.ValidateandCheck(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_pageFlipUpEnabledMenuSwitch)
+        
+        Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copy_sidesMenuComboBox,0.05) 
+        Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+        //clicks on 2 to 2 sided option
+        Common_Library.ValidateandCheck(#SettingsSpiceComboBoxpopupList,#comboBoxScrollBar,#Copy2to2Sided)
+         
+        // this below option is available only if we select Copy2to2Sided option 
+        Common_Library.ValidateandCheck(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_pageFlipUpEnabledMenuSwitch)
+        Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copy_sidesMenuComboBox,0.05)
+        Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+        //clicks on 1 to 1 sided option
+        Common_Library.ValidateandCheck(#SettingsSpiceComboBoxpopupList,#comboBoxScrollBar,#Copy1to1sided)
+        
+        Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copy_sidesMenuComboBox,0.05)
+        Dune.Click Id (#copySettingsPage_list1 #copy_sidesMenuComboBox #SettingsSpiceComboBox)
+        //clicks on 2 to 1 sided  option
+        Common_Library.ValidateandCheck(#SettingsSpiceComboBoxpopupList,#comboBoxScrollBar,#Copy2to1Sided)
+    }
+    Fail:
+    {
+        Fail (Unable to select the Sides option)
+    } 
+
+    //Original size
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #scan_originalSizeSettingsTextImage #scan_originalSizeSettingsTextImage_2infoBlockRow)
+        
+        //clicks on Letter
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_letter_8_dot_5x11inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on Executive (7.25x10.5 in.)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_executive_7_dot_25x10_dot_5inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 5x8 in.
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_index_dash_5x8_5x8inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on A4 (210x297 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#iso_a4_210x297mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on A5 (148x210 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#iso_a5_148x210mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on B5 (JIS) (182x257 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#jis_b5_182x257mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on B6 (JIS) (128x182 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#jis_b6_128x182mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on Oficio (216x340 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_oficio_8_dot_5x13_dot_4inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 16k (195x270 mm
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#om_16k_195x270mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 16k (184x260 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#om_16k_184x260mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 16K (197x273 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#roc_16k_7_dot_75x10_dot_75inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on Double Postcard (JIS) (148X200 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#jpn_oufuku_148x200mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on Statement (5.5X8.5 in.)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#na_invoice_5_dot_5x8_dot_5inscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on 16K (195x270 mm)
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#om_16k_195x270mmscan_originalSize)
+        
+        Common_Library.ScrollToOriginalSize(#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_originalSizeSettingsTextImage)
+        //clicks on any size option
+        Common_Library.ValidateandCheck(#scan_originalSizeMenuSelectionList,#scan_originalSizeMenuSelectionListScrollBar,#anyscan_originalSize)
+    }
+    Fail:
+    {
+        Fail (Unable to find the  Original size)
+    }
+  
+    //Ligher and darker 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_lighterDarkerSettingsSlider,0.05) 
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_lighterDarkerMenuSlider,9)
+    }
+    Fail:
+    {
+        Fail (Unable to find the LighterDarker)
+    }
+    
+    //Sharpness
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_sharpnessSettingsSlider,0.05) 
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_sharpnessMenuSlider,5)
+    }
+    Fail:
+    {
+        Fail (Unable to find the Sharpness)
+    }
+    
+    //Contrast
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_contrastSettingsSlider,0.05) 
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_contrastMenuSlider,9)
+    }
+    Fail:
+    {
+        Fail (Unable to find the Contrast)
+    }
+     
+    //Background cleanup
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#scan_backGroundCleanUpSettingsSlider,0.05) 
+    {
+        //sets the slider to 5 value
+        Dune.SetSliderValue (#scan_backGroundCleanUpMenuSlider,9)
+    }
+    Fail:
+    {
+        Fail (Unable to find the Background cleanup)
+    }
+       
+    //number of copies 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copy_numberOfCopiesSettingsSpinBox,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #SpinBoxTextInput)
+        Dune.Wait For (#enterKeyPositiveIntegerKeypad,3)
+        Dune.Click Id (#key2PositiveIntegerKeypad)
+        Dune.Click Id (#enterKeyPositiveIntegerKeypad)
+        
+    }
+    Fail:
+    {
+        Fail (Unable to scroll to copies)
+    }
+        
+    //collate options 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copy_collateToggleSettingsSwitch,0.05)
+    {
+        Repeat:2
+        {
+            Dune.Click Id (#copy_collateToggleMenuSwitch)
+        }
+    }
+    Fail:
+    {
+        Fail (Unable to find the collate option)
+    }
+      
+    //ouput scale options 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copySettingResize,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copySettingResize)
+        Dune.Wait For (#copyResizeView #none,3)
+        Common_Library.ValidateandCheck (#copyResizeView,#copyResizeViewScrollBar,#fitToPage)
+        Dune.Click Id (#custom)
+        Dune.Click Id (#fullPage)
+        Dune.Click Id (#legalToLetter)
+        Dune.Click Id (#a4ToLetter)
+        Dune.Click Id (#letterToA4)
+        Dune.Click Id (#none)
+        Dune.Click (#copyResizeView #BackButton)
+    }
+    Fail:
+    {
+        Fail (Unable to find the output scale)
+    }
+      
+    //Pages per sheet options 
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copySettingPagesPerSheet,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copySettingPagesPerSheet)
+        Dune.Wait For (#copy_pagesPerSheetView,3)
+        Dune.Click Id (#copy_pagesPerSheetView #oneUp)
+        Sleep (1)
+        Dune.Click Id (#copy_pagesPerSheetView #fourRightThenDown)
+        Sleep (1)
+        Dune.SwipeVertically (#copy_pagesPerSheetView,#copy_pagesPerSheetViewScrollBar,#ComboBoxOptionsfourDownThenRight,0.05)
+        Dune.Click Id (#copy_pagesPerSheetView #fourDownThenRight)
+        Sleep (1)
+        Dune.SwipeVertically (#copy_pagesPerSheetView,#copy_pagesPerSheetViewScrollBar,#CheckBoxOptionsAddPageBorders,0.05)
+        Dune.Click Id (#copy_pagesPerSheetView #AddPageBorders)
+        Sleep (1)
+        Dune.SwipeVertically (#copy_pagesPerSheetView,#copy_pagesPerSheetViewScrollBar,#ComboBoxOptionsoneUp,0.05)
+        Dune.Click Id (#copy_pagesPerSheetView #twoUp)
+        Dune.Click Id (#copy_pagesPerSheetView #BackButton)
+         
+    }
+    Fail:
+    {
+        Fail (unable to find pages per sheet option)
+    }
+    
+    //Booklet option
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copySettingBooklet,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copySettingBooklet)
+        Dune.Wait For (#copy_bookletView #CheckBoxOptionsbookletFormatImageContainer,3)
+        Dune.Click Id (#copy_bookletView #CheckBoxOptionsbookletFormatImageContainer)
+        Dune.Wait For (#CheckBoxOptionsbordersOnEachPageImageContainer,3)
+        Dune.Click Id (#CheckBoxOptionsbordersOnEachPageImageContainer)
+        Dune.Click Id (#doneButton)
+    }
+    Fail:
+    {
+        Fail (Unable to select the booklet)
+    }
+      
+    //Paper slection options
+    Sleep (2)
+    If: Dune.SwipeVertically (#copySettingsPage_list1,#copySettingsPage_list1ScrollBar,#copyPaperSelection,0.05)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #copyPaperSelection)
+        Dune.Wait For (#copy_paperSelectionMenuList,3)
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        Dune.Wait For (#copy_mediaSizeMenuSelectionList,3)
+        //clicks on letter(8.5x11 in.)
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_letter_8_dot_5x11incopy_mediaSize)
+         
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Legal(8.5x14 in.)
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_legal_8_dot_5x14incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on executive(7.25x10.5 in.)
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_executive_7_dot_25x10_dot_5incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Statement
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_invoice_5_dot_5x8_dot_5incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on FourXSix
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_index_dash_4x6_4x6incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on FiveXSeven
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_5x7_5x7incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on FiveXEight
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_index_dash_5x8_5x8incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on A4
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_a4_210x297mmcopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on A6
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_a6_105x148mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on RA4
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_ra4_215x305mmcopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on B5
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#jis_b5_182x257mmcopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on B6
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#jis_b6_128x182mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on TenxFifteen
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#om_small_dash_photo_100x150mmcopy_mediaSize)
+            
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Oficio216x340
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_oficio_8_dot_5x13_dot_4incopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Oficio216x340
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#om_16k_195x270mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Sixteen184x260
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#om_16k_184x260mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Sixteen197x273
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#roc_16k_7_dot_75x10_dot_75incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on PostcardJis
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#jpn_hagaki_100x148mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on DoublePostcard
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#jpn_oufuku_148x200mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeHashTen
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_number_dash_10_4_dot_125x9_dot_5incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeMonarch
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#na_monarch_3_dot_875x7_dot_5incopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeB5
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_b5_176x250mmcopy_mediaSize)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeC5
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_c5_162x229mmcopy_mediaSize)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on EnvelopeDL
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#iso_dl_110x220mmcopy_mediaSize)
+         
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_mediaSizeSettingsTextImage)
+        //clicks on Any
+        Common_Library.ValidateandCheck (#copy_mediaSizeMenuSelectionList,#copy_mediaSizeMenuSelectionListScrollBar,#anycopy_mediaSize)
+    }
+    Fail:
+    {
+        Fail (unable to find Paper slection)
+    }
+      
+    //Paper type options 
+    Sleep (2)
+    If: Dune.Wait For (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage,3)
+    { 
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        Dune.Wait For (#copy_paperTypeMenuSelectionList,3)
+        
+        //selects anysize       
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#anycopy_paperType)
+        
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects Light 
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_lightweightcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects HpEcoEFFICIENT
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_EcoSMARTLitecopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  MidWeight
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_midweightcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Heavy
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_heavyweightcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  ExtraHeavy
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_extra_dash_heavycopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  ColorTransparency
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#transparencycopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Labels
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#labelscopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  StationeryLetterhead
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_letterheadcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Envelope
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#envelopecopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects StationeryPreprinted 
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_preprintedcopy_paperType)         
+                  
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Colored
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_coloredcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Bond
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationery_dash_bondcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects  Recycled
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#com_dot_hp_dot_recycledcopy_paperType)
+          
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperTypeSettingsTextImage)
+        //selects Automatic
+        Common_Library.ValidateandCheck (#copy_paperTypeMenuSelectionList,#copy_paperTypeMenuSelectionListScrollBar,#stationerycopy_paperType)
+    }
+    Fail:
+    {
+        Fail (unable to find Paper type)
+    }
+      
+    //trays options 
+    Sleep (2)
+    If: Dune.Wait For (#copy_paperSelectionMenuList #copy_paperSourceComboBox,3)
+    {
+        Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+        If: Dune.Wait For (#copy_paperSourceComboBoxpopupList,3)
+        {
+            //clicks on tray 1 
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstray_dash_1)
+            
+            Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+            //click on tray2  
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionstray_dash_2)
+                  
+            Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+            //clicks on tray5  
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsmanual)
+              
+            Dune.Click Id (#copy_paperSelectionMenuList #copy_paperSourceComboBox)
+            //clicks on Automatic 
+            Common_Library.ValidateandCheck (#copy_paperSourceComboBoxpopupList,#comboBoxScrollBar,#ComboBoxOptionsauto_)
+        } 
+        Dune.Wait For (#copy_paperSelectionMenuList #BackButton,3)
+        Dune.Click Id (#copy_paperSelectionMenuList #BackButton)
+    }
+    Fail:
+    {
+        Fail (unable to find Paper tray)
+    }
+     
+    // Closing the option panel and click on Send button
+    Sleep (2)
+    If: Dune.Wait For (#copySettingsPage_list1 #closeButton,2)
+    {
+        Dune.Click Id (#copySettingsPage_list1 #closeButton)
+         
+        //click on copy button
+        Dune.Wait For (#mainActionButtonOfDetailPanel,5)
+        Dune.Click Id (#mainActionButtonOfDetailPanel)
+        //clicks on done button, this button is available when we select the options other than 1 to 2 sided 
+        Sleep (3)
+        If: Dune.Wait For (#finish,30)
+        {
+            //this button will be avaliable only if we select original side as 2 to 1 sided 
+            Dune.Click Id (#finish)
+        } 
+        Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,5)
+        Dune.Wait For Active Job Gone (Copy,25)
+        Sleep (7)
+        Dune.Go To Home Screen
+        Sleep (2)
+        Dune.Click (#StatusButtonSignOut)
+    }
+}
+Teardown
+{
+    Dune.Go To Home Screen
+    Dune.Click (#StatusButtonResetSettings)
+    While: Dune.Wait For (#infoTextToastMessage,5)
+    {
+            Common_Library.SleepTime
+    } 
+}

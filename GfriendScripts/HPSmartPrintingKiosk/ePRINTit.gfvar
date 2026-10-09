@@ -1,0 +1,23 @@
+﻿
+//login
+${URL} = https://gouat.printanywhere.com/cps/Login
+${STF_Username}= gunda.nagarjuna@hp.com
+${STF_Password}= Hp@12345
+
+//Document to print 
+${path} = C:\Users\rdladmin\Document_To_print.txt
+
+
+//Device Login
+${PIN} = QiDFX6
+${STF_Document_name} = Document_To_print.txt
+
+
+
+//For PIN Authentication, provide the variable (${PIN_AUTH) value as Y
+//For Username and password Authentication, provide the variable (${PIN_AUTH)) value as N
+${PIN_AUTH} = Y
+
+
+
+

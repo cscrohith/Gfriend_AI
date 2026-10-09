@@ -1,0 +1,19 @@
+﻿// Device Health portal parameters
+${DevHealth_url} = dcfleetops.ext.hp.com/healthcheck/
+${DevHealth_User} = rdl.etl.boise+dhsupport@gmail.com
+${DevHealth_PassWord} = 007L@z3r
+
+// Browser, Specifying Default as the Browser uses Chrome in Headless Mode with no visible UI
+//${DevHealth_Browser} = Default
+${DevHealth_Browser} = Chrome
+//${DevHealth_Browser} = FireFox
+//${DevHealth_Browser} = Edge
+
+// device to search
+${DevHealth_SN} = PHF7MT1083
+
+// timing parameters
+${DevHealth_LogInTimeOut} = 45
+${EventLogRefreshMaxCount} = 40
+${RefreshRepititions} = 10
+${RefreshIterationDelay} = 120

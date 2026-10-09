@@ -1,0 +1,349 @@
+﻿using JediOmni
+using Android
+using Info
+using Windows
+
+/////////////////////////////////////////////////
+// Routine:         EOP_PullPrint
+// Description:     EOP Pullprint Job
+//
+// Arguments:       ${PRINT_ALL}) - Print All Variable
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+EOP_PullPrint(${PRINT_ALL},${STF_UserName},${STF_UserPassword},${LAZY_AUTH},${SHORT_ID},${SHORT_ID_CODE},${PRINT_HOLD},${APP_ID})
+{
+    
+    Info.Start Time Check (STF_ProcessingJob)
+    
+    Info.Start Time Check (STF_AppShown)
+    
+    If: EOP_AUTH.SignInEOP(${STF_UserName},${STF_UserPassword},${LAZY_AUTH},${SHORT_ID},${SHORT_ID_CODE},${APP_ID})
+    {
+        //All Good, Continue
+    }
+    
+    Sleep (5)
+  
+    If: Android.Wait For Object (com.everyoneprint.hplink:id/itemCheckBox,20)
+    {
+        Info.Mark Start (STF_ProcessingJob,6)
+        //To Print all the Documents
+        If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            Android.Touch ID (com.everyoneprint.hplink:id/allButton)
+            If: Equals IgnoreCase (${PRINT_HOLD},Y)
+            {
+                Android.Touch ID (com.everyoneprint.hplink:id/printAndHoldJobButton)    
+            }
+            Fail:
+            {
+                Android.Touch ID (com.everyoneprint.hplink:id/printJobButton)
+            }              
+        } 
+        
+        //To Print Only 1 Document
+        Fail:
+        {
+            Android.Touch ID (com.everyoneprint.hplink:id/itemCheckBox)
+            If: Equals IgnoreCase (${PRINT_HOLD},Y)
+            {
+                Android.Touch ID (com.everyoneprint.hplink:id/printAndHoldJobButton)    
+            }
+            Fail:
+            {
+                Android.Touch ID (com.everyoneprint.hplink:id/printJobButton)
+            }
+         Info.Mark End (STF_ProcessingJob,6)
+        }
+    }
+    
+    Fail:
+    {
+        Fail (No Jobs found to Pull!) 
+    }
+    
+    If: JediOmni.Wait For Active Job (20)
+    {
+        //Continue
+    }
+    Fail:
+    {
+        Return With Fail (Failed to initiate print jobs within 20 seconds!)
+    }
+    
+    If: JediOmni.Wait For Active Job Gone (300)
+    {
+        Return With Pass (Print Job Completed Successfully) 
+    }
+    Fail:
+    {
+        Return With Fail (Failed to print jobs within 100 seconds!)
+    }
+}
+
+/////////////////////////////////////////////////
+//Routine:         ClearAuth
+//Description:     make sure at Home screen, signed out and reset
+//
+//Arguments: 
+//      
+//Pre-requisites: 
+// 
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+      
+ClearAuth
+{
+    JediOmni.Press Home Key
+    If: JediOmni.Wait For Text (Sign In,10)
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Touch Text (Sign Out)
+        {
+            JediOmni.Wait For Text Gone (Signing out,30)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to Sign Out!)
+        }
+    }
+    JediOmni.Reset
+}
+
+//////////////////////////////////////////////////
+//Routine:         VerifyUserLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+     
+
+SignInEOP(${STF_UserName},${STF_UserPassword},${LAZY_AUTH},${SHORT_ID},${SHORT_ID_CODE},${APP_ID})
+{
+
+    Info.Start Time Check (STF_Authentication)
+    
+    Info.Start Time Check (STF_EnterCredentials)
+        
+    Info.Start Time Check (STF_AppShown)
+    
+    Info.Start Time Check (STF_AppButtonPress)
+    
+    Info.Start Time Check (STF_DeviceButtonPress)
+    
+    If: EOP_AUTH.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+    
+    
+    //Lazy Authentication Begin
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    {  
+        Info.Mark Start (STF_AppButtonPress,2)
+        If: JediOmni.Touch ID (${APP_ID})
+        {  
+            Info.Mark End (STF_AppButtonPress,2)
+                   
+            //Short ID Login
+            If: Equals IgnoreCase (${SHORT_ID},Y)
+            {               
+                EOP_AUTH.SignInEOPShortID(${SHORT_ID_CODE})   
+            } 
+            
+            //Username and Password Login
+            Fail:
+            {
+                Info.Mark Start (STF_Authentication,4)
+                Info.Mark Start (STF_EnterCredentials,5)
+                
+                Android.Touch ID (com.everyoneprint.hplink.auth:id/keyboardLoginButton)
+                If: Android.Wait For Object (com.everyoneprint.hplink.auth:id/userInputEditText,20)
+                {
+                    //Enter Username
+                    Android.Touch ID (com.everyoneprint.hplink.auth:id/userInputEditText)
+                    Android.Input Text (${STF_UserName})
+                    
+                    //Enter Password
+                    Android.Touch ID (com.everyoneprint.hplink.auth:id/passwordEditText)
+                    Android.Input Text (${STF_UserPassword})
+                    
+                    Info.Mark End (STF_EnterCredentials,5)
+                    
+                    //Click On Login 
+                    Android.Touch ID (com.everyoneprint.hplink.auth:id/loginButton) 
+                    Info.Mark End (STF_Authentication,4) 
+                }  
+                Fail:
+                {
+                    Return With Fail (Failed Enterning Username!)
+                } 
+            }
+            Info.Mark End (STF_AppShown,3)             
+        }           
+    }
+
+    //Eager Authentication Begin
+    If: Equals IgnoreCase (${LAZY_AUTH},N)
+    {
+        Info.Mark End (STF_DeviceButtonPress,1)
+        // press the Sign In button
+        JediOmni.Touch ID (hp-button-signin-or-signout)
+        
+        //Setting EOP Authentication
+        If: JediOmni.Wait For Text (Local Device,20)
+        {
+            JediOmni.Touch ID (hpid-dropdown-agent)
+            JediOmni.Touch Text (EopAuthAgent)
+        }
+         
+        //Short ID Login
+        If: Equals IgnoreCase (${SHORT_ID},Y)
+        {              
+            EOP_AUTH.SignInEOPShortID(${SHORT_ID_CODE})
+            
+            Info.Mark End (STF_AppButtonPress,2)
+            //Clicking on PullPrint App       
+            If: JediOmni.Wait For Object (${APP_ID},20)
+            {
+               JediOmni.Touch ID (${APP_ID})
+            }
+            Info.Mark End (STF_AppShown,3)     
+        }
+    
+        //Username and Password Login
+        Fail:
+        {
+            Info.Mark Start (STF_Authentication,4)
+            Android.Touch ID (com.everyoneprint.hplink.auth:id/keyboardLoginButton)
+            
+            If: Android.Wait For Object (com.everyoneprint.hplink.auth:id/userInputEditText,20)
+            {
+                Info.Mark Start (STF_EnterCredentials,5)
+                //Enter Username
+                Android.Touch ID (com.everyoneprint.hplink.auth:id/userInputEditText)
+                Android.Input Text (${STF_UserName})
+                    
+                //Enter Password
+                Android.Touch ID (com.everyoneprint.hplink.auth:id/passwordEditText)
+                Android.Input Text (${STF_UserPassword})
+                
+                Info.Mark End (STF_EnterCredentials,5)
+                
+                //Click On Login 
+                Android.Touch ID (com.everyoneprint.hplink.auth:id/loginButton)  
+                
+                Info.Mark End (STF_Authentication,4)
+
+                Info.Mark End (STF_AppButtonPress,2)     
+                //Click on PullPrint App    
+                If: JediOmni.Wait For Object (${APP_ID},20)
+                {
+                    JediOmni.Touch ID (${APP_ID})
+                }      
+                Info.Mark End (STF_AppShown,3)           
+            }  
+                         
+            Fail:
+            {
+                Return With Fail (Failed Enterning Username!)
+            } 
+             
+        }  
+    }        
+}
+
+//////////////////////////////////////////////////
+//Routine:         VerifyUserLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+
+SignInEOPShortID(${SHORT_ID_CODE})
+{              
+    Info.Start Time Check (STF_Authentication)
+    
+    Info.Start Time Check (STF_EnterCredentials)
+            
+    If: Android.Wait For Object (com.everyoneprint.hplink.auth:id/shortIdLoginButton,15)
+     {
+         Info.Mark Start (STF_Authentication,4)
+         //Short ID Login
+         Android.Touch ID (com.everyoneprint.hplink.auth:id/shortIdLoginButton)
+         Android.Touch ID (com.everyoneprint.hplink.auth:id/passwordEditText)
+         Info.Mark Start (STF_EnterCredentials,5)
+         Android.Input Text (${SHORT_ID_CODE})
+         Info.Mark End (STF_EnterCredentials,5)
+         
+         //Click on Login
+         Android.Touch ID (com.everyoneprint.hplink.auth:id/loginButton) 
+         Info.Mark End (STF_Authentication,4)   
+     }
+                 
+     Fail:
+     {
+          Return With Fail (Fail To Switch To Short ID)
+     }
+ }
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignOut
+{
+    //App Signout 
+    Info.Start Time Check (STF_DeviceSignOutBegin)
+    Info.Start Time Check (STF_DeviceSignOutEnd)
+    Info.Mark Start (STF_DeviceSignOutBegin,4)
+    If: Android.Wait For Object (com.everyoneprint.hplink:id/logoutButton,15)
+    {
+        Android.Touch ID (com.everyoneprint.hplink:id/logoutButton)
+    }
+    Fail:
+    {
+        Fail (Failed to find Home Screen Sign Out!)
+    }
+    Info.Mark End (STF_DeviceSignOutEnd,4)
+    Info.Draw Time Graph (STF_DeviceSignOutBegin)
+    Info.Draw Time Graph (STF_DeviceSignOutEnd)
+}

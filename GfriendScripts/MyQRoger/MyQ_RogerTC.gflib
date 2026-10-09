@@ -1,0 +1,169 @@
+﻿using JediOmni
+using Android
+
+
+/////////////////////////////////////////////////
+// Routine:         MyQRoger_PullPrint
+// Description:     MyQRoger Pullprint Job
+//
+// Arguments:      
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+MyQRoger_PullPrint(${STF_UserName},${STF_UserPassword},${FOLDER},${FOLDER_NAME},${DOCUMENT_NAME})
+{    
+    If: MyQ_RogerTC.SignInMyQ(${STF_UserName},${STF_UserPassword})
+    {
+        //All Good, Continue
+    }
+    If: Android.Wait For Object (cz.myq.roger.home:id/error_text,30)
+    {
+        Return With Fail (Login Failed)
+        Android.Capture Screen Shot (Login Failed)
+    }
+    Sleep (5)
+  
+    If: Android.Wait For Object (cz.myq.roger.home:id/user_head,60)
+    {
+        Sleep (5)
+        Android.Touch Text (Google Drive)
+        If: Equals IgnoreCase (${FOLDER},Y)
+        {
+            MyQ_RogerTC.Print_Folder_Job(${FOLDER_NAME},${DOCUMENT_NAME})
+        } 
+             
+        Fail:
+        {
+            MyQ_RogerTC.Print_Job(${DOCUMENT_NAME})
+        }              
+    }
+    
+    Fail:
+    {
+        Return With Fail (Login Failed)
+        Android.Capture Screen Shot (Login Failed)
+    }
+    
+    If: Android.Wait For Text (Print completed,300)
+    {
+        //Continue
+    }
+    Fail:
+    {
+        Return With Fail (Error While Printing Document!)
+        Android.Capture Screen Shot (Error While Printing Document!)
+    }
+}
+
+//////////////////////////////////////////////////
+//Routine:         VerifyUserLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+
+SignInMyQ(${STF_UserName},${STF_UserPassword})
+{
+    If: Android.Wait For Object (cz.myq.roger.home:id/name,60)
+    {
+        //Enter Username
+        Android.Touch ID (cz.myq.roger.home:id/name)
+        Android.Input Text (${STF_UserName})
+        Android.Touch XPath (//node[@index='20'])
+                    
+        Sleep (3)
+        
+        //Enter Password
+        Android.Touch ID (cz.myq.roger.home:id/pwd)
+        Android.Input Text (${STF_UserPassword})
+        Android.Touch XPath (//node[@index='20']) 
+     }  
+     Fail:
+     {
+         Return With Fail (Device is not Registered Please Register and try again)
+         Android.Capture Screen Shot (Device Registeration Failed)
+     } 
+} 
+
+/////////////////////////////////////////////////
+//Routine:         Print_Folder_Job
+//Description:     Print the document from the folder
+//
+//Arguments: 
+//      
+//Pre-requisites: 
+// 
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+Print_Folder_Job(${FOLDER_NAME},${DOCUMENT_NAME})
+{
+    //Select the Folder
+    If: Android.Wait For Text (${FOLDER_NAME},30)
+    {
+        Android.Touch Text (${FOLDER_NAME})
+    }
+    Fail:
+    {
+        Return With Fail (Folder does not exists)
+        Android.Capture Screen Shot (Folder does not exists)
+    }
+    
+    //Select the Document
+    If: Android.Wait For Text (${DOCUMENT_NAME},30)
+    {
+        Android.Touch Text (${DOCUMENT_NAME})
+    }
+    Fail:
+    {
+        Return With Fail (File does not exists)
+        Android.Capture Screen Shot (File does not exists)
+    }
+    
+    //Click on Print
+    Android.Wait For Object (cz.myq.roger.home:id/execute,60)
+    Android.Touch ID (cz.myq.roger.home:id/execute)    
+    
+}
+
+/////////////////////////////////////////////////
+//Routine:         Print_Job
+//Description:     Print the document
+//
+//Arguments: 
+//      
+//Pre-requisites: 
+// 
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+Print_Job(${DOCUMENT_NAME})
+{
+    //Select the Document
+    If: Android.Wait For Text (${DOCUMENT_NAME},90)
+    {
+        Android.Touch Text (${DOCUMENT_NAME})
+    }
+    Fail:
+    {
+        Return With Fail (File does not exists)
+        Android.Capture Screen Shot (File does not exists)
+    }
+    
+    //Click on Print
+    Android.Wait For Object (cz.myq.roger.home:id/execute,60)
+    Android.Touch ID (cz.myq.roger.home:id/execute)
+}

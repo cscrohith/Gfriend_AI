@@ -1,0 +1,446 @@
+﻿using JediOmni
+using Oxpd
+using HP_Advance_Scan_Variables.gfvar
+using Info
+
+/////////////////////////////////////////////////
+// Routine:         SignIn_HP Advance_Pin
+// Description:     sign in with the Pin Authentication
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignInHPAdvancePin(${LAZY_AUTH},${UserCode})
+{
+    Info.Start Time Check (STF_DeviceButtonPress)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    If: HP_Advance_Scan_Library.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+    
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    {
+        
+        If: JediOmni.Touch Text (Secure Scan)
+        {
+            //AppbuttonPress doesn't need start marker
+            Info.Mark End (STF_AppButtonPress,5)
+            //Lazy Auth
+        }
+        Fail:
+        {
+            Return With Fail (Failed to click on Secure Scan!)
+        }
+    }
+    Fail:
+    {
+        // press the Sign In button
+        JediOmni.Touch ID (hpid-control-signin)
+        //DevicebuttonPress doesn't need start marker
+        Info.Mark End (STF_DeviceButtonPress,1)
+    }
+    
+    Oxpd.Get Browser Engine (${Short_Wait_Time})
+    Info.Mark Start (STF_Authentication,2)
+    If: Oxpd.Wait For Id (authentication_screen-request-code-or-credentials_userCode,${Short_Wait_Time})
+    {
+        Info.Mark Start (STF_EnterCredentials,3)
+        Oxpd.Touch Id (authentication_screen-request-code-or-credentials_userCode)
+        Oxpd.Input Text (${UserCode})
+            
+        // Keyboard OK
+        Jediomni.Touch Text (OK)
+        Info.Mark End (STF_EnterCredentials,3)
+        //Footer OK
+        Oxpd.Touch Id (authentication_screen-request-code-or-credentials_accept)
+        
+    }
+    Info.Mark End (STF_Authentication,2)
+    
+    Fail:
+    {
+        Return With Fail (Failed to load authentication text field!)
+    }
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    {
+        Oxpd.Wait For Xpath Gone (hpid-oxpd-spinner,${Longest_Wait})
+        Info.Mark End (STF_AppShown,6)
+    }
+    
+   Info.Draw Time Graph (STF_DeviceButtonPress) 
+   Info.Draw Time Graph (STF_AppButtonPress)
+   Info.Draw Time Graph (STF_AppShown)
+   Info.Draw Time Graph (STF_Authentication)
+   Info.Draw Time Graph (STF_EnterCredentials)
+    
+      
+}
+
+
+/////////////////////////////////////////////////
+//Routine:         ClearAuth
+//Description:     make sure at Home screen, signed out and reset
+//
+//Arguments: 
+//      
+//Pre-requisites: 
+// 
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+      
+ClearAuth
+{
+    JediOmni.Press Home Key
+    If: JediOmni.Wait For Text (Sign In,${Short_Wait_Time})
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Touch Text (Sign Out)
+        {
+            JediOmni.Wait For Text Gone (Signing out,${Long_Wait})
+        }
+        Fail:
+        {
+            Return With Fail (Failed to Sign Out!)
+        }
+    }
+    JediOmni.Reset
+}
+
+
+/////////////////////////////////////////////////
+// Routine:         SignIn_HP Advance_UserNamePassword
+// Description:     Sign in with the Username\Password Authentication
+//
+// Arguments:       (${STF_UserName}) - Username
+//                 (${STF_UserPassword}) - Password
+//                 (${Lazy_Auth}) - Lazy Authentication
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+
+SignInHPAdvanceUserNamePassword(${STF_UserName},${STF_UserPassword},${LAZY_AUTH})
+{
+    Info.Start Time Check (STF_DeviceButtonPress)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    If: HP_Advance_Scan_Library.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    {
+        If: JediOmni.Touch Text (Secure Scan)
+        {
+            //AppbuttonPress doesn't need start marker 
+            Info.Mark End (STF_AppButtonPress,5)
+            //Lazy Auth
+        }
+        Fail:
+        {
+            Return With Fail (Failed to click on Secure Scan!)
+        }
+    }
+    Fail:
+    {
+        // press the Sign In button
+        JediOmni.Touch ID (hpid-control-signin)
+        //DevicebuttonPress doesn't need start marker
+        Info.Mark End (STF_DeviceButtonPress,1)
+        
+    }
+    
+    Oxpd.Get Browser Engine (5)
+    Info.Mark Start (STF_Authentication,2)
+    If: Oxpd.Wait For Id (authentication_screen-request-code-or-credentials_userCode,${Short_Wait_Time})
+    {
+        Info.Mark Start (STF_EnterCredentials,3)
+        Oxpd.Touch Id (authentication_screen-request-code-or-credentials_action)
+        If:Oxpd.Wait For Id(authentication_screen-require-credentials_userUsername,${Wait_Time})
+        {
+            Oxpd.Touch Id (authentication_screen-require-credentials_userUsername)
+            Oxpd.Input Text (${STF_UserName})
+            JediOmni.Touch Text (OK)
+            Oxpd.Touch Id (authentication_screen-require-credentials_userPassword)
+            Oxpd.Input Text (${STF_UserPassword})
+                
+            // Keyboard OK
+            JediOmni.Touch Text (OK)
+            Info.Mark End (STF_EnterCredentials,3)
+            //Footer OK
+            Oxpd.Touch Id (authentication_screen-require-credentials_accept)
+        }
+        
+    }
+    Info.Mark End (STF_Authentication,2)
+   
+    Fail:
+    {
+        Return With Fail (Failed to load authentication text field!)
+    }
+     If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    {
+        Oxpd.Wait For Xpath Gone (hpid-oxpd-spinner,${Longest_Wait})
+        Info.Mark End (STF_AppShown,6)
+    }
+   Info.Draw Time Graph (STF_DeviceButtonPress) 
+   Info.Draw Time Graph (STF_AppButtonPress)
+   Info.Draw Time Graph (STF_AppShown)
+   Info.Draw Time Graph (STF_Authentication)
+   Info.Draw Time Graph (STF_EnterCredentials)
+    
+    
+}
+
+
+/////////////////////////////////////////////////
+// Routine:         HP AC Secure Scan
+// Description:     HP AC Secure Scan Job
+//
+// Arguments:       
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+HPACSecureScan(${TEXT_FIELD_NAME},${PAPER_SUPPLY},${COLOR_MODE},${QUALITY},${JOB_BUILD},${SCAN_COUNT})
+{ 
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_ScanJob)
+    If: JediOmni.Wait For Object (hpid-43617065-6c6c-614d-4a20-1004214c5204-homescreen-button,${Wait_Time})
+    {
+        Info.Mark Start (STF_AppButtonPress,5)
+        JediOmni.Touch ID (hpid-43617065-6c6c-614d-4a20-1004214c5204-homescreen-button)
+        Info.Mark End (STF_AppButtonPress,5)
+         If: Oxpd.Wait For Xpath Gone (hpid-oxpd-spinner,${Longest_Wait})
+          {
+               //contiune 
+            Info.Mark End (STF_AppShown,6)
+          }
+    }
+        
+    //Stay in profile
+    If: Oxpd.Wait For Xpath Gone (hpid-oxpd-spinner,${Longest_Wait})
+    {
+       //contiune 
+     
+    }
+    Fail:
+    {
+        Return With Fail (Failed to click on Stay in profile!)
+    }
+    
+    If: Equals IgnoreCase (${TEXT_FIELD_NAME},Email)
+    {
+        
+    }
+    
+    //Scan
+   
+    If: Equals IgnoreCase (${TEXT_FIELD_NAME},SCAN)
+    Info.Mark Start (STF_ScanJob,9)
+    {
+        Oxpd.Touch Text (${TEXT_FIELD_NAME})
+        //Advanced
+        If: Oxpd.Wait For Id (advanced_button,${Wait_Time})
+        { 
+            Oxpd.Touch Id (advanced_button)
+         
+            //Paper Supply
+            Oxpd.Wait For Id (${PAPER_SUPPLY},${Wait_Time})
+            Oxpd.Touch Id (${PAPER_SUPPLY})
+         
+            //Color Mode
+            Oxpd.Touch Id (${COLOR_MODE})
+              
+            //Quality
+            Oxpd.Touch Id (${QUALITY})
+         
+            //Job Build
+            If: Equals IgnoreCase (adv_append_enabled,${JOB_BUILD})
+            {
+                Oxpd.Touch Id (${JOB_BUILD})
+            }
+        
+            //Scan
+            Oxpd.Touch Id (scan_button)
+         
+        }
+        Fail:
+        {
+            Return With Fail (Failed to load Advanced options!)
+        }
+     
+        //For Duplex
+        If: Equals IgnoreCase (adv_duplex,${PAPER_SUPPLY})
+        {
+            While:JediOmni.Wait For Object (hpid-button-scan,${Very_Long_Wait}):${SCAN_COUNT}
+            {
+                JediOmni.Touch ID (hpid-button-scan)
+            
+            }
+             
+            JediOmni.Wait For Object (hpid-button-done,${Very_Long_Wait})
+            Sleep (10)
+            JediOmni.Touch ID (hpid-button-done)
+        
+        }
+        Info.Mark End (STF_ScanJob,9)
+        //For Simplex
+        Fail:
+        {
+            //No special procedure for Simplex paper supply
+        }
+    
+        //Wait for job to load and complete
+        If: JediOmni.Wait For Active Job (${Wait_Time})
+        {
+            //Continue
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to initiate print jobs within ${Wait_Time} seconds!)
+        }
+    
+        If: JediOmni.Wait For Active Job Gone (${Longest_Wait})
+        {
+            Return With Pass (Scan Job Completed Successfully)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to Scan jobs within ${Longest_Wait} seconds!)
+        }  
+    
+    }
+    Fail:
+    {
+        Return With Fail (Failed to load Scan!)
+    }
+    Info.Draw Time Graph (STF_AppButtonPress)
+    Info.Draw Time Graph (STF_AppShown)
+    Info.Draw Time Graph (STF_ScanJob)
+}
+
+/////////////////////////////////////////////////
+// Routine:         JobBuildFinish
+// Description:     Clicks on Finish if Job Build is enabled
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+JobBuildFinish
+{ 
+    Info.Start Time Check (STF_NavigateHome)
+    //Finish for Job Build
+    If: Oxpd.Wait For Id (finish_button,${Long_Wait})
+    {
+        Info.Mark Start (STF_NavigateHome,10)
+        Oxpd.Touch Id (finish_button)
+        Info.Mark End (STF_NavigateHome,10)
+    }
+    Info.Draw Time Graph (STF_NavigateHome)
+}
+    
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignOut
+{
+    // make sure at Home screen, signed out and reset 
+    JediOmni.Press Home Key
+    Info.Start Time Check (STF_DeviceSignOut)
+    If: JediOmni.Wait For Text (Sign Out,${Wait_Time})
+    {
+        Info.Mark Start (STF_DeviceSignOut,13)
+        JediOmni.Touch Text (Sign Out)
+        Info.Mark End (STF_DeviceSignOut,13)
+    }
+    Fail:
+    {
+        Return With Fail (Failed to Sign Out!)
+    }
+    Info.Draw Time Graph (STF_DeviceSignOut)
+}
+
+/////////////////////////////////////////////////
+// Routine:         GenerateUserCode
+// Description:     Generates usercode from username
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+GenerateUserCode(${STF_UserName})
+{
+    If: Equals IgnoreCase (${STF_UserName},jawa)
+    {
+        Set Variable (${UserCode},111111)
+    }
+    Fail:
+    {
+        Set Variable (${UserCode},${STF_UserName})
+        Replace (${UserCode},u,)
+        Replace (${UserCode},U,)
+    }
+}
+

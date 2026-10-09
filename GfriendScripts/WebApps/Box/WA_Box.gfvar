@@ -1,0 +1,14 @@
+﻿// App variables
+${ButtonText} = HP for Box \(Special Edition\)
+${ButtonID} = hpid-eaf8f7de-39ca-405f-90fc-e2430e07de4c-homescreen-button
+
+// App user varibles
+${AppUserID}=sivcbox+auto1@gmail.com
+${AppPassword}=007L@z3r
+
+${SaveSIO_AppCredentials}=Y
+${VerifySIOConnectDuringAppOpen}=N
+
+// General variables
+${BackOutOfApp} = Y
+${DeviceSignOut} = Y

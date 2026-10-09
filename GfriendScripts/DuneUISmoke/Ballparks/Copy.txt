@@ -1,0 +1,26 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+Authentication
+{
+    Common_Library.CheckHomeScreen
+    Common_Library.AuthenticationEager(${UserName},${Password})
+}
+Copy_WorkFlow
+{
+    //waits and clicks on the copy app in home screen
+    If: Dune.Wait For (#cedab422-33b3-4638-b6a1-604e54525215,3)
+    {
+        Dune.Click (#cedab422-33b3-4638-b6a1-604e54525215)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to click on Copy Application)
+        Stop Test Suite
+    }
+}
+Option_Check
+{
+    Common_Library.Copy_Option_Validation_for_Camden_and_Busch
+}

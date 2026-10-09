@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Links>
+  <Settings>
+    <marqueedirection>Vertical</marqueedirection>
+    <speed>1</speed>
+  </Settings>
+	<Link>
+		<Name>Chatbot</Name>
+		<URL>https://hp.sharepoint.com/teams/gfriend2/Shared%20Documents/Training%20Videos/Chatbot.mp4</URL>
+	</Link>
+	<Link>
+		<Name>What's New feature</Name>
+		<URL>https://hp.sharepoint.com/teams/gfriend2/Shared%20Documents/Training%20Videos/Windows_video.mp4</URL>
+	</Link>
+  <Link>
+    <Name>Explore new features in GFriend!</Name>
+    <URL>https://hp.sharepoint.com/teams/gfriend2/SitePages/GFriend-New-Features.aspx</URL>
+  </Link>
+  <Link>
+    <Name>Keyword documentation is simple and easy now!</Name>
+    <URL>https://hp.sharepoint.com/teams/gfriend2/SiteAssets/SitePages/GFriend-New-Features/KeywordDocumentation--1-.mp4</URL>
+  </Link>
+  <Link>
+    <Name>Now UI Inspector supports Dune!</Name>
+    <URL>https://hp.sharepoint.com/teams/gfriend2/Shared%20Documents/Training%20Videos/Dune_device_video.mp4</URL>
+  </Link>
+  <Link>
+    <Name>Automation ids in windows apps</Name>
+    <URL>https://hp.sharepoint.com/teams/gfriend2/Shared%20Documents/Training%20Videos/Windows_video.mp4</URL>
+  </Link>
+</Links>

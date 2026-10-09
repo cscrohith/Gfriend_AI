@@ -1,0 +1,18 @@
+﻿//Credentials 
+${USERNAME} = rdladmin
+${PASSWORD} = rdl@123
+
+//To Print all the jobs, mention the variable (${PRINT_ALL}) value as Y
+//To Print one job, mention the variable (${PRINT_ALL}) value as N
+${PRINT_ALL} = N
+
+//For Badgebox,mention the variable (${BADGE_AUTH}) value as Y
+//For Credentials,mention the variable (${BADGE_AUTH}) value as N
+${BADGE_AUTH} = Y
+
+//BadgeIndex
+${BADGE_INDEX} = 1
+
+//To Print job,mention the variable (${PRINT}) value as Y
+//To Delete job,mention the variable (${PRINT}) value as N
+${PRINT} = Y

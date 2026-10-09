@@ -1,0 +1,3 @@
+﻿// password parameters, in case no password set
+${CheckBlankPassword} = Y
+${SetPasswordWhenBlank} = Y

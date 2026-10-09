@@ -1,0 +1,200 @@
+﻿Using MailVar_App.gfvar
+Using MailVar_Send_JPEG_3pg.gfvar
+
+Using Mail_Library.gflib
+Using Device_Library.gflib
+
+Using JediOmni
+
+/////////////////////////////////////////////////
+// Routine:         OpenApp
+// Description:     open the Mail app
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+OpenApp
+{
+    // open the app
+    If: Device_Library.LaunchApp(${MailButtonID},${MailButtonText})
+    {
+    }
+    Fail:
+    {
+        Fail (Launch '${MailButtonText}' app failed!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Error occurred while launching '${MailButtonText}' app!)
+        Stop Test Suite
+    }
+    Sleep (5)
+
+    // handle the app opening (EULA, Sign In and Guide screen)
+    If: Mail_Library.HandleAppOpening(${AppUserID},${AppPassword})
+    {
+    }
+    Fail:
+    {
+        Fail (Fail while handling the opening of '${MailButtonText}' app!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Error occurred while handling the opening of '${MailButtonText}' app!)
+        Stop Test Suite
+    }
+    
+    // handle the option to save app credentials
+    If: Mail_Library.HandleSaveCredentials(Y)
+    {
+    }
+    Fail:
+    {
+        Fail (Fail while saving app credentials '${MailButtonText}' app!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Error occurred while saving app credentials '${MailButtonText}' app!)
+        Stop Test Suite
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SendEmailJob
+// Description:     send an email job
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SendEmailJob
+{
+    // initiate the email job
+    If: Mail_Library.InitiateEmail
+    {
+    }
+    Fail:
+    {
+        Fail (Initiating email job failed!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error occurred while initiating email job!)
+        Stop Test Case
+    }
+    Sleep (5)
+    
+    If: Mail_Library.EnterEmailInfo(${Email_Destination},${Email_Subject},${Email_Body})
+    {
+    }
+    Fail:
+    {
+        Fail (Initiating email job failed!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error occurred while initiating email job!)
+        Stop Test Case
+    }
+    
+    // set the file type option
+    If: Mail_Library.OpenScanOptions
+    {
+        If: Mail_Library.SetScanOption_FileType(${Email_ScanFileType})
+        {
+            Mail_Library.CloseScanOptions
+        }
+        Fail:
+        {
+            Fail (Set scan options failed!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error occurred while setting scan options!)
+            Stop Test Case
+        }
+    }
+    Fail:
+    {
+        Fail (Fail opening the scan options!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error occurred while opening the scan options!)
+        Stop Test Case
+    }
+    
+    // perform the scan
+    If: Mail_Library.AddScanToEmail(${Email_ScanFilename},${Email_NumPages})
+    {
+    }
+    Fail:
+    {
+        Fail (Scannig for email job failed!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error occurred while scanning for email job!)
+        Stop Test Case
+    }
+    
+    // send the email
+    If: Mail_Library.SendEmail(${Email_NumPages})
+    {
+    }
+    Fail:
+    {
+        Fail (Sending email job failed!)
+    }
+    Error:
+    {
+        Error (Error occurred while sending email job!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         BackOut
+// Description:     back out of the Mail app
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+BackOut
+{
+    // open the app
+    If: Mail_Library.AppBackout
+    {
+    }
+    Fail:
+    {
+        Fail (App '${MailButtonText}' backout failed!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error occurred while backing out of '${MailButtonText}'!)
+        Stop Test Case
+    }
+}

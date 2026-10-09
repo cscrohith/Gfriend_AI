@@ -1,0 +1,102 @@
+﻿using Dune
+using Vision
+
+Test_SigninAsJDoe
+{
+    If: Dune.Wait For (#7db992ba-557a-461c-b941-6023aa8cfa34,5) 
+        {
+            Sleep (5)
+            //signin icon
+            Dune.Click (#7db992ba-557a-461c-b941-6023aa8cfa34)
+            Sleep (5)
+
+            //Sign-in as Authentication Agent
+            Dune.Wait For Enable (#userSignInComboBox,10)
+            Sleep (5)
+            Dune.Click (#userSignInComboBox)
+            Sleep (5)
+            While:!Dune.Wait For visibility (#userSignInComboBoxpopupList,#userSignInComboBoxItem_custom_63a79165-7266-444d-a7f1-e69e31abd243,1):15
+            {
+                Dune.Swipe By ControlId (#comboBoxScrollBar,^)
+            }
+            Sleep (5)
+            Dune.Wait For (#userSignInComboBoxItem_custom_63a79165-7266-444d-a7f1-e69e31abd243,10)
+            Sleep (5)
+            Dune.Click (#userSignInComboBoxItem_custom_63a79165-7266-444d-a7f1-e69e31abd243)
+            Sleep (5)
+           
+    
+             Vision.Set Target (Dune)
+             Vision.Set Text Grouping (word)
+             Sleep (15)
+             Vision.Click Text (User)
+             Sleep (5)
+             Repeat:6
+             {
+                 Dune.Click (#backspaceKey)
+                 Sleep (5)
+             }
+             Sleep (5)
+             
+             Dune.GenericKeyPadClick (jDoe)
+             Sleep (15)
+             Vision.ClickNextToText (Password,50,10)
+             Sleep (5)
+             //Repeat:8
+             //{
+             //    Dune.Click (#keyRight)
+             //    Sleep (5)
+             //}
+             Repeat:8
+             {
+                 Dune.Click (#backspaceKey)
+                 Sleep (5)
+             }
+             Sleep (5)
+             Dune.GenericKeyPadClick (janeDoe)
+             
+             Sleep (5) 
+             Dune.Click Id (#hideKeyboardKey) 
+             Sleep (15) 
+             Vision.Click Text (Login) 
+         }
+            Sleep (15)
+          //Click on PullPrintAuthDemo
+            Dune.Wait For (#37531a6f-50a8-4153-9bfe-d865f4493376,5)
+            Dune.Click (#37531a6f-50a8-4153-9bfe-d865f4493376)
+
+            Vision.Set Target (Dune)
+            Vision.Set Text Grouping (word)
+            Sleep (5)
+            
+            //click text- text should be unique 
+            Vision.Is Text Exist (TestPattern.pdf)
+            Vision.Click Text (TestPattern.pdf)
+            Sleep (15)
+            Vision.Is Text Exist (TestPDFFile.pdf)
+            Vision.Click Text (TestPDFFile.pdf)
+            Sleep (5)
+            Dune.SetOAuth2Standard_EnableTokenAuthFalse (9104,20)
+            Sleep (5)
+            //If more than one text has the same name, give the index value.
+            Vision.Click Text with index (Print,5)
+            Sleep (5)
+            Dune.Wait For Active Job (print,20)
+            Dune.Wait For Active Job Gone (print,20)
+            
+            //Sleep (30)
+            If:Vision.Is Text Exist (Processing)
+            {
+                Sleep (5)
+            }
+            If:Vision.Is Text Exist (Success)
+            {
+                Dune.Click (#homeButton)
+             
+            }
+            //9. click "Sign out"
+             If: Dune.Wait For (#7db992ba-557a-461c-b941-6023aa8cfa34,10)
+             {
+                 Dune.Click (#7db992ba-557a-461c-b941-6023aa8cfa34)
+             }
+}

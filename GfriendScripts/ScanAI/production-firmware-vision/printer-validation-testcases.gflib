@@ -1,0 +1,99 @@
+﻿using Vision
+using JediOmni
+using Oxpd
+using identifier-variables.gfvar
+
+SetTargetAndGrouping
+{
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (Block)
+}
+
+SetTargetAndGroupingWithWord
+{
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (Word)
+}
+
+ScanAI_WorkFlow
+{
+    If: JediOmni.Wait For Object (hpid-627b8ca8-0e68-11ed-861d-0242ac120002-homescreen-button,3)
+    {
+        JediOmni.Touch ID (hpid-627b8ca8-0e68-11ed-861d-0242ac120002-homescreen-button)
+    }
+    Fail:
+    {
+        Return With Fail (unable to Select HP Scan AI Enhanced)
+        Stop Test Case
+    }
+}
+
+ScanAI_SelectWorkFlowListAndStartJob
+{
+    While:!Vision.Is Text Exist(${WorkFlowType}) 
+    {
+        sleep(1)   
+    }
+    Vision.Click Text(${WorkFlowType}) 
+    Sleep (2)
+    Vision.Click Text(START NEW JOB)
+}
+
+ScanAI_SelectDone
+{
+    Repeat:${ScanCount}
+    {
+        If:Equals (${R},${ScanCount}) 
+        {
+            If:JediOmni.Wait For Object(hpid-button-done,30)
+            {
+                JediOmni.Touch ID (hpid-button-done)
+            } 
+        }
+        Fail:
+        {
+            If:JediOmni.Wait For Object(hpid-button-scan,30)
+            {
+                JediOmni.Touch ID (hpid-button-scan)
+            }   
+        }  
+    }  
+}
+
+ScanAI_SelectNextStep
+{
+    While:!Vision.Is Text Exist(NEXT STEP)  
+    {
+        sleep(1)
+    }
+    Vision.Click Text(NEXT STEP)   
+}
+
+ScanAI_StartValidation
+{
+    While:!Vision.Is Text Exist (START VALIDATION)  
+    {
+       sleep(1) 
+    }
+    Vision.Click Text(START VALIDATION) 
+}
+
+ScanAI_DocumentValidation
+{
+    Vision.Click Text(Document Type) 
+    Vision.Click Text(Delivery Note)
+}
+
+ScanAI_SelectValidate
+{
+    While:!Vision.Is Text Exist (VALIDATE)  
+    {
+        sleep(1)
+    }
+    Vision.Click Text(VALIDATE) 
+}
+
+ScanAI_FinishValidations
+{ 
+    Vision.Click Text(FINISH VALIDATIONS)
+}

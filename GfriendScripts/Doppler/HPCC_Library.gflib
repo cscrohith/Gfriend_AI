@@ -1,0 +1,2078 @@
+﻿Using Web
+
+SignIn(${ID}, ${PW}, ${url}, ${BRW})
+{// sign into the HPCC site with the account using the specified browser
+    // open the specified browser to the HPCC url
+    IF: Equals (${BRW},Default)
+    {
+        If: Web.Open (https://${url})
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Failed to open the browser!)
+        }
+        Error:
+        {
+            Return With Error (Error opening the browser!)
+        }
+    }
+    IF: Equals (${BRW},Chrome)
+    {
+        If: Web.Open with Chrome (https://${url})
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Failed to open the browser!)
+        }
+        Error:
+        {
+            Return With Error (Error opening the browser!)
+        }
+    }
+    IF: Equals (${BRW},FireFox)
+    {
+        If: Web.Open with FireFox (https://${url})
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Failed to open the browser!)
+        }
+        Error:
+        {
+            Return With Error (Error opening the browser!)
+        }
+    }
+    IF: Equals (${BRW},Edge)
+    {
+        If: Web.Open with Edge (https://${url})
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Failed to open the browser!)
+        }
+        Error:
+        {
+            Return With Error (Error opening the browser!)
+        }
+    }
+
+    // sign in
+    //    If: Web.Wait For Object(//*[@id='username'],30)
+    If: Web.Wait For Object(//*[@id='username'],30)
+    {
+        Sleep (1)
+        Web.Click Object(//*[@id='username'])
+        Web.Set Text(//*[@id='username'],${ID})
+        Web.Click Object(//button)
+    }
+    Fail:
+    {
+        Return With Fail (Failed to access the HPCC sign in page!)
+    }
+   
+    // enter the password
+    If: Web.Wait For Object(//*[@id='passwordContainer'],30)
+    {
+        Web.Click Object(//*[@id='password'])
+        Web.Set Text(//*[@id='password'],${PW})
+        Web.Click Object(//button)
+    }
+    Fail:
+    {
+        Return With Fail (Failed to reach Password page!)
+    }
+    
+    // check that reached the Command Center page
+    If: Web.Wait For Object (//div[@class='logoName hpSimplifiedBold'],60)
+    {
+        // handle the updated Terms of Service pages if displayed
+        If: Web.Wait For Text (Please accept the updated Terms of Service and data collection policy,0)
+        {
+            Web.Click Object (//*[@id='nextButton'])
+            // terms of service page
+            Web.Wait For Text (Please read the following terms of service.,20)
+            Web.Click Object (//input[@id='termsOfServiceCheckbox']/parent::*)
+            Web.Click Object (//*[@id='nextButton'])
+            // data collection privacy page
+            Web.Wait For Text (Please read the following data collection information.,20)
+            Web.Click Object (//input[@id='dataCollectionCheckbox']/parent::*)
+            Web.Click Object (//*[@id='nextButton'])
+        }
+        
+        Sleep (2)
+    }
+    Fail:
+    {
+        Fail (Failed to reach HPCC!)
+    }
+}
+
+SignOut()
+{// sign out of the HPCC site
+    Web.Click Object (//*[@id='email'])
+    Web.Click Object (//*[@id='signOutButton'])
+    Sleep (1)
+}
+
+SelectAccount(${AccountCustomer})
+{// select the account customer
+    // click on Accounts
+    If: Web.Wait For Object (//div[@class='hpMenu']//descendant::a[@href='/accounts/main']/div/div/p,10)
+    {
+         Web.Click Object (//div[@class='hpMenu']//descendant::a[@href='/accounts/main']/div/div/p)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SelectAccount_Fail.png)
+        Return With Fail (Failed to select Accounts in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SelectAccount_Error.png)
+        Return With Error (Error occurred selecting Accounts in HPCC!)
+    }
+    
+    Sleep (2)  //force a small wait to eliminate timing issues waiting for/clicking on the search textbox
+    
+    // enter the account in the search
+    Web.Wait For Object (//*[@id='accountsTableId']//descendant::input[@class='text-search'],10)
+    If: Web.Click Object(//*[@id='accountsTableId']//descendant::input[@class='text-search'])
+    {
+        Sleep (1)
+        Web.Set Text(//*[@id='accountsTableId']//descendant::input[@class='text-search'],${AccountCustomer})
+        // click on the search icon
+        Web.Click Object (//*[@id='accountsTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+        
+        Sleep (6)
+
+        // select the first found account
+        IF: Web.Click Object (//*[@id='accountsTableId']//descendant::div[@ref='eBodyContainer']/div[1])
+        {
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (SelectAccount_Fail.png)
+            Return With Fail (Failed to select the account ${AccountCustomer} in HPCC!)
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (SelectAccount_Error.png)
+            Return With Error (Error occurred selecting the account ${AccountCustomer} in HPCC!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SelectAccount_Fail.png)
+        Fail (Failed to select the account ${AccountCustomer} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SelectAccount_Error.png)
+        Error (Error occurred selecting the account ${AccountCustomer} in HPCC!)
+    }
+}
+
+SearchApp(${App})
+{// search for an app in the customer's app list
+    // wait for the list of apps to be displayed
+    If: Web.Wait For Object (//*[@id='accountDetailSolutionsTableId']//descendant::span[@id='totalItemCount'],20)
+    {
+        Sleep (3)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SearchApp_Fail.png)
+        Return With Fail (Failed searching for app ${App} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SearchApp_Error.png)
+        Return With Error (Error occurred searching for app ${App} in HPCC!)
+    }
+
+    // enter the app into the search textbox and click the search link
+    IF: Web.Wait For Object(//*[@id='accountDetailSolutionsTableId']//descendant::input[@class='text-search'],5)
+    {
+        // enter the app in the search
+        Web.Click Object(//*[@id='accountDetailSolutionsTableId']//descendant::input[@class='text-search'])
+        Web.Set Text(//*[@id='accountDetailSolutionsTableId']//descendant::input[@class='text-search'],${App})
+        // click on the search icon
+        Web.Click Object(//*[@id='accountDetailSolutionsTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+        Sleep (3)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SearchApp_Fail.png)
+        Fail (Failed searching for app ${App} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SearchApp_Error.png)
+        Error (Error occurred searching for app ${App} in HPCC!)
+    }
+}
+
+ManageSelectedApp
+{// attempt to click on the selected app and then the manage button
+    If: Web.Wait For Object(//*[@id='accountDetailSolutionsTableId']//descendant::div[@class='solutionsDetailRenderer'],10)
+    {
+        Web.Click Object(//*[@id='accountDetailSolutionsTableId']//descendant::div[@class='solutionsDetailRenderer'])
+        If: Web.Click Object(//*[@id='accountDetailSolutionsTableId']//descendant::button[@class='hpBlueButton area'])
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Click on App Manage button failed!)
+        }
+        Error:
+        {
+            Return With Fail (Click on App Manage button failed!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (ManageSelectedApp.png)
+        Fail (Failed managing app in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (ManageSelectedApp.png)
+        Error (Error occurred managing app in HPCC!)
+    }
+}
+
+InstallApp(${InstallCustomer},${InstallApp},${InstallDevice})
+{// install an app on a device in a customer account
+    // select the account
+    If: HPCC_Library.SelectAccount(${InstallCustomer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (InstallApp_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${InstallCustomer} for app install!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (InstallApp_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${InstallCustomer} for app install!)
+    }
+    
+    Sleep (1)
+
+    // select the app
+    If: HPCC_Library.SearchApp(${InstallApp})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (InstallApp_Fail.png)
+        Return With Fail (Failed selecting app ${InstallApp} in HPCC for app install!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (InstallApp_Error.png)
+        Return With Error (Error occurred selecting app ${InstallApp} in HPCC for app install!)
+    }
+    
+    // manage the app, attempt 3 times to click the Manage button
+    If: HPCC_Library.ManageSelectedApp
+    {
+    }
+    Fail:
+    {
+        If: HPCC_Library.ManageSelectedApp
+        {
+        }
+        Fail:
+        {
+            If: HPCC_Library.ManageSelectedApp
+            {
+            }
+            Fail:
+            {
+                //                Web.Capture Screenshot (InstallApp_Fail.png)
+                Return With Fail (Failed managing app ${InstallApp} in HPCC for app install!)
+            }
+            Error:
+            {
+                //                Web.Capture Screenshot (InstallApp_Fail.png)
+                Return With Error (Errored managing app ${InstallApp} in HPCC for app install!)
+            }
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (InstallApp_Fail.png)
+            Return With Error (Errored managing app ${InstallApp} in HPCC for app install!)
+        }
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (InstallApp_Fail.png)
+        Return With Error (Errored managing app ${InstallApp} in HPCC for app install!)
+    }
+    
+    Sleep (2)
+
+    // click the install button on the app manage form
+    If: Web.Click Object(//*[@id='moveToInstallSolutionButton'])
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (InstallApp_Fail.png)
+        Return With Fail (Failed clicking the Install button in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (InstallApp_Error.png)
+        Return With Error (Error occurred clicking the Install button in HPCC!)
+    }
+
+    Sleep(1)
+
+    // uncheck all devices
+    If: Web.Wait For Object(//*[@id='accountDetailManageSolutionsInstallTableId']//descendant::span[@class='ag-checkbox-checked'],2)
+    {
+        // the select all checkbox was checked so uncheck it
+        Web.Click Object(//*[@id='accountDetailManageSolutionsInstallTableId']//descendant::span[@class='ag-header-select-all'])
+        Sleep(1)
+    }
+    
+    // search for the device
+    If: Web.Wait For Object (//*[@id='accountDetailManageSolutionsInstallTableId']//descendant::input[@class='text-search'],10)
+    {
+        // check for a Notice window popup, if so close it
+        If: Web.Wait For Text (additional fees will be incurred,2)
+        {
+            Web.Click Text (OK)
+            Sleep (1)
+        }
+        // enter the device to search
+        Web.Click Object(//*[@id='accountDetailManageSolutionsInstallTableId']//descendant::input[@class='text-search'])
+        Web.Set Text (//*[@id='accountDetailManageSolutionsInstallTableId']//descendant::input[@class='text-search'],${InstallDevice})
+        
+        // click the search icon
+        Web.Click Object(//*[@id='accountDetailManageSolutionsInstallTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (InstallApp_Fail.png)
+        Return With Fail (Failed searching for device ${InstallDevice} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (InstallApp_Error.png)
+        Return With Error (Error occurred searching for device ${InstallDevice} in HPCC!)
+    }
+
+    Sleep (3)
+
+    // ensure that all devices found are checked
+    Web.Click Object(//*[@id='accountDetailManageSolutionsInstallTableId']//descendant::span[@class='ag-header-select-all'])
+    
+    Sleep (1)
+    
+    // the device is selected by default, click the Next button
+    If: Web.Click Object(//*[@id='nextButton'])
+    {
+        Sleep (1)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (InstallApp_Fail.png)
+        Return With Fail (Failed clicking the Next button after selecting device ${InstallDevice} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (InstallApp_Error.png)
+        Return With Error (Error occurred clicking the Next button after selecting device ${InstallDevice} in HPCC!)
+    }
+
+    //install button
+    Web.Click Object(//button[2])
+
+    // text "Task created successfully!"
+    IF: Web.Wait For Text (Task created successfully!,20)
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (InstallApp_Fail.png)
+        Fail (Install task was not successfully created!)
+    }
+
+    // Done button
+    Web.Click Object(//button)
+
+    // close button
+    If: Web.Wait For Object (//*[@id='closeButton'],2)
+    {
+        Web.Click Object(//*[@id='closeButton'])
+    }
+}
+
+UninstallApp(${InstallCustomer},${InstallApp},${InstallDevice})
+{// uninstall an app on a device in a customer account
+    // select the account
+    If: HPCC_Library.SelectAccount(${InstallCustomer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${InstallCustomer} for app uninstall!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${InstallCustomer} for app uninstall!)
+    }
+
+    Sleep (1)
+
+    // select the app
+    If: HPCC_Library.SearchApp(${InstallApp})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Fail.png)
+        Return With Fail (Failed selecting app ${InstallApp} in HPCC for app uninstall!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Error.png)
+        Return With Error (Error occurred selecting app ${InstallApp} in HPCC for app uninstall!)
+    }
+    
+    // manage the app, attempt 3 times to click the Manage button
+    If: HPCC_Library.ManageSelectedApp
+    {
+    }
+    Fail:
+    {
+        If: HPCC_Library.ManageSelectedApp
+        {
+        }
+        Fail:
+        {
+            If: HPCC_Library.ManageSelectedApp
+            {
+            }
+            Fail:
+            {
+                //                Web.Capture Screenshot (InstallApp_Fail.png)
+                Return With Fail (Failed managing app ${InstallApp} in HPCC for app install!)
+            }
+            Error:
+            {
+                //                Web.Capture Screenshot (InstallApp_Fail.png)
+                Return With Error (Errored managing app ${InstallApp} in HPCC for app install!)
+            }
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (InstallApp_Fail.png)
+            Return With Error (Errored managing app ${InstallApp} in HPCC for app install!)
+        }
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (InstallApp_Fail.png)
+        Return With Error (Errored managing app ${InstallApp} in HPCC for app install!)
+    }
+   
+    // click the uninstall button on the app manage form
+    Sleep (2)
+    
+    If: Web.Click Object(//*[@id='moveToUninstallSolutionButton'])
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Fail.png)
+        Return With Fail (Failed clicking the Uninstall button in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Error.png)
+        Return With Error (Error occurred clicking the Uninstall button in HPCC!)
+    }
+
+    Sleep(1)
+
+    // uncheck all devices
+    If: Web.Wait For Object(//*[@id='accountDetailManageSolutionsUninstallTableId']//descendant::span[@class='ag-checkbox-checked'],2)
+    {
+        // the select all checkbox was checked so uncheck it
+        Web.Click Object(//*[@id='accountDetailManageSolutionsUninstallTableId']//descendant::span[@class='ag-header-select-all'])
+        Sleep(1)
+    }
+
+    // search for the device
+    If: Web.Wait For Object (//*[@id='accountDetailManageSolutionsUninstallTableId']//descendant::input[@class='text-search'],10)
+    {
+        // enter the device to search
+        Web.Click Object(//*[@id='accountDetailManageSolutionsUninstallTableId']//descendant::input[@class='text-search'])
+        Web.Set Text (//*[@id='accountDetailManageSolutionsUninstallTableId']//descendant::input[@class='text-search'],${InstallDevice})
+        
+        // click the search icon
+        Web.Click Object(//*[@id='accountDetailManageSolutionsUninstallTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Fail.png)
+        Return With Fail (Failed searching for device ${InstallDevice} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Error.png)
+        Return With Error (Error occurred searching for device ${InstallDevice} in HPCC!)
+    }
+
+    Sleep (3)
+
+    // ensure that all devices found are checked
+    Web.Click Object(//*[@id='accountDetailManageSolutionsUninstallTableId']//descendant::span[@class='ag-header-select-all'])
+
+    Sleep (1)
+    
+    // the device is selected by default, click the Next button
+    If: Web.Click Object(//*[@id='nextButton'])
+    {
+        Sleep (1)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Fail.png)
+        Return With Fail (Failed clicking the Next button after selecting device ${InstallDevice} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Error.png)
+        Return With Error (Error occurred clicking the Next button after selecting device ${InstallDevice} in HPCC!)
+    }
+
+    //install button
+    Web.Click Object(//button[2])
+
+    // text "Task created successfully!"
+    IF: Web.Wait For Text (Task created successfully!,20)
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UninstallApp_Fail.png)
+        Fail (Uninstall task was not successfully created!)
+    }
+    
+    // Done button
+    Web.Click Object(//button)
+
+    // close button
+    If: Web.Wait For Object (//*[@id='closeButton'],2)
+    {
+        Web.Click Object(//*[@id='closeButton'])
+    }
+}
+
+CheckTaskCompletion(${InstallCustomer})
+{// monitor the last task for the customer until it is completed
+    // access Tasks
+    If: Web.Wait For Object (//div[@class='hpMenu']//descendant::a[@href='/tasks/main']/div/div/p,20)
+    {
+        Web.Click Object (//div[@class='hpMenu']//descendant::a[@href='/tasks/main']/div/div/p)
+        Sleep (2)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (TaskCompletion_Fail.png)
+        Return With Fail (Failed accessing Tasks!)
+    }
+
+    // wait for Tasks to show
+    If: Web.Wait For Object (//div[@class='tasks']//descendant::div[@class='hpLargeTitle'],10)
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (TaskCompletion_Fail.png)
+        Return With Fail (Failed accessing Tasks!)
+    }
+
+    // filter to tasks for the customer account
+    If: Web.Wait For Object (//*[@id='tasksTableId']//descendant::input[@class='text-search'],10)
+    {
+        // enter the account in the search
+        Web.Click Object(//*[@id='tasksTableId']//descendant::input[@class='text-search'])
+        Web.Set Text(//*[@id='tasksTableId']//descendant::input[@class='text-search'],${InstallCustomer})
+        // click on the search icon
+        Web.Click Object (//*[@id='tasksTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+        
+        Sleep (5)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (TaskCompletion_Fail.png)
+        Return With Fail (Failed filtering Tasks for the customer!)
+    }
+
+    // open the top task
+    If: Web.Wait For Object (//*[@id='tasksTableId']//descendant::div[@ref='eBodyContainer']/div,20)
+    {
+        Web.Click Object (//*[@id='tasksTableId']//descendant::div[@ref='eBodyContainer']/div)
+        Sleep (10)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (TaskCompletion_Fail.png)
+        Return With Fail (Failed selecting the Task!)
+    }
+    
+    // monitor for the task complete
+    While:!Web.Check Text Of Object(//*[@id='taskDetailDevicesTasksTableId']//descendant::div[@ref='eBodyContainer']//descendant::div[@class='statusWithPopover']/div/span,Succeeded):90
+    {
+        // check for task Failed
+        If: Web.Check Text Of Object(//*[@id='taskDetailDevicesTasksTableId']//descendant::div[@ref='eBodyContainer']//descendant::div[@class='statusWithPopover']/div/span,Failed)
+        {
+            // click on the icon to display the failure info, then get a screen capture
+            Web.Click Object (//*[@id='taskDetailDevicesTasksTableId']//descendant::div[@ref='eBodyContainer']//descendant::div[@class='statusWithPopover']/div/div)
+            //            Web.Capture Screenshot (HPCC Task Failure.png)
+            Return With Fail (HPCC Task Failed!)
+        }
+
+        // check for task Errored
+        IF: Web.Check Text Of Object(//*[@id='taskDetailDevicesTasksTableId']//descendant::div[@ref='eBodyContainer']//descendant::div[@class='statusWithPopover']/div/span,Error)
+        {
+            // get a screen capture
+            //            Web.Capture Screenshot (HPCC Task Error.png)
+            Return With Fail (HPCC Task Errored!)
+        }
+        Web.Refresh
+        Sleep(20)
+    }
+    
+    //Success
+}
+
+SearchAccountDevice(${Device})
+{// search for a device in the device list of the current customer account
+    If: Web.Wait For Object(//*[@id='accountDetailDevicesTableId']//descendant::input[@class='text-search'],20)
+    {
+        // page the screen down so the deivces are visible
+        Web.Press PageDown Key(//*[@id='accountDetailDevicesTableId'])
+        Sleep (1)
+        
+       // enter the device in the search
+        Web.Click Object(//*[@id='accountDetailDevicesTableId']//descendant::input[@class='text-search'])
+        Web.Set Text(//*[@id='accountDetailDevicesTableId']//descendant::input[@class='text-search'],${Device})
+        Sleep (2)
+        // click on the search icon
+        Web.Click Object(//*[@id='accountDetailDevicesTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+        Sleep (3)
+//        // wait for the spinner to display then disappear
+//        If: Web.Wait For Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='hpSpinner'],5)
+//        {
+//            Web.Wait For Object Disappear(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='hpSpinner'],20)
+//        }
+        // check for 1 or more devices found
+        Web.Get Text (//*[@id='accountDetailDevicesTableId']//descendant::span[@id='totalItemCount'],${DeviceCount})
+        If: Equals (${DeviceCount},\(0\))
+        {
+            //            Web.Capture Screenshot (SearchAccountDevice_Fail.png)
+            Fail (Failed searching for device ${Device} in HPCC!)
+        }
+        Fail:
+        {
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Fail.png)
+        Fail (Failed searching for device ${Device} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Error.png)
+        Error (Error occurred searching for device ${Device} in HPCC!)
+    }
+    
+    Sleep (3)
+}
+
+SelectAccountDeviceInfo
+{// attempt to click on the first device in the account and then on the info button
+    If: Web.Wait For Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='devicesDetailRenderer'],20)
+    {
+        Web.Click Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='devicesDetailRenderer'])
+        If: Web.Click Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='hpInfoIcon'])
+        {
+        }
+        Fail:
+        {
+            Fail (Click on App Manage button failed!)
+        }
+        Error:
+        {
+            Fail (Click on App Manage button failed!)
+        }
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (SelectAccountDeviceInfo.png)
+        //        Fail (Failed selecting a devide in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SelectAccountDeviceInfo.png)
+        Error (Error occurred selecting a devide in HPCC!)
+    }
+}
+
+SynchDevice(${Customer},${Device},${MaxSynchTime})
+{// have HPCC resych a device's information
+    // select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SynchDevice_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${Customer} for device sych!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SynchDevice_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${Customer} for device sych!)
+    }
+    
+    Sleep (1)
+
+    // select the device
+    If: HPCC_Library.SearchAccountDevice(${Device})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SynchDevice_Fail.png)
+        Return With Fail (Failed selecting device ${Device} in HPCC for device sych!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SynchDevice_Error.png)
+        Return With Error (Error occurred selecting device ${Device} in HPCC for device sych!)
+    }
+    
+    // attempt 3 times to click the device info link
+    If: HPCC_Library.SelectAccountDeviceInfo
+    {
+    }
+    Fail:
+    {
+        If: HPCC_Library.SelectAccountDeviceInfo
+        {
+        }
+        Fail:
+        {
+            If: HPCC_Library.SelectAccountDeviceInfo
+            {
+            }
+            Fail:
+            {
+                //                Web.Capture Screenshot (SynchDevice_Fail.png)
+                Return With Fail (Failed accessing the device info in HPCC for device sych!)
+            }
+            Error:
+            {
+                //                Web.Capture Screenshot (SynchDevice_Error.png)
+                Return With Error (Errored accessing the device info in HPCC for device sych!)
+            }
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (SynchDevice_FaSynchDevice_Erroril.png)
+            Return With Error (Errored accessing the device info in HPCC for device sych!)
+        }
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SynchDevice_Error.png)
+        Return With Error (Errored accessing the device info in HPCC for device sych!)
+    }
+    
+    // wait for the device details popup
+    If: Web.Wait For Object (//*[@id='app']//descendant::div[@class='deviceDetails'],2)
+    {
+        // click the sync link
+        If: Web.Wait For Object (//*[@id='app']//descendant::div[@class='syncActionButton'],5)
+        {
+            Web.Click Object (//*[@id='app']//descendant::div[@class='syncActionButton'])
+            // wait for the spinner to appear
+            If: Web.Wait For Object (//*[@id='app']//descendant::div[@class='deviceDetails']//descendant::div[@class='spinnerArea'],5)
+            {// wait for the spinner to disappear within the specified time
+                If: Web.Wait For Object Disappear (//*[@id='app']//descendant::div[@class='deviceDetails']//descendant::div[@class='spinnerArea'],${MaxSynchTime})
+                {
+                }
+                Fail:
+                {
+                    //                    Web.Capture Screenshot (SynchDevice_Fail.png)
+                    Fail (Failed device info synch wihtin ${MaxSynchTime} seconds in HPCC for device sych!)
+                }
+            }
+            Fail:
+            {
+                //                Web.Capture Screenshot (SynchDevice_Fail.png)
+                Fail (Failed initializing device info synch in HPCC for device sych!)
+            }
+            Error:
+            {
+                //                Web.Capture Screenshot (SynchDevice_Error.png)
+                Error (Errored initializing device info synch in HPCC for device sych!)
+            }
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (SynchDevice_Fail.png)
+            Fail (Failed accessing the device info in HPCC for device sych!)
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (SynchDevice_Error.png)
+            Error (Errored accessing the device info in HPCC for device sych!)
+        }
+        // close the device details popup
+        Web.Click Object (//*[@id='app']//descendant::div[@class='deviceDetails']//descendant::button[@id='closeButton'])
+    }
+    Fail:
+    {
+        Fail (Failed accessing the device info in HPCC for device sych!)
+    }
+    Error:
+    {
+        Error (Errored accessing the device info in HPCC for device sych!)
+    }
+}
+
+EnableSIO(${Customer},${Device})
+{// enable SIO for a device in an account
+    // select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${Customer} for enabling SIO!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${Customer} for enabling SIO!)
+    }
+    
+    Sleep (1)
+
+    // click the SIO link
+    If: Web.Wait For Object (//*[@id='showManageSignInOnceForLinkModalButton'],5)
+    {
+        Sleep (3)
+        Web.Click Object (//*[@id='showManageSignInOnceForLinkModalButton'])
+        If: Web.Wait For Object (//div[@class='manageServices'],5)
+        {
+            Sleep (3)
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (EnableSIO_Fail.png)
+            Return With Fail (Failed accessing the SIO link in HPCC for enabling SIO!)
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (EnableSIO_Error.png)
+            Return With Error (Errored accessing the SIO link in HPCC for enabling SIO!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Fail.png)
+        Return With Fail (Failed accessing the SIO link in HPCC for enabling SIO!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Error.png)
+        Return With Error (Errored accessing the SIO link in HPCC for enabling SIO!)
+    }
+    
+    // click the Enable SIO button
+    If: Web.Wait For Object (//*[@id='moveToEnableServiceButton'],5)
+    {
+        Web.Click Object (//*[@id='moveToEnableServiceButton'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Fail.png)
+        Return With Fail (Failed selecting Enable SIO in HPCC for enabling SIO!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Error.png)
+        Return With Error (Errored selecting Enable SIO in HPCC for enabling SIO!)
+    }
+    
+    // wait for the Enable popup
+    If: Web.Wait For Object (//*[@id='notSpecify'],10)
+    {
+        // select the option to not specify a domain, then Next
+        Web.Click Object (//*[@id='notSpecify'])
+        Web.Wait For Object (//*[@id='nextButton'],2)
+        Web.Click Object (//*[@id='nextButton'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Fail.png)
+        Return With Fail (Failed enabling SIO in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Error.png)
+        Return With Error (Errored enabling SIO in HPCC!)
+    }
+
+    Sleep (1)
+
+    // uncheck all
+    If: Web.Wait For Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::span[@class='ag-checkbox-checked'],2)
+    {
+        // the select all checkbox was checked, uncheck it
+        Web.Click Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::span[@class='ag-header-select-all'])
+        Sleep (1)
+    }
+    
+    // search and select the device
+    If: Web.Wait For Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::input[@class='text-search'],5)
+    {
+        // enter the device in the search
+        Web.Click Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::input[@class='text-search'])
+        Web.Set Text(//*[@id='accountDetailManageServicesEnableTableId']//descendant::input[@class='text-search'],${Device})
+        // click on the search icon
+        Web.Click Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+
+        Sleep (3)
+        
+        // ensure that all device are is selected
+        Web.Click Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::span[@class='ag-header-select-all'])
+        Sleep (1)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Fail.png)
+        Return With Fail (Failed searching for device ${Device} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Error.png)
+        Return With Error (Error occurred searching for device ${Device} in HPCC!)
+    }
+
+    Sleep (3)
+
+    // when available complete the task and close the popup
+    If: Web.Wait For Object (//*[@id='nextButton'],2)
+    {
+        Web.Click Object (//*[@id='nextButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='nextButton'],2)
+        Web.Click Object (//*[@id='nextButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='moveToManageServiceButton'],10)
+        Web.Click Object (//*[@id='moveToManageServiceButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='closeButton'],10)
+        Web.Click Object (//*[@id='closeButton'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Fail.png)
+        Fail (Failed enabling SIO in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (EnableSIO_Error.png)
+        Error (Errored enabling SIO in HPCC!)
+    }
+}
+
+DisableSIO(${Customer},${Device})
+{// disable SIO for a device in an account
+    // select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DisableSIO_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${Customer} for disabling SIO!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DisableSIO_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${Customer} for disabling SIO!)
+    }
+    
+    Sleep (1)
+
+    // select the SIO link
+    If: Web.Wait For Object (//*[@id='showManageSignInOnceForLinkModalButton'],5)
+    {
+        Sleep (3)
+        Web.Click Object (//*[@id='showManageSignInOnceForLinkModalButton'])
+        If: Web.Wait For Object (//div[@class='manageServices'],5)
+        {
+            Sleep (3)
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (DisableSIO_Fail.png)
+            Return With Fail (Failed accessing the SIO link in HPCC for disabling SIO!)
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (DisableSIO_Error.png)
+            Return With Error (Errored accessing the SIO link in HPCC for disabling SIO!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DisableSIO_Fail.png)
+        Return With Fail (Failed accessing the SIO link in HPCC for disabling SIO!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DisableSIO_Error.png)
+        Return With Error (Errored accessing the SIO link in HPCC for disabling SIO!)
+    }
+    
+    // select teh Disable SIO button
+    If: Web.Wait For Object (//*[@id='moveToDisableServiceButton'],5)
+    {
+        Web.Click Object (//*[@id='moveToDisableServiceButton'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DisableSIO_Fail.png)
+        Return With Fail (Failed selecting Disable SIO in HPCC for disabling SIO!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DisableSIO_Error.png)
+        Return With Error (Errored selecting Disable SIO in HPCC for disabling SIO!)
+    }
+    
+    Sleep (1)
+
+    // uncheck all
+    If: Web.Wait For Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::span[@class='ag-checkbox-checked'],2)
+    {
+        // the select all checkbox was checked, uncheck it
+        Web.Click Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::span[@class='ag-header-select-all'])
+    }
+    
+    // search/select the device
+    IF: Web.Wait For Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::input[@class='text-search'],5)
+    {
+        // enter the device in the search
+        Web.Click Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::input[@class='text-search'])
+        Web.Set Text(//*[@id='accountDetailManageServicesDisableTableId']//descendant::input[@class='text-search'],${Device})
+        // click on the search icon
+        Web.Click Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+        Sleep (3)
+
+        // ensure that the device is selected
+        Web.Click Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::span[@class='ag-header-select-all'])
+        Sleep (1)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Fail.png)
+        Return With Fail (Failed searching for device ${Device} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Error.png)
+        Return With Error (Error occurred searching for device ${Device} in HPCC!)
+    }
+
+    Sleep (3)
+    
+    // when available complete the task and close the popup
+    If: Web.Wait For Object (//*[@id='nextButton'],2)
+    {
+        Web.Click Object (//*[@id='nextButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='nextButton'],2)
+        Web.Click Object (//*[@id='nextButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='moveToManageServiceButton'],10)
+        Web.Click Object (//*[@id='moveToManageServiceButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='closeButton'],10)
+        Web.Click Object (//*[@id='closeButton'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DisableSIO_Fail.png)
+        Fail (Failed disabling SIO in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DisableSIO_Error.png)
+        Error (Errored disabling SIO in HPCC!)
+    }
+}
+
+EnableLinkPlatform(${Customer},${Device})
+{// enable Link Platform for a device in an account
+    // select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (EnableLinkPlatform_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${Customer} for enabling Link Platform!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (EnableLinkPlatform_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${Customer} for enabling Link Platform!)
+    }
+    
+    Sleep (1)
+
+    // select the Link enablement link
+    If: Web.Wait For Object (//*[@id='showManageLinkEnablementModalButton'],5)
+    {
+        Sleep (3)
+        Web.Click Object (//*[@id='showManageLinkEnablementModalButton'])
+        If: Web.Wait For Object (//div[@class='manageServices'],5)
+        {
+            Sleep (3)
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (EnableLinkPlatform_Fail.png)
+            Return With Fail (Failed accessing the Link enablement link in HPCC for enabling Link Platform!)
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (EnableLinkPlatform_Error.png)
+            Return With Error (Errored accessing the Link enablement link in HPCC for enabling Link Platform!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (EnableLinkPlatform_Fail.png)
+        Return With Fail (Failed accessing the Link enablement link in HPCC for enabling Link Platform!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (EnableLinkPlatform_Error.png)
+        Return With Error (Errored accessing the Link enablement link in HPCC for enabling Link Platform!)
+    }
+    
+    // select Enable LinkPlatform
+    If: Web.Wait For Object (//*[@id='moveToEnableServiceButton'],5)
+    {
+        Web.Click Object (//*[@id='moveToEnableServiceButton'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (EnableLinkPlatform_Fail.png)
+        Return With Fail (Failed selecting Enable Link Platform in HPCC for enabling Link Platform!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (EnableLinkPlatform_Error.png)
+        Return With Error (Errored selecting Enable Link Platform in HPCC for enabling Link Platform!)
+    }
+    
+    Sleep (1)
+
+    // uncheck all
+    If: Web.Wait For Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::span[@class='ag-checkbox-checked'],2)
+    {
+        // the select all checkbox was checked, uncheck it
+        Web.Click Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::span[@class='ag-header-select-all'])
+    }
+    
+    // search and select the device
+    If: Web.Wait For Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::input[@class='text-search'],5)
+    {
+        // enter the device in the search
+        Web.Click Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::input[@class='text-search'])
+        Web.Set Text(//*[@id='accountDetailManageServicesEnableTableId']//descendant::input[@class='text-search'],${Device})
+        // click on the search icon
+        Web.Click Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+        Sleep (3)
+
+        // ensure that all device are is selected
+        Web.Click Object(//*[@id='accountDetailManageServicesEnableTableId']//descendant::span[@class='ag-header-select-all'])
+        Sleep (1)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Fail.png)
+        Return With Fail (Failed searching for device ${Device} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Error.png)
+        Return With Error (Error occurred searching for device ${Device} in HPCC!)
+    }
+
+    Sleep (3)
+    
+    // when available complete the task and close the popup
+    If: Web.Wait For Object (//*[@id='nextButton'],2)
+    {
+        Web.Click Object (//*[@id='nextButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='nextButton'],2)
+        Web.Click Object (//*[@id='nextButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='moveToManageServiceButton'],10)
+        Web.Click Object (//*[@id='moveToManageServiceButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='closeButton'],10)
+        Web.Click Object (//*[@id='closeButton'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (EnableLinkPlatform_Fail.png)
+        Fail (Failed enabling Link Platform in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (EnableLinkPlatform_Error.png)
+        Error (Errored enabling Link Platform in HPCC!)
+    }
+}
+
+DisableLinkPlatform(${Customer},${Device})
+{// disable Link Platform for a device in an account
+    // select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DisableLinkPlatform_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${Customer} for removing a device!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DisableLinkPlatform_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${Customer} for removing a device!)
+    }
+    
+    Sleep (1)
+
+    // select the Link enablement link
+    If: Web.Wait For Object (//*[@id='showManageLinkEnablementModalButton'],5)
+    {
+        Sleep (3)
+        Web.Click Object (//*[@id='showManageLinkEnablementModalButton'])
+        If: Web.Wait For Object (//div[@class='manageServices'],5)
+        {
+            Sleep (3)
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (DisableLinkPlatform_Fail.png)
+            Return With Fail (Failed accessing the Link enablement link in HPCC for removing a device!)
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (DisableLinkPlatform_Error.png)
+            Return With Error (Errored accessing the Link enablement link in HPCC for removing a device!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DisableLinkPlatform_Fail.png)
+        Return With Fail (Failed accessing the Link enablement link in HPCC for removing a device!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DisableLinkPlatform_Error.png)
+        Return With Error (Errored accessing the Link enablement link in HPCC for removing a device!)
+    }
+    
+    // select Disable LinkPlatform
+    If: Web.Wait For Object (//*[@id='moveToDisableServiceButton'],5)
+    {
+        Web.Click Object (//*[@id='moveToDisableServiceButton'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DisableLinkPlatform_Fail.png)
+        Return With Fail (Failed selecting Disable Link Platform in HPCC for removing a device!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DisableLinkPlatform_Error.png)
+        Return With Error (Errored selecting Disable Link Platform in HPCC for removing a device!)
+    }
+    
+    Sleep (1)
+
+    // uncheck all
+    If: Web.Wait For Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::span[@class='ag-checkbox-checked'],2)
+    {
+        // the select all checkbox was checked, uncheck it
+        Web.Click Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::span[@class='ag-header-select-all'])
+    }
+    
+    // search and select the device
+    If: Web.Wait For Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::input[@class='text-search'],5)
+    {
+        // enter the device in the search
+        Web.Click Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::input[@class='text-search'])
+        Web.Set Text(//*[@id='accountDetailManageServicesDisableTableId']//descendant::input[@class='text-search'],${Device})
+        // click on the search icon
+        Web.Click Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+        Sleep (3)
+
+        // ensure that all device are is selected
+        Web.Click Object(//*[@id='accountDetailManageServicesDisableTableId']//descendant::span[@class='ag-header-select-all'])
+        Sleep (1)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Fail.png)
+        Return With Fail (Failed searching for device ${Device} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SearchAccountDevice_Error.png)
+        Return With Error (Error occurred searching for device ${Device} in HPCC!)
+    }
+
+    Sleep (3)
+    
+    // when available complete the task and close the popup
+    If: Web.Wait For Object (//*[@id='nextButton'],2)
+    {
+        Web.Click Object (//*[@id='nextButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='nextButton'],2)
+        Web.Click Object (//*[@id='nextButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='moveToManageServiceButton'],10)
+        Web.Click Object (//*[@id='moveToManageServiceButton'])
+        Sleep (1)
+        Web.Wait For Object (//*[@id='closeButton'],10)
+        Web.Click Object (//*[@id='closeButton'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DisableLinkPlatform_Fail.png)
+        Fail (Failed disabling Link Platform in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DisableLinkPlatform_Error.png)
+        Error (Errored disabling Link Platform in HPCC!)
+    }
+}
+
+UnassignDevice(${Device})
+{// unassign a device from the Assigned list
+    // goto the Assigned Devices page
+    If: HPCC_Library.GotoDevices(Y)
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UnassignDevice_Fail.png)
+        Return With Fail (Failed selecting device ${Device} in HPCC for unassigning a device!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (UnassignDevice_Error.png)
+        Return With Error (Error occurred selecting device ${Device} in HPCC for unassigning a device!)
+    }
+    
+    // select the device
+    If: HPCC_Library.SearchAssignedDevice(${Device})
+    {
+        // click on the select all checkbox
+        Web.Click Object(//*[@id='devicesAssignedTableId']//descendant::span[@class='ag-header-select-all'])
+        If: Web.Wait For Object(//*[@id="showRemoveDevicesFromAccountModalButton"],2)
+        {
+            If: Web.Click Object(//*[@id="showRemoveDevicesFromAccountModalButton"])
+            {
+                // click to remove the device from the account
+                Web.Wait For Object (//*[@id="devicesDeleteDevicesTableId"],5)
+                If: Web.Wait For Object (//*[@id="devicesDeleteDevicesTableId"]//descendant::button[@class='hpBlueButton'],2)
+                {
+                    Web.Click Object (//*[@id="devicesDeleteDevicesTableId"]//descendant::button[@class='hpBlueButton'])
+                    Sleep (4)
+                }
+                Fail:
+                {
+                    //                    Web.Capture Screenshot (UnassignDevice_Fail.png)
+                    Fail (Failed unassigning device ${Device} in HPCC!)
+                }
+                Error:
+                {
+                    //                    Web.Capture Screenshot (UnassignDevice_Error.png)
+                    Error (Error unassigning device ${Device} in HPCC!)
+                }
+            }
+            Fail:
+            {
+                //                Web.Capture Screenshot (UnassignDevice_Fail.png)
+                Fail (Fail unassigning device ${Device} in HPCC!)
+            }
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (UnassignDevice_Fail.png)
+            Fail (Fail unassigning device ${Device} in HPCC!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UnassignDevice_Fail.png)
+        Fail (Failed searching for device ${Device} in HPCC for unassigning!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (UnassignDevice_Error.png)
+        Error (Error occurred searching for device ${Device} in HPCC for unassigning!)
+    }
+}
+
+UnassignDevice_FromCustomer(${Customer},${Device})
+{// unassign a device from a customer account
+    // select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UnassignDevice_FromCustomer_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${Customer} for unassigning a device!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (UnassignDevice_FromCustomer_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${Customer} for unassigning a device!)
+    }
+    
+    Sleep (1)
+
+    // select the device
+    If: HPCC_Library.SearchAccountDevice(${Device})
+    {
+        // check to see if the device has any solutions installed
+        If: Web.Wait For Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='devicesDetailRenderer'],20)
+        {
+        Web.Get Text (//*[@id='accountDetailDevicesTableId']//descendant::div[@class='devicesDetailRenderer']//descendant::div[@class='solutionsArea'],${SolutionsInstalled})
+            Replace (${SolutionsInstalled}, solutions installed,)
+            If: Equals (${SolutionsInstalled},0)
+            {// no solutions installed, continue
+                // click on the first row of the device list, up to 3 times, to get the Unassign link to display
+                Web.Click Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='devicesDetailRenderer'])
+                If: Web.Wait For Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='configArea'],0)
+                {
+                }
+                Fail:
+                {// try 2
+                    Web.Click Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='devicesDetailRenderer'])
+                }
+                If: Web.Wait For Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='configArea'],0)
+                {
+                }
+                Fail:
+                {// try 3
+                    Web.Click Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='devicesDetailRenderer'])
+                }
+                // if the Unassign link is available then click on it
+                If: Web.Click Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@class='configArea'])
+                {
+                    // click to remove the device from the account
+                    Web.Wait For Object (//*[@id='deleteDeviceButton'],2)
+                    Web.Click Object (//*[@id='deleteDeviceButton'])
+                    Sleep (4)
+                }
+                Fail:
+                {
+                    //                    Web.Capture Screenshot (UnassignDevice_FromCustomer_Fail.png)
+                    Return With Fail (Failed unassigning device ${Device} in HPCC for unassigning a device!)
+                }
+                Error:
+                {
+                    //                    Web.Capture Screenshot (UnassignDevice_FromCustomer_Error.png)
+                    Return With Error (Error unassigning device ${Device} in HPCC for unassigning a device!)
+                }
+            }
+            Fail:
+            {
+                //                Web.Capture Screenshot (UnassignDevice_FromCustomer_Fail.png)
+                Return With Fail (Fail to unassign device ${Device} from account ${Customer} in HPCC due to ${SolutionsInstalled} solutions installed!)
+            }
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (UnassignDevice_FromCustomer_Fail.png)
+        Fail (Failed selecting device ${Device} in HPCC for unassigning a device!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (UnassignDevice_FromCustomer_Error.png)
+        Error (Error occurred selecting device ${Device} in HPCC for unassigning a device!)
+    }
+}
+
+AssignDevice(${Customer},${Device})
+{// assign a device to a customer account
+    // select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (AssignDevice_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${Customer} for assigning a device!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (AssignDevice_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${Customer} for assigning a device!)
+    }
+    
+    Sleep (1)
+
+    // click the Assign Devices button
+    Web.Wait For Object(//*[@id='accountDetailDevicesTableId']//descendant::button[@id='showAddDevicesButton'],20)
+    Web.Click Object(//*[@id='accountDetailDevicesTableId']//descendant::button[@id='showAddDevicesButton'])
+    
+    // wait for the Assign Devices popup
+    Web.Wait For Object(//div[@class='addDevices'],20)
+
+    // uncheck all
+    If: Web.Wait For Object(//*[@id='accountDetailAddDevicesTableId']//descendant::span[@class='ag-checkbox-checked'],2)
+    {
+        // the select all checkbox was checked, uncheck it
+        Web.Click Object(//*[@id='accountDetailAddDevicesTableId']//descendant::span[@class='ag-header-select-all'])
+    }
+    
+    // search and select the device
+    If: Web.Wait For Object(//*[@id='accountDetailAddDevicesTableId']//descendant::input[@class='text-search'],5)
+    {
+        // enter the device in the search
+        Web.Click Object(//*[@id='accountDetailAddDevicesTableId']//descendant::input[@class='text-search'])
+        Web.Set Text(//*[@id='accountDetailAddDevicesTableId']//descendant::input[@class='text-search'],${Device})
+        // click on the search icon
+        Web.Click Object(//*[@id='accountDetailAddDevicesTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+        Sleep (3)
+
+        // ensure that all device are is selected
+        Web.Click Object(//*[@id='accountDetailAddDevicesTableId']//descendant::span[@class='ag-header-select-all'])
+        Sleep (1)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (AssignDevice_Fail.png)
+        Return With Fail (Failed searching for device ${Device} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (AssignDevice_Error.png)
+        Return With Error (Error occurred searching for device ${Device} in HPCC!)
+    }
+
+    Sleep (2)
+    // add the device
+    //    If: Web.Wait For Object(//*[@id='accountDetailAddDevicesTableId']//descendant::div[@class='footer__buttons']//descendant::button[@class='hpBlueButton'],5)
+    If: Web.Wait For Object(//*[@id='accountDetailAddDevicesTableId']//descendant::button[@class='hpBlueButton'],5)
+    {
+        Web.Click Object(//*[@id='accountDetailAddDevicesTableId']//descendant::button[@class='hpBlueButton'])
+        Sleep (2)
+        // wait for the device to be added
+        If: Web.Wait For Object(//*[@id='accountDetailDevicesTableId']//descendant::div[@id='hpSpinner'],1)
+        {
+            Web.Wait For Object Disappear(//*[@id='accountDetailDevicesTableId']//descendant::div[@id='hpSpinner'],30)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (AssignDevice_Fail.png)
+        Fail (Failed adding device ${Device} in HPCC for assigning a device!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (AssignDevice_Error.png)
+        Error (Error occurred adding device ${Device} in HPCC for assigning a device!)
+    }
+}
+
+SearchAssignedDevice(${Device})
+{// search for a device in the Assigned table of the device list
+    If: Web.Wait For Object(//*[@id='devicesAssignedTableId']//descendant::input[@class='text-search'],20)
+    {
+       // enter the device in the search
+        Web.Click Object(//*[@id='devicesAssignedTableId']//descendant::input[@class='text-search'])
+        Web.Set Text(//*[@id='devicesAssignedTableId']//descendant::input[@class='text-search'],${Device})
+        Sleep (2)
+        // click on the search icon
+        Web.Click Object(//*[@id='devicesAssignedTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+        Sleep (3)
+        // check for 1 or more devices found
+        Web.Get Text (//*[@id='devicesAssignedTableId']//descendant::span[@id='filteredCount'],${DeviceCount})
+        If: Equals (${DeviceCount},1 results)
+        {
+            Sleep (3)
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (SearchAssignedDevice_Fail.png)
+            Fail (Failed searching for device ${Device} in HPCC Assigned devices!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (SearchAssignedDevice_Fail.png)
+        Fail (Failed searching for device ${Device} in HPCC Assigned devices!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (SearchAssignedDevice_Error.png)
+        Error (Error occurred searching for device ${Device} in HPCC Assigned devices!)
+    }
+}
+
+GotoDevices(${Assigned})
+{// go to the devices page
+    If: Web.Wait For Object (//div[@class='hpMenu']//descendant::a[@href='/devices/main']/div/div/p,10)
+    {
+        Web.Click Object (//div[@class='hpMenu']//descendant::a[@href='/devices/main']/div/div/p)
+        Sleep (10)
+        Web.Wait For Object(//*[@id="moveToAssignedButton"],10)
+
+        // check if to go to the Assigned list
+        If: Equals (${Assigned},Y)
+        {
+            Web.Click Object (//*[@id="moveToAssignedButton"])
+            Web.Wait For Object(//*[@id="devicesAssignedTableId"],10)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (GotoDevices_Fail.png)
+        Fail (Failed to select Devices in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (GotoDevices_Error.png)
+        Error (Error occurred selecting Devices in HPCC!)
+    }
+}
+
+RemoveDevice(${Device})
+{// remove a device from HPCC
+    // goto the Unassigned Devices page
+    If: HPCC_Library.GotoDevices(N)
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (RemoveDevice_Fail.png)
+        Return With Fail (Failed to select Devices in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (RemoveDevice_Error.png)
+        Return With Error (Error occurred selecting Devices in HPCC!)
+    }
+    
+    // search for the device
+    If: Web.Wait For Object (//*[@id='devicesNotAssignedTableId']//descendant::input[@class='text-search'],10)
+    {
+        // enter the device to search
+        Web.Click Object(//*[@id='devicesNotAssignedTableId']//descendant::input[@class='text-search'])
+        Web.Set Text (//*[@id='devicesNotAssignedTableId']//descendant::input[@class='text-search'],${Device})
+        
+        // click the search icon
+        Web.Click Object(//*[@id='devicesNotAssignedTableId']//descendant::span[@class='magnifier-icon magnifier-icon-list-filter'])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (RemoveDevice_Fail.png)
+        Return With Fail (Failed searching for device ${Device} in HPCC unassigned devices!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (RemoveDevice_Error.png)
+        Return With Error (Error occurred searching for device ${Device} in HPCC unassigned devices!)
+    }
+
+    Sleep (3)
+
+    // ensure that all devices found are checked
+    If: Web.Wait For Object(//*[@id='devicesNotAssignedTableId']//descendant::span[@class='ag-checkbox-checked'],0)
+    {
+        // the select all checkbox was checked
+    }
+    Fail:
+    {
+        // check the select all checkbox
+        Web.Click Object(//*[@id='devicesNotAssignedTableId']//descendant::span[@class='ag-header-select-all'])
+    }
+    Error:
+    {
+        // check the select all checkbox
+        Web.Click Object(//*[@id='devicesNotAssignedTableId']//descendant::span[@class='ag-header-select-all'])
+    }
+
+    Sleep (1)
+    
+    // the device is selected click the button to disconnect the device
+    If: Web.Click Object(//*[@id='showDisconnectDevicesModalButton'])
+    {
+        Sleep (1)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (RemoveDevice_Fail.png)
+        Return With Fail (Failed clicking the Disconnect button after selecting device ${Device} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (RemoveDevice_Error.png)
+        Return With Error (Error occurred clicking the Disconnect button after selecting device ${Device} in HPCC!)
+    }
+
+    // complete the disconnect popup
+    If: Web.Wait For Object (//div[@class='disconnectDevices'],10)
+    {
+        Sleep (1)
+        Web.Click Object(//button[@class='hpBlueButton'])
+        Sleep (3)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (RemoveDevice_Fail.png)
+        Fail (Failed clicking the Disconnect button after selecting device ${Device} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (RemoveDevice_Error.png)
+        Error (Error occurred clicking the Disconnect button after selecting device ${Device} in HPCC!)
+    }
+}
+
+CreateCustomer(${Customer},${ReferenceID},${Notes})
+{// remove a device in a customer account and then from HPCC
+    // try to select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+        // the account already exists
+        //        Web.Capture Screenshot (CreateCustomer_Fail.png)
+        Return With Fail (HPCC account ${Customer} already exists while creating a new account!)
+    }
+    Fail:
+    {
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (CreateCustomer_Error.png)
+        Return With Error (Error occurred searching the HPCC account ${Customer} while creating a new account!)
+    }
+    
+    Sleep (1)
+
+    // click on Accounts
+    If: Web.Wait For Object (//div[@class='hpMenu']//descendant::a[@href='/accounts/main']/div/div/p,10)
+    {
+         Web.Click Object (//div[@class='hpMenu']//descendant::a[@href='/accounts/main']/div/div/p)
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (CreateCustomer_Fail.png)
+        Return With Fail (Failed to select Accounts in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (CreateCustomer_Error.png)
+        Return With Error (Error occurred selecting Accounts in HPCC!)
+    }
+
+    Sleep (2)  //force a small wait to eliminate timing issues waiting for/clicking on the search textbox
+
+    // select to create a new account
+    If: Web.Wait For Object (//*[@id="showCreateAccountModalButton"],2)
+    {
+        Web.Click Object (//*[@id="showCreateAccountModalButton"])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (CreateCustomer_Fail.png)
+        Return With Fail (Failed to select button to create new Account in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (CreateCustomer_Error.png)
+        Return With Error (Error occurred selecting button to create new Account in HPCC!)
+    }
+    
+    Sleep (1)
+    If: Web.Wait For Object (//div[@class="createAccount"],5)
+    {
+        // enter the account name
+        Web.Wait For Object (//*[@id="accountName"],5)
+        Web.Click Object (//*[@id="accountName"])
+        Web.Set Text (//*[@id="accountName"],${Customer})
+        // enter Reference ID if specified
+        
+        If: Equals (${ReferenceID},)
+        {// no Reference ID specified
+        }
+        Fail:
+        {
+            Web.Click Object (//*[@id="referenceId"])
+            Web.Set Text (//*[@id="referenceId"],${ReferenceID})
+        }
+        
+        // enter Notes if specified
+        If: Equals (${Notes},)
+        {// no Notes specified
+        }
+        Fail:
+        {
+            Web.Click Object (//*[@id="textArea"]//textarea)
+            Web.Set Text (//*[@id="textArea"]//textarea,${Notes})
+        }
+        
+        // clear all selected users if selected
+        If: Web.Wait For Object(//*[@id="accountsCreateUserUsersTableId"]//descendant::span[@class='ag-checkbox-checked'],2)
+        {
+            // the select all checkbox was checked so uncheck it
+            Web.Click Object(//*[@id="accountsCreateUserUsersTableId"]//descendant::span[@class='ag-header-select-all'])
+            Sleep(1)
+        }
+        
+        // press the Create button
+        Web.Wait For Object (//*[@id="createAccountButton"],10)
+        Web.Click Object (//*[@id="createAccountButton"])
+        Sleep (5)
+        
+        // wait for the new account to be ready
+        Web.Wait For Object (//div[@class="accountDetail"]//descendant::span[@id="name"],90)
+        // verify the name of the account
+        Web.Get Text (//div[@class="accountDetail"]//descendant::span[@id="name"],${DisplayedCustomer})
+        If: Equals(${DisplayedCustomer},${Customer})
+        {
+            // good
+            Sleep (10)
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (CreateCustomer_Fail.png)
+            Fail (Fail creating new customer ${Customer} in HPCC!)
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (CreateCustomer_Fail.png)
+            Error (Error while creating new customer ${Customer} in HPCC!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (CreateCustomer_Fail.png)
+        Fail (Fail opening the Create Account popup while creating new customer ${Customer} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (CreateCustomer_Fail.png)
+        Error (Error opening the Create Account popup while creating new customer ${Customer} in HPCC!)
+    }
+}
+
+DeleteCustomer(${Customer})
+{// remove a device in a customer account and then from HPCC
+    // try to select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+    }
+    Fail:
+    {
+        // the account does not exists
+        //        Web.Capture Screenshot (DeleteCustomer_Fail.png)
+        Return With Fail (Fail searching the HPCC account ${Customer} while deleting account!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DeleteCustomer_Error.png)
+        Return With Error (Error occurred searching the HPCC account ${Customer} while deleting account!)
+    }
+    
+    Sleep (2)
+
+    // select the elem ent to show the account edit and delete options
+    If: Web.Wait For Object (//div[@class="accountDetail"]//descendant::div[@class="header"]//descendant::div[@class="hpButtonGroup"]//div[@class="image"],5)
+    {
+         Web.Click Object (//div[@class="accountDetail"]//descendant::div[@class="header"]//descendant::div[@class="hpButtonGroup"]//div[@class="image"])
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DeleteCustomer_Fail.png)
+        Return With Fail (Failed to select the account edit/delete element in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DeleteCustomer_Error.png)
+        Return With Error (Error occurred selecting the account edit/delete element in HPCC!)
+    }
+    
+    Sleep (1)
+
+    // select to Delete the account
+    If: Web.Wait For Object (//*[@id="showRemoveAccountModalButton"],5)
+    {
+        // press the Delete button
+        Web.Click Object (//*[@id="showRemoveAccountModalButton"])
+        
+        // wait for the delete popup and then press the Delete button
+        Web.Wait For Object (//div[@class="removeAccount"],10)
+        Web.Wait For Object (//*[@id="removeAccountButton"],1)
+        Web.Click Object (//*[@id="removeAccountButton"])
+        Sleep (5)
+        
+        // wait for the accounts page to show
+        If: Web.Wait For Object (//*[@id="showCreateAccountModalButton"],60)
+        {
+            // good
+            Sleep (10)
+        }
+        Fail:
+        {
+            //            Web.Capture Screenshot (DeleteCustomer_Fail.png)
+            Fail (Fail, deleting customer ${Customer} in HPCC took longer than 60 seconds!)
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (DeleteCustomer_Fail.png)
+            Error (Error while deleting customer ${Customer} in HPCC!)
+        }
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (DeleteCustomer_Fail.png)
+        Fail (Fail finding the Delete Account button while deleting customer ${Customer} in HPCC!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (DeleteCustomer_Fail.png)
+        Error (Error finding the Delete Account button while deleting customer ${Customer} in HPCC!)
+    }
+}
+
+VerifyDeviceSynced(${Customer},${Device})
+{// verify a device's info status is updated in HPCC
+    // select the account
+    If: HPCC_Library.SelectAccount(${Customer})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (VerifyDeviceInfoStatus_Fail.png)
+        Return With Fail (Failed to select the HPCC account ${Customer} for device status verify!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (VerifyDeviceInfoStatus_Error.png)
+        Return With Error (Error occurred selecting the HPCC account ${Customer} for device status verify!)
+    }
+    
+    Sleep (1)
+    
+    // select the device
+    If: HPCC_Library.SearchAccountDevice(${Device})
+    {
+    }
+    Fail:
+    {
+        //        Web.Capture Screenshot (VerifyDeviceInfoStatus_Fail.png)
+        Return With Fail (Failed selecting device ${Device} in HPCC for device status verify!)
+    }
+    Error:
+    {
+        //        Web.Capture Screenshot (VerifyDeviceInfoStatus_Error.png)
+        Return With Error (Error occurred selecting device ${Device} in HPCC for device status verify!)
+    }
+    
+    // loop looking for the Sync now text in the device details popup, up to approx. 30 minutes
+//    While:!Web.Wait For Object (//*[@id='app']//descendant::div[@class='syncActionButton'],0):50
+    While:!Web.Wait For Text(Sync now,0):50
+    {
+        // close the device details popup
+        @Web.Click Object (//*[@id='app']//descendant::div[@class='deviceDetails']//descendant::button[@id='closeButton'])
+
+        // delay to make approx. 30 seconds per loop iteration
+        Sleep (26)
+        
+        // attempt 3 times to click the device info link
+        If: HPCC_Library.SelectAccountDeviceInfo
+        {
+        }
+        Fail:
+        {
+            If: HPCC_Library.SelectAccountDeviceInfo
+            {
+            }
+            Fail:
+            {
+                If: HPCC_Library.SelectAccountDeviceInfo
+                {
+                }
+                Fail:
+                {
+                    //                    Web.Capture Screenshot (VerifyDeviceInfoStatus_Fail.png)
+                    Return With Fail (Failed accessing the device info in HPCC for device status verify!)
+                }
+                Error:
+                {
+                    //                    Web.Capture Screenshot (VerifyDeviceInfoStatus_Error.png)
+                    Return With Error (Errored accessing the device info in HPCC for device status verify!)
+                }
+            }
+            Error:
+            {
+                //                Web.Capture Screenshot (VerifyDeviceInfoStatus_FaVerifyDeviceInfoStatus_Erroril.png)
+                Return With Error (Errored accessing the device info in HPCC for device status verify!)
+            }
+        }
+        Error:
+        {
+            //            Web.Capture Screenshot (VerifyDeviceInfoStatus_Error.png)
+            Return With Error (Errored accessing the device info in HPCC for device status verify!)
+        }
+    
+        // wait for the device details popup, and then the sync button to be availaable
+        Web.Wait For Object (//*[@id='app']//descendant::div[@class='deviceDetails'],10)
+        @Web.Wait For Object (//*[@id='app']//descendant::div[@class='syncActionButton'],5)
+    }
+    
+    // close the device details popup
+    @Web.Click Object (//*[@id='app']//descendant::div[@class='deviceDetails']//descendant::button[@id='closeButton'])
+    Sleep (1)
+}

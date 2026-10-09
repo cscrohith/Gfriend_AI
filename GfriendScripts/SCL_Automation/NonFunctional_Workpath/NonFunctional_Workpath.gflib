@@ -1,0 +1,507 @@
+﻿using JediOmni
+using Web
+using BadgeBox
+
+T1985577800_Print_Queues_Test()
+{
+    Repeat:5
+    {
+        // checks if job list empty or not 
+        If:Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_problem_text'],20) 
+        {
+            Fail (Joblist is  Empty)
+            Stop Test Case
+        }
+        Fail:
+        {
+            Pass (Joblist is not Empty)
+            //contiune 
+        }
+        Sleep (5)
+        //selects the first jobs
+        Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],20)
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+        //clicks on the Print button
+        Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2],10)
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+        If: Web.Wait For Object Disappear (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/success_job_textview'],30)
+        {
+            Pass (Print job is Released successfully)
+        }
+        Fail:
+        {
+            Fail (Print job is failed to release)
+        }
+    }
+}
+
+T1985577800_Print_Stress_Badge(${WaitTime})
+{
+    Sleep (1)
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    If: JediOmni.Wait For Text (Sign In,${WaitTime})
+    {
+        Pass (Badge Signout Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to Signout)
+        Stop Test Case   
+    }
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    If: JediOmni.Wait For Text (Sign Out,${WaitTime})
+    {
+        Pass (Badge SignIn Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignIn)
+        Stop Test Case   
+    } 
+}
+
+T1988557836_Verify_cardreaders_2Users_swipes(${Second_BADGE_INDEX},${WaitTime})
+{
+    BadgeBox.Scan Badge (${Second_BADGE_INDEX})
+    If: JediOmni.Wait For Text (Sign In,${WaitTime})
+    {
+        Pass (Badge SignOut Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignOut)
+        Stop Test Case   
+    }
+    BadgeBox.Scan Badge (${Second_BADGE_INDEX})
+    If: JediOmni.Wait For Text (Sign Out,${WaitTime})
+    {
+        Pass (Badge SignIn Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignIn)
+        Stop Test Case   
+    }
+}
+
+T1985577791_Validate_SNMP_Security_Settings
+{
+    Sleep (5)
+    Web.Click Text (Networking)
+    Web.Click Text (Network Settings)
+    Web.Click Object (//*[@id="content"]/form/div[1]/div[2]/div[2]/div/ul/li/label)
+    Sleep (1)
+    Web.Click Object (//*[@id="Apply"])
+    Web.Close
+   
+    
+}
+
+
+
+T1985577794_Validate_PJL_Setting
+{
+   
+    Sleep (5)
+        
+    Web.Click Text (Security)
+
+   
+    Web.Click Object (//*[@id="GeneralSecurity"])
+
+ 
+    Web.Wait For Object (//*[@id="SetOptionsSectionId"],10)
+    Web.ScrollDownToParicularObject (//*[@id="PJLPasswordViewSectionId"]/div[2]/div[2]/div/label)
+    Sleep (2)
+    If: Web.IsChecked (//*[@id="PJLPasswordViewSectionId"]/div[2]/div[2]/div/label)
+    {
+        
+    }
+   Fail:
+   {
+       Web.Click Object (//*[@id="PJLPasswordViewSectionId"]/div[2]/div[2]/div/label)
+   }
+
+   If: Web.IsChecked (//*[@id="PJLPasswordViewSectionId"]/div[2]/div[2]/div/label)
+   {
+   }
+   
+   Fail:
+   {
+      Web.Click Object (//*[@id="FileSystemAccessSectionId"]/div[2]/div/div[1]/label)
+   } 
+   
+    
+
+    Web.Click Object (//*[@id="FormButtonSubmit"])
+    Web.Close
+   
+}
+
+T1985577797_Validate_Security_SHA256()
+{
+    Web.Wait For Object (//*[@id="mainMenu"]/li[10]/a,5)
+    //Networking button
+    Web.Click Object (//*[@id="mainMenu"]/li[10]/a)
+    //Secure Communication button
+    Web.Wait For Object (//*[@id="localMenu"]/li[11]/a,5)
+    Web.Click Object (//*[@id="localMenu"]/li[11]/a)
+    //Available box button
+    Web.Wait For Object (//*[@id="sourceSelect"],5)
+    //AES256-SHA256 Selection from list box 
+    If: Web.Select Value From List Box (//*[@id="sourceSelect"],AES256-SHA256)
+    {
+        //Forward button
+        Web.Wait For Object (//*[@id="forward"],5)
+        Web.Click Object (//*[@id="forward"])
+        //Apply button
+        Web.Wait For Object (//*[@id="Apply"],5)
+        Web.Click Object (//*[@id="Apply"]) 
+    }
+    Fail:
+    { 
+        Fail (AES256-SHA256 Already present in Active state)   
+    }
+    Web.Close
+}
+
+
+T1985577799_Validate_User_session()
+{
+    Android.Disconnect
+    
+    //The application goes to sleep after the configured inactivity timeout.
+    JediOmni.Wait Until Power Save (180)
+    
+    If: JediOmni.Wait For Text (Sign In,5)
+    {
+        Pass(User session logged out Successfully)
+    }
+    Fail:
+    {
+        Fail (User session is not logged out)
+    }
+    Android.Re Connect
+}
+
+T1985577801_Validate_Server_Upgrade()
+{
+    //Security button
+    Web.Wait For Object (//div[@data-test-id='label' and text()='Security'],50)
+    Web.Click Object (//div[@data-test-id='label' and text()='Security'])
+    //End points button
+    Web.Wait For Object(//div[@data-test-id='label' and text()='Endpoints'],50)
+    Web.Click Object (//div[@data-test-id='label' and text()='Endpoints'])
+    //Servers button
+    Web.Wait For Object (//span[text()='Servers'],50)
+    Web.Click Object (//span[text()='Servers'])   
+    // Update button
+    If: Web.Wait For Object (//a[@data-test-id='updateServerBtn'][contains(@class\,'k-state-disabled')],30)
+    {
+        Fail (Already Server is in upgrade state)  
+    }
+    Fail:
+    {
+        Web.Wait For Object (//a[@data-test-id='updateServerBtn'],50)
+        Web.Click Object (//a[@data-test-id='updateServerBtn'])
+        Pass (Server upgrade is In-Progress)
+    }
+    Web.Close
+}
+
+T1985577792_Security_FIPS(${EWS_Site})
+{
+    Web.Click Text (Networking)
+    If:Web.Wait For Text (Secure Communication,10)
+    {
+        Web.Click Text (Secure Communication)
+    }
+    If:Web.Wait For Text (Secure Communication,10)
+    {
+        Web.ScrollDownToParicularObject (//*[@id="content"]/form/div[1]/div[11]/div/h3)
+    }
+    If: Web.IsChecked (/html/body/div[2]/div/div/div[1]/div/div[2]/form/div[1]/div[10]/div/div/div/label)
+    {
+        If: Web.Wait For Text (Enable FIPS,10)
+        {
+            Pass (Already Checked)
+        }
+    }
+   Fail:
+   {
+       Web.Click Object(//*[@id="label_fips"])
+       Web.Click Object(//*[@id="confirmReboot"])
+       Web.Click Object (//*[@id="Apply"])
+       JediOmni.Wait Until Boot
+       While:Web.Wait For Object (//*[@id="reload-button"],10): 50
+       {
+           Web.Click Object (//*[@id="reload-button"])
+       }
+       While:Web.Wait For Text (Information,10): 180
+       {
+           Web.Wait For Text (Information,50)
+       }
+       Web.Click Text (Information)
+       Pass (Device is Completely Ready!)
+       Web.Close
+   }
+}
+
+T1985577802_Firmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password},${EWS_Site})
+{
+    Web.Click Text (Information)
+    Web.Click Text (Configuration Page)
+    Web.Get Text (//*[@id="FutureSmartBundleVersion"],${Firmware_version})
+    pass(${Firmware_version})
+    Web.Get Text (//*[@id="FirmwareRevision"],${Firmware_revision})
+    Pass (${Firmware_revision})
+    Web.Click Text (General)
+    Web.Click Text (Firmware Upgrade)
+    Web.Click Text (Choose File)
+    Windows.Wait For Name (Open,5)
+    Windows.Select Application (Open)
+    Windows.Wait For ID (1148,10)
+    Windows.Send Key (${File_Path})
+    Windows.Wait For Name (Open,5)
+    Windows.Send Special Key ([ENTER])
+    Windows.Wait For Name (Open,10)
+    If: Windows.Check Screen Contains Partial Text (id.signed.bdl)
+    {
+        Windows.Click Element By Partial Text (id.signed.bdl) 
+    }
+    Fail:
+    {
+        Fail (There is no bdl file)
+    }
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([ENTER])
+    Web.Wait For Text (Firmware Upgrade,10)
+    Web.Wait For Text (The product is restarting to complete the operation,1200)
+    JediOmni.Wait Until Boot    
+    While:Web.Wait For Object (//*[@id="reload-button"],10): 50
+    {
+        Web.Click Object (//*[@id="reload-button"])
+    }
+    While:Web.Wait For Text (Information,10): 180
+    {
+        Web.Wait For Text (Information,50)
+    }
+    If: Web.Open with edge (${EWS_Site},180)
+    {
+        //contiune  
+    }
+    Fail:
+    {
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+    Web.Click Text (Information)
+    Web.Click Text (Configuration Page)
+    Web.Get Text (//*[@id="FutureSmartBundleVersion"],${UpdatedFirmware_version})
+    pass(${UpdatedFirmware_version})
+    Web.Get Text (//*[@id="FirmwareRevision"],${UpdatedFirmware_revision})
+    Pass (${UpdatedFirmware_revision})
+    If: builtin.NotEquals (${Firmware_version},${UpdatedFirmware_version})
+    {
+        Pass(Updated Firmware Version)
+    }
+    Fail:
+    {
+        Fail (Firmware Version not updated)
+        Stop Test Case
+    }
+}
+
+
+T1985577793_Validate_CSRF_setting()
+{
+   Web.Wait For Object (//*[@id="mainMenu"]/li[10]/a,5)
+   //Security Tab
+   Web.Click Object (/html/body/div[1]/div[3]/ul/li[8]/a)
+   Sleep (1)
+     
+   //Scroll  to Enable Cross-site Request Forgery (CSRF) prevention
+   Web.ScrollDownToParicularObject (/html/body/div[2]/div/div/div[2]/div/div[2]/form/div[1]/div[4]/div[2]/div[2]/div/label)
+    
+   Sleep (1)
+ 
+   If: Web.IsChecked (/html/body/div[2]/div/div/div[2]/div/div[2]/form/div[1]/div[4]/div[2]/div[1]/div/label)
+   {
+       Sleep (1)
+       Pass (Already Checked)
+   }
+   Fail:
+   {
+       Sleep (1)
+       //Click CSRF checkbox
+       If: Web.Wait For Object (/html/body/div[2]/div/div/div[2]/div/div[2]/form/div[1]/div[4]/div[2]/div[1]/div/label,10)
+       {
+           Web.Click Object (/html/body/div[2]/div/div/div[2]/div/div[2]/form/div[1]/div[4]/div[2]/div[1]/div/label)
+            Sleep (1)
+       }
+       Fail:
+       {
+           Fail (CSRF checkbox is not avaialble)
+           Stop Test Case
+       }
+      
+       If:Web.Wait For Object (/html/body/div[2]/div/div/div[2]/div/div[2]/form/div[2]/span[1]/input,10) 
+       {
+           //Click apply
+            Web.Click Object (/html/body/div[2]/div/div/div[2]/div/div[2]/form/div[2]/span[1]/input)
+            Sleep (1) 
+       }
+       Fail:
+       {
+           Fail (Apply button is not avaialble)
+            Stop Test Case
+       }
+   }
+   Web.Close
+}
+
+T1988557827_RebootDevice(${EWS_Site},${EWS_Password})
+{
+    //Common_Library.EWS_Login (${EWS_Site},${EWS_Password})
+
+    //Wait For Information Menu
+    Web.Wait For Object (/html/body/div[1]/div[3]/ul/li[1]/a,10)
+    Web.Click Object (/html/body/div[1]/div[3]/ul/li[1]/a)
+    Sleep (2)
+
+    //Wait for RemoteControl Panel and Click
+    Web.Wait For Object (/html/body/div[2]/div/div/div[1]/div[2]/ul/li[10]/a,10)
+    Web.Click Object (/html/body/div[2]/div/div/div[1]/div[2]/ul/li[10]/a)
+    Sleep (2)
+
+    //Wait for Lauch Remote Control-Panel and Click 
+     Web.Wait For Object (/html/body/div[2]/div/div/div[2]/div/div[2]/form/div/div/div[2]/div/div[1]/a,10)
+     Web.Click Object (/html/body/div[2]/div/div/div[2]/div/div[2]/form/div/div/div[2]/div/div[1]/a)
+     
+     Sleep (5)
+
+    If: JediOmni.Wait For Object (hpid-button-Ok,5)
+    {
+        JediOmni.Touch ID (hpid-button-Ok)
+    }
+
+    Sleep (5)
+    
+    //Click on Restart Product
+    Windows.Send Special Key ([ENTER])
+
+    Sleep (2)
+    //Click on Restart Product
+    Windows.Send Special Key ([ENTER])
+
+    Web.Close
+    
+    JediOmni.Wait Until Boot
+    
+    //Web.Open with Edge (${EWS_Site},50)
+    Web.Open with Chrome (${EWS_Site},180)
+
+    While:Web.Wait For Object (//*[@id="reload-button"],5): 50
+    {
+        Web.Click Object (//*[@id="reload-button"])    
+    }
+
+    Windows.Send Special Key ([F5])
+
+    Web.Wait For Object (//*[@id="Information"],50)
+    Web.Wait For Text (Information,50)
+
+    Web.Click Text (Information)
+
+    Pass (Device is Completely Ready!)
+    Web.Close
+    Sleep (20)
+}
+
+T1988557827_PullPrintAfterReboot
+{
+    //clicks on the secure print icon
+    JediOmni.Touch ID (hpid-5f271ead-1a46-4f72-b261-22f9d769ea1c-homescreen-button)
+    Sleep (5)
+    
+    //My Print Jobs Button
+    If: Android.Wait For Object (com.ysoft.safeq.terminals.hp.hcp:id/print,50)
+    {
+        Android.Touch ID (com.ysoft.safeq.terminals.hp.hcp:id/print)
+    }
+    Fail:
+    {
+        Fail (Failed to select My Print Jobs Button)
+        Stop Test Case
+    }
+    Sleep (1)
+    
+    If: Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1],30)
+    {
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_recycler_view']/node[1])
+        
+        Sleep (1)
+        
+        //clicks on the Print button
+        Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/footer_bar']/node[1]/node[2])
+        
+        While:!Android.Wait For XPath Gone (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/print_cancel'],10)
+        {
+            Sleep (1)
+        }
+        
+        //conditions to check job is processed or not  
+        If:JediOmni.Wait For Active Job Gone (100)
+        {
+            Pass (Print job is sucessfully completed)
+        }
+        Fail:    
+        {
+            Fail (Print job is not completed)
+        }
+    }
+    Fail:
+    {
+        Fail (Failed to find first job)
+        Stop Test Case
+    }
+}
+Second_Badge_Login(${Second_BADGE_INDEX})
+{
+    BadgeBox.Scan Badge (${Second_BADGE_INDEX})
+
+   While:!JediOmni.Wait For Text (Sign Out,10): 10
+    {
+        Sleep(5)
+    }
+ 
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        Pass (Badge SigIN Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignIn)
+        Stop Test Case   
+    }
+}
+Second_Badge_Logout(${Second_BADGE_INDEX})
+{
+    BadgeBox.Scan Badge (${Second_BADGE_INDEX})
+
+    While:!JediOmni.Wait For Text (Sign In,10): 10
+    {
+        Sleep(5)
+    }
+
+    If: JediOmni.Wait For Text (Sign In,10)
+    {
+        Pass (Badge Logout Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to Logout)
+        Stop Test Case
+    }
+} 

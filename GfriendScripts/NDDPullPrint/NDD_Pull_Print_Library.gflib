@@ -1,0 +1,428 @@
+﻿using JediOmni
+using Oxpd
+using NDD_Pull_Print_Variables.gfvar
+using Info
+
+/////////////////////////////////////////////////
+//Routine:         ClearAuth
+//Description:     make sure at Home screen, signed out and reset
+//
+//Arguments: 
+//      
+//Pre-requisites: 
+// 
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+      
+ClearAuth
+{
+    JediOmni.Press Home Key
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_DeviceButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_PrintDelete)
+    Info.Start Time Check (STF_Delete)
+    If: JediOmni.Wait For Text (Sign In,${Short_Wait_Time})
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Touch Text (Sign Out)
+        {
+            JediOmni.Wait For Text Gone (Signing out,${Wait_Time})
+        }
+        Fail:
+        {
+            Return With Fail (Failed clicking Sign Out!)
+        }
+    }
+    JediOmni.Reset
+}
+
+/////////////////////////////////////////////////
+// Routine:         GenerateUserCode
+// Description:     GenerateUserCode for Pin Authentication
+//
+// Arguments:      (${STF_UserName}) - UserName
+//                 (${UserCode}) - Pin
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+GenerateUserCode(${STF_UserName})
+{ 
+     If: Equals IgnoreCase (${STF_UserName},jawa)
+     {
+         Set Variable (${UserCode},111111)
+     }
+     
+     Fail:
+     {
+         Set Variable (${UserCode},${STF_UserName})
+         Replace (${UserCode},u,)
+         Replace (${UserCode},U,)
+     }
+}
+
+
+/////////////////////////////////////////////////
+// Routine:         NDDPinLogin
+// Description:     Sign in NDD with Pin Authentication
+//
+// Arguments:      (${UserCode}) - Pin
+//                 (${LAZY_AUTH}) - Lazy Authentication
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+
+PinLogin(${UserCode},${LAZY_AUTH})
+{
+    If:NDD_Pull_Print_Library.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    { 
+        Info.Mark End (STF_AppButtonPress,2)
+        JediOmni.Touch Text (nddPrint 360)
+    }
+    Fail:
+    {
+        Info.Mark End (STF_DeviceButtonPress,4)
+        // press the Sign In button
+        JediOmni.Touch ID (hpid-control-signin)
+    }
+    Oxpd.Get Browser Engine (${Short_Wait_Time})
+    Info.Mark Start (STF_Authentication,1)
+   
+    If: Oxpd.Wait For Id (my-button-pin,${Wait_Time})
+    {
+         Oxpd.Touch Id (my-button-pin)
+         Info.Mark Start (STF_EnterCredentials,3)
+         Oxpd.Input Text (${UserCode})
+            
+         // Keyboard OK
+         Jediomni.Touch Text (OK)
+            
+         //Footer Login
+         Info.Mark End (STF_EnterCredentials,3)
+         Oxpd.Touch Id (my-button-login)
+         Info.Mark End (STF_Authentication,1)
+         Info.Mark End (STF_AppShown,5) 
+    }
+    Fail:
+    {
+        //For 4.3 inch screen
+        If: Oxpd.Wait For Text (PIN,${Wait_Time})
+        { 
+            Oxpd.Touch Text (PIN)
+            Oxpd.Touch Id (Pin)
+            Info.Mark Start (STF_EnterCredentials,3)
+            Oxpd.Input Text (${UserCode})
+            
+            // Keyboard OK
+            Jediomni.Touch Text (OK)
+            
+            //Footer Login
+            Info.Mark End (STF_EnterCredentials,3)
+            Oxpd.Touch Id (btnLogin)
+            Info.Mark End (STF_Authentication,1)
+            Info.Mark End (STF_AppShown,5)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to load authentication text field!)
+        }
+    }
+}
+
+
+/////////////////////////////////////////////////
+// Routine:         UserNamePasswordLogin
+// Description:     Sign in NDD with Username\Password Authentication
+//
+// Arguments:      (${STF_UserName}) - Username
+//                 (${STF_UserPassword}) - Password
+//                 (${LAZY_AUTH}) - Lazy Authentication
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+
+UserNamePasswordLogin(${STF_UserName},${STF_UserPassword},${LAZY_AUTH})
+{
+    If: NDD_Pull_Print_Library.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    {
+         Info.Mark End (STF_AppButtonPress,2)
+         JediOmni.Touch Text (nddPrint 360)
+    }
+    Fail:
+    {
+         Info.Mark End (STF_DeviceButtonPress,4)
+         // press the Sign In button
+         JediOmni.Touch ID (hpid-control-signin)
+    } 
+    Oxpd.Get Browser Engine (${Short_Wait_Time})
+    Info.Mark Start (STF_Authentication,1)
+    If: Oxpd.Wait For Id (my-button-user,${Wait_Time})
+    {
+            Oxpd.Touch Id (my-button-user)
+            Oxpd.Touch Id (my-textbox-UserName)
+            Info.Mark Start (STF_EnterCredentials,3)
+            Oxpd.Input Text (${STF_UserName})
+            JediOmni.Touch Text (OK)
+            Oxpd.Touch Id (my-textbox-password)
+            Oxpd.Input Text (${STF_UserPassword})
+                
+            // Keyboard OK
+            JediOmni.Touch Text (OK)
+            If: Oxpd.Wait For Id (my-button-login,${Short_Wait_Time})
+            {
+                Info.Mark End (STF_EnterCredentials,3)
+                //Footer Login
+                Oxpd.Touch Id (my-button-login)
+            }
+            Info.Mark End (STF_Authentication,1)
+            Info.Mark End (STF_AppShown,5) 
+     }
+     Fail:
+     {
+         //For 4.3 inch screen
+         If: Oxpd.Wait For Text (USER,${Wait_Time})
+          {
+              Oxpd.Touch Text (USER)
+                  Oxpd.Touch Id (UserName2)
+                  Info.Mark Start (STF_EnterCredentials,3)
+                  Oxpd.Input Text (${STF_UserName})
+                  JediOmni.Touch Text (OK)
+                  Oxpd.Touch Id (Password2)
+                  Oxpd.Input Text (${STF_UserPassword})
+                
+                  // Keyboard OK
+                  JediOmni.Touch Text (OK)
+                  If: Oxpd.Wait For Id (btnLogin,${Short_Wait_Time})
+                  {
+                      Info.Mark End (STF_EnterCredentials,3)
+                      //Footer Login
+                      Oxpd.Touch Id (btnLogin)
+                  }
+                   Info.Mark End (STF_Authentication,1)
+                   Info.Mark End (STF_AppShown,5)
+          }
+          Fail:
+          {
+              Return With Fail (Failed to load authentication text field!)
+          }
+     }
+}
+
+/////////////////////////////////////////////////
+// Routine:         NDD PullPrint
+// Description:     NDD Pull Print Job
+//
+// Arguments:       ${PRINT_RELEASE_ACTION}- Print options
+//                  ${LAZY_AUTH}- Lazy Authentication
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+PullPrint(${PRINT_RELEASE_ACTION},${LAZY_AUTH})
+{
+    If: Equals IgnoreCase (${LAZY_AUTH},N)
+    {
+     If: JediOmni.Wait For Text (nddPrint 360,${Wait_Time})
+     {
+         Info.Mark End (STF_AppButtonPress,2)
+         JediOmni.Touch Text (nddPrint 360)
+         Info.Mark End (STF_AppShown,5)
+     }
+     Fail:
+     {
+          Return With Fail (Failed to load PullPrint button!)
+     }
+    }
+    
+    If: Oxpd.Wait For Id (Btn_1,${Wait_Time}
+    {
+        Oxpd.Touch Id (Btn_1) //To press the pending icon
+    }
+    
+    If: Oxpd.Wait For Id (Job_0,${Wait_Time})
+    {
+        //To Select all the Documents
+        If: Equals IgnoreCase (${SELECT_ALL},Y)
+        {
+           If: Oxpd.Wait For Id (selectAllButton,${Short_Wait_Time})
+           {
+               Oxpd.Touch Id (selectAllButton)
+           }
+           Fail:
+           {
+               //For 4.3 inch screen
+               Oxpd.Touch Id (SelectAll)
+           }
+        } 
+        
+        //To Print or Delete Only 1 Document
+        Fail:
+        {
+           Oxpd.Touch Id (Job_0)
+           If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Print)
+           {
+              If: Oxpd.Wait For Id (print,${Short_Wait_Time})
+              {
+                  Info.Mark Start (STF_PrintDelete,6)
+                  Oxpd.Touch Id(print)//Print 
+              }
+              Fail:
+              {
+                   Info.Mark Start (STF_PrintDelete,6)
+                  //For 4.3 inch screen
+                  Oxpd.Touch Id (printButton)
+              }
+           }
+           
+           If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Delete)
+           {
+               
+               If: Oxpd.Wait For Id (excludeFooter,${Short_Wait_Time})
+               {
+                   Info.Mark Start (STF_Delete,7)
+                   Oxpd.Touch Id(excludeFooter)//Delete
+               }
+               Fail:
+               {
+                   Info.Mark Start (STF_Delete,7)
+                   //For 4.3 inch screen
+                   Oxpd.Touch Id (DeleteButton)
+               }
+               
+               Oxpd.Wait For Text (DELETE,${Wait_Time})
+               Oxpd.Touch Text (DELETE)
+               Oxpd.Wait For Text (PENDING,${Short_Wait_Time})
+           }
+        }
+       
+        If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Delete)
+        { 
+            Return With Pass(Deleted Job successfully)
+            Info.Mark End (STF_Delete,7)
+        }
+        Fail:
+        {
+            If: JediOmni.Wait For Active Job Gone (${Longest_Wait})
+            {
+                If: Oxpd.Wait For Text Contains (SUCCESSFULLY,${Wait_Time})
+                {
+                    Return With Pass (Print Job Completed Successfully)
+                    Info.Mark End (STF_PrintDelete,7)
+                }
+            }
+            Fail:
+            {
+                Return With Fail (Failed to print jobs within ${Longest_Wait} seconds!!)
+            }
+        }
+    }
+    
+    Fail:
+    {
+        Return With Fail (No Jobs found to Pull!!) 
+    }
+    Error:
+    {
+        Return With Error (Error while selecting print Job!!)
+    } 
+}
+
+/////////////////////////////////////////////////
+// Routine:         ExitApp
+// Description:     Exit the NDDPullPrint app on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+ExitApp
+{
+    If: JediOmni.Wait For Object (hpid-button-oxpd-home,${Wait_Time})
+    {
+        JediOmni.Touch ID (hpid-button-oxpd-home)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to find Exit button!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out from the user
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignOut
+{
+    // make sure at Home screen, signed out and reset 
+    JediOmni.Press Home Key
+    If: JediOmni.Wait For Text (Sign Out,${Wait_Time})
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find Home Screen Sign Out!)
+    }
+}

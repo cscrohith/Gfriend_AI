@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1B3E10D2-337A-413D-B304-8DAB2ADA44E6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>HP.GFriend.Client</RootNamespace>
+    <AssemblyName>GFClient</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\GFClient\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Release\GFClient\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ExternalLibraries\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Forms\FolderViewer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\FolderViewer.Designer.cs">
+      <DependentUpon>FolderViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\GFClientForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GFClientForm.Designer.cs">
+      <DependentUpon>GFClientForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GFClientUtil.cs" />
+    <Compile Include="Forms\GFServerExecutionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GFServerExecutionForm.Designer.cs">
+      <DependentUpon>GFServerExecutionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\GFServerViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GFServerViewerForm.Designer.cs">
+      <DependentUpon>GFServerViewerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\INIFIle.cs" />
+    <Compile Include="Forms\ScriptInfo.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\ScriptInfo.Designer.cs">
+      <DependentUpon>ScriptInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\WaitingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\WaitingForm.Designer.cs">
+      <DependentUpon>WaitingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GFServerConnector.cs" />
+    <Compile Include="GFServerResult.cs" />
+    <Compile Include="IGFServerData.cs" />
+    <Compile Include="GFServerException.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Script.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestProject.cs" />
+    <Compile Include="TestProjectResult.cs" />
+    <Compile Include="TestResult.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Forms\FolderViewer.resx">
+      <DependentUpon>FolderViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GFClientForm.resx">
+      <DependentUpon>GFClientForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GFServerExecutionForm.resx">
+      <DependentUpon>GFServerExecutionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GFServerViewerForm.resx">
+      <DependentUpon>GFServerViewerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ScriptInfo.resx">
+      <DependentUpon>ScriptInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\WaitingForm.resx">
+      <DependentUpon>WaitingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OpenFolder_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\8.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\16.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\download.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\upload.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GFCore\GFCore.csproj">
+      <Project>{9a615988-adef-4e00-aad0-8faf46bfa94b}</Project>
+      <Name>GFCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GFKeywords\GFKeywords.csproj">
+      <Project>{cb19fb23-d4fc-4c39-9d66-c597e80c447b}</Project>
+      <Name>GFKeywords</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StartWeb_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\WebServer_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Connect_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Disconnect_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GlyphLeft_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GlyphRight_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\NextFrameArrow_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PreviousFrame_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Refresh_server_16x.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

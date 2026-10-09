@@ -1,0 +1,44 @@
+﻿using JediOmni
+using Info
+using Safe_Q_AUTH.gflib
+using Safe_Q_Variables.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         Safe_Q_Flow
+// Description:     Safe_Q Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Safe_Q_FLOW
+{
+    Info.Start Time Check (STF_ActivityBegin)
+    Info.Start Time Check (STF_ActivityEnd)
+    
+    JediOmni.Enable Paperless Mode
+    Info.Mark Start (STF_ActivityBegin,10)
+    If: Safe_Q_AUTH.Safe_Q_PullPrint(${PRINT_ALL},${BADGE_AUTH},${BADGE_INDEX},${PIN})
+    { 
+        //Continue  
+    }
+    
+    Fail:
+    {
+        Return With Fail (Failed while Performing pull print operation!)
+    }
+    Error:
+    {
+        Return With Error (Error while Performing pull print operation!)
+    } 
+    Safe_Q_AUTH.SignOut  
+}
+Info.Mark End (STF_ActivityEnd,10)
+
+
+

@@ -1,0 +1,14 @@
+﻿// user variables, when run in STF/STB these can be commented to use those supplied by the GFriend plugin
+${STF_UserName}=u05220
+${STF_UserPassword}=1qaz2wsx
+${STF_Domain}=etl.boi.rd.hpicorp.net
+
+// this variable indicates whether to use username/password if available
+${Auth_TryUserID_First_YN}=Y
+
+// HPID SIO linking user variables
+${HPID_UserID}=rdl.etl.boise+u05220@gmail.com
+${HPID_Password}=007L@z3r
+${HPID_PIN}=454545
+
+${UserCode}=05220

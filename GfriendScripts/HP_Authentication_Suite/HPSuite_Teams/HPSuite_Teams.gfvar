@@ -1,0 +1,21 @@
+﻿//For Badgebox,mention the variable (${BADGE_AUTH}) value as Y
+//BadgeIndex
+${STF_BadgeIndex} = 0
+
+//Azure account details
+//${STF_AzureEndpoint} = 
+//${STF_AzureKey} = 
+
+//To use Print from Teams App , provide the variable (${PRINT}) value as Y
+//To use Scan from Teams App , provide the variable (${Scan}) value as Y
+${Print} = N
+${Scan} = Y
+
+//Provide the Teams name 
+${Teams_Name} = SCL-Team-Test
+
+//Provide the Chat name from the Teams Application
+${Chat_Name} = Test
+
+//Print File name
+${Print_FileName} = test.jpg

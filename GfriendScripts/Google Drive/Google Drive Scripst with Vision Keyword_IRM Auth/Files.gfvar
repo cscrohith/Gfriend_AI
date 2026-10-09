@@ -1,0 +1,18 @@
+﻿//Azure Account details
+//${STF_AzureEndpoint} =
+//${STF_AzureKey} =
+
+${User_Name} = rdladmin
+${Password} = rdl@123
+
+${Email} = cevt.siv6
+${Email_Password} = swtest123456789
+
+${Doc_Name} = Platform-Print
+${File_Name} = CEVT.PRINTFILE.jpg.pdf
+
+${SignOutButton_10in} = (1247, 67, 6, 26)   //10 inchs display sign out x,y path
+${SignOutButton_8in} = (989, 64, 6, 20)     //8 inchs display sign out x,y path
+
+${Reset_Button_ID} = hpid-button-reset
+${SignIn_Or_SignOut_ID} = hp-button-signin-or-signout

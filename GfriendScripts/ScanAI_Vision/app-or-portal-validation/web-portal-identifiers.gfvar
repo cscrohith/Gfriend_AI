@@ -1,0 +1,37 @@
+﻿${AlumaPortalUrl} =https://app.hp.aluma.io/
+${EmailTextFeild} =//*[@placeholder = "Your work email"]
+${PasswordTextFeild} =//*[@placeholder = "Your password"]
+
+// Don't add space between equal to and value for password and email-Id feild.
+${UserEmail}=arpit.chinmay@hp.com 
+${UserPassword}=Dec_Jan_2025!!!
+
+${SignInWithEmailButton} =//*[@value = "password"]
+${ValidationButton} =//*[@href = "https://validation.hp.aluma.io"]
+
+${Document0} =//*[@id = "document-1-page-0"]
+
+${Document3} =//*[@id = "document-3-page-0"]
+${MoveArrowAtDocument3} =//*[@title = "Merge this document with previous document"]
+
+${Document4} =//*[@id= "document-5-page-0"]
+${MoveArrowAtDocument4} =//*[@title= "Merge this document with previous document"]
+
+${Document3Page1} =//*[@id= "document-4-page-1"]
+${SeparateDocument3And4} =//*[@data-testid= "start-new-document"]
+
+${MoveToNextDocument} =//*[@data-testid = "next-document"]
+${FeildViewButton} =//*[@title= "Fields view"]
+
+${InputTextFeild_Fornitore} =//*[@name= "Fornitore"]
+${InputTextFeild_PartitaIva} =//*[@name= "Partita iva"]
+
+${InputValue}=test
+
+${ThumbnailViewButton} =//*[@data-testid= "show-thumbnails-view"]
+
+${ReviewCompleteButton} =//*[@data-testid= "review-complete"]
+
+${SubmitAndOpenNextTaskDropdown} =//*[@id="headlessui-menu:19"]
+
+${SubmitAndReturnToTaskList} =//*[@id="headlessui-menu:17"]

@@ -1,0 +1,69 @@
+﻿/// <File>DeviceReset.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Reset a device using the EWS Reset Firmware option
+/// equivilant to a partial clean</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using DeviceReset.gfvar
+
+Using Device_EWS_Library.gflib
+
+Using Web As EWS_Web
+Using JediOmni
+
+/// <Name>ResetDevice</Name>
+/// <Description>Reset he device from EWS, this does a Reset Firmware operation</Description>
+/// <Notes></Notes>
+ResetDevice
+{
+    // oepn the device EWS
+    If: Device_EWS_Library.OpenEWS (${DUT_Address})
+    {
+        // sign in
+        If: Device_EWS_Library.SignInWithAdmin (${DUT_AdminPW},${CheckBlankPassword},${SetPasswordWhenBlank})
+        {
+        }
+        Fail:
+        {
+            Fail (Signing In with admin password failed!)
+            Stop Test Case
+        }
+    }
+    Fail:
+    {
+        Fail (Access device ${DUT_Address} EWS failed!)
+        Stop Test Case
+    }
+    
+    // disable web services
+    If: Device_EWS_Library.DisableWebServices
+    {
+        // clear the proxy
+        If: Device_EWS_Library.ClearProxy
+        {
+        }
+    }
+    Fail:
+    {
+        Fail (Fail while disabling Web Services!)
+        Stop Test Case
+    }
+
+    // reset the device (partial clean from EWS)
+    If: Device_EWS_Library.ResetDevice
+    {
+        // check for completion of the device reset
+        If: Device_EWS_Library.WaitForDeviceResetComplete (${DUT_Address})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail to complete resetting device!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail while resetting device!)
+    }
+}

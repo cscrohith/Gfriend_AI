@@ -1,0 +1,71 @@
+﻿/// <File>HPCC_MasterDevice_Enable.txt</File>
+/// <Modified>2021-05-18</Modified>
+/// <Description>Enable a device as a master device in HP Command Center (HPCC)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${Device_ID}=VNBDL5E027
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC.gfvar
+Using HPCC_MasterDevice_Enable.gfvar
+
+Using HPCC_Library.gflib
+
+//Using JediOmni
+
+/// <Name>EnableLink</Name>
+/// <Description>Enable SIO on a device in HP Command Center (HPCC)</Description>
+/// <Notes></Notes>
+EnableMasterDevice
+{
+//    // remove the "-" from the device as it is a non-allowed character in HPCC
+//    Set Variable (${Device_ID},${DUT_ID})
+//    Replace (${Device_ID},-,)
+    
+    // Sign in
+    If: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In Failed!)
+        Stop Test Case
+    }
+    
+    // Access the customer Device Discovery page
+    If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+    {
+        Sleep (${Short_Wait_Time})
+        
+        // enabile master device
+        If: HPCC_Library.EnableMasterDevice(${HPCC_Customer},${Device_ID},${Discover_Method_Multicast_YN},${Discover_Multicast_Period},${Discover_Multicast_Hour},${Discover_Multicast_Minute},${Discover_Multicast_AM_PM},${Discover_Method_DeviceAnnounce_YN},${Discover_DeviceAnnounce_TrustedAuth_YN},${Discover_DeviceAnnounce_SecondaryListeners_YN},${ConfigureOption_AddAllDevices_YN},${HPCC_TaskCompleteLimit})
+        {
+        }
+        Fail:
+        {
+            Fail (Master device enable Failed!)
+        }
+        Error:
+        {
+            Error (Error occured during Master device enable!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail accessing the customer Device Discovery page!)
+    }
+    Error:
+    {
+        Error (Error accessing the customer Device Discovery page!)
+    }
+    
+    HPCC_Library.SignOut()
+    
+    Web.Close
+}

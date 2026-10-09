@@ -1,0 +1,50 @@
+﻿//To Print all the jobs, provide the variable (${PRINT_ALL}) value as Y
+//To Print one job, provide the variable (${PRINT_ALL}) value as N
+${PRINT_ALL} = N
+
+//For Card Authentication, provide the variable (${BADGE_AUTH}) value as Y
+//and provide The variable ${BADGE_INDEX} with the Configured Card Slot.
+//For ID Code and PIN Authentication, provide the variable (${BADGE_AUTH}) value as N
+${BADGE_AUTH} = Y
+${BADGE_INDEX} = 0
+
+
+//ID Code and PIN ID's, Due to the UI Restrictions we have to hard code some Values for ID Code and PIN.
+//Below are the ID's of numbers from 0 to 9
+//0 = node[4]/node[2]
+//1 = node[1]/node[1]
+//2 = node[1]/node[2]
+//3 = node[1]/node[3]
+//4 = node[2]/node[1] 
+//5 = node[2]/node[2]
+//6 = node[2]/node[3] 
+//7 = node[3]/node[1]
+//8 = node[3]/node[2]
+//9 = node[3]/node[3]
+
+//If user wants to enter his/her ID Code value then he/she has to copy the ID's of the corresponding number 
+//from above and paste it in the below variable as a value. 
+//Example:- If the ID Code value is 244722
+//          From the list of ID's above
+//          Copy the ID of number 2 that is "node[1]/node[2]"
+//          And Paste it in the ${First_Digit} like "${First_Digit} = node[1]/node[2]"
+//Do the same for Second, Third, Fourth, Fifth and Sixth Digit
+${First_Digit} = node[1]/node[2] 
+${Second_Digit} = node[2]/node[1]
+${Third_Digit} = node[2]/node[1]
+${Fourth_Digit} = node[3]/node[1]
+${Fifth_Digit} = node[1]/node[2]
+${Sixth_Digit} = node[1]/node[2]
+
+
+//If user wants to enter his/her PIN value then he/she has to copy the ID's of the corresponding number 
+//from above and paste it in the below variable as a value. 
+//Example:- If the PIN value is 1234
+//          From the list of ID's above
+//          Copy the ID of number 1 that is "node[1]/node[1]"
+//          And Paste it in the ${First_PIN} like "${First_Digit} = node[1]/node[1]"
+//Do the same for Second, Third and Fourth PIN
+${First_PIN} = node[1]/node[1]
+${Second_PIN} = node[1]/node[2]
+${Third_PIN} = node[1]/node[3]
+${Fourth_PIN} = node[2]/node[1] 

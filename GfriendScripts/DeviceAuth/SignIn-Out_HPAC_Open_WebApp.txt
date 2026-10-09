@@ -1,0 +1,109 @@
+﻿/// <File>SignIn-Out_HPAC_Open_WebApp.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Test SIO 2 factor authentication with HPAC authenticaiton and a web app.
+///   Handle user authentication, including the initial SIO HPID linking if necessary
+///   Create the 2 factor SIO PIN and enter it when needed upon opening of the app.
+///   Thie will only open the app to handle/check the SIO 2 factor auth, then
+///   will close the app and verify that any authentication was successful.
+///   Can be used for cloud or local SIO.</Description>
+/// <Precondition>SignIn_HPAC.gfvar contains the needed authentication variables.
+///   If this script is run from STF/STB the variables with names beginning
+///   with STF_ can be commented to use the values from the STF/STB virtual 
+///   worker user</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using SignIn_HPAC.gfvar
+Using WebApps.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\Device\Device_Library.gflib
+
+Using DeviceAuth.gflib
+
+Using JediOmni
+Using Oxpd
+
+/// <Name>SignIn_HPAC</Name>
+/// <Description>Sign in on a device with HPAC authentication</Description>
+/// <Notes>SignIn_HPAC.gfvar contains the needed User variables.
+///   If this script is run from STF/STB the variables with names beginning
+///   with STF_ can be commented to use the values from the STF/STB virtual worker user.
+///   This routine handles SIO as needed, including linking to an HPID account</Notes>
+SignIn_HPAC
+{
+    If: DeviceAuth.Sign_In_HPAC (${UserCode},${STF_UserName},${STF_UserPassword},${Auth_TryUserID_First_YN})
+    {// complete the sign in process
+        DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+    }
+    Fail:
+    {
+        Fail (Failed signing in with HPAC authentication!)
+    }
+    Error:
+    {
+        Error (Error signing in with HPAC authentication!)
+    }
+}
+
+/// <Name>OpenApp</Name>
+/// <Description>Open the specified app</Description>
+/// <Notes>WebApps.gfvar contains the needed app variables.</Notes>
+OpenApp
+{
+    // open the app
+    If: Device_Library.LaunchApp(${ButtonID},${ButtonText})
+    {
+        Sleep (${Very_Short_Wait_Time})
+        // check for and handle SIO 2 factor auth PIN
+        If: DeviceAuth.Check_HPID_SIO(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        {
+            // clear out of the app and verify the the SIO 2 factor auth succeeded
+            Sleep (${Very_Short_Wait_Time})
+            JediOmni.Press Home Key
+            JediOmni.Wait For Object (hpid-control-signin,${Wait_Time})
+            
+            // check for signed in linked
+            If: JediOmni.Wait For Object (.hp-button.hp-button-masthead.hp-control.hp-button-text.hp-linked-cloud,${Zero_Wait_Time})
+            {// the 2-factor  link succeeded
+            }
+            Fail:
+            {// the 2-factor sign-in failed
+                Fail (Failed SIO 2 Factor PIN authenticaton with HPAC and '${ButtonText}'!)
+            }
+        }
+        Fail:
+        {
+            // clear out of the app
+            Sleep (${Very_Short_Wait_Time})
+            JediOmni.Press Home Key
+            Fail (Launch '${ButtonText}' failed!)
+        }
+        Error:
+        {
+            Error (Error occurred while launching '${ButtonText}'!)
+        }
+    }
+    Fail:
+    {
+        Fail (Launch '${ButtonText}' failed!)
+    }
+    Error:
+    {
+        Error (Error occurred while launching '${ButtonText}'!)
+    }
+}
+
+/// <Name>SignOut</Name>
+/// <Description>Sign out on the device</Description>
+/// <Notes></Notes>
+SignOut
+{
+    DeviceAuth.SignOut
+}

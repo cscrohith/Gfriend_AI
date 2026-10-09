@@ -1,0 +1,70 @@
+﻿/// <File>HPCC_MasterDevice_Disable.txt</File>
+/// <Modified>2021-06-02</Modified>
+/// <Description>Disable a device as a master device in HP Command Center (HPCC)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${Device_ID}=VNBDL5E027
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC.gfvar
+
+Using HPCC_Library.gflib
+
+//Using JediOmni
+
+/// <Name>DisableMasterDevice</Name>
+/// <Description>Disable a device as a master device in HP Command Center (HPCC)</Description>
+/// <Notes></Notes>
+DisableMasterDevice
+{
+//    // remove the "-" from the device as it is a non-allowed character in HPCC
+//    Set Variable (${Device_ID},${DUT_ID})
+//    Replace (${Device_ID},-,)
+    
+    //Sign in
+    If: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In Failed!)
+        Stop Test Case
+    }
+    
+    // Access the customer Device Discovery page
+    If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+    {
+        Sleep (${Short_Wait_Time})
+        
+        //disable master device
+        If: HPCC_Library.DisableMasterDevice(${HPCC_Customer},${Device_ID},${HPCC_TaskCompleteLimit})
+        {
+        }
+        Fail:
+        {
+            Fail (Master device disable Failed!)
+        }
+        Error:
+        {
+            Error (Error occured during Master device disable!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail accessing the customer Device Discovery page!)
+    }
+    Error:
+    {
+        Error (Error accessing the customer Device Discovery page!)
+    }
+    
+    HPCC_Library.SignOut()
+    
+    Web.Close
+}

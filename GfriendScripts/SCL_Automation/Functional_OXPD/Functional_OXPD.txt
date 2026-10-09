@@ -1,0 +1,2176 @@
+﻿using Web
+using Oxpd
+using JediOmni
+using Windows
+using Functional_OXPD.gflib
+using Functional_OXPD.gfvar
+using ..\OXPD_Common\OXPD_Common_Library.gflib
+using ..\OXPD_Common\OXPD_Common_Variables.gfvar
+
+
+T1993711245_Authenticated_users_cannot_access_restricted_device_functions 
+{
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.T1993711245_Authenticated_users_cannot_access_restricted_device_functions
+        
+}
+
+T1984767195_Validate_SafeQ_Cloud_Client_Software_InstallationAndUse
+{
+    Functional_OXPD.T1984767195_Download_Executable_File_To_Install_SafeQ_Windows_Client
+}
+
+T1984767189_Validate_SafeQ_Cloud_Authentication_Short ID PIN()
+{
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.T1984767189_Validate_SafeQ_Cloud_Authentication_Short_ID_PIN(${Device_PIN},${Device_Password})
+    OXPD_Common_Library.Send_Job(${Printer})
+    OXPD_Common_Library.OXPD_Device_PIN_Login (${Device_PIN})
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout()
+}
+
+T1984767190_Validate_SafeQ_Cloud_Authentication_Username_Password_OXPd
+{
+    OXPD_Common_Library.Send_Job(${Printer})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout()
+}
+
+T1984767199_Validate_the_Embedded_OXP_Agent_in_SafeQ_Cloud_Configure_device
+{
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.T1984767199_Validate_the_Embedded_OXP_Agent_in_SafeQ_Cloud_Configure_device(${Device_Name},${Device_IP},${Device_Serial_No})
+}
+
+T1984767210_Validate_SafeQ_Authentication_Username_and_Password
+{
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.T1984767210_Validate_SafeQ_Authentication_Username_and_Password(${Device_Name},${Device_IP},${Device_Serial_No})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    OXPD_Common_Library.Device_Signout()
+} 
+
+T1984767191_Validate_SafeQ_Cloud Device Configuration_OXPd
+{
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.T1984767191_Validate_SafeQ_Cloud_Device_Configuration_OXPd (${Device_Name},${Device_IP},${Device_Serial_No})
+    Functional_OXPD.T1984767195_Install_Executable_Application_In_Computer
+    Functional_OXPD.T1984767195_SignIn_SafeQ_Portal
+    Functional_OXPD.T1984767195_Validate_Print_Queues_Existence
+    Functional_OXPD.T1984767195_Validate_Print_Jobs_Are_Sent
+}
+
+T1984767188_Validate_SafeQ_Cloud_Kiosk_Mode_OXPD_Only
+{
+    //Copy button
+    If: JediOmni.Wait For Object (hpid-copy-homescreen-button,10)
+    {
+        Pass (The traditional HP home screen is displayed)   
+    }
+    OXPD_Common_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    
+    //To set Kiosk mode to Secure Print
+    If: Functional_OXPD.T1984767188_Validate_SafeQ_Cloud_Kiosk_Mode_SecurePrint()
+    {
+        JediOmni.Reset
+        Oxpd.Get Browser Engine (300)
+        //Secure print
+        If: Oxpd.Wait For Text (Secure Print,5)
+        {
+            Pass (Kiosk mode has been set successfully for the Secure Print app)   
+        } 
+        Oxpd.Return Browser Engine
+    }
+    OXPD_Common_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    
+    //To set Kiosk mode to Scan to my Email
+    If: Functional_OXPD.T1984767188_Validate_SafeQ_Cloud_Kiosk_Mode_Scan_to_My_Email()
+    {
+        JediOmni.Reset
+        Oxpd.Get Browser Engine (300)
+        //Scan to my email
+        If: Oxpd.Check Screen Contains Text (Scan to my email)
+        {
+            Pass (Kiosk mode has been set successfully for the Scan to Email app)   
+        } 
+        Oxpd.Return Browser Engine
+    } 
+}
+T1984767197_Pull_Print_and_Direct_Print_Queue
+{
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.T1984767197_Pull_Print_Queue
+    OXPD_Common_Library.Send_Job(${Pull_Print_Queue})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout()
+    Sleep (4)
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.T1984767197_Direct_Print_Queue
+    OXPD_Common_Library.Send_Job(${Printer})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout()
+}   
+
+//All trays should be empty 
+T1984767217_Validate_Pull_Print_Single_Function_Swipe_to_Print_All_Pull_Print_with_Paper_Out_and_Direct_IP_Print
+{
+   OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+   Functional_OXPD.T1984767217_Validate_Pull_Print_Single_Function_Swipe_to_Print_All_Pull_Print_with_Paper_Out_and_Direct_IP_Print_Step_1_to_3
+   JediOmni.Enable Paperless Mode
+   Repeat:3
+   {
+    OXPD_Common_Library.Send_Job(${Printer})
+   }
+    OXPD_Common_Library.Badgebox_Login (${BADGE_INDEX_1})
+    JediOmni.Wait For Active Job Gone (50)
+    OXPD_Common_Library.Device_Signout
+    JediOmni.Disable Paperless Mode
+    Repeat:3
+   {
+    OXPD_Common_Library.Send_Job(${Printer})
+   }
+    OXPD_Common_Library.Badgebox_Login (${BADGE_INDEX_1})
+    Functional_OXPD.T1984767217_Validate_Pull_Print_Single_Function_Swipe_to_Print_All_Pull_Print_with_Paper_Out_and_Direct_IP_Print_Step4
+    JediOmni.Enable Paperless Mode
+    Functional_OXPD.T1984767217_Validate_Pull_Print_Single_Function_Swipe_to_Print_All_Pull_Print_with_Paper_Out_and_Direct_IP_Print_Step5(${PrinterQueuename},${Device_IP},${inf_Path},${Driver_Name})
+}
+
+T1984767192_Validate_SafeQ_Cloud_Pull_Print_Options_OXPd
+{
+    //OXPD_Common_Library.Send_Job(${Printer})
+    OXPD_Common_Library.Large_File_Job (${Printer})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.T1984767192_Validate_SafeQ_Cloud_Pull_Print_Options_OXPd(${Before},${After})
+    OXPD_Common_Library.Device_Signout
+    
+}
+
+// Functionality_SafeQ_Cloud_after_FirmwareUpgrade_FinalFutureSmart4_LatestFutureSmart5
+// Prerequisites:
+// downgrade firmware into the FS4 version and deploy the solution and run the below testcase
+// Provide the following details in the input variable file:
+// ${FilePath}       - Path of the BDL file for the respective device (single file).
+
+1984767202_Validate_SafeQ_Cloud_Functionality_FirmwareUpgrade_FinalFutureSmart4_LatestFutureSmart5
+{
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    Functional_OXPD.1984767202_FeautureSmartFirmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password})
+}
+
+// Functionality_SafeQ_Cloud_After_FirmwareUpgrade_Previous FutureSmart5_LatestFutureSmart5
+// Prerequisites:
+// downgrade firmware into the FS5 version and deploy the solution and run the below testcase
+// Provide the following details in the input variable file:
+// ${FilePath}       - Path of the BDL file for the respective device (single file).
+
+T1984767198_Validate_SafeQ_Cloud_Functionality_After_FirmwareUpgrade_Previous FutureSmart5_LatestFutureSmart5
+{
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    JediOmni.Enable Paperless Mode
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    Functional_OXPD.1984767202_FeautureSmartFirmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password})
+}
+
+T1984767212_Validate_Pull_Print_Functionality
+{
+    // Setup printer for test
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    Functional_OXPD.Enable_Paperless_Mode
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_SelectAll_Button
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ****************************************************************************************************
+    // *        Perform print operation with an excel file. Select all possible options                   *
+    // ****************************************************************************************************
+    
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    //Validate_PullPrint_Using_Excel_HoldJobs_PrintOptions
+    
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+
+    //Validate_PullPrint_Using_Excel_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    //Validate_PullPrint_Using_Excel_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Excel_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // **************************************************************************************************
+    // *        Perform print operation with a word file. Select all possible options                   *
+    // **************************************************************************************************
+    
+    // Validate_PullPrint_By_Printing_Word_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_Deleting_With_Word_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Word_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Word_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Word_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Word_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ****************************************************************************************************
+    // *        Perform print operation with a powerpoint file. Select all possible options               *
+    // ****************************************************************************************************
+    
+    // Validate_PullPrint_By_Printing_Powerpoint_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    //Validate_Deleting_With_Powerpoint_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Powerpoint_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Powerpoint_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Powerpoint_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Powerpoint_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ****************************************************************************************************
+    // *        Perform print operation with a PDF file. Select all possible options                      *
+    // ****************************************************************************************************
+    
+    //Validate_PullPrint_By_Printing_Pdf_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_Deleting_With_Pdf_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Pdf_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Pdf_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Pdf_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Pdf_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ****************************************************************************************************
+    // *        Perform print operation with a notepad file. Select all possible options                  *
+    // ****************************************************************************************************
+    // Validate_PullPrint_By_Printing_Text_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    
+    //Validate_Deleting_With_Text_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Text_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Text_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Text_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Text_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ****************************************************************************************************
+    // *        Perform print operation with a Image file. Select all possible options                    *
+    // ****************************************************************************************************
+    
+    // Validate_PullPrint_By_Printing_Image_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_Deleting_With_Image_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Image_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Image_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Image_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Image_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ****************************************************************************************************
+    // *        Perform select all and print.                                                             *
+    // ****************************************************************************************************
+    // Validate_SelectAll_And_Print
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Click_SelectAll_Button
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_SelectAll_And_Delete
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Click_SelectAll_Button
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+}
+T1984767221_Validate_Pull_Print_Finctionality_And_Exploratory
+{
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Routine:         T1984767221: PullPrint Functionality and Exploratory
+    //        
+    // Description:     1) Validate Pull Print functionality using various document sizes and types.
+    //                  2) Validate Pull Print functionality using Print-Delete and Print-Keep settings.
+    //                  3) Validate Pull Print functionality using Print All, Delete and Refresh Options.
+    //                  4) Validate Pull Print functionality using change Print Options.  
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // Setup_Printer_For_Test
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    Functional_OXPD.Enable_Paperless_Mode
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_SelectAll_Button
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ******************************************************************************************************
+    // *        Validate pull print functionality using various document sizes and types and refresh option *
+    // ******************************************************************************************************
+    
+    // Validate_PullPrint_By_Printing_Excel_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_By_Printing_Word_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_By_Printing_Powerpoint_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_By_Printing_Pdf_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_By_Printing_Image_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_By_Printing_Text_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ****************************************************************************************************
+    // *        Validate pull print functionality using print all option                                  *
+    // ****************************************************************************************************
+    
+    // Validate_SelectAll_And_Print
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    // Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Click_SelectAll_Button
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ****************************************************************************************************
+    // *        Validate pull print functionality using delete option                                     *
+    // ****************************************************************************************************
+    
+    // Validate_Deleting_With_Excel_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_Deleting_With_Word_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_Deleting_With_Powerpoint_Document
+     // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_Deleting_With_Powerpoint_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    // Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_Deleting_With_Pdf_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    // Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_By_Printing_Text_Document
+     // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    // Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Print_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_Deleting_With_Image_Document
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    // Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Click_Delete_Button
+    Functional_OXPD.Wait_For_Job_To_Complete
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // ****************************************************************************************************
+    // *        Validate pull print functionality using changed print options                             *
+    // ****************************************************************************************************
+    // Validate_PullPrint_Using_Excel_HoldJobs_PrintOptions
+    
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Excel_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Excel_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Excel_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Excel_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Excel_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Word_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Word_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Word_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Word_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Word_Document_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Word_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Powerpoint_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Powerpoint_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Powerpoint_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Powerpoint_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Presentation_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Ppt_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Pdf_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Pdf_Duplex_PrintOptions
+     // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    //  Validate_PullPrint_Using_Pdf_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Pdf_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Pdf_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Pdf_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Text_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Text_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Text_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Text_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Notepad_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    // Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Text_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Image_HoldJobs_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_HoldJob_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Image_Duplex_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Duplex_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Image_Mono_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    // Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Mono_Print_Option
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+    
+    // Validate_PullPrint_Using_Image_Copies_PrintOptions
+    // Send document to print queue.
+    Functional_OXPD.Send_Small_Image_File_For_Print
+    
+    // Perform printer operation
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Get_Browser_Engine
+    //Functional_OXPD.Open_User_SignIn_Screen
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_Refresh_Button
+    Functional_OXPD.Select_Image_Document
+    
+    // Change settings
+    Functional_OXPD.Open_Print_Options_Page
+    Functional_OXPD.Wait_For_Print_Options_Page_To_Open
+    Functional_OXPD.Click_Copies_Print_Option
+    Functional_OXPD.Click_2_On_Number_Keyboard
+    Functional_OXPD.Click_OK_On_Number_Keyboard
+    Functional_OXPD.Click_PrintOptions_Print_Button
+    Functional_OXPD.Click_App_SignOut_Button
+    Functional_OXPD.Reset_Printer
+    Functional_OXPD.Oxpd_Return_Browser_Engine
+}
+
+//Validate_SafeQ_Cloud_Web_Portal_My_Documents_Upload_Functionality
+//Prerequisites:
+//First ensure that the pull print queue is empty for that User.
+//${file-path-1} and ${file-path-2} - Name of the file path
+//${Pull-print-queue-name}         - Name of the Pull print Queue 
+//${File_Name1} and ${File_Name2} - Name of the files
+T1984767209_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Upload_Functionality
+{
+    OXPD_Common_Library.Send_Jobs (${file-path-1},${print-queue-name})
+    OXPD_Common_Library.Send_Jobs (${file-path-2},${print-queue-name})
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.T1984767209_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Functionality(${File_Name1},${File_Name2}) 
+    OXPD_Common_Library.Send_Jobs (${file-path-1},${print-queue-name})
+    OXPD_Common_Library.Send_Jobs (${file-path-2},${print-queue-name})
+    Functional_OXPD.T1984767209_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Upload_Functionality(${File_Name1},${File_Name2},${file-path-1},${file-path-2},${print-queue-name})
+    Functional_OXPD.T1984767209_Validate_SafeQ_Cloud_Web_Portal_My_Documents_File_upload_Functionality(${file-path-2})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    Functional_OXPD.Verify_LogIn_Successful
+    Functional_OXPD.Open_SafeQ_SecurePrint_App
+    Functional_OXPD.Wait_For_SecurePrint_Page_To_Load
+    Functional_OXPD.Click_SelectAll_Button
+    Functional_OXPD.Click_Print_Button
+    OXPD_Common_Library.Device_Signout
+}
+
+// Add Tenant URL in GFVar file - ${Site}
+// Add Tenant Login Username in GFVar file - ${Username}
+// Add Tenant Login Password in GFVar file - ${Password}
+// Add Device PIN in GFVar file - ${Device_PIN}
+// Add Device Password in GFVar file - ${Device_Password}
+// Add Printer Name in GFVar file - ${Printer}
+T1984767200_Validate_Authentication_Short_ID_Embedded
+{
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.T1984767200_Validate_SafeQ_Cloud_Authentication_Short_ID_PIN(${Device_PIN},${Device_Password})
+    OXPD_Common_Library.Send_Job(${Printer})
+    OXPD_Common_Library.OXPD_Device_PIN_Login (${Device_PIN})
+    OXPD_Common_Library.Pull_Print_Operation()
+    OXPD_Common_Library.Device_Signout()
+}
+//# Prerequisites:
+//# 1. Specify the download folder path.
+//# 2. Specify whether the printer is a Color MFP (True/False).
+T1984767206_Generate_the_SafeQ_report_Colorormono_MFP_or_SFP
+{
+    //Device Report for Print
+    Repeat:2
+    {
+        Functional_OXPD.T1984767206_DevicePrintReport(${website-url},${Username},${Password},${DownLoadFolderPath},${DevicePrintReportName})
+        If: Equals (${R},2)
+        {
+            //Continue
+        }
+        Fail:
+        {
+            Repeat:3
+            {
+                OXPD_Common_Library.Send_Job (${Printer})
+            }
+            OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+            OXPD_Common_Library.T1984767206_PullPrintForColourAndMonoDevice(${IsColorMFP})
+        }
+    }
+    //Device Report for Scan
+    Repeat:2
+    {
+       Functional_OXPD.T1984767206_DeviceScanReport(${website-url},${Username},${Password},${DownLoadFolderPath},${DeviceScanReportName})
+       If: Equals (${R},2)
+       {
+           //Continue
+       }
+       Fail:
+       {
+           Repeat:3
+           {
+               OXPD_Common_Library.Send_Job (${Printer})
+           }
+           OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+           OXPD_Common_Library.T1984767206_ScanForColourAndMonoDevice(${IsColorMFP})
+       } 
+    }
+    //User Report for Print
+    Repeat:2
+    {
+        Functional_OXPD.T1984767206_UserPrintReport(${website-url},${Username},${Password},${DownLoadFolderPath},${UserPrintReportName})
+        If: Equals (${R},2)
+        {
+            //Continue
+        }
+        Fail:
+        {
+           Repeat:3
+           {
+               OXPD_Common_Library.Send_Job (${Printer})
+           }
+           OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+           OXPD_Common_Library.T1984767206_PullPrintForColourAndMonoDevice(${IsColorMFP})
+        } 
+    }
+   //User Report for Scan
+    Repeat:2
+    {
+      Functional_OXPD.T1984767206_UserScanReport(${website-url},${Username},${Password},${DownLoadFolderPath},${UserScanReportName}) 
+      If: Equals (${R},2)
+      {
+            //Continue
+      }
+      Fail:
+      {
+          Repeat:3
+          {
+               OXPD_Common_Library.Send_Job (${Printer})
+          }
+          OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+          OXPD_Common_Library.T1984767206_ScanForColourAndMonoDevice(${IsColorMFP})
+      }
+  }
+   //Department Report for Print  
+    Repeat:2
+    {
+      Functional_OXPD.T1984767206_DepartmentPrintReport(${website-url},${Username},${Password},${DownLoadFolderPath},${DepartmentPrintReportName})
+      If: Equals (${R},2)
+      {
+            //Continue
+      }
+      Fail:
+      {
+         Repeat:3
+         {
+             OXPD_Common_Library.Send_Job (${Printer})
+         }
+         OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+         OXPD_Common_Library.T1984767206_PullPrintForColourAndMonoDevice(${IsColorMFP})
+       } 
+    }
+    //Department Report for Scan
+    Repeat:2
+    {
+        Functional_OXPD.T1984767206_DepartmentScanReport(${website-url},${Username},${Password},${DownLoadFolderPath},${DepartmentUserReportName})
+        If: Equals (${R},2)
+        {
+           //Continue 
+        }
+        Fail:
+        {
+            Repeat:3
+            {
+                OXPD_Common_Library.Send_Job (${Printer})
+            }
+            OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+            OXPD_Common_Library.T1984767206_PullPrintForColourAndMonoDevice(${IsColorMFP})
+        }
+    }
+}
+
+//Validate_and_generate_the_SafeQ_report
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+//${Before_Print} - Print Jobs count before printing the jobs.
+T1984767218_Validate_and_generate_the_SafeQ_report
+{
+    Common_Workpath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.Validate_and_generate_the_SafeQ_report_Before_Print()
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    OXPD_Common_Library.Pull_Print_Operation()
+    Common_Workpath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.Validate_and_generate_the_SafeQ_report_after_Print(${Before_Print})   
+}

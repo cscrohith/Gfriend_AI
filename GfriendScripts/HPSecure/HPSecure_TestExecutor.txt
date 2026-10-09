@@ -1,0 +1,42 @@
+﻿using JediOmni
+Using HPSecure_Print_FLOW.gflib
+Using HPSecure_CommomVariables.gfvar
+
+VisionAI_Setup
+{
+    JediOmni.Reset
+    Sleep (3)
+    JediOmni.Enable Paperless Mode
+    Sleep (2)
+    HPSecure_Print_FLOW.VisionAI(${STF_AzureEndpoint},${Name_of_solution})
+}
+
+HPSecure_Flow
+{ 
+    If: HPSecure_Print_FLOW.Authentication(${STF_UserName},${STF_UserPassword},${BADGE_AUTH},${STF_BadgeIndex})
+    {       
+        If: HPSecure_Print_FLOW.HPSecure_Print(${PRINT_RELEASE},${SelectAllOption},${SelectAllJobs},${DeleteAllJobs})     
+        {
+            //continue
+        }           
+    }    
+}
+
+TearDown
+{    
+    If: HPSecure_Print_FLOW.SignOut
+    {        
+    }
+    Fail:
+    {
+        Return With Fail (Failed to SignOut)
+    }
+}
+
+
+
+
+
+
+
+

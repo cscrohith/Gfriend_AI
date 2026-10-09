@@ -1,0 +1,46 @@
+﻿using Vision
+using JediOmni
+Using MyQRoger_CommonVariables.gfvar
+Using MyQRoger_TestCases.gflib
+
+/////////////////////////////////////////////////
+// Routine:         MyQRoger_FLOW
+// Description:     MyQRoger Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+AzureVisionSetup
+{
+    MyQRoger_TestCases.AzureVision(${STF_AzureEndpoint},${STF_AzureKey})
+}
+
+Authentication
+{
+    MyQRoger_TestCases.Authentication(${BADGE_INDEX},${XValueForHomeButton},${YValueForHomeButton})   
+}
+
+MyQRoger_Job_Flow
+{
+   //To Print the jobs
+   If: Equals IgnoreCase (${PRINT},Y)
+   {
+       MyQRoger_TestCases.Execute_PullPrint(${ActivityId},${XValueForPrintButton},${YValueForPrintButton},${XValueForSelectAllButton},${YValueForSelectAllButton},${SelectAll})
+   }
+   //To Delete the jobs
+   Fail:
+   {
+       MyQRoger_TestCases.Execute_Delete(${ActivityId},${XValueForDeleteButton},${YValueForDeleteButton},${XValueForSelectAllButton},${YValueForSelectAllButton},${SelectAll})
+   }
+}
+
+Teardown
+{ 
+    MyQRoger_TestCases.Teardown()
+} 

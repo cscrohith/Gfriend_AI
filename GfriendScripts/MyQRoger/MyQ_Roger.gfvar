@@ -1,0 +1,17 @@
+﻿//Username\Password parameters
+${STF_UserName} = userhp
+${STF_UserPassword} = userhp2021
+
+//The document to be printed if it is in folder,provide the variable (${FOLDER}) value as Y
+//The document to be printed if it is in not in any folder,provide the variable (${FOLDER}) value as N
+${FOLDER} = N
+
+//If the variable (${FOLDER}) value is set to Y,then provide complete folder name in the variable (${FOLDER_NAME}) 
+${FOLDER_NAME} = 123
+
+//Specify the Document name 
+${DOCUMENT_NAME} = 2022101110181409-001.jpg
+
+//To Print all the jobs, provide the variable (${PRINT_ALL}) value as Y
+//To Print one job, provide the variable (${PRINT_ALL}) value as N
+${PRINT_ALL} = Y

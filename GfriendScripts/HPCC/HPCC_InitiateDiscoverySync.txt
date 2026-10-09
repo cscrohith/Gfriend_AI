@@ -1,0 +1,58 @@
+﻿/// <File>HPCC_InitiateDiscoverySync.txt</File>
+/// <Modified>2021-05-24</Modified>
+/// <Description>Initiate device discovery sync in HP Command Center (HPCC)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC.gfvar
+
+Using HPCC_Library.gflib
+
+/// <Name>InitiateDiscoverySync</Name>
+/// <Description>Initiate device discovery sync in HP Command Center (HPCC)</Description>
+/// <Notes></Notes>
+InitiateDiscoverySync
+{
+    // Sign in
+    If: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In Failed!)
+        Stop Test Case
+    }
+    
+    // Access the customer Device Discovery page
+    If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+    {
+        Sleep (${Short_Wait_Time})
+        
+        // initiate secondary device discovery sync
+        If: HPCC_Library.InitiateDeviceDiscoverySync()
+        {
+        }
+        Fail:
+        {
+            Fail (Fail occured during Master device discovery sync disable!)
+        }
+        Error:
+        {
+            Error (Error occured during Master device discovery sync disable!)
+        }
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In for Master device discovery sync Failed!)
+    }
+    
+    HPCC_Library.SignOut()
+    
+    Web.Close
+}

@@ -1,0 +1,2871 @@
+﻿using Windows
+using Web
+using Oxpd
+using JediOmni
+
+T1993711245_Authenticated_users_cannot_access_restricted_device_functions
+{
+   JediOmni.Swipe (>)
+   Sleep (3)
+  If: JediOmni.Check Screen Contains Full Text (Reports)
+  {
+      JediOmni.Touch Text (Reports)
+  }
+  Fail:
+  {
+       JediOmni.Swipe (>)
+      JediOmni.Touch Text (Reports)
+  }
+  If: JediOmni.Wait For Object (hpid-popup-access-denied-confirm,20)
+  {
+      JediOmni.Touch ID (hpid-button-access-denied-confirm)
+      Pass (User was unable to access Reports without device admin credentials.)
+  }
+  Fail:
+  {
+     Fail (User was able to access Reports without device admin credentials.) 
+  }
+   JediOmni.Touch Text (Sign Out)
+}
+
+T1984767189_Validate_SafeQ_Cloud_Authentication_Short_ID_PIN(${Device_PIN},${Device_Password})
+{
+  Web.Wait For Object (//a[.//div[text()='Users']],10)
+  Web.Click Object (//a[.//div[text()='Users']])
+  Sleep (10)
+  Web.Wait For Object (//tr[.//td[text()='admin']]//span[@data-title='Edit']//a,10)
+  Web.Click Object (//tr[.//td[text()='admin']]//span[@data-title='Edit']//a)
+  Web.ScrollDownToParicularObject (//input[@data-test-id='shortId'])
+  Web.Wait For Object (//input[@data-test-id='password2'],5)
+  Web.Set Text (//input[@data-test-id='password1'],${Device_Password})
+  Web.Set Text  (//input[@data-test-id='password2'],${Device_Password})
+  Web.Set Text (//input[@data-test-id='shortId'],${Device_PIN})
+  Sleep (3)
+  Web.ScrollDownToParicularObject (//input[@data-test-id='saveBtn'])
+  Web.Click Object (//input[@data-test-id='saveBtn'])
+}
+
+
+T1984767199_Validate_the_Embedded_OXP_Agent_in_SafeQ_Cloud_Configure_device(${Device_Name},${Device_IP},${Device_Serial_No})
+{
+If: Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],5)
+    {
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Case
+    }
+    //waits for Add Printer button
+    If: Web.Wait For Object (//a[@role='button' and normalize-space()='Add printer'],30)
+    {
+        Sleep (10)
+        Web.Click Object (//a[@role='button' and normalize-space()='Add printer'])
+        //Clicks on the name 
+        Web.Wait For Object (//input[@data-test-id='data.name'],10)
+        Web.Set Text(//input[@data-test-id='data.name'],${Device_Name})
+        //Clicks on the IP address 
+        Web.Wait For Object (//input[@data-test-id='data.address'],10)
+        Web.Set Text (//input[@data-test-id='data.address'],${Device_IP})    
+        // Open vendor dropdown
+         Web.Click Object (//select[@data-test-id='vendor']/parent::span)
+        Sleep (2)
+        // Select HP
+         Web.Click Object (//li[normalize-space()='HP'])
+        //Select Gateway Radiobutton
+        Web.ScrollDownToParicularObject (//span[@data-test-id='title' and text()='Release options'])
+        Web.Click Object (//input[@data-test-id='connectionMethod_Gateway'])
+        Web.Press PageDown Key (//*[@id="detail-view"])
+        Web.ScrollDownToParicularObject (//input[@data-test-id='data.deviceSerial'])
+        //Updates Device serial number 
+        Web.Click Object (//input[@data-test-id='data.deviceSerial'])
+        Sleep (3)
+        Web.Set Text (//input[@data-test-id='data.deviceSerial'],${Device_Serial_No})        
+        Sleep (3)
+        // Open template dropdown
+        Web.Click Object (//div[@data-test-id='terminalConfig']//span[@role='listbox'])
+        Sleep (2)
+        // Select OXPD
+        Web.Click Object (//li[normalize-space()='OXPD'])        
+        Web.ScrollDownToParicularObject (//input[@data-test-id='saveBtn'])     
+        //Clicks on the save button
+        Web.Click Object (//input[@data-test-id='saveBtn'])
+        Sleep (10)                                 
+        If: Web.Wait For Text (${Device_IP},10)
+        {
+            Web.Press PageUp Key (//*[@id="detail-view"])
+            Web.Wait For Object (//span[@data-test-id='message'],10)
+            Pass (Printer details is saved successfully)
+        }
+        Fail:
+        {
+            Fail (Printer details is not saved)
+            Stop Test Case
+        }
+        //clicks on the ETT
+        Web.Press PageUp Key (//*[@id="detail-view"])
+        Sleep (5)
+        Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],5)
+        Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+        Sleep (5)
+        Web.Click Object (//tr[td[normalize-space(text())='OXPD']]//span[@data-title='Deployment actions']//a)
+        Sleep (5)      
+        OXPD_Common_Library.OXPD_Configure (${Device_IP})
+            
+        //Check if OXPD Install and Configure
+        Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+        If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'success')],180)
+            {
+                Pass (Device configured successfully)
+            }
+        Fail:
+            {
+                //Check if Failed
+                Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+                If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'failed')],10)
+                    {
+                        //Click Edit for particular IP
+                        Web.Click Object (//tr[@data-test-id='stateList' and .//span[@data-test-id='address' and normalize-space()='${Device_IP}']]//span[@data-test-id='edit'])
+                        //Click Advanced setup
+                        Web.Click Object (//a[.//span[normalize-space()='Advanced setup']])
+                        //Enter password
+                        Web.Set Text (//div[@data-test-id='adminPassword']//input[@type='password'],${Device_Password})
+                        //Save
+                        Web.Click Object (//input[@data-test-id='saveBtn'])
+                        Sleep (10)
+                        OXPD_Common_Library.OXPD_Configure (${Device_IP})
+                        Sleep (10)
+                        //Check again if Configured
+                        Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+                        If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'success')],180)
+                        {
+                            Pass (Device configured successfully after Advanced Setup)
+                        }
+                        Fail:
+                        {
+                            Fail (Configuration failed even after Advanced Setup)
+                            Stop Test Case
+                        }
+                        JediOmni.Reset
+           } 
+    }
+    
+}
+       //check in the device application is installed or not 
+        If: JediOmni.Wait For Text (Secure Print,15)
+            {
+                Pass (Application installed ) 
+            }
+            Fail:
+            {
+                Fail (Application not installed )
+            }          
+}
+        
+        
+        
+T1984767210_Validate_SafeQ_Authentication_Username_and_Password(${Device_Name},${Device_IP},${Device_Serial_No})
+{
+  If: Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],5)
+    {
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Case
+    }
+    //waits for Add Printer button
+    If: Web.Wait For Object (//a[@role='button' and normalize-space()='Add printer'],30)
+    {
+        Sleep (10)
+        Web.Click Object (//a[@role='button' and normalize-space()='Add printer'])        
+        //Clicks on the name 
+        Web.Wait For Object (//input[@data-test-id='data.name'],10)
+        Web.Set Text(//input[@data-test-id='data.name'],${Device_Name})    
+        //Clicks on the IP address 
+        Web.Wait For Object (//input[@data-test-id='data.address'],10)
+        Web.Set Text (//input[@data-test-id='data.address'],${Device_IP})        
+        // Open vendor dropdown
+         Web.Click Object (//select[@data-test-id='vendor']/parent::span)
+        Sleep (2)
+        // Select HP
+         Web.Click Object (//li[normalize-space()='HP'])        
+        //Select Gateway Radiobutton
+        Web.ScrollDownToParicularObject (//span[@data-test-id='title' and text()='Release options'])
+        Web.Click Object (//input[@data-test-id='connectionMethod_Gateway'])
+        Web.Press PageDown Key (//*[@id="detail-view"])   
+        Web.ScrollDownToParicularObject (//input[@data-test-id='data.deviceSerial'])
+        //Updates Device serial number 
+        Web.Click Object (//input[@data-test-id='data.deviceSerial'])
+        Sleep (3)
+        Web.Set Text (//input[@data-test-id='data.deviceSerial'],${Device_Serial_No})        
+        Sleep (3)
+        // Open template dropdown
+        Web.Click Object (//div[@data-test-id='terminalConfig']//span[@role='listbox'])
+        Sleep (2)
+        // Select OXPD
+        Web.Click Object (//li[normalize-space()='OXPD'])        
+        Web.ScrollDownToParicularObject (//input[@data-test-id='saveBtn'])        
+        //Clicks on the save button
+        Web.Click Object (//input[@data-test-id='saveBtn'])
+        Sleep (10)
+        If: Web.Wait For Text (${Device_IP},10)
+        {
+            Web.Press PageUp Key (//*[@id="detail-view"])
+            Web.Wait For Object (//span[@data-test-id='message'],10)
+            Pass (Printer details is saved successfully)
+        }
+        Fail:
+        {
+            Fail (Printer details is not saved)
+            Stop Test Case
+        }       
+        //clicks on the ETT
+        Web.Press PageUp Key (//*[@id="detail-view"])
+        Sleep (5)
+        Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],5)
+        Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+        Sleep (5)      
+        Web.Click Object (//tr[td[normalize-space(text())='OXPD']]//span[@data-title='Deployment actions']//a)
+        Sleep (5)    
+        OXPD_Common_Library.OXPD_Configure (${Device_IP})        
+        //Check if OXPD Install and Configure
+        Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+        If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'success')],180)
+            {
+                Pass (Device configured successfully)
+            }
+        Fail:
+            {
+                //Check if Failed
+                Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+                If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'failed')],10)
+                    {
+                        //Click Edit for particular IP
+                        Web.Click Object (//tr[@data-test-id='stateList' and .//span[@data-test-id='address' and normalize-space()='${Device_IP}']]//span[@data-test-id='edit'])
+                        //Click Advanced setup
+                        Web.Click Object (//a[.//span[normalize-space()='Advanced setup']])
+                        //Enter password
+                        Web.Set Text (//div[@data-test-id='adminPassword']//input[@type='password'],${Device_Password})
+                        //Save
+                        Web.Click Object (//input[@data-test-id='saveBtn'])
+                        Sleep (10)
+                        OXPD_Common_Library.OXPD_Configure (${Device_IP})
+                        Sleep (10)
+                        //Check again if Configured
+                        Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+                        If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'success')],180)
+                        {
+                            Pass (Device configured successfully after Advanced Setup)
+                        }
+                        Fail:
+                        {
+                            Fail (Configuration failed even after Advanced Setup)
+                            Stop Test Case
+                        }
+           } 
+    }
+    
+} 
+}
+        
+        
+T1984767191_Validate_SafeQ_Cloud_Device_Configuration_OXPd(${Device_Name},${Device_IP},${Device_Serial_No})
+{
+    If: Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],5)
+    {
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Case
+    }   
+    //waits for Add Printer button
+    If: Web.Wait For Object (//a[@role='button' and normalize-space()='Add printer'],30)
+    {
+        Web.Wait For Object (//span[normalize-space()='One printer (Advanced)'],10)
+        Web.Click Object (//span[normalize-space()='One printer (Advanced)'])
+        Sleep (10)
+        Web.Click Object (//a[@role='button' and normalize-space()='Add printer'])   
+        //Clicks on the name 
+        Web.Wait For Object (//input[@data-test-id='data.name'],10)
+        Web.Set Text(//input[@data-test-id='data.name'],${Device_Name})
+        //Clicks on the IP address 
+        Web.Wait For Object (//input[@data-test-id='data.address'],10)
+        Web.Set Text (//input[@data-test-id='data.address'],${Device_IP})  
+        // Open vendor dropdown
+         Web.Click Object (//select[@data-test-id='vendor']/parent::span)
+        Sleep (2)
+        // Select HP
+         Web.Click Object (//li[normalize-space()='HP'])
+        //Select Gateway Radiobutton
+        Web.ScrollDownToParicularObject (//span[@data-test-id='title' and text()='Release options'])
+        Web.Click Object (//input[@data-test-id='connectionMethod_Gateway'])
+        Web.Press PageDown Key (//*[@id="detail-view"])
+        Web.ScrollDownToParicularObject (//input[@data-test-id='data.deviceSerial'])
+        //Updates Device serial number 
+        Web.Click Object (//input[@data-test-id='data.deviceSerial'])
+        Sleep (3)
+        Web.Set Text (//input[@data-test-id='data.deviceSerial'],${Device_Serial_No}) 
+        Sleep (3)
+        // Open template dropdown
+        Web.Click Object (//div[@data-test-id='terminalConfig']//span[@role='listbox'])
+        Sleep (2)
+        // Select OXPD
+        Web.Click Object (//li[normalize-space()='OXPD'])
+        Web.ScrollDownToParicularObject (//input[@data-test-id='saveBtn'])
+        //Clicks on the save button
+        Web.Click Object (//input[@data-test-id='saveBtn'])
+        Sleep (10)                       
+        If: Web.Wait For Text (${Device_IP},10)
+        {
+            Web.Press PageUp Key (//*[@id="detail-view"])
+            Web.Wait For Object (//span[@data-test-id='message'],10)
+            Pass (Printer details is saved successfully)
+        }
+        Fail:
+        {
+            Fail (Printer details is not saved)
+            Stop Test Case
+        }
+        
+        //clicks on the ETT
+        Web.Press PageUp Key (//*[@id="detail-view"])
+        Sleep (5)
+        Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],5)
+        Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+        Sleep (5)
+        Web.Click Object (//tr[td[normalize-space(text())='OXPD']]//span[@data-title='Deployment actions']//a)
+        Sleep (5) 
+        OXPD_Common_Library.OXPD_Configure (${Device_IP})   
+        //Check if OXPD Install and Configure
+        Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+        If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'success')],180)
+            {
+                Pass (Device configured successfully)
+            }
+        Fail:
+            {
+                //Check if Failed
+                Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+                If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'failed')],10)
+                    {
+                        //Click Edit for particular IP
+                        Web.Click Object (//tr[@data-test-id='stateList' and .//span[@data-test-id='address' and normalize-space()='${Device_IP}']]//span[@data-test-id='edit'])
+                        //Click Advanced setup
+                        Web.Click Object (//a[.//span[normalize-space()='Advanced setup']])
+                        //Enter password
+                        Web.Set Text (//div[@data-test-id='adminPassword']//input[@type='password'],${Device_Password})
+                        //Save
+                        Web.Click Object (//input[@data-test-id='saveBtn'])
+                        Sleep (10)
+                        OXPD_Common_Library.OXPD_Configure (${Device_IP})
+                        Sleep (10)
+                        //Check again if Configured
+                        Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+                        If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'success')],180)
+                        {
+                            Pass (Device configured successfully after Advanced Setup)
+                        }
+                        Fail:
+                        {
+                            Fail (Configuration failed even after Advanced Setup)
+                            Stop Test Case
+                        }
+           } 
+    }
+    
+} 
+}
+        
+ T1984767217_Validate_Pull_Print_Single_Function_Swipe_to_Print_All_Pull_Print_with_Paper_Out_and_Direct_IP_Print_Step_1_to_3
+{
+    Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    Web.Wait For Object (//a[@data-test-id='link.embedded_templates'],20)
+    Web.Click Object (//a[@data-test-id='link.embedded_templates'])
+    Sleep (5)
+    Web.Wait For Object (//tr[.//td[normalize-space()='OXPD']]//span[@data-title='Edit']//a,5)
+    Web.Click Object (//tr[.//td[normalize-space()='OXPD']]//span[@data-title='Edit']//a)
+    Web.ScrollDownToParicularObject (//*[@id="id1be"]/div[1])
+    
+    //verifys checkbox is checked or not
+    If: Web.IsChecked (//*[@id="id1be"]/div[2]/label)
+    {
+        Pass (Print all job on card login is Enabled)
+    }
+    Fail:
+    {
+        Web.Wait For Object (//input[@data-test-id='configData.autoRelease'],5)
+        Web.Click Object (//input[@data-test-id='configData.autoRelease'])
+    }
+    Web.ScrollDownToParicularObject (//input[@data-test-id='saveBtn'])
+    Web.Wait For Object (//input[@data-test-id='saveBtn'],5)
+    Web.Click Object (//input[@data-test-id='saveBtn'])
+    Web.Wait For Object (//tr[td[normalize-space(text())='OXPD']]//span[@data-title='Deployment actions']//a,10)
+    Web.Click Object (//tr[td[normalize-space(text())='OXPD']]//span[@data-title='Deployment actions']//a)
+    Web.Wait For Object (//*[@data-test-id='searchInput'],10)
+    Web.Click Object (//*[@data-test-id='searchInput'])
+    Web.Set Text (//*[@data-test-id='searchInput'],${Device_IP})
+    Web.Press PageDown Key (//*[@id="detail-view"])         
+    Sleep (15)
+    //Clicks on the install and configure if its workpath installation 
+    Web.Click Object (//input[@data-test-id='selectAll'])      
+    Sleep (5)
+    //clicks on the install and configure button
+    Web.Click Object (//button[@data-test-id='configure'])
+    
+    Web.Wait For Object (//span[@data-test-id='deployStatusIcon'],20)
+        If: Web.Wait For Object (//span[@data-test-id='deployStatusIcon' and contains(@class\,'success')],180)
+            {
+                Pass (Device configured successfully)
+            }
+            Fail:
+            {
+                Fail (Device configuration failed)
+                
+            }
+}
+        
+T1984767217_Validate_Pull_Print_Single_Function_Swipe_to_Print_All_Pull_Print_with_Paper_Out_and_Direct_IP_Print_Step4
+{
+    Sleep (5)
+    JediOmni.Touch (.hp-button-active-jobs:last)
+    JediOmni.Wait For Object (hpid-button-cancel-all,10)
+    JediOmni.Touch ID (hpid-button-cancel-all)
+    JediOmni.Wait For Object (hpid-button-yes,10)
+    JediOmni.Touch ID (hpid-button-yes)
+    JediOmni.Wait For Object (hpid-active-jobs-exit,40)
+    JediOmni.Touch ID (hpid-active-jobs-exit)
+    If: JediOmni.Wait For Object (hpid-message-center-exit-button),5)
+    {
+       JediOmni.Touch ID (hpid-message-center-exit-button) 
+    }
+}
+
+T1984767217_Validate_Pull_Print_Single_Function_Swipe_to_Print_All_Pull_Print_with_Paper_Out_and_Direct_IP_Print_Step5(${PrinterQueuename},${Device_IP},${inf_Path},${Driver_Name})
+{
+    Windows.Add Printer (${PrinterQueuename},${Device_IP},${inf_Path},${Driver_Name})
+}
+
+
+T1984767192_Validate_SafeQ_Cloud_Pull_Print_Options_OXPd(${Before},${After})
+{
+    JediOmni.Touch ID (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button)
+    Sleep (10)
+    //waits and clicks on refresh button 3 times
+   Oxpd.Wait For Xpath (//*[@id="refresh_form"]/input[3],10)
+   Repeat:3
+   {  
+    Oxpd.Touch Xpath (//*[@id="refresh_form"]/input[3]) 
+   }
+    //step4
+    Oxpd.Touch Xpath (//*[@id="select_all_button"])
+    //Oxpd.Get Text (//*[@id="total_jobs_element"],${Value})
+    //step5
+    Oxpd.Touch Xpath (//*[@id="unselect_all_button"])
+    // need to verify
+    //step6 getting the count before the print job are printed 
+    Oxpd.Get Total Table Row Count (/html/body/div[2]/div[2]/div[2]/table,${Before})
+    //step6
+     //clicks on the select all button
+    Oxpd.Touch Xpath (//*[@id="select_all_button"])
+    Sleep (5)
+    //selects all the jobs and click on the ellipses button (3 dot button)
+    Oxpd.Touch Xpath (//*[@id="options_form"])
+    Sleep (5)
+    //selects the duplex and print 
+    Oxpd.Touch Xpath (//*[@id="duplex"])
+    Oxpd.Touch Xpath (//*[@id="options_print_button"])
+    //waits for active jobs to clear
+    JediOmni.Wait For Active Job Gone (150)
+    Sleep (10)
+    //step6 getting the count After the print job are printed
+    Oxpd.Get Total Table Row Count (/html/body/div[2]/div[2]/div[2]/table,${After})
+    If: Has Value Increased (${Before},${After})
+    {
+       Pass (Job count is 0 and step 2 is passed)
+    }
+    Fail:
+    {
+        Fail (Job count is not deincreased compared to previous job count and step6 is failed) 
+    }
+    If: Oxpd.Wait For Xpath (/html/body/div[2]/div[1]/form/input[2],150)
+    {
+        Oxpd.Touch Xpath (/html/body/div[2]/div[1]/form/input[2])
+        Oxpd.Return Browser Engine
+    } 
+    Fail:
+    {
+        Fail (unable to signout and proceed for next step)
+        Stop Test Case
+    }
+    //step7
+    Sleep (10)
+    JediOmni.Reset
+    OXPD_Common_Library.Large_File_Job (${Printer})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+    If: JediOmni.Touch ID (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button)
+    {
+        Sleep (10)
+        Oxpd.Wait For Xpath (//*[@id="refresh_form"]/input[3],10)  
+    }
+    Fail:
+    {
+       Fail (Login Failed in the 7th Step)  
+       Stop Test Case
+    } 
+    
+    //waits and clicks on refresh button 
+    Oxpd.Wait For Xpath (//*[@id="refresh_form"]/input[3],10) 
+    Oxpd.Touch Xpath (//*[@id="refresh_form"]/input[3]) 
+    //Step 8 
+    //Selects 1st and 3rd and 5th job 
+    Oxpd.Touch Xpath (/html/body/div[2]/div[2]/div[2]/table/tbody/tr[1])
+    Sleep (3)
+    Oxpd.Touch Xpath (/html/body/div[2]/div[2]/div[2]/table/tbody/tr[3])
+    Sleep (3)
+    Oxpd.Touch Xpath (/html/body/div[2]/div[2]/div[2]/table/tbody/tr[5])
+    //step8 getting the count before the print job are printed 
+    Oxpd.Get Total Table Row Count (/html/body/div[2]/div[2]/div[2]/table,${Before})
+    //click ont option button (3 dot button 
+    If: Oxpd.Wait For Xpath (//*[@id="options_form"],10)
+    {
+       Oxpd.Touch Xpath (//*[@id="options_form"]) 
+       Pass (Print job is selected to print)
+    }
+    Fail:
+     { 
+         Fail (Print jobs are not selected)
+         Stop Test Case
+     } 
+    Sleep (5)
+    //selects options like duplex, Mono and the clicks on the Print button
+    Oxpd.Touch Xpath (//*[@id="duplex"])
+    Oxpd.Touch Xpath (//*[@id="mono"])
+    Oxpd.Touch Xpath (//*[@id="options_print_button"])
+    //step8 getting the count After the print job are printed
+    Oxpd.Get Total Table Row Count (/html/body/div[2]/div[2]/div[2]/table,${After})
+    If: Has Value Increased (${Before},${After})
+    {
+        Pass (Count is  decreased and step8 is failed)
+    }
+    Fail:
+    {
+        Fail (Count is not decreased and step8 is passed)
+    }
+    
+    //waits for the retrns to print job page 
+    If: Oxpd.Wait For Xpath Gone (//*[@id="hpid-oxpd-spinner"],150)
+    {
+        Pass (Print job are processed)  
+    } 
+    //Step9 is incomplete required new keyword to get the count of the jobs
+    Oxpd.Get Total Table Row Count (/html/body/div[2]/div[2]/div[2]/table,${Before})
+    Repeat:2
+    {
+        OXPD_Common_Library.Send_Job (${Printer})
+    }
+     Oxpd.Wait For Xpath (//*[@id="refresh_form"]/input[3],10)
+    Oxpd.Touch Xpath (//*[@id="refresh_form"]/input[3])
+    Oxpd.Get Total Table Row Count (/html/body/div[2]/div[2]/div[2]/table,${After})
+    If: Has Value Increased (${Before},${After})
+    {
+        Pass (Job count is decreased and step9 is passed)
+    }
+    Fail:
+    {
+        Fail (Job count is not decreased and step9 is failed )  
+    }
+    
+    //step 10 
+    //selects the 1st job
+    Oxpd.Touch Xpath (/html/body/div[2]/div[2]/div[2]/table/tbody/tr[1])
+    //selects all the jobs and click on the ellipses button (3 dot button)
+    Oxpd.Touch Xpath (//*[@id="options_form"])
+    Sleep (5)
+    //click on the Hold jobs 
+    Oxpd.Touch Xpath (//*[@id="keep"])
+    //selects the duplex and print 
+    Oxpd.Touch Xpath (//*[@id="duplex"])
+    //selects on the mono option
+    Oxpd.Touch Xpath (//*[@id="mono"])
+    //sets the  no of copies
+    Oxpd.Touch Xpath (//*[@id="copiesOptionsFormText"])
+    Oxpd.Input Text (2)
+    Oxpd.Touch Xpath (//*[@id="popup_button"])
+    // clicks on the print button 
+    Oxpd.Touch Xpath (//*[@id="options_print_button"])
+    // validation is required here 
+    //waits for the retrns to print job page 
+    If: Oxpd.Wait For Xpath Gone (//*[@id="hpid-oxpd-spinner"],150)
+    {
+        Pass (Print job are processed)  
+    }
+    //step 11, 12 
+    // clicks on the select all button
+    Oxpd.Touch Xpath (//*[@id="unselect_all_button"])
+    Oxpd.Touch Xpath (//*[@id="delete_selected_button"])
+}
+
+T1984767188_Validate_SafeQ_Cloud_Kiosk_Mode_SecurePrint()
+{
+    //General button
+    Web.Wait For Object (//*[@id="SettingsPages"],30)
+    Web.Click Object (//*[@id="SettingsPages"])  
+    //Home Screen Customization
+    Web.Wait For Object (//*[@id="HomeScreenCustomization"],30)
+    Web.Click Object (//*[@id="HomeScreenCustomization"])   
+    //Home Screen app dropdown list  
+    Web.Wait For Object (//*[@id="DefaultAppId"],30)
+    Web.Click Object (//*[@id="DefaultAppId"])
+    Web.Select Value From List Box (//*[@id="DefaultAppId"],Secure Print)
+    //Apply button
+    Web.Wait For Object (//*[@id="defaultAppApply"],30)
+    Web.Click Object (//*[@id="defaultAppApply"])
+    Web.Close
+}
+
+T1984767188_Validate_SafeQ_Cloud_Kiosk_Mode_Scan_to_My_Email()
+{
+    //General button
+    Web.Wait For Object (//*[@id="SettingsPages"],30)
+    Web.Click Object (//*[@id="SettingsPages"])  
+    //Home Screen Customization
+    Web.Wait For Object (//*[@id="HomeScreenCustomization"],30)
+    Web.Click Object (//*[@id="HomeScreenCustomization"])   
+    //Home Screen app dropdown list  
+    Web.Wait For Object (//*[@id="DefaultAppId"],30)
+    Web.Click Object (//*[@id="DefaultAppId"])
+    Web.Select Value From List Box (//*[@id="DefaultAppId"],Scan to My Email)
+    //Apply button
+    Web.Wait For Object (//*[@id="defaultAppApply"],30)
+    Web.Click Object (//*[@id="defaultAppApply"])
+    Web.Close
+}
+T1984767195_Download_Executable_File_To_Install_SafeQ_Windows_Client
+{
+    OXPD_Common_Library.Portal_Login(${website-url},${Username},${Password})
+    Sleep(1)
+    
+    If: Web.Wait For Text (${pc-client-tab},${small-timeduration})
+    {
+        Web.Click Text (${pc-client-tab})
+    }
+    Fail:
+    {
+        Fail (Failed to find 'PC Client' tab on the web page.)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Failed to find 'PC Client' tab on the web page.)
+        Stop Test Case
+    }
+
+    
+    If: Web.Wait For Object (${safeq-windows-client},${large-timeduration})
+    {
+        Web.Click Object (${safeq-windows-client})
+        // Give some time for the download to finish.
+        Sleep(${large-timeduration})
+    }
+    Fail:
+    {
+        Fail (Failed to find 'Windows SafeQ client' download button on web page.)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Failed to find 'Windows SafeQ client' download button on web page.)
+        Stop Test Case
+    }
+    Web.Close
+}
+
+T1984767195_Install_Executable_Application_In_Computer
+{
+    Windows.Open Folder By Path (${SafeQExeFilePath})
+    //Sleep(${small-timeduration})
+    
+    // Regular windows keywords are not working. So we are resorting to
+    // sending keys.
+    Windows.Send Special Key ([DOWN])
+    Windows.Send Special Key ([UP])
+    Windows.Send Special Key (^+[ENTER])
+
+    // Wait for EULA window to open
+    Sleep(${large-timeduration})
+    Windows.Select Application (${EULA-window})
+    
+    If: Windows.Wait For Name (${agree-button},${medium-timeduration})
+    {
+        Windows.Click Name (${agree-button})
+        Windows.Select Application (${EULA-window})
+        Windows.Wait For Name (${finish-button},${medium-timeduration})
+        Windows.Click Name (${finish-button})
+    } 
+    Fail:
+    {
+        Windows.Wait For ID (${perform-full-installation},${medium-timeduration})
+        Windows.Click ID (${perform-full-installation})
+        Windows.Wait For Name (${next-button},${medium-timeduration})
+        Windows.Click Name (${next-button})
+        Windows.Wait For Name (${agree-button},${medium-timeduration})
+        Windows.Click Name (${agree-button})
+        Windows.Wait For Name (${finish-button},${ultra-long-timeduration})
+        Windows.Click Name (${finish-button})
+    }   
+    Sleep(${medium-timeduration})
+}
+
+T1984767195_SignIn_SafeQ_Portal
+{
+    Windows.Select Application (HP Automation)
+    
+    // Because regular keywords are not working, we are resorting to sending
+    // keys.
+    Windows.Send Special Key ([TAB])
+    Windows.Send Key (a)
+    Windows.Send Key (d)
+    Windows.Send Key (m)
+    Windows.Send Key (i)
+    Windows.Send Key (n)
+    
+    Windows.Send Special Key ([TAB])
+    Windows.Send Key (A)
+    Windows.Send Key (u)
+    Windows.Send Key (t)
+    Windows.Send Key (o)
+    Windows.Send Key (m)
+    Windows.Send Key (a)
+    Windows.Send Key (t)
+    Windows.Send Key (i)
+    Windows.Send Key (o)
+    Windows.Send Key (n)
+    Windows.Send Key (@)
+    Windows.Send Key (1)
+    Windows.Send Key (2)
+    Windows.Send Key (3)
+    
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([ENTER])
+    Sleep(${small-timeduration})
+}
+
+T1984767195_Validate_Print_Queues_Existence
+{
+    OXPD_Common_Library.Portal_Login(${website-url},${Username},${Password})
+      
+    While:!Web.Wait For Object (${left-nav-bar-printers},${small-timeduration}):${medium-timeduration}
+    {
+        Sleep(${medium-timeduration})
+    }
+    If:Web.Wait For Object (${left-nav-bar-printers},${small-timeduration})
+    {
+        Web.Click Object(${left-nav-bar-printers})
+    }
+    
+    While:!Web.Wait For Object (${print-queues-tab},${small-timeduration}):${medium-timeduration}
+    {
+        Sleep(${medium-timeduration})
+    }
+    
+    If:Web.Wait For Object (${print-queues-tab},${small-timeduration})
+    {
+        Web.Click Object(${print-queues-tab})
+    }
+    
+    While:!Web.Wait For Object (${first-print-queue},${small-timeduration}):${medium-timeduration}
+    {
+        Sleep(${medium-timeduration})
+    }
+    If:Web.Wait For Object (${first-print-queue},${small-timeduration})
+    {
+        Web.Get Text (${first-print-queue},${RowValue1})
+        Set Variable (${print-queue-1},${RowValue1})
+    }
+    
+    While:!Web.Wait For Object (${second-print-queue},${small-timeduration}):${medium-timeduration}
+    {
+        Sleep(${medium-timeduration})
+    }
+    If:Web.Wait For Object (${second-print-queue},${small-timeduration})
+    {
+        Web.Get Text (${second-print-queue},${RowValue2})
+        Set Variable (${print-queue-2},${RowValue2})
+    }
+    
+    
+    // Check if the first print queue exists in computer by running the command in cmd
+    Run Command (cmd.exe /c powershell -NoProfile -Command "(Get-Printer | Select-Object -ExpandProperty Name) -contains '${print-queue-1}'"  > C:\Temp\printer_check.txt, ${print-queue-1-exists}, 10)
+    BuiltIn.File Contains Text (${file-path-1},True)
+    
+    // Check if the second print queue exists in computer by running the command in cmd
+    Run Command (cmd.exe /c powershell -NoProfile -Command "(Get-Printer | Select-Object -ExpandProperty Name) -contains '${print-queue-2}'" > C:\Temp\printer_check2.txt, ${print-queue-2-exists}, 10)
+    BuiltIn.File Contains Text (${file-path-2},True)
+}
+
+T1984767195_Validate_Print_Jobs_Are_Sent
+{
+    OXPD_Common_Library.Send_Jobs (${job_Path},${print-queue-name})
+    OXPD_Common_Library.OXPD_Device_Username_Login (${Username},${Password})
+    OXPD_Common_Library.Pull_Print_Operation
+}
+T1984767197_Pull_Print_Queue
+{
+    If: Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],10)
+    {
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Case
+    }
+    If: Web.Wait For Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[1]/div/div/div/ul/li[2]/a,10)
+    {
+        Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[1]/div/div/div/ul/li[2]/a)
+    }
+    If: Web.Wait For Object (//*[@id="id146"]/div[1]/a,15)
+    {
+        Web.Click Object (//*[@id="id146"]/div[1]/a)
+    }
+    Web.Set Text (//*[@id="id17d"],${Pull_Print_Queue})
+    //To get out of text box click anywhere on the website
+    //Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[2]/div/div[2]/div/div[4]/div[1])
+    Web.Wait For Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[2]/div/div[2]/div/div[4]/div[2]/span/span/span[2]/span,5)    
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[2]/div/div[2]/div/div[4]/div[2]/span/span/span[2]/span)
+    //for Pull print queue
+    Web.Click Object (/html/body/div[7]/div/div[2]/ul/li[1])
+    Sleep (2)
+    Web.Scroll Down To The End (/html/body/div[1]/div[4])
+    Web.Wait For Object(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[3]/div/div/input[2],5)
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[3]/div/div/input[2])
+    Sleep (3)
+    Web.Close
+    Sleep (3)
+    Windows.Select Application (Taskbar)
+    Windows.Wait For ID (SystemTrayIcon,10)
+    Windows.Click ID (SystemTrayIcon)
+    Windows.Select Application (System tray overflow window.)
+    Windows.Wait For ID (NotifyItemIcon,15)
+    Windows.Click By Tooltip (NotifyItemIcon,SAFEQ Cloud Client)
+    Windows.Select Application (Context)
+    Windows.Click Name (Synchronize printers now)
+}
+
+T1984767197_Direct_Print_Queue
+{
+    If: Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],15)
+    {
+        Web.Click Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']])
+    }
+    Fail:
+    {
+        Fail (Unable to click the Printer option)
+        Stop Test Case
+    }
+    If: Web.Wait For Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[1]/div/div/div/ul/li[2]/a,10)
+    {
+        Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[1]/div/div/div/ul/li[2]/a)
+    }
+    If: Web.Wait For Object (//*[@id="id146"]/div[1]/a,10)
+    {
+        Web.Click Object (//*[@id="id146"]/div[1]/a)
+    }
+    Web.Wait For Object(//*[@id="id17d"],5)
+    Web.Set Text (//*[@id="id17d"],${Direct_Print_Queue})
+    //To get out of text box click anywhere on the website
+    //Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[2]/div/div[2]/div/div[4]/div[1])
+    Web.Wait For Object(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[2]/div/div[2]/div/div[4]/div[2]/span/span/span[2]/span,5)
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[2]/div/div[2]/div/div[4]/div[2]/span/span/span[2]/span)
+    //For Direct Print queue
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[2]/div/div[2]/div/span/div/div[2]/span/span/span[2]/span)
+    Web.Set Text (/html/body/div[10]/div/span/input,${Direct_Print_Queue})
+    Sleep (2)
+    Windows.Send Special Key ([ENTER])
+    Web.Scroll Down To The End (/html/body/div[1]/div[4])
+    Web.Wait For Object(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[3]/div/div/input[2],5)
+    Web.Click Object (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[3]/div/div/input[2])
+    Sleep (3)
+    Web.Close
+    Sleep (3)
+    Windows.Select Application (Taskbar)
+    Windows.Click ID (1502)
+    Sleep (2)
+    Windows.Click By Tooltip (NotifyItemIcon,SAFEQ Cloud Client)
+    Windows.Select Application (Context)
+    Windows.Click ID (6889)
+    Sleep (5)
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Word_Document_For_Print
+//        
+// Description:     Send a word document kept in path {Working Directory}\print-documents\word-doc\testfile.docx
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\word-doc\
+//                  2. The test file should be named testfile.docx
+//                  3. Correct version of MS Word should be installed on computer
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Word_Document_For_Print
+{
+    If:Windows.Open File For Print(${word-document-file},${print-queue-name})
+    {
+        Windows.Click ID (1)
+        
+        //Because the Click Print button doesn't work with word documents
+        //This is an alternate approach to click the print button. i.e., Alt+F, P, P
+        //Click Alt+F Keys
+        If:Windows.Send Special Key (${alt-f})
+        {
+            Sleep(1)
+            // Click 'P' button on keyboard
+            If:Windows.Send Key (${p-key})
+            {
+                Sleep(1)
+                If:Windows.Send Key (${p-key})
+                {
+                    Sleep(1)
+                    Pass(File: ${word-document-file} sent to print queue successfully.)
+                    Sleep(5)
+                    Windows.Close Application
+                }
+            }
+        }
+        Fail:
+        {
+            Fail(Failed to click print button)
+            Windows.Close Application ()
+        }
+        Error:
+        {
+            Error(Error trying to click print button
+            Windows.Close Application
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to open the word file in path: ${word-document-file})
+    }
+    Error:
+    {
+        Error(Error trying to send job to print queue)
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Excel_Document_For_Print
+//        
+// Description:     Send a excel document kept in path {Working Directory}\print-documents\excel-doc\testfile.txt
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\excel-doc\
+//                  2. The test file should be named testfile.xlsx
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Excel_Document_For_Print
+{
+    If:Windows.Open File For Print(${excel-document-file},${print-queue-name})
+    {
+        Windows.Click ID (1)
+        
+        //Because the Click Print button doesn't work with excel documents
+        //This is an alternate approach to click the print button. i.e., Alt+F, P, P
+        //Click Alt+F Keys
+        If:Windows.Send Special Key (${alt-f})
+        {
+            Sleep(${ultra-short-wait})
+            // Click 'P' button on keyboard
+            If:Windows.Send Key (${p-key})
+            {
+                Sleep(${ultra-short-wait})
+                If:Windows.Send Key (${p-key})
+                {
+                    Sleep(${ultra-short-wait})
+                    Pass(File: ${excel-document-file} sent to print queue successfully.)
+                    Sleep(${medium-wait})
+                    Windows.Close Application
+                    Sleep(${medium-wait})
+                }
+            }
+        }
+        Fail:
+        {
+            Fail(Failed to click print button)
+            Windows.Close Application
+        }
+        Error:
+        {
+            Error(Error trying to click print button
+            Windows.Close Application
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to open the word file in path: ${excel-document-file})
+    }
+    Error:
+    {
+        Error(Error trying to send job to print queue)
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Presentation_For_Print
+//        
+// Description:     Send a ppt document kept in path {Working Directory}\print-documents\ppt-doc\testfile.txt
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\ppt-doc\
+//                  2. The test file should be named testfile.pptx
+//                  3. Microsoft office suite should be installed on the computer
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Presentation_For_Print
+{
+    If:Windows.Open File For Print(${ppt-document-file},${print-queue-name})
+    {
+        Windows.Click ID (${ultra-short-wait})
+        
+        //Because the Click Print button doesn't work with excel documents
+        //This is an alternate approach to click the print button. i.e., Alt+F, P, P
+        //Click Alt+F Keys
+        If:Windows.Send Special Key (${alt-f})
+        {
+            Sleep(1)
+            // Click 'P' button on keyboard
+            If:Windows.Send Key (${p-key})
+            {
+                Sleep(1)
+                If:Windows.Send Key (${p-key})
+                {
+                    Sleep(1)
+                    Pass(File: ${ppt-document-file} sent to print queue successfully.)
+                    Sleep(5)
+                    Windows.Close Application
+                }
+            }
+        }
+        Fail:
+        {
+            Fail(Failed to click print button)
+            Windows.Close Application
+        }
+        Error:
+        {
+            Error(Error trying to click print button
+            Windows.Close Application
+        }
+    }
+    Fail:
+    {
+        Fail(Failed to open the word file in path: ${ppt-document-file})
+    }
+    Error:
+    {
+        Error(Error trying to send job to print queue)
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_PDF_For_Print
+//        
+// Description:     Send a PDF document kept in path {Working Directory}\print-documents\pdf-doc\testfile.pdf
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\pdf-doc\.
+//                  2. User should update the value of variable '${pdf-document-file}' in file Common_Workflow_Variable.gfvar
+//                  2. The test file should be named testfile.pdf
+//                  3. Adobe acrobat reader should be installed on test computer.
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Pdf_For_Print
+{
+    If:Windows.Print File To Print Queue (${pdf-document-file},${print-queue-name})
+    {
+        // GFriend execution is too fast.
+        Sleep(${extra-long-wait})
+        // Close Adobe application
+        Windows.Send Special Key (${alt-f4})
+    }
+    Fail:
+    {
+        Fail (Failed to open the PDF file or send it to the print queue. File path: ${pdf-document-file}, print queue: ${print-queue-name})
+    }
+    Error:
+    {
+        Error (Error while opening PDF file or sending it to the print queue. File path: ${pdf-document-file}, print queue: ${print-queue-name})
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Image_For_Print
+//        
+// Description:     Send an image document kept in path {Working Directory}\print-documents\image-doc\testfile.jpg
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\image-doc\
+//                  2. The test file should be named testfile.jpg
+//                  3. User should update the value of variable '${image-document-file}' in file Common_Workflow_Variable.gfvar
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Image_File_For_Print
+{
+    // Due to limitation in GFriend keywords, path for image file is hardcoded. User needs to update these paths to use the // correct file for printing. 
+    If:Windows.Print PDF or Image With Application (${mspaint-executable-path},${image-document-file},${print-queue-name})
+    {
+        // Windows opens 'Can't complete operation' notification box. Close it to proceed.
+        If:Windows.Is Exist(${cannot-complete-operation-OK-button})
+        {
+            Windows.Click ID (${cannot-complete-operation-OK-button})
+            Sleep(${short-wait})
+        }
+        
+        // Click the 'Print' button.
+        //If:Windows.Is Exist(${print-image-button})
+        //{
+        //    Windows.Click ID (${print-image-button})
+        //        Sleep(${short-wait})
+        //}
+        //Fail:
+        //{
+        //    Fail (Failed to click Print button on 'Printing from Win32 application' Print page. Please check if MS-Paint is availble in the path: ${mspaint-executable-path} and test image is available in path ${image-document-file} )
+        //}
+        //Error:
+        //{
+        //    Error (Error while clicking Print button on 'Printing from Win32 application' Print page. Please check if MS-Paint is availble in the path: ${mspaint-executable-path} and test image is available in path ${image-document-file})
+        //}
+    }
+    Fail:
+    {
+        Fail (Failed to click Print button on 'Printing from Win32 application' Print page. Please check if MS-Paint is availble in the path: ${mspaint-executable-path} and test image is available in path ${image-document-file} )
+    }
+    Error:
+    {
+        Error (Error while clicking Print button on 'Printing from Win32 application' Print page. Please check if MS-Paint is availble in the path: ${mspaint-executable-path} and test image is available in path ${image-document-file})
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         Send_Small_Notepad_Document_For_Print
+//        
+// Description:     Send a notepad document kept in path {Working Directory}\print-documents\text-doc\testfile.txt
+//
+// Arguments:       None
+//
+// Pre-requisites:  1. The test file should be placed in correct directory path: {Working Directory}\print-documents\text-doc\
+//                  2. The test file should be named testfile.txt
+//                  3. The default application for .text files should be notepad.
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+Send_Small_Notepad_File_For_Print
+{
+    If: Windows.Print File To Print Queue(${text-document-file},${print-queue-name})
+    {
+        // Give some time to actually open the file and send it.
+        Sleep(${medium-wait})
+        Pass (Print job is sent) 
+    } 
+    Fail:
+    {
+        Fail (Failed to send print job. File path: ${text-document-file} and print queue:c${print-queue-name})
+    }
+    Error:
+    {
+        Error (Error to send print job. File path: ${text-document-file} and print queue:c${print-queue-name})
+    }
+}
+
+
+// ************************************************************************************************************
+// *     Common Test case for operating printer.                                                              *              
+// ************************************************************************************************************
+
+Oxpd_Get_Browser_Engine
+{
+    If:Oxpd.Get Browser Engine
+    {
+        Return With Pass (Getting OXPD browser successful)
+    }
+    Error:
+    {
+        Return With Pass (Getting OXPD browser shouldn't be cause of error)
+    }
+}
+
+Reset_Printer
+{
+    // During first iteration, the device is in sleep mode.
+    // It takes more time to wake and calliberate.
+    
+    If:JediOmni.Wait For Text (${signout-text},${short-wait})
+    {
+        JediOmni.Touch ID(${jediomni-sign-out-button})
+        JediOmni.Wait For Enable of Object (${jediomni-sign-in-button},${medium-wait})
+    }
+    
+    JediOmni.Reset
+    Sleep(${long-wait})
+}
+
+Enable_Paperless_Mode
+{
+    JediOmni.Enable Paperless Mode
+}
+
+Open_User_SignIn_Screen
+{
+   If:JediOmni.Wait For Enable of Object (${jediomni-sign-in-button},${medium-wait})
+   {
+       JediOmni.Touch ID (${jediomni-sign-in-button})
+   }
+   Fail:
+   {
+       Fail(Failed to find sign-in button on the screen.)
+   }
+   Error:
+   {
+       Error(Error while finding sign-in button on the screen.)
+   }
+}
+
+Wait_For_UsernamePassword_Screen_To_Load
+{
+    If: Oxpd.Wait For Id (${username-textbox-id},${medium-wait})
+    {
+        Return With Pass (Login Screen was opened successfully.)
+    }
+    Fail:
+    {
+        Return With Fail (Login Screen was not opened successfully.)
+    }
+    Error:
+    {
+        Return With Error (Login Screen was not opened successfully.)
+    }
+}
+
+Input_Username_On_App_Login_Screen
+{
+    If: Oxpd.Wait For Id (${username-textbox-id},${medium-wait})
+    {
+        Oxpd.Touch Id (${username-textbox-id})
+        Oxpd.Input Text (${Device_Username})
+        Sleep(${ultra-short-wait})
+    }
+    Fail:
+    {
+        Return With Fail (Couldn't click on 'Username' textbox.)
+    }
+    Error:
+    {
+        Return With Error (Couldn't click on 'Username' textbox.)
+    }
+}
+
+Input_Password_On_App_Login_Screen
+{
+    If: Oxpd.Wait For Id (${password-textbox-id},${medium-wait})
+    {
+        Oxpd.Touch Id (${password-textbox-id})
+        Oxpd.Input Text (${Device_Password})
+        Sleep(${ultra-short-wait})
+    }
+    Fail:
+    {
+        Return With Fail (Couldn't click on 'Password' textbox.)
+    }
+    Error:
+    {
+        Return With Error (Couldn't click on 'Password' textbox.)
+    }
+}
+
+Press_Login_Button_On_Username_Password_SignIn-Screen
+{
+    If: Oxpd.Wait For Id (${username-password-login-button},${medium-wait})
+    {
+        Oxpd.Touch Id (${username-password-login-button})
+        Sleep(${medium-wait})
+    }
+    Fail:
+    {
+        Return With Fail (Couldn't click on 'Login' button.)
+    }
+    Error:
+    {
+        Return With Error (Couldn't click on 'Login' button.)
+    }
+}
+
+Switch_To_Short_ID_Authentication
+{
+    
+}
+
+Input_Short_ID_On_App_Login_Screen
+{
+   If: Oxpd.Wait For Id (${shortID-textbox-id},${medium-wait})
+    {
+        Oxpd.Touch Id (${shortID-textbox-id})
+        Oxpd.Input Text (${ShortID})
+        Sleep(${ultra-short-wait})
+    }
+    Fail:
+    {
+        Return With Fail (Couldn't click on 'Short ID' textbox.)
+    }
+    Error:
+    {
+        Return With Error (Couldn't click on 'Short ID' textbox.)
+    } 
+}
+
+Press_Login_Button_On_ShortID_SignIn-Screen
+{
+    If: Oxpd.Wait For Id (${shortID-login-button},${medium-wait})
+    {
+        Oxpd.Touch Id (${shortID-login-button})
+    }
+    Fail:
+    {
+        Return With Fail (Couldn't click on 'Short ID' textbox.)
+    }
+    Error:
+    {
+        Return With Error (Couldn't click on 'Short ID' textbox.)
+    } 
+}
+
+Verify_LogIn_Successful
+{
+   If: JediOmni.Wait For Enable of Object(${secure-print-app-icon},${long-wait})
+   {
+       // Application logged in expected time of ${long-wait} seconds
+   }
+   Fail:
+   {
+       Fail(Application failed to login in ${long-wait} seconds.)
+   }
+   Error:
+   {
+       Fail(Application failed to login in ${long-wait} seconds. An error was encountered)
+   } 
+}
+
+Open_SafeQ_SecurePrint_App
+{
+    If: JediOmni.Wait For Enable of Object(${secure-print-app-icon},${medium-wait})
+    {
+        If: JediOmni.Touch ID (${secure-print-app-icon})
+        {
+            Sleep(${short-wait})
+        }
+        Fail:
+        {
+            Fail(Failed to click on 'Secure Print' application icon on printer homescreen.)
+        }
+        Error:
+        {
+            Error(Error while trying to click on 'Secure Print' application icon on printer homescreen.)
+        }
+    }
+    Fail:
+    {
+        Return With Fail(Failed to find the 'Secure Print' application on printer homescreen.)
+    }
+    Error:
+    {
+        Return With Error(Error while trying to find the 'Secure Print' applicaiton on printer homescreen.)
+    }
+}
+
+Wait_For_SecurePrint_Page_To_Load
+{
+    If: Oxpd.Wait For Id (${print-documents-form},${long-wait})
+    {
+        Return With Pass (On the job list page)
+    }
+    Fail:
+    {
+        Return With Fail(Failed to load the 'Joblist' page on application homescreen.)
+    }
+    Error:
+    {
+        Return With Error(Error while trying to load the 'Joblist' page on application homescreen.)
+    }
+}
+
+Select_Excel_Document
+{
+    If: Oxpd.Wait For Text (${excel-doc-name-on-printer},${short-wait})
+    {
+        If:Oxpd.Touch Text (${excel-doc-name-on-printer})
+        {
+            Return With Pass(Selected excel document)
+        }
+        Fail:
+        {
+            Return With Fail(Failed to click text: ${excel-doc-name-on-printer} )
+        }
+        Error:
+        {
+            Return With Error(Error while clicking text: ${excel-doc-name-on-printer} )
+        }
+    }
+    Fail:
+    {
+        Return With Fail(Failed to find the excel document with name: '${excel-doc-name-on-printer}' on screen.)
+    }
+    Error:
+    {
+        Return With Error(Error while finding the excel document with name: '${excel-doc-name-on-printer}' on screen.)
+    }
+}
+
+Select_Word_Document
+{
+    If: Oxpd.Wait For Text (${word-doc-name-on-printer},${short-wait})
+    {
+        If:Oxpd.Touch Text (${word-doc-name-on-printer})
+        {
+            Return With Pass(Selected word document)
+        }
+        Fail:
+        {
+            Return With Fail(Failed to click text: ${word-doc-name-on-printer} )
+        }
+        Error:
+        {
+            Return With Error(Error while clicking text: ${word-doc-name-on-printer} )
+        }
+    }
+    Fail:
+    {
+        Return With Fail(Failed to find the word document with name: '${word-doc-name-on-printer}' on screen.)
+    }
+    Error:
+    {
+        Return With Error(Error while finding the word document with name: '${word-doc-name-on-printer}' on screen.)
+    }
+}
+
+Select_Ppt_Document
+{
+    If: Oxpd.Wait For Text (${powerpoint-doc-name-on-printer},${short-wait})
+    {
+        If:Oxpd.Touch Text (${powerpoint-doc-name-on-printer})
+        {
+            Return With Pass(Selected presentation document)
+        }
+        Fail:
+        {
+            Return With Fail(Failed to click text: ${powerpoint-doc-name-on-printer} )
+        }
+        Error:
+        {
+            Return With Error(Error while clicking text: ${powerpoint-doc-name-on-printer} )
+        }
+    }
+    Fail:
+    {
+        Return With Fail(Failed to find the presentation document with name: '${powerpoint-doc-name-on-printer}' on screen.)
+    }
+    Error:
+    {
+        Return With Error(Error while finding the presentation document with name: '${powerpoint-doc-name-on-printer}' on screen.)
+    }
+}
+
+Select_Pdf_Document
+{
+    If: Oxpd.Wait For Text (${pdf-doc-name-on-printer},${short-wait})
+    {
+        If:Oxpd.Touch Text (${pdf-doc-name-on-printer})
+        {
+            Return With Pass(Selected PDF document)
+        }
+        Fail:
+        {
+            Return With Fail(Failed to click text: ${pdf-doc-name-on-printer} )
+        }
+        Error:
+        {
+            Return With Error(Error while clicking text: ${pdf-doc-name-on-printer} )
+        }
+    }
+    Fail:
+    {
+        Return With Fail(Failed to find the PDF document with name: '${pdf-doc-name-on-printer}' on screen.)
+    }
+    Error:
+    {
+        Return With Error(Error while finding the PDF document with name: '${pdf-doc-name-on-printer}' on screen.)
+    }
+}
+
+Select_Text_Document
+{
+    If: Oxpd.Wait For Text (${text-doc-name-on-printer},${short-wait})
+    {
+        If:Oxpd.Touch Text (${text-doc-name-on-printer})
+        {
+            Return With Pass(Selected text document)
+        }
+        Fail:
+        {
+            Return With Fail(Failed to click text: ${text-doc-name-on-printer} )
+        }
+        Error:
+        {
+            Return With Error(Error while clicking text: ${text-doc-name-on-printer} )
+        }
+    }
+    Fail:
+    {
+        Return With Fail(Failed to find the text document with name: '${text-doc-name-on-printer}' on screen.)
+    }
+    Error:
+    {
+        Return With Error(Error while finding the text document with name: '${text-doc-name-on-printer}' on screen.)
+    }
+}
+
+Select_Image_Document
+{
+    If: Oxpd.Wait For Text (${image-doc-name-on-printer},${short-wait})
+    {
+        If:Oxpd.Touch Text (${image-doc-name-on-printer})
+        {
+            Return With Pass(Selected image document)
+        }
+        Fail:
+        {
+            Return With Fail(Failed to click text: ${image-doc-name-on-printer} )
+        }
+        Error:
+        {
+            Return With Error(Error while clicking text: ${image-doc-name-on-printer} )
+        }
+    }
+    Fail:
+    {
+        Return With Fail(Failed to find the image document with name: '${image-doc-name-on-printer}' on screen.)
+    }
+    Error:
+    {
+        Return With Error(Error while finding the image document with name: '${image-doc-name-on-printer}' on screen.)
+    }
+}
+
+Click_SelectAll_Button
+{
+    If: Oxpd.Wait For Id (${select-all-button},${short-wait})
+    {
+        If: Oxpd.Touch Id (${select-all-button})
+        {
+            Return With Pass (Clicked 'Select All' button)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to clicked 'Select All' button)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Select All' button)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Select All' button.)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Select All' button.)
+    }
+}
+
+Click_UnSelectAll_Button
+{
+    If: Oxpd.Wait For Id (${unselect-all-button},${short-wait})
+    {
+        If: Oxpd.Touch Id (${unselect-all-button})
+        {
+            Return With Pass (Clicked 'Select All' button)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to clicked 'Select All' button)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Select All' button)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Select All' button.)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Select All' button.)
+    }
+}
+
+Click_Refresh_Button
+{
+    If: Oxpd.Wait For Xpath (${refresh-image-xpath},${short-wait})
+    {
+        If: Oxpd.Touch Xpath (${refresh-image-xpath})
+        {
+            Return With Pass (Clicked 'Refresh' image)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to click the 'Refresh' image on screen)
+        }
+        Error:
+        {
+            Return With Error (Error while trying to click the 'Refresh' image on screen)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the XPath of refresh button) 
+    }
+    Error:
+    {
+        Return With Error (Error while trying to find the XPath of refresh button)
+    }
+}
+
+Click_Delete_Button
+{
+    If: Oxpd.Wait For Id (${delete-print-job-button},${short-wait})
+    {
+        If: Oxpd.Touch Id (${delete-print-job-button})
+        {
+            Return With Pass (Clicked 'Delete' button)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to clicked 'Delete' button)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Delete' button)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Delete' button.)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Delete' button.)
+    }
+}
+
+Click_Print_Button
+{
+   If: Oxpd.Wait For Id (${print-job-button},${short-wait})
+    {
+        If: Oxpd.Touch Id (${print-job-button})
+        {
+            Return With Pass (Clicked 'Print' button)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to clicked 'Print' button)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Print' button)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Print' button.)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Print' button.)
+    } 
+}
+
+Wait_For_Job_To_Complete
+{
+    If: JediOmni.Wait For Active Job Gone (${max-printing-wait})
+}
+
+
+Open_Print_Options_Page
+{
+    If: Oxpd.Wait For Id (${print-options-image-id},${short-wait})
+    {
+        If: Oxpd.Touch Id (${print-options-image-id})
+        {
+            Return With Pass (Clicked 'Print Options' image)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to clicked 'Print Options' image)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Print Options' image)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Print Options' image.)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Print Options' image.)
+    } 
+}
+
+Wait_For_Print_Options_Page_To_Open
+{
+   If: Oxpd.Wait For Text (${print-options-text},${long-wait})
+   {
+       Return With Pass (Found the 'Print Options' text on the screen.)
+   }
+   Fail:
+   {
+       Return With Fail (Failed to find the 'Print Options' text on the screen.)
+   }
+   Error:
+   {
+       Return With Error (Error while trying find the 'Print Options' text on the screen.)
+   } 
+}
+
+Click_HoldJob_Print_Option
+{
+    If: Oxpd.Wait For Id (${holdjob-option-button-id},${short-wait})
+    {
+        If: Oxpd.Touch Id (${holdjob-option-button-id})
+        {
+            Return With Pass (Clicked 'Hold Job' button)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to clicked 'Hold Job' button)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Hold Job' button)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Hold Job' button)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Hold Job' button)
+    }
+}
+
+Click_Duplex_Print_Option
+{
+    If: Oxpd.Wait For Id (${duplex-option-button-id},${short-wait})
+    {
+        If: Oxpd.Touch Id (${duplex-option-button-id})
+        {
+            Return With Pass (Clicked 'Duplex' button)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to clicked 'Duplex' button)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Duplex' button)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Duplex' button)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Duplex' button)
+    }  
+}
+
+Click_Mono_Print_Option
+{
+    If: Oxpd.Wait For Id (${mono-option-button-id},${short-wait})
+    {
+        If: Oxpd.Touch Id (${mono-option-button-id})
+        {
+            Return With Pass (Clicked 'Mono' button)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to clicked 'Mono' button)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Mono' button)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Mono' button)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Mono' button)
+    }  
+}
+
+Click_Copies_Print_Option
+{
+    If: Oxpd.Wait For Id (${copies-option-textbox-id},${short-wait})
+    {
+        If: Oxpd.Touch Id (${copies-option-textbox-id})
+        {
+            Return With Pass (Clicked 'Copies' textbox)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to clicked 'Copies' textbox)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Copies' textbox)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Copies' textbox)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Copies' textbox)
+    }  
+}
+
+Click_PrintOptions_Print_Button
+{
+    If: Oxpd.Wait For Id (${options-print-button},${short-wait})
+    {
+        If: Oxpd.Touch Id (${options-print-button})
+        {
+            Return With Pass (Clicked 'Print' button on print options page)
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to click 'Print' button on print options page)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Print' button on print options page)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Print' button on print options page)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Print' button on print options page)
+    }  
+}
+
+Click_2_On_Number_Keyboard
+{
+    If: JediOmni.Wait For Object (${jediomni-number-pad-2-button},${medium-wait})
+    {
+        If: JediOmni.Touch ID (${jediomni-number-pad-2-button})
+        {
+            Return With Pass (Clicked number '2' on keypad)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to click number '2' on keypad)
+        }
+        Error:
+        {
+            Return With Error (Failed to click number '2' on keypad)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find number '2' on keypad)
+    }
+    Error:
+    {
+        Return With Error (Failed to find number '2' on keypad)
+    }
+}
+
+Click_OK_On_Number_Keyboard
+{
+    If: JediOmni.Wait For Object (${jediomni-number-pad-ok-button},${medium-wait})
+    {
+        If: JediOmni.Touch ID (${jediomni-number-pad-ok-button})
+        {
+            Return With Pass (Clicked 'OK' on keypad)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to click 'OK' on keypad)
+        }
+        Error:
+        {
+            Return With Error (Failed to click 'OK' on keypad)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find 'OK' on keypad)
+    }
+    Error:
+    {
+        Return With Error (Failed to find 'OK' on keypad)
+    }
+}
+
+Click_App_SignOut_Button
+{
+    
+    If: JediOmni.Wait For Object(${home-button-on-app},${short-wait})
+    {
+        If: JediOmni.Touch ID(${home-button-on-app})
+        {
+            JediOmni.Touch ID (${jediomni-sign-in-button})
+            Sleep(${medium-wait})
+        } 
+        Fail:
+        {
+            Return With Fail (Failed to click 'Logout' button.)
+        }
+        Error:
+        {
+            Return With Error (Error while clicking 'Logout' button.)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the 'Logout' button.)
+    }
+    Error:
+    {
+        Return With Error (Error while trying find the 'Logout' button.)
+    }
+}
+
+Oxpd_Return_Browser_Engine
+{
+    If:Oxpd.Return Browser Engine
+    {
+        Return With Pass ()
+    }
+    Error:
+    {
+        Return With Pass()
+    }
+}
+1984767202_FeautureSmartFirmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password},${EWS_Site})
+{
+   Web.Click Text (Information)
+    Web.Click Text (Configuration Page)
+    Web.Get Text (//*[@id="FutureSmartBundleVersion"],${Firmware_version})
+    pass(${Firmware_version})
+    Web.Get Text (//*[@id="FirmwareRevision"],${Firmware_revision})
+    Pass (${Firmware_revision})
+    Web.Click Text (General)
+    Web.Click Text (Firmware Upgrade)
+    Web.Click Text (Choose File)
+    Windows.Wait For Name (Open,5)
+    Windows.Select Application (Open)
+    Windows.Wait For ID (1148,10)
+    Windows.Send Key (${File_Path})
+    Windows.Wait For Name (Open,5)
+    Windows.Send Special Key ([ENTER])
+    Windows.Wait For Name (Open,10)
+    If: Windows.Check Screen Contains Partial Text (id.signed.bdl)
+    {
+        Windows.Click Element By Partial Text (id.signed.bdl) 
+    }
+    Fail:
+    {
+        Fail (There is no bdl file)
+    }
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([ENTER])
+    Windows.Wait For Name (Open,15)
+    Web.Wait For Text (The product is restarting to complete the operation,1200)
+    JediOmni.Wait Until Boot    
+    While:Web.Wait For Object (//*[@id="reload-button"],10): 50
+    {
+        Web.Click Object (//*[@id="reload-button"])
+    }
+    While:Web.Wait For Text (Information,10): 180
+    {
+        Web.Wait For Text (Information,50)
+    }
+    If: Web.Open with edge (${EWS_Site},180)
+    {
+        //continue
+    }
+    Fail:
+    {
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+    Web.Click Text (Information)
+    Web.Click Text (Configuration Page)
+    Web.Get Text (//*[@id="FutureSmartBundleVersion"],${UpdatedFirmware_version})
+    pass(${UpdatedFirmware_version})
+    Web.Get Text (//*[@id="FirmwareRevision"],${UpdatedFirmware_revision})
+    Pass (${UpdatedFirmware_revision})
+    If: builtin.NotEquals (${Firmware_version},${UpdatedFirmware_version})
+    {
+        Pass(Updated Firmware Version)
+    }
+    Fail:
+    {
+        Fail (Firmware Version not updated)
+        Stop Test Case
+    }
+}
+
+T1984767209_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Functionality(${File_Name1},${File_Name2})
+{
+    //Personal dropdown
+    Web.Wait For Object (//div[@data-test-id='label' and text()='Personal'],70)
+    Web.Click Object (//div[@data-test-id='label' and text()='Personal'])
+    Sleep (2)
+    //My Documents button
+    Web.Wait For Object (//div[@data-test-id='label'][normalize-space()='My documents'],10)
+    Web.Click Object (//div[@data-test-id='label'][text()='My documents'])
+    Sleep (2)
+    //Waiting button
+    Web.Wait For Object (//span[normalize-space()='Waiting'],30)
+    Web.Click Object (//span[normalize-space()='Waiting'])
+    //Scrolling Down
+    Web.ScrollDownToParicularObject (//tr[@data-test-id='list'])
+    Web.ScrollDownToParicularObject ((//tr[@data-test-id='list'])[last()])
+    Windows.Send Special Key([DOWN])
+    Sleep (2)
+    //Checking file_name exists
+    If: Web.Wait For Text (${File_Name1},10)
+    {
+        Pass(Jobs are available in Waiting State)
+    }
+    If: Web.Wait For Text (${File_Name2},10)
+    {
+        Pass(Jobs are available in Waiting State)
+    }
+    Fail:
+    {
+        Fail (Jobs are not available in waiting state)
+    }
+}
+
+T1984767209_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Upload_Functionality(${File_Name1},${File_Name2},${file-path-1},${Pull-print-queue-name})
+{
+    //Refresh status button
+    Web.Wait For Object (//a[normalize-space()='Refresh status'],10)
+    Web.Click Object (//a[normalize-space()='Refresh status'])
+    If: Web.Wait For Text (Refresh status,20)
+    {
+        Web.Click Text (Refresh status)
+    }
+    //Scrolling down
+    Web.ScrollDownToParicularObject (//tr[@data-test-id='list'])
+    Web.ScrollDownToParicularObject ((//tr[@data-test-id='list'])[last()])
+    Windows.Send Special Key([DOWN])
+    Sleep (2)
+    //Checking file_name exists
+    If: Web.Wait For Text (${File_Name1},10)
+    {
+        Pass(Jobs are available in Waiting State)
+    }
+    If: Web.Wait For Text (${File_Name2},10)
+    {
+        Pass(Jobs are available in Waiting State)
+    }
+    Fail:
+    {
+        Fail (Jobs are not available in waiting state)
+    }
+    //Upload documents to print button
+    Web.Drag File To Web (${file-path-1},//input[@data-test-id='uploadBtn'])
+    Sleep(3)
+    //Select pull print queue from Destination printer list box
+    Web.Click Object (//select[@data-test-id='printQueue']/preceding-sibling::span/span[@role='option'])
+    Windows.Send Key (${Pull-print-queue-name})
+    If: Web.Wait For Object (//button[normalize-space()='Send to secure queue'],30)
+    {
+        Web.Click Object (//button[normalize-space()='Send to secure queue'])
+    }
+}
+
+T1984767209_Validate_SafeQ_Cloud_Web_Portal_My_Documents_File_upload_Functionality(${file-path-2})
+{
+    Sleep (2)
+    If: Web.Wait For Object (//span[normalize-space()='Upload documents to print']/parent::div,20)
+    {
+        Web.Click Object (//span[normalize-space()='Upload documents to print']/parent::div)
+    }
+    //File explorer
+    Windows.Select Application (Open)
+    If: Windows.Wait For ID (1148,20)
+    {
+        Sleep (2)
+        Windows.Send Special Key (${file-path-2})
+    }
+    Sleep (1)
+    Windows.Send Special Key ([ENTER])
+    Sleep(2)
+    Web.Click Object (//select[@data-test-id='printQueue']/preceding-sibling::span/span[@role='option'])
+    Sleep(1)
+    If: Web.Wait For Object (//button[normalize-space()='Send to secure queue'],30)
+    {
+        Web.Click Object (//button[normalize-space()='Send to secure queue'])
+    }
+    Web.Close
+}
+
+T1984767200_Validate_SafeQ_Cloud_Authentication_Short_ID_PIN(${Device_PIN},${Device_Password})
+{
+  Web.Wait For Object (//a[.//div[text()='Users']],10)
+  Web.Click Object (//a[.//div[text()='Users']])
+  Web.Wait For Object (//tr[.//td[text()='admin']]//span[@data-title='Edit']//a,30)
+  Web.Click Object (//tr[.//td[text()='admin']]//span[@data-title='Edit']//a)
+  Web.ScrollDownToParicularObject (//input[@data-test-id='shortId'])
+  Web.Wait For Object (//input[@data-test-id='password2'],5)
+  Web.Set Text (//input[@data-test-id='password1'],${Device_Password})
+  Web.Set Text  (//input[@data-test-id='password2'],${Device_Password})
+  Web.Set Text (//input[@data-test-id='shortId'],${Device_PIN})
+  Sleep (3)
+  Web.ScrollDownToParicularObject (//input[@data-test-id='saveBtn'])
+  Web.Click Object (//input[@data-test-id='saveBtn'])
+}
+
+T1984767206_DevicePrintReport(${website-url},${Username},${Password},${DownLoadFolderPath},${DevicePrintFileNamePrefixToRename})
+{
+    If: Web.Open with Chrome (${website-url},30)    
+    {
+        //continue 
+        Sleep (10)        
+        OXPD_Common_Library.Portal_Login(${website-url},${Username},${Password})
+        Sleep(1)        
+        //Report Tab
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[2],Report Tab)
+        Sleep (5)        
+        //Printer Tab
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[9]/a/div,Printer Tab)
+        Sleep (5)        
+        Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe) 
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[1],Print_Copy Tab)
+        Sleep (2)
+        ///Click dropdown for custom date selection
+        Functional_OXPD.WaitAndClick(/html/body/div[7]/div/div[2]/ul/li[5],Select Custom option)
+        Sleep (2)
+        Get Time Stamp (${a},MM/dd/yy)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,To Date)
+        Sleep (5)
+        Web.Clear Text (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input)
+        Sleep (5)
+        Web.Set Text(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,${a})
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[4]/button,Apply Button)
+        Sleep (5)
+        ///Scroll down and download excel file
+        Web.ScrollDownToParicularObject(//*[@id="chart-id-217"]/div/div)
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_162-controls"]/div,Click 3 dots)
+        Sleep (2)
+        Web.Get Text(//*[@id="GRID_ID-panel-GRID_ID"]/div/div/div[1]/div/div/div[2]/div/div[1]/div/div[2],${ex})
+        ReAssign Value To Variable(${TotalDevicePrintReports},${ex})
+        Functional_OXPD.WaitAndClick(//*[@id="slice_162-menu"]/li[4]/div,Click Downloads)
+        Sleep (2)
+        //Wait for the Excel to Download
+        Get Time Stamp (${DPP_DownlaodedReportName},yyyyMMdd)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_162-menu-download-popup"]/li[2],Export To Excel)
+        If: Web.Wait Until File Download Complete(${DownLoadFolderPath},${DPP_DownlaodedReportName},60)
+        {
+            Pass (Excel downloaded successfully)
+            Sleep (2)
+        }
+        Fail:
+        { 
+            Web.Close
+            Fail (Failed to download the excel)
+            Stop Test Case
+        }
+        Web.Close
+        Sleep (1)
+        
+        ///<Description>For Excel verification</Description>
+        Windows.Open Folder By Path (${DownLoadFolderPath})
+        Windows.Send Special Key ([HOME])
+        Windows.Send Special Key ([DOWN])
+        Windows.Send Special Key ([HOME])
+        Sleep (1)
+        Get Time Stamp (${DPP_CurrentTime},ddMMhhmmss)
+        ReAssign Value To Variable(${DPP_FileName},${DPP_CurrentTime})
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DevicePrintReportName},${DPP_FileName},${DPP_ExcelName})
+        Windows.Send Special Key ([F2])
+        Sleep (1)
+        Windows.Send Key (${DPP_ExcelName})
+        Sleep (1)
+        Windows.Send Special Key ([ENTER])
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DownLoadFolderPath},${DPP_ExcelName},${DPP_PathAndFileNamePrefix})
+        Concatenate Variable Values And Store Result (${DPP_PathAndFileNamePrefix},.xlsx,${DPP_StoreCompleteFilePath})
+        //Read value from excel sheet
+        Sleep (1)
+        SpreadSheet.SetExcelPath(${DPP_StoreCompleteFilePath})
+        SpreadSheet.Set Worksheet(Sheet1)
+        SpreadSheet.Read Cell Value By Index(2,2,${DPP_ReportDataFromExcel})
+        If:Equals (${TotalDevicePrintReports},${DPP_ReportDataFromExcel})
+        {
+            Pass (No issues are observed downloaded reports datamatches what is displayed on the webpage)
+        } 
+        Fail:
+        {
+            Windows.Send Special Key (^w)
+            Fail (Downloaded reports does not matches with what is displayed on the webpage)
+            Stop Test Case
+        }
+        Windows.Send Special Key (^w)
+    }
+    Fail:
+    { 
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+}
+
+T1984767206_DeviceScanReport(${website-url},${Username},${Password},${DownLoadFolderPath},${DeviceScanFileNamePrefixToRename})
+{
+    If: Web.Open with Chrome (${website-url},30)
+    {
+        //continue
+        Sleep (10)
+        OXPD_Common_Library.Portal_Login(${website-url},${Username},${Password})
+        Sleep(1)
+        //Report Tab
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[2],Report Tab)
+        Sleep (5)
+        //Printer Tab
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[9]/a/div,Printer Tab)
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[2],Scan Tab)
+        Sleep (5)
+        ///Click dropdown for custom date selection
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[1]/span/span/span[2],Drop down)
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[7]/div/div[2]/ul/li[5],Select Custom option)
+        Sleep (5)
+        Get Time Stamp (${a},MM/dd/yy)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,To Date)
+        Sleep (5)
+        Web.Clear Text (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input)
+        Sleep (5)
+        Web.Set Text(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,${a})
+        Sleep (5)
+        Functional_OXPD.T1984767206_WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[4]/button,Apply Button)
+        Sleep (5)
+        ///Scroll down and download excel file
+        Web.ScrollDownToParicularObject (/html/body/div[1]/div/div[4]/div/div/div/div/div/div/div/div/div/div/div[2]/div/div/div[1]/div/div[1]/div/div[1])
+        Sleep (5)
+        Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+        Sleep (2)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_185-controls"]/div,Click 3 dots)
+        Sleep (2)
+        Web.Get Text(//*[@id="GRID_ID-panel-GRID_ID"]/div/div/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div/div,${ex})
+        ReAssign Value To Variable(${TotalDeviceScanReports},${ex})
+        Functional_OXPD.WaitAndClick(//*[@id="slice_185-menu"]/li[4]/div,Click Downloads)
+        Sleep (2)
+        //Wait for the Excel to Download
+        Get Time Stamp (${DownlaodedReportName},yyyyMMdd)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_185-menu-download-popup"]/li[2],Export To Excel)
+        If: Web.Wait Until File Download Complete(${DownLoadFolderPath},${DownlaodedReportName},60)
+        {
+            Pass (Excel downloaded successfully)
+            Sleep (2)
+        }
+        Fail:
+        { 
+            Web.Close
+            Fail (Failed to download the excel)
+            Stop Test Case
+        }
+        Web.Close
+        Sleep (2)
+        
+       ///<Description>For Excel verification</Description>
+        Windows.Open Folder By Path (${DownLoadFolderPath})
+        Windows.Send Special Key ([HOME])
+        Windows.Send Special Key ([DOWN])
+        Windows.Send Special Key ([HOME])
+        Sleep (1)
+        Get Time Stamp (${PrintCurrentTime},ddMMhhmmss)
+        ReAssign Value To Variable(${ScanNewFileName},${PrintCurrentTime})
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DeviceScanReportName},${ScanNewFileName},${ScanExcelName})
+        Windows.Send Special Key ([F2])
+        Sleep (1)
+        Windows.Send Key (${ScanExcelName})
+        Sleep (1)
+        Windows.Send Special Key ([ENTER])
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DownLoadFolderPath},${ScanExcelName},${DS_ScanPathAndFileNamePrefix})
+        Concatenate Variable Values And Store Result (${DS_ScanPathAndFileNamePrefix},.xlsx,${DS_StoreCompleteFilePath})
+        //Read value from excel sheet
+        Sleep (1)
+        SpreadSheet.SetExcelPath(${DS_StoreCompleteFilePath})
+        SpreadSheet.Set Worksheet(Sheet1)
+        SpreadSheet.Read Cell Value By Index(2,2,${DS_ScanDataFromExcel})
+        If:Equals (${TotalDeviceScanReports},${DS_ScanDataFromExcel})
+        {
+            Pass (No issues are observed downloaded reports datamatches what is displayed on the webpage)
+        } 
+        Fail:
+        {
+            Windows.Send Special Key (^w)
+            Fail (Downloaded reports does not matches with what is displayed on the webpage)
+            Stop Test Suite
+        }
+        Windows.Send Special Key (^w)
+    }
+    Fail:
+    { 
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+}
+
+T1984767206_UserPrintReport(${website-url},${Username},${Password},${DownLoadFolderPath},${UserPrintFileNamePrefixToRename})
+{
+    If: Web.Open with Chrome (${website-url},30)
+    {
+        //continue
+        Sleep (10)
+        OXPD_Common_Library.Portal_Login(${website-url},${Username},${Password})
+        Sleep(1)
+        //Report Tab
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[2],Report Menu)
+        Sleep (5)
+        //User Menu
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[8],User Menu)
+        Sleep (5)
+        ///Click dropdown for custom date selection
+        Functional_OXPD.T1984767206_WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[1],Print_Copy Tab)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[1]/span/span/span[2],Drop down)
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[7]/div/div[2]/ul/li[5],Select Custom option)      Sleep (10)
+        Get Time Stamp (${a},MM/dd/yy)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,To Date)
+        Sleep (5)
+        Web.Clear Text (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input)
+        Sleep (5)
+        Web.Set Text(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,${a})
+        Sleep (5)
+        Functional_OXPD.T1984767206_WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[4]/button,Apply Button)
+        Sleep (5)
+        ///Scroll down and download excel
+        Web.ScrollDownToParicularObject (/html/body/div[1]/div/div[4]/div/div/div/div/div/div/div/div/div/div/div[2]/div/div/div[1]/div/div[1]/div/div[1])
+        Sleep (5)
+        Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+        Sleep (2)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_162-controls"]/div,Click 3 dots)
+        Sleep (2)
+        Web.Get Text(//*[@id="GRID_ID-panel-GRID_ID"]/div/div/div[1]/div/div/div[2]/div/div[1]/div/div[2],${ex})
+        ReAssign Value To Variable(${TotalUserPrintReports},${ex})
+        Functional_OXPD.WaitAndClick(//*[@id="slice_162-menu"]/li[4]/div,Click Downloads)
+        Sleep (2)
+        //Wait for the Excel to Download
+        Get Time Stamp (${UP_DownlaodedReportName},yyyyMMdd)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_162-menu-download-popup"]/li[2],Export To Excel)
+        If: Web.Wait Until File Download Complete(${DownLoadFolderPath},${UP_DownlaodedReportName},60)
+        {
+            Pass (Excel downloaded successfully)
+            Sleep (2)
+        }
+        Fail:
+        { 
+            Web.Close
+            Fail (Failed to download the excel)
+            Stop Test Suite
+        }
+        Web.Close
+        Sleep (1)
+       
+        ///<Description>For Excel verification</Description>
+        Windows.Open Folder By Path (${DownLoadFolderPath})
+        Windows.Send Special Key ([HOME])
+        Windows.Send Special Key ([DOWN])
+        Windows.Send Special Key ([HOME])
+        Sleep (1)
+        Get Time Stamp (${UP_CurrentTime},ddMMhhmmss)
+        ReAssign Value To Variable(${UP_FileName},${UP_CurrentTime})
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${UserPrintFileNamePrefixToRename},${UP_FileName},${UP_ExcelName})
+        Windows.Send Special Key ([F2])
+        Sleep (1)
+        Windows.Send Key (${UP_ExcelName})
+        Sleep (1)
+        Windows.Send Special Key ([ENTER])
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DownLoadFolderPath},${UP_ExcelName},${UP_PathAndFileNamePrefix})
+        Concatenate Variable Values And Store Result (${UP_PathAndFileNamePrefix},.xlsx,${UP_StoreCompleteFilePath})
+        //Read value from excel sheet
+        Sleep (1)
+        SpreadSheet.SetExcelPath(${UP_StoreCompleteFilePath})
+        SpreadSheet.Set Worksheet(Sheet1)
+        SpreadSheet.Read Cell Value By Index(2,2,${UP_DataFromExcel})
+        If:Equals (${TotalUserPrintReports},${UP_DataFromExcel})
+        {
+            Pass (No issues are observed downloaded reports datamatches what is displayed on the webpage)
+        } 
+        Fail:
+        {
+            Windows.Send Special Key (^w)
+            Fail (Downloaded reports does not matches with what is displayed on the webpage)
+            Stop Test Case
+        }
+        Windows.Send Special Key (^w)
+    }
+    Fail:
+    { 
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+}
+
+T1984767206_UserScanReport(${website-url},${Username},${Password},${DownLoadFolderPath},${UserScanFileNamePrefixToRename})
+{
+    If: Web.Open with Chrome (${website-url},30)
+    {
+        //continue
+        Sleep (10)
+        OXPD_Common_Library.Portal_Login(${website-url},${Username},${Password})
+        Sleep(1)
+        //Report Tab
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[2],Report Tab)
+        Sleep (5)
+        //User Menu
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[8],User Menu)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[2],Scan Tab)
+        Sleep (5)
+        ///Click dropdown for custom date selection
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[1]/span/span/span[2],Drop down)
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[7]/div/div[2]/ul/li[5],Select Custom option)
+        Sleep (10)
+        Get Time Stamp (${a},MM/dd/yy)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,To Date)
+        Sleep (5)
+        Web.Clear Text (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input)
+        Sleep (5)
+        Web.Set Text(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,${a})
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[4]/button,Apply Button)
+        Sleep (5)
+        ///Scroll and download the excel file
+        Web.ScrollDownToParicularObject (/html/body/div[1]/div/div[4]/div/div/div/div/div/div/div/div/div/div/div[2]/div/div/div[1]/div/div[1]/div/div[1])
+        Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+        Sleep (2)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_180-controls"]/div,Click 3 dots)
+        Sleep (2)
+        Web.Get Text(//*[@id="chart-id-180"]/div,${ex})
+        ReAssign Value To Variable(${TotalUserScanReports},${ex})
+        Functional_OXPD.WaitAndClick(//*[@id="slice_180-menu"]/li[4]/div,Click Downloads)
+        Sleep (2)
+        //Wait for the Excel to Download
+        Get Time Stamp (${US_DownlaodedReportName},yyyyMMdd)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_180-menu-download-popup"]/li[2],Export To Excel)
+        If: Web.Wait Until File Download Complete(${DownLoadFolderPath},${US_DownlaodedReportName},60)
+        {
+            Pass (Excel downloaded successfully)
+            Sleep (2)
+        }
+        Fail:
+        { 
+            Web.Close
+            Fail (Failed to download the excel)
+            Stop Test Case
+        }
+        Web.Close
+        Sleep (2)
+        
+       ///<Description>For Excel verification</Description>
+        Windows.Open Folder By Path (${DownLoadFolderPath})
+        Windows.Send Special Key ([HOME])
+        Windows.Send Special Key ([DOWN])
+        Windows.Send Special Key ([HOME])
+        Sleep (1)
+        Get Time Stamp (${US_CurrentTime},ddMMhhmmss)
+        ReAssign Value To Variable(${US_NewFileName},${US_CurrentTime})
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${UserScanReportName},${US_NewFileName},${US_ExcelName})
+        Windows.Send Special Key ([F2])
+        Sleep (1)
+        Windows.Send Key (${US_ExcelName})
+        Sleep (1)
+        Windows.Send Special Key ([ENTER])
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DownLoadFolderPath},${US_ExcelName},${US_ScanPathAndFileNamePrefix})
+        Concatenate Variable Values And Store Result (${US_ScanPathAndFileNamePrefix},.xlsx,${US_StoreCompleteFilePath})
+        //Read value from excel sheet
+        Sleep (1)
+        SpreadSheet.SetExcelPath(${US_StoreCompleteFilePath})
+        SpreadSheet.Set Worksheet(Sheet1)
+        SpreadSheet.Read Cell Value By Index(2,2,${US_ScanDataFromExcel})
+        If:Equals (${TotalUserScanReports},${US_ScanDataFromExcel})
+        {
+            Pass (No issues are observed downloaded reports datamatches what is displayed on the webpage)
+        } 
+        Fail:
+        {
+            Windows.Send Special Key (^w)
+            Fail (Downloaded reports does not matches with what is displayed on the webpage)
+            Stop Test Case
+        }
+        Windows.Send Special Key (^w)
+    }
+    Fail:
+    { 
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+}
+
+T1984767206_DepartmentPrintReport(${website-url},${Username},${Password},${DownLoadFolderPath},${DepartmentPrintFileNamePrefixToRename})
+{
+    If: Web.Open with Chrome (${website-url},30)
+    {
+        //continue
+        Sleep (10)
+        OXPD_Common_Library.Portal_Login(${website-url},${Username},${Password})
+        Sleep(1)
+        //Report Menu
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[2],Report Menu)
+        Sleep (5)
+        //User Menu
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[8],User Menu)
+        Sleep (5)
+        //Department Tab
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[1]/ul/li[2],Department Tab)
+        Sleep (5)
+        ///Click dropdown for custom date selection
+        Functional_OXPD.T1984767206_WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[1],Print_Copy Tab)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[1]/span/span/span[2],Drop down)
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[7]/div/div[2]/ul/li[5],Select Custom option)
+        Sleep (10)
+        Get Time Stamp (${a},MM/dd/yy)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,To Date)
+        Sleep (5)
+        Web.Clear Text (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input)
+        Sleep (5)
+        Web.Set Text(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,${a})
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[4]/button,Apply Button)
+        Sleep (5)
+        ///Scroll down and download the excel file
+        Web.ScrollDownToParicularObject (/html/body/div[1]/div/div[4]/div/div/div/div/div/div/div/div/div/div/div[2]/div/div/div[1]/div/div[1]/div/div[1])
+        Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_141-controls"]/div,Click 3 dots)
+        Sleep (2)
+        Web.Get Text(//*[@id="chart-id-141"]/div,${ex})
+        ReAssign Value To Variable(${DepartmentPrintReportName},${ex})
+        Functional_OXPD.WaitAndClick(//*[@id="slice_141-menu"]/li[4]/div,Click Downloads)
+        Sleep (2)
+        //Wait for the Excel to Download
+        Get Time Stamp (${DP_DownlaodedReportName},yyyyMMdd)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_141-menu-download-popup"]/li[2],Export To Excel)
+        If: Web.Wait Until File Download Complete(${DownLoadFolderPath},${DP_DownlaodedReportName},60)
+        {
+            Pass (Excel downloaded successfully)
+            Sleep (2)
+        }
+        Fail:
+        { 
+            Web.Close
+            Fail (Failed to download the excel)
+            Stop Test Case
+        }
+        Web.Close
+        Sleep (1)
+       
+        ///<Description>For Excel verification</Description>
+        Windows.Open Folder By Path (${DownLoadFolderPath})
+        Windows.Send Special Key ([HOME])
+        Windows.Send Special Key ([DOWN])
+        Windows.Send Special Key ([HOME])
+        Sleep (1)
+        Get Time Stamp (${DP_CurrentTime},ddMMhhmmss)
+        ReAssign Value To Variable(${DP_FileName},${DP_CurrentTime})
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DepartmentPrintReportName},${DP_FileName},${DP_ExcelName})
+        Windows.Send Special Key ([F2])
+        Sleep (1)
+        Windows.Send Key (${DP_ExcelName})
+        Sleep (1)
+        Windows.Send Special Key ([ENTER])
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DownLoadFolderPath},${DP_ExcelName},${DP_PathAndFileNamePrefix})
+        Concatenate Variable Values And Store Result (${DP_PathAndFileNamePrefix},.xlsx,${DP_StoreCompleteFilePath})
+        //Read value from excel sheet
+        Sleep (1)
+        SpreadSheet.SetExcelPath(${DP_StoreCompleteFilePath})
+        SpreadSheet.Set Worksheet(Sheet1)
+        SpreadSheet.Read Cell Value By Index(2,2,${DP_DataFromExcel})
+        If:Equals (${TotalUserPrintReports},${DP_DataFromExcel})
+        {
+            Pass (No issues are observed downloaded reports datamatches what is displayed on the webpage)
+        } 
+        Fail:
+        {
+            Windows.Send Special Key (^w)
+            Fail (Downloaded reports does not matches with what is displayed on the webpage)
+            Stop Test Case
+        }
+        Windows.Send Special Key (^w)
+    }
+    Fail:
+    { 
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+}
+
+T1984767206_DepartmentScanReport(${website-url},${Username},${Password},${DownLoadFolderPath},${DepartmentUserFileNamePrefixToRename})
+{
+    If: Web.Open with Chrome (${website-url},30)
+    {
+        //continue
+        Sleep (10)
+        OXPD_Common_Library.Portal_Login(${website-url},${Username},${Password})
+        Sleep(1)
+        //Report Menu
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[6]/a/div[2],Report Menu)
+        Sleep (5)
+        //User Menu
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[3]/div[2]/div/div[8],User Menu)
+        Sleep (5)
+        //Department Tab
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[1]/ul/li[2],Department Tab)
+        Sleep (5)
+        //Department Tab
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[2],Department Scan)
+        Sleep (5)
+        ///Click dropdown for custom date selection
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[1]/div/ul/li[1],Print_Copy Tab)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[1]/span/span/span[2],Drop down)
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[7]/div/div[2]/ul/li[5],Select Custom option)
+        Sleep (10)
+        Get Time Stamp (${a},MM/dd/yy)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,To Date)
+        Sleep (5)
+        Web.Clear Text (/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input)
+        Sleep (5)
+        Web.Set Text(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[3]/span/span/input,${a})
+        Sleep (5)
+        Functional_OXPD.WaitAndClick(/html/body/div[1]/div[4]/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/div[2]/div[2]/form/div[4]/button,Apply Button)
+        Sleep (5)
+        ///Scroll down and download excel file
+        Web.ScrollDownToParicularObject (//*[@id="chart-id-217"]/div/div)
+        Web.Select Frame (//*[@id="superset-dashboard-panel"]/iframe)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_147-controls"]/div,Click 3 dots)
+        Sleep (2)
+        Web.Get Text(//*[@id="chart-id-147"]/div,${ex})
+        ReAssign Value To Variable(${DepartmentUserReportName},${ex})
+        Functional_OXPD.WaitAndClick(//*[@id="slice_147-menu"]/li[4]/div,Click Downloads)
+        Sleep (2)
+        //Wait for the Excel to Download
+        Get Time Stamp (${DU_DownlaodedReportName},yyyyMMdd)
+        Functional_OXPD.WaitAndClick(//*[@id="slice_147-menu-download-popup"]/li[2],Export To Excel)
+        If: Web.Wait Until File Download Complete(${DownLoadFolderPath},${DU_DownlaodedReportName},60)
+        {
+            Pass (Excel downloaded successfully)
+            Sleep (2)
+        }
+        Fail:
+        { 
+            Web.Close
+            Fail (Failed to download the excel)
+            Stop Test Case
+        }
+        Web.Close
+        Sleep (1)
+       
+        ///<Description>For Excel verification</Description>
+        Windows.Open Folder By Path (${DownLoadFolderPath})
+        Windows.Send Special Key ([HOME])
+        Windows.Send Special Key ([DOWN])
+        Windows.Send Special Key ([HOME])
+        Sleep (1)
+        Get Time Stamp (${DU_CurrentTime},ddMMhhmmss)
+        ReAssign Value To Variable(${DU_FileName},${DU_CurrentTime})
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DepartmentUserReportName},${DU_FileName},${DU_ExcelName})
+        Windows.Send Special Key ([F2])
+        Sleep (1)
+        Windows.Send Key (${DU_ExcelName})
+        Sleep (1)
+        Windows.Send Special Key ([ENTER])
+        Sleep (1)
+        Concatenate Variable Values And Store Result (${DownLoadFolderPath},${DU_ExcelName},${DU_PathAndFileNamePrefix})
+        Concatenate Variable Values And Store Result (${DU_PathAndFileNamePrefix},.xlsx,${DU_StoreCompleteFilePath})
+        //Read value from excel sheet
+        Sleep (1)
+        SpreadSheet.SetExcelPath(${DU_StoreCompleteFilePath})
+        SpreadSheet.Set Worksheet(Sheet1)
+        SpreadSheet.Read Cell Value By Index(2,2,${DU_DataFromExcel})
+        If:Equals (${TotalUserPrintReports},${DU_DataFromExcel})
+        {
+            Pass (No issues are observed downloaded reports datamatches what is displayed on the webpage)
+        } 
+        Fail:
+        {
+            Windows.Send Special Key (^w)
+            Fail (Downloaded reports does not matches with what is displayed on the webpage)
+            Stop Test Case
+        }
+        Windows.Send Special Key (^w)
+    }
+    Fail:
+    { 
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+}
+
+
+T1984767206_PullPrintForColourAndMonoDevice(${IsColorMFP})
+{
+    JediOmni.Touch ID (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button)
+    Sleep (10)
+    Oxpd.Get Browser Engine
+    //waits and clicks on refresh button 3 times
+    Functional_OXPD.DeviceWaitAndClick(//*[@id="refresh_form"]/input[3],refresh button)
+    //Click Settings ID
+    Functional_OXPD.DeviceWaitAndClick(,Click Settings)
+    //Check the device is Colour or Mono
+    If: Equals IgnoreCase (${IsColorMFP},Y)
+    {
+       //Click Colour
+       Functional_OXPD.DeviceWaitAndClick(,Click Color)
+       //Click Copies Plus button
+       Repeat:10
+       {
+            Functional_OXPD.DeviceWaitAndClick(,Click Copies Plus Button)
+       }
+      //Click Print Button
+       Functional_OXPD.DeviceWaitAndClick(,Click Print Button)
+    }
+    Repeat:10
+    {
+        //Click Black and White Or Mono Print
+        Functional_OXPD.DeviceWaitAndClick(,Click Copies Plus Button)
+    }
+    //Click Print Button
+     Functional_OXPD.DeviceWaitAndClick(,Click Print Button)
+     Oxpd.Return Browser Engine
+}
+
+T1984767206_ScanForColourAndMonoDevice(${IsColorMFP})
+{
+    JediOmni.Touch ID (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button)
+    Sleep (5)
+    Oxpd.Get Browser Engine
+    //Check the device is Colour or Mono
+    If: Equals IgnoreCase (${IsColorMFP},Y)
+    {
+       //Click Colour
+       Functional_OXPD.DeviceWaitAndClick(,Click Color)
+    }
+    Fail:
+    {
+       //Click Black and White Or Mono Print
+       Functional_OXPD.DeviceWaitAndClick(,Click Color)
+    }
+    //Click Scan
+     Repeat:10
+     {
+         Functional_OXPD.DeviceWaitAndClick(,Click Scan)
+     }
+    Oxpd.Return Browser Engine
+}
+
+ DeviceWaitAndClick(${Id},${Name})
+{
+    If: Oxpd.Wait For Xpath  (${Id},120)
+    {
+        Oxpd.Touch Xpath(${Id})
+    }
+    Fail:
+    {
+         Fail (${Name} filed is not available).
+         Stop Test Case
+    }
+}
+
+WaitAndClickTextbox(${Id},${Value},${Name})
+{
+    If: Web.Wait For Object (${Id},120)
+    {
+        Web.Set Text (${Id},${Value})
+    }
+    Fail:
+    {
+         Fail (${Name} filed is not available).
+         Stop Test Case
+    }
+}
+
+WaitAndClick(${Id},${Name})
+{
+    If: Web.Wait For Object (${Id},120)
+    {
+        Web.Click Object (${Id})
+    }
+    Fail:
+    {
+         Fail (${Name} filed is not available).
+         Stop Test Case
+    }
+}
+
+Validate_and_generate_the_SafeQ_report_after_Print(${Before_Print})
+{
+    Web.Get Text (//div[@data-test-chart-name='Print Pages']//div[contains(@class\,'big_number_total')],${After_Print})
+    BuiltIn.Equals (${Before_Print},${After_Print})
+    If: BuiltIn.Has Value Increased (${Before_Print},${After_Print})
+    {
+        Pass (Print Jobs are increased successfully)
+    }
+    Fail:
+    {
+        Fail (Print Jobs are not increasing)
+    }
+    Web.Close
+}
+
+Validate_and_generate_the_SafeQ_report_Before_Print()
+{   
+    Web.Get Text (//div[@data-test-chart-name='Print Pages']//div[contains(@class\,'big_number_total')],${Before_Print}) 
+    Web.Close
+}
+

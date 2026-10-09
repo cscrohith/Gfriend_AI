@@ -1,0 +1,16 @@
+﻿//Azure Account details
+//${STF_AzureEndpoint} =
+//${STF_AzureKey} =
+
+${User_Name} = rdladmin
+${Password} = rdl@123
+
+${Email} = mphipt01     
+${EmailPasswordPart1} = rdl  
+${EmailPasswordPart2} = 12345
+
+${Doc_Name} = Platform-Print
+${File_Name} = CEVT.FILE.jpg.jpg
+
+${Reset_Button_ID} = hpid-button-reset
+${SignIn_Or_SignOut_ID} = hp-button-signin-or-signout

@@ -1,0 +1,536 @@
+﻿using Oxpd
+using Windows
+using Web
+using JediOmni
+using BadgeBox
+
+Device_Badgebox_Login(${BADGE_INDEX},${WaitTime})
+{
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    If: JediOmni.Wait For Text (Sign Out,${WaitTime})
+    {
+        Pass (Badge SignIn Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignIn)
+        Stop Test Case   
+    }
+}
+
+OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+{
+    JediOmni.Reset
+    JediOmni.Touch ID (hpid-control-signin)
+    Oxpd.Get Browser Engine (300)
+    
+    Oxpd.Wait For Xpath (//*[@id="usernameLoginFormText"],20)
+    
+    
+    If: Oxpd.Touch Xpath (//*[@id="usernameLoginFormText"])
+    {
+        Oxpd.Input Text (${Device_Username})
+    }
+    Fail:
+    {
+        Fail (Unable to Enter Username )
+        Stop Test Case
+    }
+    
+    JediOmni.Touch ID (hpid-keyboard-key-done)
+    
+    If: Oxpd.Touch Xpath (//*[@id="usernameLoginFormPass"])
+    {
+        Oxpd.Input Text (${Device_Password})
+    }
+    Fail:
+    {
+        Fail (Unable to Enter Password)
+        Stop Test Case
+    }
+    Oxpd.Press Enter Key
+    Sleep (10)
+    If: JediOmni.Wait For Text (Sign Out,20)
+    {
+        Pass (Login Successfull)
+        
+    }
+    Fail:
+    {
+        Fail (user is not logged in)
+        Stop Test Case
+    }
+}
+
+OXPD_Device_PIN_Login(${Device_PIN})
+{
+ 
+    JediOmni.Touch ID (hpid-control-signin)
+    Oxpd.Get Browser Engine (300)
+    
+    Oxpd.Wait For Xpath (//*[@id="usernameLoginFormText"],20)
+    Oxpd.Touch Xpath (//*[@id="login_switch"])
+    If: Oxpd.Wait For Xpath (//*[@id="shortIdLoginFormText"],20)
+    {
+        Oxpd.Touch Xpath (//*[@id="shortIdLoginFormText"])
+        Oxpd.Input Text (${Device_PIN})
+        Oxpd.Press Enter Key
+    }
+   Fail:
+   {
+       Fail (Unable to enter the PIN)
+   } 
+    
+    Sleep (10)
+    If: JediOmni.Wait For Text (Sign Out,20)
+    {
+        Pass (Login Successfull)
+        
+    }
+    Fail:
+    {
+        Fail (user is not logged in)
+        Stop Test Case
+    }
+    
+    
+}
+
+Send_Job(${FilePath},${PrintQueueName})
+{
+    If: Windows.Print File To Print Queue (${FilePath},${PrintQueueName})
+    {
+        Pass (Print job is sent) 
+    } 
+    Fail:
+    {
+        Fail (Print job failed to send)
+    }
+    Error:
+    {
+        Error (Error sending in Print job)
+    }
+}
+
+
+Pull_Print_Operation
+{
+    JediOmni.Touch ID (hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button)
+    Sleep (10)
+
+    Oxpd.Get Browser Engine
+    //waits and clicks on refresh button 3 times
+   Oxpd.Wait For Xpath (//*[@id="refresh_form"]/input[3],10)
+     
+    Oxpd.Touch Xpath (//*[@id="refresh_form"]/input[3]) 
+   
+
+    //waits and select the first job in the list
+    Oxpd.Wait For Xpath (/html/body/div[2]/div[2]/div[2]/table/tbody/tr[1],10)
+    Oxpd.Touch Xpath (/html/body/div[2]/div[2]/div[2]/table/tbody/tr[1])
+
+    //waits and clicks on the print button 
+    Oxpd.Wait For Xpath (//*[@id="print_selected_button"],10) 
+    Oxpd.Touch Xpath (//*[@id="print_selected_button"])
+   
+   //conditions to check job is processed or not  
+    If:JediOmni.Wait For Active Job Gone (100) 
+    {
+        Pass (Print job is sucessfully completed)  
+    }
+    Fail:
+    {
+        Fail (Print job is not completed)
+    }
+}
+
+Device_Signout
+{
+    If:Oxpd.Wait For Xpath (/html/body/div[2]/div[1]/form/input[2],10) 
+    {
+        Oxpd.Touch Xpath (/html/body/div[2]/div[1]/form/input[2])
+        Pass (Logged out from the solution home page)
+    } 
+     If: JediOmni.Wait For Object (hp-button-signin-or-signout,10)
+     {
+         JediOmni.Touch ID (hp-button-signin-or-signout)
+         Pass (Signed out from the device home page)
+     }
+    
+}
+
+Portal_Login(${Site},${Username},${Password})
+{
+    If: Web.Open with Chrome (${Site},180)
+    {
+        //contiune  
+    }
+    
+    Fail:
+        { 
+            Fail (Failed opening the browser!)
+            Stop Test Case
+        }
+
+    
+   //Sign-In with Credentials
+    If: Web.Wait For Object (//input[@type='text'][1],120)
+    {
+        Web.Set Text (//input[@type='text'][1],${Username})   
+        Web.Click Object (//*[@id="loginSubmit"])
+    }
+    Fail:
+    {
+        Fail (Chrome browser unable to SafeQ site).
+        Stop Test Case
+    }
+    
+    Web.Click Object (//input[@type='password'])
+    Web.Set Text (//input[@type='password'],${Password})
+    Web.Click Object (//*[@id="loginSubmit"])
+    
+    //waits for complete page to load 
+    If: Web.Wait For Object (//*[@data-test-id='logout-button'],30)
+    {
+        Web.Wait For Object (//a[@data-test-id='menuItemLink' and .//div[@data-test-id='label' and normalize-space()='Printers']],10)
+    }
+    Fail:
+    {
+        Fail (Login Failed)
+        Stop Test Suite
+    }
+    Sleep (10)
+    
+}
+
+
+OXPD_Configure(${Device_IP})
+{
+            Web.Wait For Object (//*[@data-test-id='searchInput'],10)
+            Web.Click Object (//*[@data-test-id='searchInput'])
+            Web.Set Text (//*[@data-test-id='searchInput'],${Device_IP})
+            Web.Press PageDown Key (//*[@id="detail-view"])
+            
+            Sleep (15)
+            //Clicks on the install and configure if its workpath installation 
+            Web.Click Object (//input[@data-test-id='selectAll'])
+            
+            Sleep (5)
+            //clicks on the install and configure button
+            Web.Click Object (//button[@data-test-id='install'])
+            
+            
+}
+
+        
+Large_File_Job(${Printer})
+{
+    
+    Windows.Print File To Print Queue (C:\Users\rdladmin.AMBLR\Desktop\Installation_SafeQ\Large_Files\Excel.xlsx,${Printer})
+    
+    Windows.Print File To Print Queue (C:\Users\rdladmin.AMBLR\Desktop\Installation_SafeQ\Large_Files\output.PDF,${Printer})
+    
+    Windows.Print File To Print Queue (C:\Users\rdladmin.AMBLR\Desktop\Installation_SafeQ\Large_Files\PowerPoint.pptx,${Printer})
+    
+    Windows.Print File To Print Queue (C:\Users\rdladmin.AMBLR\Desktop\Installation_SafeQ\Large_Files\TXT.txt,${Printer})
+    
+    Windows.Print File To Print Queue (C:\Users\rdladmin.AMBLR\Desktop\Installation_SafeQ\Large_Files\Word.docx,${Printer})
+    
+    Windows.Print PDF or Image With Application (mspaint.exe,C:\Users\rdladmin.AMBLR\Desktop\Installation_SafeQ\Large_Files\JPG.JPG,${Printer})
+    
+    Windows.Print PDF or Image With Application (mspaint.exe,C:\Users\rdladmin.AMBLR\Desktop\Installation_SafeQ\Large_Files\GIF.gif,${Printer})
+    
+    Windows.Print PDF or Image With Application (mspaint.exe,C:\Users\rdladmin.AMBLR\Desktop\Installation_SafeQ\Large_Files\ImageBMP.BMP,${Printer})
+    
+    Windows.Print PDF or Image With Application (mspaint.exe,C:\Users\rdladmin.AMBLR\Desktop\Installation_SafeQ\Large_Files\JPG.JPG,${Printer})
+    
+    
+}
+EWS_Login(${EWS_Site},${EWS_Password})
+{
+    If: Web.Open with Chrome (${EWS_Site},180)
+    //If: Web.Open with Edge (${EWS_Site},180)
+    {
+        //contiune  
+    }
+    Fail:
+        { 
+            Fail (Failed opening the browser!)
+            Stop Test Case
+        }
+   //Sign-In with Credentials
+
+    If: Web.Wait For Object (//*[@id="EwsLogin"],120)
+    {
+        Web.Click Object (//*[@id="EwsLogin"]) 
+        Web.Wait For Object (//*[@id="PasswordTextBox"],30)
+        Web.Click Object (//*[@id="PasswordTextBox"])     
+        Web.Set Text (//*[@id="PasswordTextBox"],${EWS_Password})   
+    }
+
+    Fail:
+    {
+        Fail (Edge browser unable to open EWS site).
+        Stop Test Case
+    }
+
+    Web.Click Object (//*[@id="signInOk"])
+
+    //waits for complete page to load 
+    If: Web.Wait For Object (//*[@id="EwsLogoff"],30)
+    {
+        Pass (Login Successfull)
+    }
+    Fail:
+    {
+        Fail (Login Failed)
+        Stop Test Suite
+    }
+}
+Send_Jobs(${Job_Path},${Queue_Name})
+{
+    Windows.Print File To Print Queue (${Job_Path},${Queue_Name})
+}
+
+Badgebox_Login(${BADGE_INDEX})
+{
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    While:!JediOmni.Wait For Text (Sign Out,10): 10
+    {
+        Sleep(5)
+    }
+ 
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        Pass (Badge SigIN Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignIn)
+        Stop Test Case   
+    }
+}
+Badgebox_LogOut(${BadgeIndex},${WaitTime})
+{
+    
+    BadgeBox.Scan Badge (${BadgeIndex})
+  
+    While:!JediOmni.Wait For Text (Sign In,10): ${WaitTime}
+    {
+        Sleep(5)
+    }
+
+    If: JediOmni.Wait For Text (Sign In,10)
+    {
+        Pass (Badge Sign Out Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignOut)
+        Stop Test Case  
+    }
+}
+T1988557809_Validation_of_Card_Reader_KioskMode(${BADGE_INDEX})
+{
+    Web.Click Object(//*[@id="SettingsPages"])
+    Web.Click Object(//*[@id="HomeScreenCustomization"])
+    Web.Select Value From List Box (//*[@id="DefaultAppId"],Secure Print)
+    Web.Wait For Text (Home Screen App,5)
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    While:!JediOmni.Wait For Text (Sign Out,10): 5
+    {
+        Sleep(5)
+    }
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        Pass (Badge SigIN Successful)
+    }
+    Fail:
+    {
+        Fail (Failed to SignIn)
+        Stop Test Case
+    }
+}
+
+T1984767202_FeautureSmartFirmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password},${EWS_Site})
+{
+   Web.Click Text (Information)
+    Web.Click Text (Configuration Page)
+    Web.Get Text (//*[@id="FutureSmartBundleVersion"],${Firmware_version})
+    pass(${Firmware_version})
+    Web.Get Text (//*[@id="FirmwareRevision"],${Firmware_revision})
+    Pass (${Firmware_revision})
+    Web.Click Text (General)
+    Web.Click Text (Firmware Upgrade)
+    Web.Click Text (Choose File)
+    Windows.Wait For Name (Open,5)
+    Windows.Select Application (Open)
+    Windows.Wait For ID (1148,10)
+    Windows.Send Key (${File_Path})
+    Windows.Wait For Name (Open,5)
+    Windows.Send Special Key ([ENTER])
+    Windows.Wait For Name (Open,10)
+    If: Windows.Check Screen Contains Partial Text (id.signed.bdl)
+    {
+        Windows.Click Element By Partial Text (id.signed.bdl) 
+    }
+    Fail:
+    {
+        Fail (There is no bdl file)
+    }
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([ENTER])
+    Windows.Wait For Name (Open,15)
+    Web.Wait For Text (The product is restarting to complete the operation,1200)
+    JediOmni.Wait Until Boot    
+    While:Web.Wait For Object (//*[@id="reload-button"],10): 50
+    {
+        Web.Click Object (//*[@id="reload-button"])
+    }
+    While:Web.Wait For Text (Information,10): 180
+    {
+        Web.Wait For Text (Information,50)
+    }
+    If: Web.Open with edge (${EWS_Site},180)
+    {
+        //contiune  
+    }
+    Fail:
+    {
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+    Web.Click Text (Information)
+    Web.Click Text (Configuration Page)
+    Web.Get Text (//*[@id="FutureSmartBundleVersion"],${UpdatedFirmware_version})
+    pass(${UpdatedFirmware_version})
+    Web.Get Text (//*[@id="FirmwareRevision"],${UpdatedFirmware_revision})
+    Pass (${UpdatedFirmware_revision})
+    If: builtin.NotEquals (${Firmware_version},${UpdatedFirmware_version})
+    {
+        Pass(Updated Firmware Version)
+    }
+    Fail:
+    {
+        Fail (Firmware Version not updated)
+        Stop Test Case
+    }
+}
+T1985577784_Firmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password},${EWS_Site})
+{
+   Web.Click Text (Information)
+    Web.Click Text (Configuration Page)
+    Web.Get Text (//*[@id="FutureSmartBundleVersion"],${Firmware_version})
+    pass(${Firmware_version})
+    Web.Get Text (//*[@id="FirmwareRevision"],${Firmware_revision})
+    Pass (${Firmware_revision})
+    Web.Click Text (General)
+    Web.Click Text (Firmware Upgrade)
+    Web.Click Text (Choose File)
+    Windows.Wait For Name (Open,5)
+    Windows.Select Application (Open)
+    Windows.Wait For ID (1148,10)
+    Windows.Send Key (${File_Path})
+    Windows.Wait For Name (Open,5)
+    Windows.Send Special Key ([ENTER])
+    Windows.Wait For Name (Open,10)
+    If: Windows.Check Screen Contains Partial Text (id.signed.bdl)
+    {
+        Windows.Click Element By Partial Text (id.signed.bdl) 
+    }
+    Fail:
+    {
+        Fail (There is no bdl file)
+    }
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([TAB])
+    Windows.Send Special Key ([ENTER])
+    Windows.Wait For Name (Open,15)
+    Web.Wait For Text (The product is restarting to complete the operation,1200)
+    JediOmni.Wait Until Boot    
+    While:Web.Wait For Object (//*[@id="reload-button"],10): 50
+    {
+        Web.Click Object (//*[@id="reload-button"])
+    }
+    While:Web.Wait For Text (Information,10): 180
+    {
+        Web.Wait For Text (Information,50)
+    }
+    If: Web.Open with edge (${EWS_Site},180)
+    {
+        //contiune  
+    }
+    Fail:
+    {
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+    Web.Click Text (Information)
+    Web.Click Text (Configuration Page)
+    Web.Get Text (//*[@id="FutureSmartBundleVersion"],${UpdatedFirmware_version})
+    pass(${UpdatedFirmware_version})
+    Web.Get Text (//*[@id="FirmwareRevision"],${UpdatedFirmware_revision})
+    Pass (${UpdatedFirmware_revision})
+    If: builtin.NotEquals (${Firmware_version},${UpdatedFirmware_version})
+    {
+        Pass(Updated Firmware Version)
+    }
+    Fail:
+    {
+        Fail (Firmware Version not updated)
+        Stop Test Case
+    }
+}
+Device_Reboot
+{
+    Web.Open with Chrome (${DUT_Address},30)
+    Sleep (2)
+    Web.Wait For Object (//*[@id="EwsLogin"],10)
+    Web.Click Object (//*[@id="EwsLogin"])
+    Sleep (2)
+    Web.Wait For Object (//*[@id="PasswordTextBox"],10)
+    Sleep (2)
+    Web.Set Text (//*[@id="PasswordTextBox"],${DUT_AdminPW})
+    Sleep (2)
+    Web.Wait For Object (//*[@id="signInOk"],10)
+    Web.Click Object (//*[@id="signInOk"])
+    Sleep (2)
+    Web.Wait For Object (//*[@id="Information"],10)
+    Web.Click Object (//*[@id="Information"])
+    Sleep (2)
+    Web.Wait For Object (//*[@id="RemoteControlPanelConnect"],10)
+    Web.Click Object (//*[@id="RemoteControlPanelConnect"])
+    Sleep (2)
+    Web.Wait For Object (//*[@id="LaunchButton"],10)
+    Web.Click Object (//*[@id="LaunchButton"])
+    If: JediOmni.Wait For Object (hpid-button-Ok,5)
+    {
+        JediOmni.Touch ID (hpid-button-Ok)
+    }
+    Sleep (5)
+    Windows.Send Special Key ([ENTER])
+    Sleep (2)
+    Windows.Send Special Key ([ENTER])
+    Web.Close
+    JediOmni.Wait Until Boot
+    Web.Open with Edge (${DUT_Address},50)
+    While:Web.Wait For Object (//*[@id="reload-button"],5):50
+    {
+        Web.Click Object (//*[@id="reload-button"])
+    }
+    Windows.Send Special Key ([F5])
+    Web.Wait For Object (//*[@id="Information"],50)
+    Web.Wait For Text (Information,50)
+    Web.Click Text (Information)
+    Pass (EWS page is Ready!)
+    Sleep (10)
+    If: JediOmni.Press Home Key
+    {
+        
+    }
+    If: JediOmni.Wait For Object (hpid-control-signin,30)
+    {
+        Pass (Device control panel on home screen)
+    } 
+}

@@ -1,0 +1,198 @@
+﻿using JediOmni
+using Android
+using Info
+using BadgeBox
+
+/////////////////////////////////////////////////
+// Routine:         Printix_PullPrint
+// Description:     Printix Pullprint Job
+//
+// Arguments:       ${PRINT_ALL}) - Print All Variable
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Printix_PullPrint(${PRINT_ALL},${BADGE_INDEX})
+{
+    Info.Start Time Check (STF_ProcessingJob)
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_AppButtonPress)
+    
+    Info.Start Time Check (STF_DeviceButtonPress)
+    If: PrintixTC.SignInPrintix(${BADGE_INDEX})
+    {
+        //All Good, Continue
+    }
+    Fail:
+    {
+        Return With Fail (Failed to Login)
+    }
+    Sleep (5)
+    //Click on Print Application
+    If: JediOmni.Wait For Object (hpid-11111111-1111-1111-9993-111111111111-homescreen-button,20)
+    {
+         Sleep (5)
+         Info.Mark End (STF_AppButtonPress,2)
+         JediOmni.Touch ID (hpid-11111111-1111-1111-9993-111111111111-homescreen-button)
+    }
+     
+    Info.Mark End (STF_AppShown,3)
+    If: Android.Wait For XPath (//node[@resource-id='PRINT_JOBS_CONTAINER'],50)
+    {
+        Info.Mark Start (STF_ProcessingJob,6)
+        //To Print all the Documents
+        If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            If: Android.Wait For Object (CHECKBOX_BUTTON,10)
+            {
+                Android.Touch ID (CHECKBOX_BUTTON)
+            }
+            If: Android.Wait For XPath (//node[@resource-id='PRINT_BUTTON_CONTAINER']/node[1],5)
+            {
+                Android.Touch XPath (//node[@resource-id='PRINT_BUTTON_CONTAINER']/node[1])
+            }
+        } 
+        
+        //To Print Only 1 Document
+        Fail:
+        {
+            If: Android.Wait For XPath (//node[@resource-id='PRINT_JOBS_CONTAINER'],5)
+            {
+                Android.Touch XPath (//node[@resource-id='PRINT_JOBS_CONTAINER'])
+            }
+            
+            If: Android.Wait For XPath (//node[@resource-id='PRINT_BUTTON_CONTAINER']/node[1],5)
+            {
+                Android.Touch XPath (//node[@resource-id='PRINT_BUTTON_CONTAINER']/node[1])
+            }
+        }
+    }
+    Info.Mark End (STF_ProcessingJob,6)
+    
+    Fail:
+    {
+        Fail (No Jobs found to Pull!)  
+    }
+    
+    If: JediOmni.Wait For Active Job Gone (300)
+    {
+        Return With Pass (Print Job Completed Successfully) 
+    }
+    Fail:
+    {
+        Return With Fail (Failed to print jobs within 100 seconds!)
+    }
+}
+
+/////////////////////////////////////////////////
+//Routine:         ClearAuth
+//Description:     make sure at Home screen, signed out and reset
+//
+//Arguments: 
+//      
+//Pre-requisites: 
+// 
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+      
+ClearAuth
+{
+    Android.Press Home Key
+    JediOmni.Press Home Key
+    If: JediOmni.Wait For Text (Sign In,10)
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Touch Text (Sign Out)
+        {
+            JediOmni.Wait For Text (Signing out,10)
+            JediOmni.Wait For Text Gone (Signing out,30)
+        }
+        Fail:
+        {
+            Fail (Failed to get the Home Screen)
+            Stop Test Case
+        }
+    }
+    JediOmni.Reset
+}
+
+//////////////////////////////////////////////////
+//Routine:         VerifyUserLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+     
+
+SignInPrintix(${BADGE_INDEX})
+{
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials) 
+    
+    PrintixTC.ClearAuth
+
+    Info.Mark Start (STF_Authentication,4)
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    
+    While:!JediOmni.Wait For Text (Sign Out,30):10
+    {
+        JediOmni.Capture Screen Shot (SignInFail)
+    } 
+    If: JediOmni.Wait For Text (Sign Out,5)
+    {
+        Return With Pass (Badge Sign In was Successful)
+    }
+    Fail:
+    {
+        Fail (Sign In was not Successful within 300 Seconds)
+        Stop Test Case
+    }
+    Info.Mark End (STF_Authentication,4)      
+}
+ 
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SignOut
+{  
+    Android.Press Home Key
+    JediOmni.Press Home Key
+    Info.Start Time Check (STF_DeviceSignOutBegin)
+    Info.Start Time Check (STF_DeviceSignOutEnd)
+    Info.Mark Start (STF_DeviceSignOutBegin,4)
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Fail:
+    {
+        Fail (Failed to find Home Screen Sign Out!)
+    }
+    Info.Mark End (STF_DeviceSignOutEnd,4)
+    Info.Draw Time Graph (STF_DeviceSignOutBegin)
+    Info.Draw Time Graph (STF_DeviceSignOutEnd)
+}

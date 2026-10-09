@@ -1,0 +1,29 @@
+﻿/// <File>ClearAuth.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Clear device authentication (sign out and reset)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using DeviceAuth.gflib
+
+Using JediOmni
+Using Oxpd
+
+/// ClearAuth
+/// <Description>Clear device authentication (sign out and reset)</Description>
+/// <Notes></Notes>
+ClearAuth
+{
+    // make sure at Home screen and signed out
+    If: DeviceAuth.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Fail (Failed signing out!)
+    }
+    Error:
+    {
+        Error (Error signing out!)
+    }
+}

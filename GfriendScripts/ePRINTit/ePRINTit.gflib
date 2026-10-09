@@ -1,0 +1,200 @@
+﻿using JediOmni
+using Oxpd
+using Windows
+using Web
+
+ePRINTit Web(${Username},${Password},${Documentpath})
+{
+    Web.Open with Chrome (https://hps.eprintit.com/portal/#/login,50)
+        
+    //Click on Username
+    If:  Web.Wait For Object ( //input[@placeholder="User"],50)
+    {
+         Web.Click Object ( //input[@placeholder="User"])
+         Web.Set Text ( //input[@placeholder="User"],${Username})
+    }
+    Fail:
+    {
+        Return With Fail (Entered Wrong Username)
+        Stop Test Case
+    }
+   
+    //Click on Password
+    If: Web.Wait For Object (//input[@placeholder="Password"],50)
+    {
+         Web.Click Object ( //input[@placeholder="Password"])
+         Web.Set Text ( //input[@placeholder="Password"],${Password})
+    } 
+    Fail:
+    {
+        Return With Fail (Entered Wrong Password)  
+        Stop Test Case
+    }
+   
+    //Click on Submit
+    Web.Wait For Object (//button[@type="submit"],20)
+    Web.Click Object ( //button[@type="submit"])
+
+    Web.Wait For Object (//label[@class="upload-button"],50)
+    Web.Click Object (//label[@class="upload-button"])
+    
+    Sleep (5)
+
+    Windows.Select File at Dialog (${Documentpath})
+
+    While:Web.Wait For Text (${txtname},20): 2
+    {
+           Web.Click Text (${txtname})
+           Sleep (2)
+    }
+    Web.Wait For Object (//button[@id="dropdownBasic1"],30)
+    Web.Click Object (//button[@id="dropdownBasic1"])
+    
+    Web.Wait For Object (/html/body/app-root/div/app-header/div/div/div/div[3]/div/div/button[2]/div/div[2],30)
+    Web.Click Object (/html/body/app-root/div/app-header/div/div/div/div[3]/div/div/button[2]/div/div[2])
+    
+    Web.Close
+
+}
+
+ePRINTit device(${Username},${Password},${txtname})
+{
+    JediOmni.Reset
+    JediOmni.Press Home Key
+    
+    //Click on Solution
+    JediOmni.Wait For Object (hpid-89d15fcb-b4c3-4b2f-a814-95d884e96330-homescreen-button,30)
+    JediOmni.Touch ID (hpid-89d15fcb-b4c3-4b2f-a814-95d884e96330-homescreen-button)
+  
+   If:Oxpd.Get Browser Engine
+   {
+       //added sleep of 50 seconds to handle the slowness while loading OXPD screen when clicked on ePRINTit solution app button
+       Sleep (50)
+       If: Oxpd.Wait For Text (Login,60) 
+       {
+           Oxpd.Touch Text (Login)
+       } 
+       Fail:
+       {
+           Return With Fail (Login screen didn't appear within 300 Seconds.) 
+           Stop Test Case
+       }
+  
+       //Click on Username
+       If: Oxpd.Wait For Id (username,30)
+       {
+           Oxpd.Touch Id (username)
+           Oxpd.Input Text (${Username})
+       } 
+       Fail:
+       {
+           Return With Fail (Entered Username wrong)
+           Stop Test Case
+       }
+      
+       //Click on password
+      If: Oxpd.Wait For Id (password,30) 
+      {
+       Oxpd.Touch Id (password)
+       Oxpd.Input Text (${Password})
+      } 
+      Fail:
+      {
+       Return With Fail (Entered password wrong)
+       Stop Test Case
+      }
+ 
+     //close the keyboard
+     JediOmni.Wait For Object (hpid-keyboard-key-done,50)
+     JediOmni.Touch ID (hpid-keyboard-key-done)
+   
+     //Click on Login
+     Oxpd.Wait For Id (userLoginButton,30)
+     Oxpd.Touch Id (userLoginButton)
+   
+     //Click on Cloud
+     If: Oxpd.Wait For Id (cloudButton,50)
+     {
+      Oxpd.Touch Id (cloudButton)
+     } 
+     Fail:
+     {
+        Return With Fail (Cloud button is not found.)
+        Stop Test Case
+     }
+   
+     //Click on Checkmark
+     Oxpd.Touch Text (${txtname})
+ 
+     //Click on Print
+     Oxpd.Wait For Text (Print,30)
+     Oxpd.Touch Text (Print)
+     
+     Sleep(30)
+  
+     //Click on Done
+     Oxpd.Wait For Id (printCompletedButtonFinished,50)
+     Oxpd.Touch Id (printCompletedButtonFinished)
+     JediOmni.Press Home Key
+ }
+      
+   Error:
+   {
+       Return With Error (OXPD Application Error) 
+       Stop Test Case
+   }
+      
+}
+
+ePRINTitDelete Web(${Username},${Password},${txtname})
+{   
+    Web.Open with Chrome (https://hps.eprintit.com/portal/#/login,50)
+
+    //Click on Username
+    If:  Web.Wait For Object ( //input[@placeholder="User"],50)
+    {
+         Web.Click Object ( //input[@placeholder="User"])
+         Web.Set Text ( //input[@placeholder="User"],${Username})
+    }
+    Fail:
+    {
+        Return With Fail (Entered Wrong Username)
+        Stop Test Case
+    }
+   
+    //Click on Password
+    If: Web.Wait For Object (//input[@placeholder="Password"],50)
+    {
+         Web.Click Object ( //input[@placeholder="Password"])
+         Sleep (3)
+         Web.Set Text ( //input[@placeholder="Password"],${Password})
+    } 
+    Fail:
+    {
+        Return With Fail (Entered Wrong Password)  
+        Stop Test Case
+    }
+   
+    //Click on Submit
+    Web.Wait For Object (//button[@type="submit"],20)
+    Web.Click Object ( //button[@type="submit"])
+    Sleep (10)
+    
+    //click on checkbox
+    If: Web.Wait For Text (${txtname},30)
+    {
+        Web.Click Text (${txtname})
+    }
+    Fail:
+    {
+        Return With Fail (job not found)
+        Stop Test Case
+    }
+    
+     //Click on delete Icon
+    Web.Wait For Object (/html/body/app-root/div/app-main/div/div[1]/app-home/div/app-pending-jobs/div/div[3]/table/tbody/tr[1]/td[6]/span/button,60)
+    Web.Click Object (/html/body/app-root/div/app-main/div/div[1]/app-home/div/app-pending-jobs/div/div[3]/table/tbody/tr[1]/td[6]/span/button)
+    Sleep (2)
+    Web.Close
+}
+

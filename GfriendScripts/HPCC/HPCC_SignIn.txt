@@ -1,0 +1,35 @@
+﻿/// <File>HPCC_SignIn.txt</File>
+/// <Modified>2021-04-22</Modified>
+/// <Description>Sign in to HP Command Center (HPCC)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC.gfvar
+
+Using HPCC_Library.gflib
+
+/// <Name>SignIn</Name>
+/// <Description>Sign in to HP Command Center (HPCC)</Description>
+/// <Notes></Notes>
+SignIn
+{
+    //Signin
+    IF: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In Failed!)
+    }
+    Error:
+    {
+        Error (Error while signing in to HPCC!)
+    }
+    Web.Close
+}

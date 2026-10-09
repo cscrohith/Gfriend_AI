@@ -1,0 +1,106 @@
+﻿/// <File>MemoryGarbageCollection.txt</File>
+/// <Modified>2021-10-18</Modified>
+/// <Description>Perform the memory garbage collection function on the diagnostics memory page of EWS</Description>
+/// <Precondition>The device must be in Development mode for the diagnostics page to be available.</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using Device_EWS_Library.gflib
+
+Using Web As EWS_Web
+Using JediOmni
+
+/// <Name>PerformMemoryCollection</Name>
+/// <Description>Perform the memory garbage collection function on the diagnostics memory page of EWS</Description>
+/// <Notes></Notes>
+PerformMemoryCollection
+{
+    // oepn the device EWS
+    If: Device_EWS_Library.OpenEWS (${DUT_Address})
+    {
+    }
+    Fail:
+    {
+        // attempt to force web inspector disconnect and then retry
+        Sleep (15)
+        If: Device_EWS_Library.DisconnectInspectablePages (${DUT_Address})
+        {
+            If: Device_EWS_Library.OpenEWS (${DUT_Address})
+            {
+            }
+            Fail:
+            {
+                Device_EWS_Library.CloseEWS
+                Fail (Fail accessing device ${DUT_Address} EWS!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Device_EWS_Library.CloseEWS
+                Error (Error accessing device ${DUT_Address} EWS!)
+                Stop Test Case
+            }
+        }
+        Fail:
+        {
+            Device_EWS_Library.CloseEWS
+            Fail (Fail accessing device ${DUT_Address} EWS!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Device_EWS_Library.CloseEWS
+            Error (Error accessing device ${DUT_Address} EWS!)
+            Stop Test Case
+        }
+    }
+    Error:
+    {
+        // attempt to force web inspector disconnect and then retry
+        Sleep (15)
+        If: Device_EWS_Library.DisconnectInspectablePages (${DUT_Address})
+        {
+            If: Device_EWS_Library.OpenEWS (${DUT_Address})
+            {
+            }
+            Fail:
+            {
+                Device_EWS_Library.CloseEWS
+                Fail (Fail accessing device ${DUT_Address} EWS!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Device_EWS_Library.CloseEWS
+                Error (Error accessing device ${DUT_Address} EWS!)
+                Stop Test Case
+            }
+        }
+        Fail:
+        {
+            Device_EWS_Library.CloseEWS
+            Fail (Fail accessing device ${DUT_Address} EWS!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Device_EWS_Library.CloseEWS
+            Error (Error accessing device ${DUT_Address} EWS!)
+            Stop Test Case
+        }
+    }
+    
+    // perform the memory garbage collection
+    If: Device_EWS_Library.MemoryGarbageCollection
+    {
+    }
+    Fail:
+    {
+        Fail (Fail performing the memory garbage collection!)
+    }
+    Error:
+    {
+        Error (Error performing the memory garbage collection!)
+    }
+    
+    Device_EWS_Library.CloseEWS
+}

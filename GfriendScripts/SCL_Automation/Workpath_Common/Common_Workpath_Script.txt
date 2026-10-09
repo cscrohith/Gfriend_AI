@@ -1,0 +1,52 @@
+﻿using Common_Workpath_Variables.gfvar
+using Common_Workpath_Library.gflib
+
+
+Device_Username_Login
+{
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+}
+Device_Logout
+{
+    Common_Workpath_Library.Device_Logout()
+}
+
+Portal_login
+{
+    Common_Workpath_Library.Portal_Login (${Site},${Username},${Password})
+}
+
+EWS_Login
+{
+    Common_Workpath_Library.EWS_Login (${EWS_Site},${EWS_Password})
+}
+
+Send_job
+{
+    Common_Workpath_Library.Send_Jobs()
+}
+
+Print_Job
+{
+    Common_Workpath_Library.Pull_Print_Operations()
+}
+
+Device_PIN_Login
+{
+    Common_Workpath_Library.Device_PIN_Login (${Device_PIN})
+}
+Large_files
+{
+    Common_Workpath_Library.Large_File_Job (${Excel_File_Name},${Pdf_Name},${pptx_Name},${TXT_Name},${Word_Name},${JPG_Name},${GIF_Name},${BMP_Name},${Queue_Name},${App_Name})
+}
+
+    
+
+
+
+
+
+
+    
+    
+    

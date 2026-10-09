@@ -1,0 +1,215 @@
+﻿using Vision
+using Info
+using JediOmni
+using BadgeBox
+using HPSuite_UniversalPrint.gfvar
+
+SetupAzureVision(${AzureEndpoint},${SubscriptionKey})
+{
+    //${AzureEndpoint} is a variable from AzureVariables.gfvar file which has actual value of the Azure Endpoint , ${AzureEndpointEncryptedValue} stores the encrypted value of Azure Endpoint
+     Encrypt(${AzureEndpoint},${AzureEndpointEncryptedValue})
+    //${SubscriptionKey} is a variable from AzureVariables.gfvar file which has actual value of the Subscription Key , ${SubscriptionKeyEncryptedValue} stores the encrypted value of Subscription Key
+    Encrypt(${SubscriptionKey},${SubscriptionKeyEncryptedValue})
+    //Pass the encrypted values of Azure Endpoint and Subscription key in the Set OCR Method Keyword
+    //1.If the endpoint and subscriptionkey are encrypted in the Encrypted Variables form , then pass the 3rd parameter as "UI" 
+    //2.If the endpoint and subscriptionkey are encrypted using Encrypt Keyword , then pass the 3rd parameter as "ENCRYPT"
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+}
+
+Authentication(${BADGE_INDEX})
+{
+   HPSuite_UniversalPrint.ClearAuth
+   HPSuite_UniversalPrint.BadgeBoxSignIn(${BADGE_INDEX})
+}
+
+
+BadgeBoxSignIn(${BADGE_INDEX})
+{
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    Info.Mark End (STF_AppButtonPress,2)
+    
+    Info.Mark Start (STF_Authentication,4)
+    Sleep (2)
+
+    Info.Mark Start (STF_EnterCredentials,4)
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    Info.Mark End (STF_EnterCredentials,4)
+       
+    While:!Vision.Is Text Exist (Sign Out):10
+    {
+        Sleep (5)
+    }
+    If: Vision.Is Text Exist (Sign Out)
+    {
+        Info.Mark End (STF_Authentication,4)
+    }
+    Fail:
+    {
+        If: Vision.Is Text Exist (Exit)
+        {
+            Vision.Click Text (Exit)
+            Return With Fail (Sign In was not Successful)
+        }
+        Fail:
+        {
+            Return With Fail (Sign In was not Successful)
+        }  
+    }
+    Sleep (2)
+    
+    //Click on Universal Print Application
+    If: Vision.Is Text Exist (Universal Print)
+    {
+        Vision.Click Text (Universal Print)
+        Sleep (2) 
+    }
+    
+    If: Vision.Is Text Exist (Universal Print)
+    {
+        Vision.Click Text (Universal Print)
+    }    
+    Info.Mark End (STF_AppShown,3)
+}
+
+HPSuite_UniversalPrint_PullPrint()
+{
+    Info.Start Time Check (STF_ProcessingJob)
+    HPSuite_UniversalPrint.ClickOnPrintJob(${ActivityId})
+    HPSuite_UniversalPrint.ClickOnPrintButton        
+    HPSuite_UniversalPrint.CheckPrintJob        
+    Info.Mark End (STF_ProcessingJob,6)
+
+   Fail:
+   {
+       Return With Fail (No Jobs found)
+   }
+}
+
+
+ClearAuth
+{
+    JediOmni.Press Home Key
+    If: JediOmni.Wait For Text (Sign In,10)
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Touch Text (Sign Out)
+        {
+            JediOmni.Wait For Text Gone (Signing out,30)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to Sign Out!)
+        }
+    }
+    JediOmni.Reset
+}
+
+ClickOnPrintJob(${JobName})
+{  
+   Substring (${JobName},0,4,${HPSuiteJOBID_1})
+   Substring (${JobName},1,4,${HPSuiteJOBID_2})
+   Substring (${JobName},2,4,${HPSuiteJOBID_3})
+   Substring (${JobName},3,4,${HPSuiteJOBID_4})
+   Substring (${JobName},4,4,${HPSuiteJOBID_5})
+   
+   Repeat:5
+   {
+       Concatenate Variables And Store Result (${HPSuiteJOBID_},${R},${newvalue})
+       While:!Vision.Is Text Exist (${newvalue}): 30
+       {
+           Sleep(1)   
+       }
+       If: Vision.Is Text Exist (${newvalue})
+       {
+           Sleep (3)
+           Vision.Click Text (${newvalue})
+           JediOmni.Capture Screen Shot (JobSelect)           
+           Return With Pass (Print Job ID Clicked)
+       }
+   }   
+}
+
+CheckPrintJob
+{
+   Sleep (2)
+   While:!Vision.Is Text Exist (List empty): 10
+   {
+       Sleep(3)   
+   }
+   If:Vision.Is Text Exist (List empty)
+   {
+       Return With Pass (Prnt Job Completed)
+   } 
+   While:!Vision.Is Text Exist (${newvalue}):6
+   {
+          Sleep (5)
+   }
+   If: Vision.Is Text Exist (${newvalue})
+   {
+       Sleep (3)
+       Vision.Click Text (${newvalue})
+       JediOmni.Capture Screen Shot (JobSelect2)
+       HPSuite_UniversalPrint.ClickOnPrintButton
+   } 
+}
+
+ClickOnPrintButton
+{
+   Sleep (2)
+   If:Vision.Is Text Exist (Print)
+   {
+      JediOmni.Capture Screen Shot (PrintScreen)
+      Vision.Click Text (Print)
+   }        
+       
+   While:Vision.Is Text Exist (Cancel Job):25 
+   {
+       Sleep(10)   
+   }
+   If:Vision.Is Text Exist (Cancel Job)
+   {
+       JediOmni.Capture Screen Shot (Print_Fail)
+       Return With Fail (Unable to Print the Job)
+       Stop Test Case
+   }
+}
+
+
+HPSuite_UniversalPrint_Teardown()
+{
+    
+    If: Vision.Is Text Exist (List empty)
+    {
+        JediOmni.Press Home Key
+        
+        If: JediOmni.Wait For Text (Sign Out,20)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to Sign Out!)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Press Home Key
+        
+        If: JediOmni.Wait For Text (Sign Out,20)
+        {
+            JediOmni.Touch Text (Sign Out)
+        }
+        Fail:
+        {
+            Return With Fail (Failed to Sign Out!)
+        }
+    }  
+}

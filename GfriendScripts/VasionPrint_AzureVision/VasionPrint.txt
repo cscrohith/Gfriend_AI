@@ -1,0 +1,31 @@
+﻿using VasionPrint.gfvar
+using VasionPrintTC.gflib
+
+Setup_AzureVision
+{
+    VasionPrintTC.AzureVisionSetup(${AzureEndpoint},${SubscriptionKey})
+}
+
+Authentication
+{
+    VasionPrintTC.Authentication(${USERNAME},${PASSWORD},${BADGE_AUTH},${BADGE_INDEX})
+}
+
+Execute_Job_Flow
+{
+   //To Print the jobs
+   If: Equals IgnoreCase (${PRINT},Y)
+   {
+       VasionPrintTC.Execute_PullPrint(${PRINT_ALL},${ActivityId},${XValueForSelectAll},${YValueForSelectAll},${XValueForPrintButton},${YValueForPrintButton})
+   }
+   //To Delete the jobs
+   Fail:
+   {
+       VasionPrintTC.Execute_Delete(${PRINT_ALL},${ActivityId},${XValueForSelectAll},${YValueForSelectAll},${XValueForDeleteButton},${YValueForDeleteButton})
+   }
+}
+
+Teardown
+{ 
+    VasionPrintTC.Teardown()
+} 

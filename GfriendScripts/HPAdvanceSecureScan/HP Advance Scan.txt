@@ -1,0 +1,80 @@
+﻿using JediOmni
+using HP_Advance_Scan_Library.gflib
+using HP_Advance_Scan_Variables.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         HP Advance Scan_Flow
+// Description:     HP Advance Scan_Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+HP Advance Scan_Flow
+{ 
+    //For Sign In With Lazy Authetication Set the variable ${Lazy_Auth} = Y else N    
+    If: Equals IgnoreCase (${UID},N)
+    {
+        HP_Advance_Scan_Library.GenerateUserCode(${STF_UserName})
+        If: HP_Advance_Scan_Library.SignInHPAdvancePin (${LAZY_AUTH},${UserCode})
+        {
+            If: HP_Advance_Scan_Library.HPACSecureScan(${TEXT_FIELD_NAME},${PAPER_SUPPLY},${COLOR_MODE},${QUALITY},${JOB_BUILD},${SCAN_COUNT})
+            {
+                HP_Advance_Scan_Library.JobBuildFinish
+            }
+            Fail:
+            {
+                Fail (Failed to perform Scan operation!)
+            }
+            Error:
+            {
+                Error (Error occured while performing Scan operation!)
+            }
+            
+        }
+        Fail:
+        {
+            Fail (Failed while Signing In Pin Authentication!)
+        }
+        Error:
+        {
+            Error (Error while Signing In Pin Authentication!)
+        }
+    }
+    
+    Fail:
+    {
+        If: HP_Advance_Scan_Library.SignInHPAdvanceUserNamePassword (${STF_UserName},${STF_UserPassword},${LAZY_AUTH})
+        {
+            If: HP_Advance_Scan_Library.HPACSecureScan(${TEXT_FIELD_NAME},${PAPER_SUPPLY},${COLOR_MODE},${QUALITY},${JOB_BUILD},${SCAN_COUNT})
+            {
+                HP_Advance_Scan_Library.JobBuildFinish
+            }
+            Fail:
+            {
+                Fail (Failed to perform Scan operation!)
+            }
+            Error:
+            {
+                Error (Error occured while performing Scan operation!)
+            }
+            
+        }
+        Fail:
+        {
+            Fail (Failed while Signing In Username\Password Authentication!)
+        }
+        Error:
+        {
+            Error (Error while Signing In Username\Password Authentication!)
+        }
+    }
+    
+    //Signing Out
+    HP_Advance_Scan_Library.SignOut
+}

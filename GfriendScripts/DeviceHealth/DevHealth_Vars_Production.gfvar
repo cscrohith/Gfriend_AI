@@ -1,0 +1,18 @@
+﻿//Production
+${DevHealth_url} = dcfleetops.ext.hp.com/healthcheck/
+${DevHealth_User} = rdl.etl.boise+dhsupport@gmail.com
+
+${DevHealth_PassWord} = 007L@z3r
+
+${DevHealth_LogInTimeOut} = 45
+
+${EventLogRefreshMaxCount} = 40
+
+// Specifying Default as the Browser uses Chrome in Headless Mode with no visible UI
+//${DevHealth_Browser} = Default
+${DevHealth_Browser} = Chrome
+//${DevHealth_Browser} = FireFox
+//${DevHealth_Browser} = Edge
+
+
+

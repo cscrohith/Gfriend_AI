@@ -1,0 +1,8 @@
+﻿using OXPD_Mobile_App_Printing.gflib
+using OXPD_Mobile_App_Printing.gfvar
+
+
+T1984767219_Validate_Cloud_Mobile_App_Printing_behavior_in_SafeQ
+{
+    OXPD_Mobile_App_Printing.T1984767219_Validate_Cloud_Mobile_App_Printing_behavior_in_SafeQ (${Site},${Username},${Password},${Package_name},${Platformtool_Path},${Print_Queue_Name},${Document_Name})
+}

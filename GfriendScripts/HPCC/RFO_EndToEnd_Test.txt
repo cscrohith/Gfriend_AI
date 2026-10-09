@@ -1,0 +1,1207 @@
+﻿/// <File>RFO_EndToEnd_Test.txt</File>
+/// <Modified>2021-08-19</Modified>
+/// <Description>Perform the RFO End-to-End test in HPCC</Description>
+/// <Precondition>Master device admin password is set</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// Serial number of the Master device, need because some RFO features in HPCC do not show Asset Number
+// and GFriend does not currently provide the serial number of a connected device
+${MasterDevice_SerialNo}=VNBDL5E027
+
+// End-To-End test variables
+// number of times to repeat the end-to-end test flow
+${EndToEnd_Repetition_Count}=1
+// delay time after onboarding of master device
+${MasterOnboardyWaitTime}=180
+// delay time after initiating a discovery
+${InitiatedDiscoveryWaitTime}=300
+// delay time after adding all secondary devices in list
+${AddedDeviceOnboardWaitTime}=600
+// delay time after verifying all secondary device added
+${AddedDeviceRemoveWaitTime}=120
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+// common HPCC variables
+Using HPCC.gfvar
+// master device enablement varibles
+Using HPCC_MasterDevice_Enable.gfvar
+// secondary device list varibles
+Using HPCC_DeviceList.gfvar
+
+Using HPCC_Onboard_Device.gflib
+Using HPCC_Library.gflib
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\Device\Device_Library.gflib
+//Using DeviceAuth.gflib
+Using ..\DeviceAuth\DeviceAuth.gflib
+
+Using JediOmni
+
+/// <Name></Name>
+/// <Description>Onboard a device to an HPCC account</Description>
+/// <Notes>OnBoardDevice</Notes>
+EndToEndTest
+{
+    // remove the "-" from the device as it is a non-allowed character in HPCC
+    Set Variable (${AssetNumber},${DUT_ID})
+    Replace (${AssetNumber},-,)
+    
+    Repeat:${EndToEnd_Repetition_Count}
+    {
+        Set Variable (${ContinueIteration},N)
+        
+        // onboard the master device
+        If: HPCC_Onboard_Device.OnBoardDevice(${AssetNumber})
+        {
+            Set Variable (${ContinueIteration},Y)
+            
+            Pass (Master device onboarded!)
+            
+            Sleep (${MasterOnboardyWaitTime})
+        }
+        Fail:
+        {
+            Fail (Fail occured while onboarding device to HPCC!)
+        }
+        Error:
+        {
+            Fail (Error occured while onboarding device to HPCC!)
+        }
+        
+        // enabile master device
+        If: Equals (${ContinueIteration},Y)
+        {
+            // Sign in
+            If: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+            {
+                Sleep (${Very_Short_Wait_Time})
+            }
+            Fail:
+            {
+                Fail (HPCC Sign In Failed!)
+                Stop Test Case
+            }
+            
+            // Access the customer Device Discovery page
+            If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+            {
+                Sleep (${Short_Wait_Time})
+                
+                // Enable master device
+                If: HPCC_Library.EnableMasterDevice(${HPCC_Customer},${MasterDevice_SerialNo},${Discover_Method_Multicast_YN},${Discover_Multicast_Period},${Discover_Multicast_Hour},${Discover_Multicast_Minute},${Discover_Multicast_AM_PM},${Discover_Method_DeviceAnnounce_YN},${Discover_DeviceAnnounce_TrustedAuth_YN},${Discover_DeviceAnnounce_SecondaryListeners_YN},${ConfigureOption_AddAllDevices_YN},${HPCC_TaskCompleteLimit})
+                {
+                    Pass (Master device enabled as master!)
+                }
+                Fail:
+                {
+                    Fail (Master device enable Failed!)
+                    Set Variable (${ContinueIteration},N)
+                }
+                Error:
+                {
+                    Error (Error occured during Master device enable!)
+                    Set Variable (${ContinueIteration},N)
+                }
+            }
+            Fail:
+            {
+                Fail (Fail accessing the customer Device Discovery page!)
+            }
+            Error:
+            {
+                Error (Error accessing the customer Device Discovery page!)
+            }
+        }
+        
+        // initiate discovery
+        If: Equals (${ContinueIteration},Y)
+        {
+            // Access the customer Device Discovery page
+            If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+            {
+                Sleep (${Short_Wait_Time})
+                
+                // initiate secondary device discovery
+                If: HPCC_Library.InitiateMasterDeviceDiscovery(${MasterDevice_SerialNo},,)
+                {
+                    Pass (Device discovery initated!)
+                    
+                    Sleep (${InitiatedDiscoveryWaitTime})
+                }
+                Fail:
+                {
+                    Fail (Fail occured while initiating discovery!)
+                }
+                Error:
+                {
+                    Error (Error occured while initiating discovery!)
+                }
+            }
+            Fail:
+            {
+                Fail (HPCC Sign In for Master device disable Failed!)
+            }
+        }
+        
+        // verify devices discovered
+        If: Equals (${ContinueIteration},Y)
+        {
+            // Access the customer Device Discovery page
+            If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+            {
+                Sleep (${Short_Wait_Time})
+                
+                // verify device were discovered
+                If: HPCC_Library.VerifySecondaryDevicesDiscovered (,,,,)
+                {
+                    Pass (Discovered device verified!)
+                }
+                Fail:
+                {
+                    Fail (Fail occured while verifying secondary devices discovered!)
+                }
+                Error:
+                {
+                    Error (Error occured while verifying secondary devices discovered!)
+                }
+            }
+            Fail:
+            {
+                Fail (Fail accessing the customer Device Discovery page!)
+            }
+            Error:
+            {
+                Error (Error accessing the customer Device Discovery page!)
+            }
+        }
+        
+        // add (onboard) select discovered devices
+        If: Equals (${ContinueIteration},Y)
+        {
+            // Access the customer Device Discovery page
+            If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+            {
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 1
+                // check for device Serial No specified
+                If: Contains (${Device_SN_1},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_1},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_1},,)
+                        {
+                            Pass (Device 1 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 1 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 1 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 2
+                // check for device Serial No specified
+                If: Contains (${Device_SN_2},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_2},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_2},,)
+                        {
+                            Pass (Device 2 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 2 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 2 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 3
+                // check for device Serial No specified
+                If: Contains (${Device_SN_3},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_3},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_3},,)
+                        {
+                            Pass (Device 3 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 3 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 3 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 4
+                // check for device Serial No specified
+                If: Contains (${Device_SN_4},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_4},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_4},,)
+                        {
+                            Pass (Device 4 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 4 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 4 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 5
+                // check for device Serial No specified
+                If: Contains (${Device_SN_5},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_5},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_5},,)
+                        {
+                            Pass (Device 5 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 5 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 5 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 6
+                // check for device Serial No specified
+                If: Contains (${Device_SN_6},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_6},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_6},,)
+                        {
+                            Pass (Device 6 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 6 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 6 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 7
+                // check for device Serial No specified
+                If: Contains (${Device_SN_7},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_7},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_7},,)
+                        {
+                            Pass (Device 7 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 7 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 7 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 8
+                // check for device Serial No specified
+                If: Contains (${Device_SN_8},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_8},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_8},,)
+                        {
+                            Pass (Device 8 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 8 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 8 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 9
+                // check for device Serial No specified
+                If: Contains (${Device_SN_9},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_9},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_9},,)
+                        {
+                            Pass (Device 9 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 9 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 9 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  add device 10
+                // check for device Serial No specified
+                If: Contains (${Device_SN_10},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_10},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.OnboardDiscoveredDevice(${Device_SN_10},,)
+                        {
+                            Pass (Device 10 added!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail occured while adding device 10 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while adding device 10 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+            }
+            Fail:
+            {
+                Fail (Fail accessing the customer Device Discovery page!)
+            }
+            Error:
+            {
+                Error (Error accessing the customer Device Discovery page!)
+            }
+            
+            Sleep (${AddedDeviceOnboardWaitTime})
+        }
+        
+        // verify added device onboarded to customer
+        If: Equals (${ContinueIteration},Y)
+        {
+            // Access the customer page
+            If: HPCC_Library.SelectAccount (${HPCC_Customer})
+            {
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 1
+                // check for device Serial No specified
+                If: Contains (${Device_SN_1},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_1},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_1})
+                        {
+                            Pass (Device 1 found in customer in HPCC!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 1 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 1 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 2
+                // check for device Serial No specified
+                If: Contains (${Device_SN_2},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_2},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_2})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 2 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 2 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 3
+                // check for device Serial No specified
+                If: Contains (${Device_SN_3},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_3},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_3})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 3 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 3 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 4
+                // check for device Serial No specified
+                If: Contains (${Device_SN_4},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_4},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_4})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 4 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 4 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 5
+                // check for device Serial No specified
+                If: Contains (${Device_SN_5},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_5},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_5})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 5 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 5 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 6
+                // check for device Serial No specified
+                If: Contains (${Device_SN_6},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_6},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_6})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 6 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 6 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 7
+                // check for device Serial No specified
+                If: Contains (${Device_SN_7},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_7},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_7})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 7 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 7 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 8
+                // check for device Serial No specified
+                If: Contains (${Device_SN_8},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_8},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_8})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 8 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 8 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 9
+                // check for device Serial No specified
+                If: Contains (${Device_SN_9},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_9},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_9})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 9 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 9 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                //  search device 10
+                // check for device Serial No specified
+                If: Contains (${Device_SN_10},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_10},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.SearchAccountDevice(${Device_SN_10})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail searching for device 10 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while searching for device 10 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+            }
+            Fail:
+            {
+                Fail (Fail accessing the customer Device Discovery page!)
+            }
+            Error:
+            {
+                Error (Error accessing the customer Device Discovery page!)
+            }
+            
+            Sleep (${AddedDeviceRemoveWaitTime})
+        }
+        
+        // remove added devices from HPCC
+        If: Equals (${ContinueIteration},Y)
+        {
+            // Access the customer page
+            If: HPCC_Library.SelectAccount (${HPCC_Customer})
+            {
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 1
+                // check for device Serial No specified
+                If: Contains (${Device_SN_1},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_1},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_1})
+                        {
+                            Pass (Device 1 removed from HPCC!)
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing device 1 from HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing device 1 from HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 2
+                // check for device Serial No specified
+                If: Contains (${Device_SN_2},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_2},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_2})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing for device 2 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing for device 2 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 3
+                // check for device Serial No specified
+                If: Contains (${Device_SN_3},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_3},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_3})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing for device 3 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing for device 3 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 4
+                // check for device Serial No specified
+                If: Contains (${Device_SN_4},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_4},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_4})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing for device 4 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing for device 4 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 5
+                // check for device Serial No specified
+                If: Contains (${Device_SN_5},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_5},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_5})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing for device 5 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing for device 5 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 6
+                // check for device Serial No specified
+                If: Contains (${Device_SN_6},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_6},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_6})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing for device 6 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing for device 6 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 7
+                // check for device Serial No specified
+                If: Contains (${Device_SN_7},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_7},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_7})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing for device 7 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing for device 7 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 8
+                // check for device Serial No specified
+                If: Contains (${Device_SN_8},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_8},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_8})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing for device 8 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing for device 8 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 9
+                // check for device Serial No specified
+                If: Contains (${Device_SN_9},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_9},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_9})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing for device 9 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing for device 9 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+                
+                // remove device 10
+                // check for device Serial No specified
+                If: Contains (${Device_SN_10},${)
+                {
+                    // device Serial No not specified, no action
+                }
+                Fail:
+                {
+                    If: Equals (${Device_SN_10},)
+                    {
+                        // device Serial No not specified, no action
+                    }
+                    Fail:
+                    {
+                        If: HPCC_Library.RemoveDevice_Customer(${Device_SN_10})
+                        {
+                        }
+                        Fail:
+                        {
+                            Fail (Fail removing for device 10 to customer in HPCC!)
+                        }
+                        Error:
+                        {
+                            Error (Error occured while removing for device 10 to customer in HPCC!)
+                        }
+                    }
+                }
+                Sleep (${Short_Wait_Time})
+            }
+            Fail:
+            {
+                Fail (Fail accessing the customer Device Discovery page!)
+            }
+            Error:
+            {
+                Error (Error accessing the customer Device Discovery page!)
+            }
+            
+            Sleep (${Long_Wait})
+        }
+        
+        // disable master device
+        If: Equals (${ContinueIteration},Y)
+        {
+            // Access the customer Device Discovery page
+            If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+            {
+                Sleep (${Short_Wait_Time})
+                
+                // disable master device
+                If: HPCC_Library.DisableMasterDevice(${HPCC_Customer},${MasterDevice_SerialNo},${HPCC_TaskCompleteLimit})
+                {
+                    Pass (Master device disabled as master!)
+                }
+                Fail:
+                {
+                    Fail (Master device enable Failed!)
+                }
+                Error:
+                {
+                    Error (Error occured during Master device disable!)
+                }
+            }
+            Fail:
+            {
+                Fail (Fail accessing the customer Device Discovery page!)
+            }
+            Error:
+            {
+                Error (Error accessing the customer Device Discovery page!)
+            }
+            
+            Sleep (${Very_Long_Wait})
+        }
+        
+        // remove master device from HPCC
+        If: Equals (${ContinueIteration},Y)
+        {
+//            If: Request User Verification(Continue with test? Pass = Continue   Fail = Stop test))
+//            {
+//            }
+//            Fail:
+//            {
+//                Stop Test Case
+//            }
+            // Access the customer page
+            If: HPCC_Library.SelectAccount (${HPCC_Customer})
+            {
+                Sleep (${Short_Wait_Time})
+                
+                // remove master device
+                If: HPCC_Library.RemoveDevice_Customer(${MasterDevice_SerialNo})
+                {
+                    Pass (Master device removed from HPCC!)
+                }
+                Fail:
+                {
+                    Fail (Fail occured while removing device from HPCC!)
+                }
+                Error:
+                {
+                    Error (Error occured while removing device from HPCC!)
+                }
+            }
+            Fail:
+            {
+                Fail (Fail accessing the customer Device Discovery page!)
+            }
+            Error:
+            {
+                Error (Error accessing the customer Device Discovery page!)
+            }
+            
+            Sleep (${Long_Wait})
+        }
+        
+        // sign out of HPCC and close browsser
+        HPCC_Library.SignOut()
+    
+        Web.Close
+    }
+}

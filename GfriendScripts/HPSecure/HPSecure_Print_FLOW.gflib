@@ -1,0 +1,415 @@
+﻿using JediOmni
+using Vision
+using BadgeBox
+using Info
+
+/////////////////////////////////////////////////
+// Routine:         VisionAI
+// Description:     Make sure to Set OCR method
+//
+// Arguments:      
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+VisionAI(${STF_AzureEndpoint},${Name_of_solution})
+{  
+    Vision.Set AI OCR Method (${STF_AzureEndpoint},${Name_of_solution})
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (block)
+}
+//////////////////////////////////////////////////
+//Routine:         VerifyLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+Authentication(${STF_UserName},${STF_UserPassword},${BADGE_AUTH},${STF_BadgeIndex})
+{
+    If: Equals IgnoreCase (${BADGE_AUTH},Y)
+    {
+        HPSecure_Print_FLOW.BadgeBoxSignin(${STF_BadgeIndex})
+    }   
+    Fail:
+    {       
+        //Lazy authentication
+        HPSecure_Print_FLOW.User_Credentials(${STF_UserName},${STF_UserPassword})               
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         HP Secure_Print & delete
+// Description:     HP Secure_Print & delete Job
+//
+// Arguments:      
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+HPSecure_Print(${PRINT_RELEASE},${SelectAllOption},${SelectAllJobs},${DeleteAllJobs})    
+{ 
+    If: Equals IgnoreCase (${PRINT_RELEASE},Y)
+    {
+        HPSecure_Print_FLOW.Select_Print_Flow(${SelectAllOption},${SelectAllJobs})    
+    }
+    Fail:
+    {
+        HPSecure_Print_FLOW.Select_Delete_Flow(${DeleteAllJobs})
+    } 
+}
+/////////////////////////////////////////////////
+// Routine:         VerifyBadgeLoggedIn
+// Description:     Make sure Badgebox is connected and card is registered for signed In
+//
+// Arguments:      
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+BadgeBoxSignin(${STF_BadgeIndex})
+{
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppShown)
+    Info.Mark Start (STF_Authentication,2) 
+    Info.Mark Start (STF_EnterCredentials,3)
+    
+     //BadgeBox Signin
+     If: BadgeBox.Scan Badge (${STF_BadgeIndex})
+     {
+         Info.Mark End (STF_EnterCredentials,3) 
+         Info.Mark End (STF_Authentication,2) 
+         
+         While:!Vision.Is Text Exist (ReviewDocuments):10
+         {  
+             Info.Mark End (STF_AppButtonPress,1)            
+         }       
+         Info.Mark End (STF_AppShown,4)  
+     }
+     Fail:
+     { 
+         JediOmni.Capture Screen Shot (Badge Authentication Failed)
+         Return With Fail (Failed to Signin with Badge Authentication!) 
+     }
+     Error:
+     {       
+        JediOmni.Capture Screen Shot (Error on Badge authentication screen)
+        Return With Error (Error while Performing Badge authentication operation!)
+     }      
+}
+
+//////////////////////////////////////////////////
+//Routine:         VerifyUserLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+User_Credentials(${STF_UserName},${STF_UserPassword})
+{    
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppShown)
+    
+    If: Vision.Is Text Exist (CredentialLogin)
+    {     
+        Vision.Click Text (CredentialLogin)
+        Info.Mark End (STF_AppButtonPress,1)
+        Sleep (1)               
+        Info.Mark Start (STF_Authentication,2)
+        
+        //Enter username      
+        Vision.Is Text Exist (Email)  
+        Info.Mark Start (STF_EnterCredentials,3)  
+        Vision.Click Text (Email)
+        JediOmni.Input Text (${STF_UserName})
+        JediOmni.Touch Text (OK)
+        
+        //Enter PIN
+        Vision.Is Text Exist (PIN)
+        Vision.Click Text (PIN) 
+        JediOmni.Input Text (${STF_UserPassword})
+        Info.Mark End (STF_EnterCredentials,3)
+        JediOmni.Touch Text (OK)
+
+        If: Vision.Is Text Exist (Login)
+        {
+            Vision.Click Text with index (Login,2)   
+            Info.Mark End (STF_Authentication,2)  
+        } 
+        Info.Mark End (STF_AppShown,4)    
+    }
+    Fail:
+    { 
+        JediOmni.Capture Screen Shot (Username and Password authentication failed)
+        Return With Fail (Failed to Signin with Username and Password Authentication!) 
+    }
+    Error:
+    {        
+        JediOmni.Capture Screen Shot (Error on Username and Password authentication screen)
+        Return With Error (Error while Performing Username and Password authentication operation!)
+    }   
+}
+
+/////////////////////////////////////////////////
+// Routine:         Select & Print_Flow
+// Description:     Select & Print_Flow Job
+//
+// Arguments:       ${SelectAllJobs}) - Print All Jobs inside reivew document and ${SelectAllOption} Select All Jobs 
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+Select_Print_Flow(${SelectAllOption},${SelectAllJobs})
+{          
+    While:!Vision.Is Text Exist (Loading):3
+    {                                  
+    }    
+    Info.Start Time Check (STF_ProcessingJob)
+    
+    Info.Mark Start (STF_ProcessingJob,5) 
+    
+    //print alljobs 
+    If: Equals IgnoreCase (${SelectAllOption},Y)
+    {          
+        If: Vision.Is Text Exist (ReviewDocuments)
+        {
+            //Select all option
+            If: Vision.Is Text Exist (PrintAll)
+            {
+                //select All option   
+                Vision.Click Text (PrintAll)
+            
+                HPSecure_Print_FLOW.Job_verification             
+            } 
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (NoJobsFound)
+                Fail (No jobs found!)
+                Stop Test Case
+            }  
+        }              
+    } 
+    Info.Mark End (STF_ProcessingJob,5) 
+    
+    Fail: 
+    {       
+       If: Vision.Is Text Exist (ReviewDocuments)
+       {                     
+           Vision.Click Text (ReviewDocuments)
+           Sleep (4)
+            
+           //select all job inside the review document
+           If: Equals IgnoreCase (${SelectAllJobs},Y)
+           {      
+               Info.Mark Start (STF_ProcessingJob,5)
+               Sleep (1) 
+               If: Vision.Is Text Exist (FirstJob)
+               {
+                   Vision.Click Text (SelectAll)
+                   Sleep (1)
+                   Vision.Click Text with index (Print,2)                                   
+               } 
+               Fail:
+               {
+                   JediOmni.Capture Screen Shot (NoJobDocumentsFound)
+                   Return With Fail (No Job document found to Print!)
+               } 
+               HPSecure_Print_FLOW.Job_verification 
+               
+               Info.Mark End (STF_ProcessingJob,5)                 
+           }                 
+           Fail:
+           {    
+               Info.Mark Start (STF_ProcessingJob,5)      
+               //Verify jobs
+               If: Vision.Is Text Exist (NoDocumentsToDisplay)
+               {
+                   JediOmni.Capture Screen Shot (NoJobListFound)
+                   Return With Fail (No Job Documents found to select for Print!)
+               } 
+               //select 1 print job inside review documents
+               Fail: 
+               {
+                   Vision.Is Text Exist (FirstJob)
+                   Vision.Click Text (FirstJob)
+                   Vision.Click Text with index (Print,2) 
+                   
+                   HPSecure_Print_FLOW.Job_verification 
+               } 
+               Info.Mark End (STF_ProcessingJob,5)
+           }                 
+             
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (Reivewdocuments)
+            Return With Fail (Unable to click ReviewDocuments)    
+        }
+        Error:
+        {
+            Return With Error (Error while clicking on reivewdocuments operation!)
+            JediOmni.Capture Screen Shot (error clicking on reivewdocuments screen)
+        }
+
+     }
+}
+
+/////////////////////////////////////////////////
+// Routine:         Select & Delete_Flow
+// Description:     Select & Delete_Flow Job
+//
+// Arguments:       ${PRINT_ALL}) - Print All Variable
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+Select_Delete_Flow(${DeleteAllJobs})
+{    
+    Info.Start Time Check (STF_ProcessingJob)
+
+    While:!Vision.Is Text Exist (ReviewDocuments): 5
+    {
+         Vision.Click Text (ReviewDocuments)      
+    }
+    //print jobs      
+    If: Equals IgnoreCase (${DeleteAllJobs},Y) 
+    {       
+        Info.Mark Start (STF_ProcessingJob,5)
+
+        While:!Vision.Is Text Exist (FirstJob):5
+        {            
+        }
+        If: Vision.Is Text Exist (FirstJob)
+        {
+            //select all delete
+            Vision.Click Text (SelectAll)
+            Sleep (1)
+            Vision.Click Text (Delete)
+            Sleep (1)          
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (NoJobsDocumentsFound screen)
+            Return With Fail (Failed to perform the delete all jobs!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (NoJobsDocumentsFound)
+            Return With Error (Error on performing delete all jobs)
+        }
+        Info.Mark End (STF_ProcessingJob,5)
+    }
+    Fail:
+    {
+        Info.Mark Start (STF_ProcessingJob,5)
+        //single job delete
+        If: Vision.Is Text Exist (FirstJob)
+        {
+            Vision.Click Text (FirstJob)
+            Sleep (1)
+            Vision.Click Text (Delete)
+            Sleep (1)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (Single delete job screen)
+            Return With Fail (Failed to perform the delete single job operation!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (Single delete job)
+            Return With Error (Error on deleting single job operation)
+        }
+        Info.Mark End (STF_ProcessingJob,5)
+    }   
+}
+//////////////////////////////////////////////////
+//Routine:         VerifyJob
+//Description:     Veifying Job sent or not to device
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+///////////////////////////////////////////////// 
+Job_verification
+{
+   //waiting for job
+   If: JediOmni.Wait For Active Job (30)
+   {
+       //Continue
+   }
+   Fail:
+   {
+       Return With Fail (Failed to initiate print jobs within 20 seconds!)
+   }
+   If: JediOmni.Wait For Active Job Gone (300)
+   {
+       Return With Pass (Print Job Completed Successfully)
+   }
+   Fail:
+   {
+       Return With Fail (Failed to print jobs within 300 seconds!)
+   }  
+}  
+ 
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SignOut
+{
+    While:!Vision.Is Text Exist (SignOut):3 {
+        Sleep (1)
+    }
+    If: Vision.Is Text Exist (SignOut)
+    {
+         Vision.Click Text (SignOut)
+    }
+    Fail:
+    {
+        Fail (Failed to find Home Screen Sign Out!)
+    }
+}
+
+

@@ -1,0 +1,26 @@
+﻿/// <File>WP_UninstallApp.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Install a workpath app to a device</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using WP_UninstallApp.gfvar
+
+Using WP_CommonLibrary.gflib
+
+Using JediOmni
+
+UninstallApp
+{
+    If: WP_CommonLibrary.UninstallApp(${InstallAppPath}${InstallAppFile})
+    {
+    }
+    Fail:
+    {
+        Fail (Fail while uninstalling workpath app ${InstallAppFile}!)
+    }
+    Error:
+    {
+        Error (Error while uninstalling workpath app ${InstallAppFile}!)
+    }
+}

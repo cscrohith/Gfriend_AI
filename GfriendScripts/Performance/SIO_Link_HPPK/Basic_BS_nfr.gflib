@@ -1,0 +1,1841 @@
+﻿// ++++++++++++++++++++  File Name  ++++++++++++++++++++
+// Basic_BS_nfr.gfilib
+//
+// ++++++++++++++++++++ Description ++++++++++++++++++++
+// To check print and scan performance 
+// ++++++++++++++++++++ Restriction ++++++++++++++++++++
+// Tested account
+// - 
+// ++++++++++++++++++++ Test Scenario ++++++++++++++++++++
+// 1. 
+// 2. 
+// 3. 
+//
+// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2019-06-05 Initial Version
+// V1.1 2019-11-29 Add Secure Access auth
+// V1.2 2019-12-02 Scan method update becasue of UI changes
+// V1.3 2019-12-04 Secure Access auth bug modify and chage scan sening message because of Scan2SMB/FTP bug for a while.
+
+//${scan_send_msg}= Sending...
+${scan_send_msg}= Sending 1/1...
+using link_variable.gfvar
+using 2fa.gflib
+using Android
+using JediOmni
+using Info
+
+Scan2EmailScanPerformance(${csv_filename},${from_address},${to_address})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Scan2Email},60)
+    {
+        JediOmni.Touch ID (${ID_Scan2Email})
+        Info.Start Time Check(${csv_filename})
+        
+        Repeat:${iteration}
+        {
+            If: Android.Wait For Object(com.hp.print.scanapps.email:id/tagsEditTextFrom,60)
+            {
+                Android.Input Text(com.hp.print.scanapps.email:id/tagsEditTextFrom,${from_address})
+                Android.Input Text(com.hp.print.scanapps.email:id/tagsEditTextTo,${to_address})
+                
+                Sleep (2)
+                JediOmni.Touch Position(50,50)
+                Sleep (2)
+
+                Android.Touch ID (com.hp.print.scanapps.email:id/bt_send)
+
+                Info.Mark Start(${csv_filename},scanning_${R})
+
+                Android.Wait For Text (${scan_send_msg},60)
+                Info.Mark End(${csv_filename},scanning_${R})
+                Info.Mark Start(${csv_filename},sending_${R})
+                Android.Wait For Text Gone (${scan_send_msg},60)
+                Info.Mark End(${csv_filename},sending_${R})
+           }  
+        }
+        Info.Draw Time Graph(${csv_filename})
+    }
+    Sleep (5)
+    Android.Press Back Key
+    Sleep (5)
+}
+
+Scan2SMBScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    
+    If: JediOmni.Wait For Object(${ID_Scan2SMB},60)
+    {
+        JediOmni.Touch ID (${ID_Scan2SMB})
+        Info.Start Time Check(${csv_filename})
+        
+        Repeat:${iteration}
+        {
+            If: Android.Wait For Object(com.hp.print.scanapps.smb:id/ivAddBtn,60)
+            {
+                Android.Touch ID (com.hp.print.scanapps.smb:id/ivAddBtn)
+                Android.Input Text(com.hp.print.scanapps.smb:id/et_folderPaths,${smb_ip})
+                Android.Touch ID (com.hp.print.scanapps.smb:id/bt_done)
+                Sleep (2)
+                Android.Input Text (com.hp.print.scanapps.smb:id/et_username,${smb_id})
+                Sleep (2)
+                Android.Touch ID (com.hp.print.scanapps.smb:id/et_domain)
+                Sleep (2)
+                Android.Input Text (com.hp.print.scanapps.smb:id/et_domain,${smb_domain})
+                Sleep (2)
+                Android.Touch ID (com.hp.print.scanapps.smb:id/et_password)
+                Android.Input Text (com.hp.print.scanapps.smb:id/et_password,${smb_pw})
+                Sleep (2)
+                JediOmni.Touch Position(50,50)
+                Sleep (2)
+                Android.Touch ID (com.hp.print.scanapps.smb:id/bt_ok)
+
+                Android.Touch ID (com.hp.print.scanapps.smb:id/bt_send)
+
+                Info.Mark Start(${csv_filename},scanning_${R})
+
+                Android.Wait For Text (Sending...,60)
+                Info.Mark End(${csv_filename},scanning_${R})
+                Info.Mark Start(${csv_filename},sending_${R})
+                Android.Wait For Text Gone (Sending...,60)
+                Info.Mark End(${csv_filename},sending_${R})
+           }  
+        }
+        Info.Draw Time Graph(${csv_filename})
+    }
+    Sleep (5)
+    Android.Press Back Key
+    Sleep (5)
+}
+
+Scan2FTPScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    
+    If: JediOmni.Wait For Object(${ID_Scan2FTP},60)
+    {
+        JediOmni.Touch ID (${ID_Scan2FTP})
+        Info.Start Time Check(${csv_filename})
+        
+        Repeat:${iteration}
+        {
+            If: Android.Wait For Object(com.hp.print.scanapps.ftp:id/ivAddBtn,60)
+            {
+                Android.Touch ID (com.hp.print.scanapps.ftp:id/ivAddBtn)
+                Android.Input Text(com.hp.print.scanapps.ftp:id/et_folderPaths,${ftp_ip})
+                Android.Touch ID (com.hp.print.scanapps.ftp:id/bt_done)
+                Sleep (2)
+                Android.Input Text (com.hp.print.scanapps.ftp:id/et_username,${ftp_id})
+                Sleep (2)
+                Android.Touch ID (com.hp.print.scanapps.ftp:id/et_password)
+                Android.Input Text (com.hp.print.scanapps.ftp:id/et_password,${ftp_pw})
+                Sleep (2)
+                JediOmni.Touch Position(50,50)
+                Sleep (2)
+                Android.Touch ID (com.hp.print.scanapps.ftp:id/bt_ok)
+
+                Android.Touch ID (com.hp.print.scanapps.ftp:id/bt_send)
+
+                Info.Mark Start(${csv_filename},scanning_${R})
+
+                Android.Wait For Text (Sending...,60)
+                Info.Mark End(${csv_filename},scanning_${R})
+                Info.Mark Start(${csv_filename},sending_${R})
+                Android.Wait For Text Gone (Sending...,60)
+                Info.Mark End(${csv_filename},sending_${R})
+           }  
+        }
+        Info.Draw Time Graph(${csv_filename})
+    }
+    Sleep (5)
+    Android.Press Back Key
+    Sleep (5)
+}
+
+ClioPrintPerformance(${csv_filename},${file_name})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Clio},60)
+    {
+       JediOmni.Touch ID (${ID_Clio})
+       If: Android.Wait For Text(00003-Kim,60)
+       {
+            Android.Touch Text(00003-Kim)
+            Info.Start Time Check(${csv_filename})
+                    
+            If: Android.Wait For Text(Print,30)
+            {
+                Android.Touch Text(Print)
+                Repeat:${iteration}
+                {
+                    Android.Swipe (^)
+                    If: Android.Wait For Text(${file_name},30)
+                    {    
+                        Android.Touch Text(${file_name})
+                        Info.Mark Start(${csv_filename},downloading_${R})
+                        If: Android.Wait For Object (com.hp.print.clio:id/btn_print,30)
+                        {
+                            Info.Mark End(${csv_filename},downloading_${R})
+                            Android.Touch ID (com.hp.print.clio:id/btn_print)
+                            Android.Wait For Text(Printing...,30)
+                            Info.Mark Start(${csv_filename},printing_${R})
+                            Android.Wait For Text Gone(Printing...,90)
+                            // Android.Wait For Text(Print job is complete. Total pages : 0,90)
+                            Info.Mark End(${csv_filename},printing_${R})
+                        }
+                    }
+                   
+                }
+                Info.Draw Time Graph(${csv_filename})
+            }
+        }
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Print,30)
+        {
+            Android.Press Back Key
+            If: Android.Wait For Text(00003-Kim,30)
+            {
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.clio:id/bt_dialog_left,30)
+                {                           
+                    Android.Touch ID (com.hp.print.clio:id/bt_dialog_left)
+                }      
+            }
+        }
+    }
+}
+
+                            
+ClioScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Clio},60)
+    {
+       JediOmni.Touch ID (${ID_Clio})
+       If: Android.Wait For Text(00003-Kim,60)
+       {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(00003-Kim)
+
+            If: Android.Wait For Text(Auto Test,30)
+            {
+                Android.Touch Text(Auto Test)
+                Repeat:${iteration}
+                {
+                    If: Android.Wait For Object (com.hp.print.clio:id/btn_scan,30) // scan icon
+                    {    
+                        Android.Touch ID (com.hp.print.clio:id/btn_scan)
+                        If: Android.Wait For Object (com.hp.print.clio:id/bt_send,30)
+                        {
+                            Android.Touch ID (com.hp.print.clio:id/bt_send)
+                            
+                            Info.Mark Start(${csv_filename},scanning_${R})
+                            Android.Wait For Text (${scan_send_msg},60)
+                            Info.Mark End(${csv_filename},scanning_${R})
+                            Info.Mark Start(${csv_filename},sending_${R})
+                            Android.Wait For Text Gone (${scan_send_msg},60)
+                            Info.Mark End(${csv_filename},sending_${R})
+                        }
+                    }
+                }
+            } 
+
+            Info.Draw Time Graph(${csv_filename})
+        }
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Auto Test,30)
+        {
+            Android.Press Back Key
+            If: Android.Wait For Text(00003-Kim,30)
+            {
+                Android.Press Back Key
+                If:Android.Wait For Object (com.hp.print.clio:id/bt_dialog_left,30)
+                {
+                    Android.Touch ID (com.hp.print.clio:id/bt_dialog_left)
+                }
+            }
+        }
+    }
+}
+
+ConcurScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Concur},60)
+    {
+       JediOmni.Touch ID (${ID_Concur})
+      
+       If: Android.Wait For Text(File name,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(File name)
+            Repeat:${iteration}
+            {     
+                If: Android.Wait For Object(com.hp.print.department.concur:id/btn_start,60) // scan start
+                {
+                    Android.Touch ID(com.hp.print.department.concur:id/btn_start)
+                    Info.Mark Start(${csv_filename},scanning_${R})
+                    Android.Wait For Text (Scanning...,60)
+                    Android.Wait For Text Gone (Scanning...,30)
+                    Info.Mark End(${csv_filename},scanning_${R})
+                    If: Android.Wait For Object(com.hp.print.department.concur:id/btn_save,30)
+                    {
+                        Android.Touch ID(com.hp.print.department.concur:id/btn_save)
+                        Info.Mark Start(${csv_filename},sending_${R})
+                        Android.Wait For Object(com.hp.print.department.concur:id/bt_dialog_left,60)
+                        Info.Mark End(${csv_filename},sending_${R})
+                        Android.Touch ID(com.hp.print.department.concur:id/bt_dialog_left)
+                    }
+                }
+            }
+            Info.Draw Time Graph(${csv_filename})
+        } 
+            
+        Sleep (5)
+
+        Android.Press Back Key
+
+        If:Android.Wait For Object (com.hp.print.department.concur:id/bt_dialog_right,30)
+        {
+            Android.Touch ID (com.hp.print.department.concur:id/bt_dialog_right)
+        }
+    }
+}
+
+SageScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Sage},60)
+    {
+       JediOmni.Touch ID (${ID_Sage})
+      
+       If: Android.Wait For Text(Load Originals,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Load Originals)
+            Repeat:${iteration}
+            {     
+                If: Android.Wait For Text (Attachment Folders,30) // scan start
+                {
+                    Android.Touch Text (Attachment Folders)
+                    Info.Mark Start(${csv_filename},scanning_${R})
+                    Android.Wait For Text (Scanning...,60)
+                    Android.Wait For Text Gone (Scanning...,30)
+                    Info.Mark End(${csv_filename},scanning_${R})
+                    If: Android.Wait For Object(com.hp.print.sageintacct:id/btnSaveAttachment,30)
+                    {   
+                        Android.Touch ID (com.hp.print.sageintacct:id/btnSaveAttachment)
+                        Info.Mark Start(${csv_filename},sending_${R})
+                        Android.Wait For Object(com.hp.print.sageintacct:id/btnDone,60)
+                        Info.Mark End(${csv_filename},sending_${R})
+                        Android.Touch ID(com.hp.print.sageintacct:id/btnDone)
+                    }
+                }
+            }
+            Info.Draw Time Graph(${csv_filename})
+        } 
+            
+        Sleep (5)
+
+        Android.Press Back Key
+
+        If:Android.Wait For Object (com.hp.print.sageintacct:id/bt_dialog_right,30)
+        {
+            Android.Touch ID (com.hp.print.sageintacct:id/bt_dialog_right)
+        }
+    }
+}
+
+ImanagePrintPerformance(${csv_filename},${file_name})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_iManage},60)
+    {
+       JediOmni.Touch ID (${ID_iManage})
+       If: Android.Wait For Text(HP_SQE,60)
+       {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(HP_SQE)
+            If: Android.Wait For Text(Documents,30)
+            {
+                Android.Touch Text(Documents)
+                If: Android.Wait For Text(Print,30)
+                {
+                    Android.Touch Text(Print)
+                    Repeat:${iteration}
+                    {
+                        If: Android.Wait For Object (com.hp.imanageconnector:id/btn_action,30)
+                        {    
+                            Android.Touch ID(com.hp.imanageconnector:id/btn_action)
+                            Info.Mark Start(${csv_filename},downloading_${R})
+                            //If: Android.Wait For Object (com.hp.imanageconnector:id/btn_print,30)
+                            //  {
+                                //   Info.Mark End(${csv_filename},downloading_${R})
+                                //  Android.Touch ID (com.hp.imanageconnector:id/btn_print)
+                                
+                                Android.Wait For Text(Printing...,60)
+                                
+                                Info.Mark Start(${csv_filename},printing_${R})
+                                Android.Wait For Text Gone(Printing...,90)
+                            // Android.Wait For Text(Print job is complete. Total pages : 0,90)
+                                Info.Mark End(${csv_filename},printing_${R})
+                            //}
+                        }
+                    }
+                } 
+            }
+            Info.Draw Time Graph(${csv_filename})
+        }
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Print,30)
+        {
+            Android.Press Back Key
+            If: Android.Wait For Text(Documents,30)
+            {
+                Android.Press Back Key
+                If: Android.Wait For Text(HP_SQE,30)
+                {
+                    Android.Press Back Key
+                    If:Android.Wait For Object (com.hp.imanageconnector:id/bt_dialog_left,30)
+                    {                           
+                        Android.Touch ID (com.hp.imanageconnector:id/bt_dialog_left)
+                    }
+                }
+            }
+        }
+    }
+}
+
+                            
+ImanageScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_iManage},60)
+    {
+       JediOmni.Touch ID (${ID_iManage})
+       If: Android.Wait For Text(HP_SQE,60)
+       {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(HP_SQE)
+            If: Android.Wait For Text(Documents,30)
+            {
+                Android.Touch Text(Documents)
+                If: Android.Wait For Text(Auto Test,30)
+                {
+                    Android.Touch Text(Auto Test)
+                    Repeat:${iteration}
+                    {
+                        If: Android.Wait For Object (com.hp.imanageconnector:id/btn_scan,30) // scan icon
+                        {    
+                            Android.Touch ID (com.hp.imanageconnector:id/btn_scan)
+                            If: Android.Wait For Object (com.hp.imanageconnector:id/bt_send,30)
+                            {
+                                Android.Touch ID (com.hp.imanageconnector:id/bt_send)
+                                Info.Mark Start(${csv_filename},scanning_${R})
+                                Android.Wait For Text (${scan_send_msg},60)
+                                Info.Mark End(${csv_filename},scanning_${R})
+                                Info.Mark Start(${csv_filename},sending_${R})
+                                Android.Wait For Text Gone (${scan_send_msg},60)
+                                Info.Mark End(${csv_filename},sending_${R})
+                            }
+                        }
+                    }
+                } 
+            }
+            Info.Draw Time Graph(${csv_filename})
+        }
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Auto Test,30)
+        {
+            Android.Press Back Key
+            If: Android.Wait For Text(Documents,30)
+            {
+                Android.Press Back Key
+                If: Android.Wait For Text(HP_SQE,30)
+                {
+                    Android.Press Back Key
+                    If:Android.Wait For Object (com.hp.imanageconnector:id/bt_dialog_left,30)
+                    {
+                        Android.Touch ID (com.hp.imanageconnector:id/bt_dialog_left)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+BoxPrintPerformance(${csv_filename},${file_name})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Box},60)
+    {
+       JediOmni.Touch ID (${ID_Box})
+      
+       If: Android.Wait For Text(Print,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Print)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Text(${file_name},30)
+                {    
+                    Android.Touch Text(${file_name})
+                    Info.Mark Start(${csv_filename},downloading_${R})
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.box:id/btn_print,30)
+                    {
+                        Info.Mark End(${csv_filename},downloading_${R})
+                        Android.Touch ID (com.hp.print.horizontalconnector.box:id/btn_print)
+                        
+                        Android.Wait For Text(Printing...,30)
+                        
+                        Info.Mark Start(${csv_filename},printing_${R})
+                        Android.Wait For Text Gone(Printing...,90)
+                            // Android.Wait For Text(Print job is complete. Total pages : 0,90)
+                        Info.Mark End(${csv_filename},printing_${R})
+                    }
+                }
+            }
+            Info.Draw Time Graph(${csv_filename})
+        } 
+           
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Print,30)
+        {
+            Android.Press Back Key
+           
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.box:id/bt_dialog_right,30)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.box:id/bt_dialog_right)
+            }
+        }
+    }
+}
+
+                            
+BoxScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Box},60)
+    {
+       JediOmni.Touch ID (${ID_Box})
+      
+       If: Android.Wait For Text(Auto Test,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Auto Test)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.box:id/fab,30) // scan icon
+                {    
+                    Android.Touch ID (com.hp.print.horizontalconnector.box:id/fab)
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.box:id/bt_send,30)
+                    {
+                        Android.Touch ID (com.hp.print.horizontalconnector.box:id/bt_send)
+                        Info.Mark Start(${csv_filename},scanning_${R})
+                        Android.Wait For Text (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},scanning_${R})
+                        Info.Mark Start(${csv_filename},sending_${R})
+                        Android.Wait For Text Gone (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},sending_${R})
+                    }
+                }
+            }
+            Info.Draw Time Graph(${csv_filename})
+        } 
+            
+
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Auto Test,30)
+        {
+            Android.Press Back Key
+ 
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.box:id/bt_dialog_right,30)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.box:id/bt_dialog_right)
+            }
+        }
+    }
+}
+
+GooglePrintPerformance(${csv_filename},${file_name})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Google},60)
+    {
+       JediOmni.Touch ID (${ID_Google})
+      
+       If: Android.Wait For Text(Print,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Print)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Text(${file_name},30)
+                {    
+                    Android.Touch Text(${file_name})
+                    Info.Mark Start(${csv_filename},downloading_${R})
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/btn_print,30)
+                    {
+                        Info.Mark End(${csv_filename},downloading_${R})
+                        Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/btn_print)
+                        
+                        Android.Wait For Text(Printing...,30)
+                        
+                        Info.Mark Start(${csv_filename},printing_${R})
+                        Android.Wait For Text Gone(Printing...,90)
+                            // Android.Wait For Text(Print job is complete. Total pages : 0,90)
+                        Info.Mark End(${csv_filename},printing_${R})
+                    }
+                }
+            }
+            //Info.Draw Time Graph(${csv_filename})
+        } 
+           
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Print,30)
+        {
+            Android.Press Back Key
+           
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,10)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right)
+            }
+        }
+        If: JediOmni.Wait For Text (Sign Out,10)
+        {
+        JediOmni.Touch Text (Sign Out)
+        }
+    }
+}
+
+                            
+GoogleScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Google},60)
+    {
+       JediOmni.Touch ID (${ID_Google})
+      
+       If: Android.Wait For Text(Auto Test,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Auto Test)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/fab,30) // scan icon
+                {    
+                    Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/fab)
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/bt_send,30)
+                    {
+                        Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_send)
+                        Info.Mark Start(${csv_filename},scanning_${R})
+                        Android.Wait For Text (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},scanning_${R})
+                        Info.Mark Start(${csv_filename},sending_${R})
+                        Android.Wait For Text Gone (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},sending_${R})
+                    }
+                }
+            }
+            //Info.Draw Time Graph(${csv_filename})
+        } 
+            
+            
+        
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Auto Test,30)
+        {
+            Android.Press Back Key
+ 
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,30)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right)
+            }
+            Fail:
+            {
+                 Android.Press Back Key
+ 
+                If:Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right)
+                }
+                
+            }
+        }
+        
+        If: JediOmni.Wait For Text (Sign Out,10)
+        {
+        JediOmni.Touch Text (Sign Out)
+        }
+    }
+}
+
+OneDrivePersonalPrintPerformance(${csv_filename},${file_name})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_OneDrivePersonal},60)
+    {
+       JediOmni.Touch ID (${ID_OneDrivePersonal})
+      
+       If: Android.Wait For Text(Print,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Print)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Text(${file_name},30)
+                {    
+                    Android.Touch Text(${file_name})
+                    Info.Mark Start(${csv_filename},downloading_${R})
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/btn_print,30)
+                    {
+                        Info.Mark End(${csv_filename},downloading_${R})
+                        Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/btn_print)
+                        
+                        Android.Wait For Text(Printing...,30)
+                        
+                        Info.Mark Start(${csv_filename},printing_${R})
+                        Android.Wait For Text Gone(Printing...,90)
+                            // Android.Wait For Text(Print job is complete. Total pages : 0,90)
+                        Info.Mark End(${csv_filename},printing_${R})
+                    }
+                }
+            }
+            Info.Draw Time Graph(${csv_filename})
+        } 
+           
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Print,30)
+        {
+            Android.Press Back Key
+           
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,10)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right)
+            }
+        }
+    }
+}
+
+                            
+OneDrivePersonalScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    
+    If: JediOmni.Wait For Object(${ID_OneDrivePersonal},60)
+    {
+       JediOmni.Touch ID (${ID_OneDrivePersonal})
+      
+       If: Android.Wait For Text(Auto Test,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Auto Test)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/fab,30) // scan icon
+                {    
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/fab)
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_send,30)
+                    {
+                        Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_send)
+                        Info.Mark Start(${csv_filename},scanning_${R})
+                        Android.Wait For Text (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},scanning_${R})
+                        Info.Mark Start(${csv_filename},sending_${R})
+                        Android.Wait For Text Gone (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},sending_${R})
+                    }
+                }
+            }
+            Info.Draw Time Graph(${csv_filename})
+        } 
+            
+            
+        
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Auto Test,30)
+        {
+            Android.Press Back Key
+ 
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,30)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right)
+            }
+           Fail:
+           {
+               Android.Press Back Key
+ 
+               If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right,10)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_dialog_right)
+            } 
+           }
+        }
+    
+       If: JediOmni.Wait For Text (Sign Out,10)
+      {
+        JediOmni.Touch Text (Sign Out)
+      }
+    }
+}
+
+
+
+OneDriveBusinessPrintPerformance(${csv_filename},${file_name})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_OneDriveBusiness},60)
+    {
+       JediOmni.Touch ID (${ID_OneDriveBusiness})
+      
+        If: Android.Wait For Text(Print,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Print)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Text(${file_name},30)
+                {    
+                    Android.Touch Text(${file_name})
+                    Info.Mark Start(${csv_filename},downloading_${R})
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/btn_print,30)
+                    {
+                        Info.Mark End(${csv_filename},downloading_${R})
+                        Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/btn_print)
+                        
+                        Android.Wait For Text(Printing...,30)
+                        
+                        Info.Mark Start(${csv_filename},printing_${R})
+                        Android.Wait For Text Gone(Printing...,90)
+                            // Android.Wait For Text(Print job is complete. Total pages : 0,90)
+                        Info.Mark End(${csv_filename},printing_${R})
+                    }
+                }
+            }
+            
+          
+        } 
+           
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Print,30)
+        {
+            Android.Press Back Key
+           
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+            }
+        }
+     If: JediOmni.Wait For Text (Sign Out,10)
+      {
+        JediOmni.Touch Text (Sign Out)
+      }
+    }
+}
+
+                            
+OneDriveBusinessScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_OneDriveBusiness},60)
+    {
+       JediOmni.Touch ID (${ID_OneDriveBusiness})
+      
+        If: Android.Wait For Text(Auto Test,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Auto Test)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/fab,30) // scan icon
+                {    
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/fab)
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_send,30)
+                    {
+                        Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_send)
+                        Info.Mark Start(${csv_filename},scanning_${R})
+                        Android.Wait For Text (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},scanning_${R})
+                        Info.Mark Start(${csv_filename},sending_${R})
+                        Android.Wait For Text Gone (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},sending_${R})
+                    }
+                }
+            }
+            //Info.Draw Time Graph(${csv_filename})
+        } 
+            
+            
+        
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Auto Test,30)
+        {
+            Android.Press Back Key
+ 
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+            }
+            Fail:
+            { 
+                 Android.Press Back Key
+                            
+                If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+                {
+                    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+                }
+            
+            }
+        }
+        
+       If: JediOmni.Wait For Text (Sign Out,10)
+      {
+        JediOmni.Touch Text (Sign Out)
+      }
+    }
+}
+
+OneDriveBusinessFileRefreshPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_OneDriveBusiness},60)
+    {
+       JediOmni.Touch ID (${ID_OneDriveBusiness})
+      
+       Info.Start Time Check(${csv_filename})
+       If: Android.Wait For Text(FileRefreshTest,60)
+        {
+            Repeat:${iteration}
+            {
+                Sleep (3)
+                If: Android.Wait For Text(FileRefreshTest,30)
+                {
+                    Android.Touch Text(FileRefreshTest)
+                    Info.Mark Start(${csv_filename},filerefresh_${R})
+                    Android.Wait For Text (000_DONT_DELETE.jpg,120)
+                    Info.Mark End(${csv_filename},filerefresh_${R})
+                }
+                Android.Press Back Key
+            }
+            Info.Draw Time Graph(${csv_filename})
+        } 
+           
+        Sleep (5)
+        Android.Press Back Key     
+           
+        If:Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right,30)
+        {
+            Android.Touch ID (com.hp.print.horizontalconnector.onedriveforbusiness:id/bt_dialog_right)
+        }
+    }
+}
+
+
+SharepointPrintPerformance(${csv_filename},${file_name})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+           Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Sharepoint},60)
+    {
+       JediOmni.Touch ID (${ID_Sharepoint})
+       If: Android.Wait For Text(test,60)
+       {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(test)
+            If: Android.Wait For Text(Documents,30)
+            {
+                Android.Touch Text(Documents)
+                If: Android.Wait For Text(Print,30)
+                {
+                    Android.Touch Text(Print)
+                    Repeat:${iteration}
+                    {
+                        If: Android.Wait For Text(${file_name},30)
+                        {    
+                            Android.Touch Text(${file_name})
+                            Info.Mark Start(${csv_filename},downloading_${R})
+                            If: Android.Wait For Object (com.hp.print.horizontalconnector.sharepoint:id/btn_print,30)
+                            {
+                                Info.Mark End(${csv_filename},downloading_${R})
+                                Android.Touch ID (com.hp.print.horizontalconnector.sharepoint:id/btn_print)
+                                
+                                Android.Wait For Text(Printing...,30)
+                                
+                                Info.Mark Start(${csv_filename},printing_${R})
+                                Android.Wait For Text Gone(Printing...,90)
+                            // Android.Wait For Text(Print job is complete. Total pages : 0,90)
+                                Info.Mark End(${csv_filename},printing_${R})
+                            }
+                        }
+                    }
+                } 
+            }
+            //Info.Draw Time Graph(${csv_filename})
+        }
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Print,30)
+        {
+            Android.Press Back Key
+            If: Android.Wait For Text(Documents,30)
+            {
+                Android.Press Back Key
+                If: Android.Wait For Text(test,30)
+                {
+                    Android.Press Back Key
+                    If:Android.Wait For Object (com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,10)
+                    {
+                        Android.Touch ID (com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right)
+                    }
+                }
+            }
+        }
+        
+    If: JediOmni.Wait For Text (Sign Out,10)
+      {
+        JediOmni.Touch Text (Sign Out)
+      }
+    }
+}
+
+                            
+SharepointScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Sharepoint},60)
+    {
+       JediOmni.Touch ID (${ID_Sharepoint})
+       If: Android.Wait For Text(test,60)
+       {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(test)
+            If: Android.Wait For Text(Documents,30)
+            {
+                Android.Touch Text(Documents)
+                If: Android.Wait For Text(Auto Test,30)
+                {
+                    Android.Touch Text(Auto Test)
+                    Repeat:${iteration}
+                    {
+                        If: Android.Wait For Object (com.hp.print.horizontalconnector.sharepoint:id/fab,30) // scan icon
+                        {    
+                            Android.Touch ID (com.hp.print.horizontalconnector.sharepoint:id/fab)
+                            If: Android.Wait For Object (com.hp.print.horizontalconnector.sharepoint:id/bt_send,30)
+                            {
+                                Android.Touch ID (com.hp.print.horizontalconnector.sharepoint:id/bt_send)
+                                Info.Mark Start(${csv_filename},scanning_${R})
+                                Android.Wait For Text (${scan_send_msg},60)
+                                Info.Mark End(${csv_filename},scanning_${R})
+                                Info.Mark Start(${csv_filename},sending_${R})
+                                Android.Wait For Text Gone (${scan_send_msg},60)
+                                Info.Mark End(${csv_filename},sending_${R})
+                            }
+                        }
+                    }
+                } 
+            }
+            // Info.Draw Time Graph(${csv_filename})
+        }
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Auto Test,30)
+        {
+            Android.Press Back Key
+            //  If: Android.Wait For Text(Documents,30)
+            {
+                Android.Press Back Key
+                If: Android.Wait For Text(test,30)
+                {
+                    Android.Press Back Key
+                    If:Android.Wait For Object (com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,30)
+                    {
+                        Android.Touch ID (com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right)
+                    }
+                    Fail:
+                    {
+                       Android.Press Back Key
+                        If:Android.Wait For Object (com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right,30)
+                        {
+                            Android.Touch ID (com.hp.print.horizontalconnector.sharepoint:id/bt_dialog_right)
+                        } 
+                    }
+                }
+            }
+        }
+        
+         If: JediOmni.Wait For Text (Sign Out,10)
+        {
+        JediOmni.Touch Text (Sign Out)
+        }
+    }
+}
+
+DropboxPrintPerformance(${csv_filename},${file_name})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    }  
+    If: JediOmni.Wait For Object(${ID_Dropbox},60)
+    {
+       JediOmni.Touch ID (${ID_Dropbox})
+      
+       If: Android.Wait For Text(Print,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Print)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Text(${file_name},30)
+                {    
+                    Android.Touch Text(${file_name})
+                    Info.Mark Start(${csv_filename},downloading_${R})
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/btn_print,30)
+                    {
+                        Info.Mark End(${csv_filename},downloading_${R})
+                        Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/btn_print)
+                        
+                        Android.Wait For Text(Printing...,30)
+                        
+                        Info.Mark Start(${csv_filename},printing_${R})
+                        Android.Wait For Text Gone(Printing...,90)
+                            // Android.Wait For Text(Print job is complete. Total pages : 0,90)
+                        Info.Mark End(${csv_filename},printing_${R})
+                    }
+                }
+            }
+            Info.Draw Time Graph(${csv_filename})
+        } 
+           
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Print,30)
+        {
+            Android.Press Back Key
+           
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right,30)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right)
+            }
+        }
+    }
+}
+
+                            
+DropboxScanPerformance(${csv_filename})
+{
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Android.Press Back Key
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    If: Equals (${auth_method},windows)
+    {
+        Window_auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    Fail:
+    {
+       Sleep (1)
+       If: Equals (${auth_method},hpac)
+       {
+           2fa.login_hpac(${2fa_id},${2fa_pw})
+       }
+       Fail:
+       {
+            Sleep (1)
+            If: Equals (${auth_method},safecom)
+            {
+                2fa.login_safecom(${2fa_id},${2fa_pw})
+            }
+            Fail:
+            {
+                SecureAccess_auth.Login(${secureaccess_id},${secureaccess_pw})
+            }
+       }
+    } 
+    If: JediOmni.Wait For Object(${ID_Dropbox},60)
+    {
+       JediOmni.Touch ID (${ID_Dropbox})
+      
+       If: Android.Wait For Text(Auto Test,60)
+        {
+            Info.Start Time Check(${csv_filename})
+            Android.Touch Text(Auto Test)
+            Repeat:${iteration}
+            {
+                If: Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/fab,30) // scan icon
+                {    
+                    Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/fab)
+                    If: Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/bt_send,30)
+                    {
+                        Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_send)
+                        Info.Mark Start(${csv_filename},scanning_${R})
+                        Android.Wait For Text (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},scanning_${R})
+                        Info.Mark Start(${csv_filename},sending_${R})
+                        Android.Wait For Text Gone (${scan_send_msg},60)
+                        Info.Mark End(${csv_filename},sending_${R})
+                    }
+                }
+            }
+            Info.Draw Time Graph(${csv_filename})
+        } 
+            
+
+        Sleep (5)
+        Android.Press Back Key
+        If: Android.Wait For Text(Auto Test,30)
+        {
+            Android.Press Back Key
+ 
+            If:Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right,30)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_dialog_right)
+            }
+        }
+    }
+}
+

@@ -1,0 +1,477 @@
+﻿///<File>WP_OneDrivePrint_Library.gflib</File>
+///<Modified>2021-09-24</Modified>
+///<Description>Library of print routines for use with the HP for OneDrive Personal Workpath App</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Common_LIbrary.gflib
+Using ..\..\Common\Common_LIbrary.gflib
+
+Using WP_OneDrive_Library.gflib
+
+Using JediOmni
+Using Android
+
+///<Name>SetPrintOption_Copies</Name>
+///<Description>Set the number of copies print option</Description>
+///<Parameters>Num_Copies : number of copies to print</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetPrintOption_Copies(${Num_Copies})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Num_Copies})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Num_Copies specified)
+    }
+    
+    // select the option
+    If: Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/et_number_of_copies)
+    {
+        // set the specified option
+        Android.Input Text (com.hp.print.horizontalconnector.onedriveforpersonal:id/et_number_of_copies,${Num_Copies})
+        Return With Pass (SetPrintOption_Copies completed!)
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while setting Number of Copies print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while setting Number of Copies print option!)
+    }
+}
+
+///<Name>SetPrintOption_OutputSides</Name>
+///<Description>Set the output sides print option</Description>
+///<Parameters>OutputSides : sides text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetPrintOption_OutputSides(${OutputSides})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${OutputSides})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No OutputSides specified)
+    }
+    
+    // select the option
+    Android.Touch Text (Output Sides)
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_done,${Very_Short_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while setting Output Sides print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while setting Output Sides print option!)
+    }
+    
+    // set the specified option
+    If: Android.Touch Text (${OutputSides})
+    {
+        // press the Done button if it shows
+        @Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_done)
+        Return With Pass (SetPrintOption_OutputSides completed!)
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        // press the Done button to close the option view
+        @Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_done)
+        Return With Fail (Fail while setting Output Sides print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        // press the Done button to close the option view
+        @Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/bt_done)
+        Return With Error (Error while setting Output Sides print option!)
+    }
+}
+
+///<Name>SetPrintOption_ColorBlack</Name>
+///<Description>Set the color/black option</Description>
+///<Parameters>Color_Black : color/black text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetPrintOption_ColorBlack(${Color_Black})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Color_Black})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Color_Black specified)
+    }
+    
+    // click on the option
+    If: Android.Touch Text (Color/Black)
+    {
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Color/Black print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Color/Black print option!)
+    }
+    
+    // set the specified option
+    //    If: Android.Touch Text (${Color_Black})
+    If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.onedriveforpersonal:id/tv_title' and @text='${Color_Black}'])
+    {
+        Sleep (${Minimal_Wait_Time})
+        Return With Pass (SetPrintOption_ColorBlack completed!)
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Color/Black print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Color/Black print option!)
+    }
+}
+
+///<Name>SetPrintOption_PaperSelection_PaperSize</Name>
+///<Description>Set the paper size option</Description>
+///<Parameters>PaperSize : paper size text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetPrintOption_PaperSelection_PaperSize(${PaperSize})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${PaperSize})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No PaperSize specified)
+    }
+    
+    If: Android.Check Screen Contains Partial Text (${PaperSize})
+    {
+        Return With Pass (SetPrintOption_PaperSelection_PaperSize completed!)
+    }
+
+    // click on the option
+    Android.Touch Text (Paper Selection)
+    Android.Wait For Text (Paper Size,${Very_Short_Wait_Time})
+    If: Android.Touch Text (Paper Size)
+    {
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Paper Size print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Paper Size print option!)
+    }
+
+    // find the specified option
+    Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/rl_content_pane,${Very_Short_Wait_Time})
+    While:Android.Check Screen Not Contains Partial Text (${PaperSize}):3
+    {
+        Android.Swipe (com.hp.print.horizontalconnector.onedriveforpersonal:id/rl_content_pane,^)
+    }
+    // if still not displayed then scroll up upto 4 pages
+    While: Android.Check Screen Not Contains Full Text (${PaperSize}): 4
+    {
+        Android.Swipe (com.hp.print.horizontalconnector.onedriveforpersonal:id/rl_content_pane,v)
+    }
+        
+    // click on the specified option
+    //    If: Android.Touch Text (${PaperSize})
+    If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.onedriveforpersonal:id/tv_title' and @text='${PaperSize}'])
+    {
+        Android.Wait For Object Gone (ccom.hp.print.horizontalconnector.onedriveforpersonal:id/rl_content_pane,${Short_Wait_Time})
+        
+        //Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/iv_more_image)
+        @Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/rl_back)
+        
+        Return With Pass (SetPrintOption_PaperSelection_PaperSize completed!)
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Paper Size print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Paper Size print option!)
+    }
+}
+
+///<Name>SetPrintOption_PaperSelection_PaperType</Name>
+///<Description>Set the paper type option</Description>
+///<Parameters>PaperType : paper type text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetPrintOption_PaperSelection_PaperType(${PaperType})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${PaperType})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No PaperType specified)
+    }
+    
+    If: Android.Check Screen Contains Partial Text (${PaperType})
+    {
+        Return With Pass (SetPrintOption_PaperSelection_PaperType completed!)
+    }
+    
+    // click on the option
+    Android.Touch Text (Paper Selection)
+    Android.Wait For Text (Paper Type,${Very_Short_Wait_Time})
+    Android.Touch Text (Paper Type)
+
+    // find the specified option
+    Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/rl_content_pane,${Very_Short_Wait_Time})
+    While:Android.Check Screen Not Contains Partial Text (${PaperType}):6
+    {
+        //                Android.Swipe (com.hp.print.horizontalconnector.onedriveforpersonal:id/lv_option_sub_list,^)
+        Android.Drag (75,60,75,25)
+    }
+    // if still not displayed then scroll up upto 4 pages
+    While: Android.Check Screen Not Contains Full Text (${PaperType}): 6
+    {
+        //                Android.Swipe (com.hp.print.horizontalconnector.onedriveforpersonal:id/lv_option_sub_list,v)
+        Android.Drag (75,25,75,60)
+    }
+        
+    // click on the specified option
+    //    If: Android.Touch Text (${PaperType})
+    If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.onedriveforpersonal:id/tv_title' and @text='${PaperType}'])
+    {
+        Android.Wait For Object Gone (ccom.hp.print.horizontalconnector.onedriveforpersonal:id/rl_content_pane,${Short_Wait_Time})
+        
+        //Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/iv_more_image)
+        @Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/rl_back)
+        
+        Return With Pass (SetPrintOption_PaperSelection_PaperType completed!)
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Paper Type print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Paper Type print option!)
+    }
+}
+
+///<Name>SetPrintOption_PaperSelection_PaperTray</Name>
+///<Description>Set the tray option</Description>
+///<Parameters>PaperTray : tray text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetPrintOption_PaperSelection_PaperTray(${PaperTray})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${PaperTray})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No PaperTray specified)
+    }
+    
+    // click on the option
+    Android.Touch Text (Paper Selection)
+    Android.Wait For Text (Paper Tray,${Very_Short_Wait_Time})
+    Android.Touch Text (Paper Tray)
+
+    // find the specified option
+    Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/rl_content_pane,${Very_Short_Wait_Time})
+    While:Android.Check Screen Not Contains Partial Text (${PaperTray}):2
+    {
+        Android.Drag (75,60,75,25)
+    }
+    // if still not displayed then scroll up upto 4 pages
+    While: Android.Check Screen Not Contains Full Text (${PaperTray}):2
+    {
+        Android.Drag (75,25,75,60)
+    }
+        
+    // click on the specified option
+    //    If: Android.Touch Text (${PaperTray})
+    If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.onedriveforpersonal:id/tv_title' and @text='${PaperTray}'])
+    {
+        Android.Wait For Object Gone (ccom.hp.print.horizontalconnector.onedriveforpersonal:id/rl_content_pane,${Short_Wait_Time})
+        
+        //Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/iv_more_image)
+        @Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/rl_back)
+        
+        Return With Pass (SetPrintOption_PaperSelection_PaperTray completed!)
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Paper Tray print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Paper Tray print option!)
+    }
+}
+
+///<Name>SetPrintOption_PaperSelection_Collate</Name>
+///<Description>Set the collate option</Description>
+///<Parameters>Collate : collate option text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetPrintOption_PaperSelection_Collate(${Collate})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Collate})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Collate specified)
+    }
+    
+    // click on the option
+    If: Android.Touch Text (Collate)
+    {
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Collate print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Collate print option!)
+    }
+
+    // click on the specified option
+    //    If: Android.Touch Text (${Collate})
+    If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.onedriveforpersonal:id/tv_title' and @text='${Collate}'])
+    {
+        Android.Wait For Object Gone (ccom.hp.print.horizontalconnector.onedriveforpersonal:id/rl_content_pane,${Short_Wait_Time})
+        
+        Return With Pass (SetPrintOption_PaperSelection_Collate completed!)
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Collate print option!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Collate print option!)
+    }
+}
+
+///<Name>Perform_PrintJob</Name>
+///<Description>Print the currently selected document</Description>
+///<Parameters>PrintJobCompleteTimeout : time out for job complete in seconds</Parameters>
+///<Precondition>A document has been selected and the Print screen is displayed</Precondition>
+///<Notes></Notes>
+Perform_PrintJob(${PrintJobCompleteTimeout})
+{
+    // ensure in print screen
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/btn_print,${Long_Wait})
+    {
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while performing print job!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while performing print job!)
+    }
+
+    Android.Touch ID (com.hp.print.horizontalconnector.onedriveforpersonal:id/btn_print)
+    
+    If: Android.Wait For Text (Printing...,${Long_Wait})
+    {
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while performing print job!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while performing print job!)
+    }
+
+//  If: Android.Wait For Text (Print job is complete.,${PrintJobCompleteTimeout})
+//    If: Android.Wait For Object Gone (com.hp.print.horizontalconnector.onedriveforpersonal:id/ll_dialog_main,${PrintJobCompleteTimeout})
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.onedriveforpersonal:id/toolbar,${PrintJobCompleteTimeout})
+    {
+        Return With Pass (Perform_PrintJob completed!)
+    }
+    
+    //    If: Android.Wait For Object Gone (com.hp.print.horizontalconnector.onedriveforpersonal:id/ll_dialog_main,${Short_Wait_Time})
+    If: Android.Wait For Text (Print job is complete.,${Zero_Wait_Time})
+    {
+        Android.Touch Text (OK)
+        Return With Pass (Perform_PrintJob completed!)
+    }
+    
+    // at this point the job did not complete successfully in time
+    If: Android.Touch Text (Cancel Job)
+    {
+        Android.Wait For Text (Yes,${Short_Wait_Time})
+        Android.Touch Text (Yes)
+        Android.Wait For Text (OK,${Short_Wait_Time})
+        Android.Touch Text (OK)
+        //print not success, return fail
+        Return With Fail (Fail print document within 1800 seconds, job cancelled!)
+    }
+    Fail:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while performing print job!)
+    }
+    Error:
+    {
+        WP_OneDrive_Library.CheckForErrorMessage
+        Return With Error (Error while performing print job!)
+    }
+} 

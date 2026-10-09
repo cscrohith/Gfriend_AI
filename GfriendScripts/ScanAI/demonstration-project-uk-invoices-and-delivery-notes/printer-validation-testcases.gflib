@@ -1,0 +1,435 @@
+﻿using Android
+using JediOmni
+using Info
+using identifier-variables.gfvar
+
+Setup
+{
+    If: JediOmni.Wait For Object (${JediOmniFlatbedScanPrompt},3)
+    {
+       JediOmni.Touch ID (${CancelButton})
+    }
+   
+    // If previous iteration has failed, screen may be stuck in middle of scan.
+    If: JediOmni.Wait For Object (${CancelScanNotifictaion},5) 
+    {
+        JediOmni.Touch ID (${YesButton_CancelScanNotification})
+        If: Android.Wait For XPath (${StartNewJob},7)
+        {
+            Android.Touch XPath (${StartNewJob})
+        }
+    }
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    JediOmni.Wait For Text Gone (${ClearingSettingsMsg},5)
+}
+
+Open_HPScanAIEnhanced
+{
+    Info.Start Time Check (STF_AppShown)
+    Info.Mark End (STF_AppShown,4)
+    
+    If: JediOmni.Check Screen Contains Full Text (${HPScanAIEnhanced})
+    {
+        JediOmni.Touch ID (${ScanAIApplicationIcon})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-app.png)
+        Fail (Failed to find application on home screen)
+        Stop Test Case
+    }
+}
+
+Select_WorkflowDProject
+{
+    // Check if screen with project list is loaded on screen or not.
+    // We do this by checking availability of first demo project from
+    // the list on the screen.
+    While:!Android.Wait For XPath (${DemoProjectPortalValidation},2):10
+    {
+        Sleep(5)
+    }
+    If:Android.Wait For XPath (${XPathProjectUnderTest},10)
+    {
+        Android.Touch XPath (${XPathProjectUnderTest})
+        Android.Touch XPath (${StartNewJobbutton})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-should-hv-demo-prj.png)
+        Fail(Failed to find or click on workflow project: ${DemoProjectUnderTest})
+        Stop Test Case
+    }
+}
+
+Scan_DocMultipleTimes
+{
+    Info.Start Time Check (STF_ScanJob)
+    Info.Start Time Check (STF_ProcessingJob)
+    Repeat:${ScanCount}
+    {
+        Info.Mark Start (STF_ScanJob,2)
+        While:!JediOmni.Wait For Object (${ScanButton},2):10
+        {
+            Sleep(3)
+        }
+
+        If: JediOmni.Wait For Object (${ScanButton},2)
+        {
+            JediOmni.Capture Screen Shot (scan-completed-${R}.png)
+            JediOmni.Touch ID (${ScanButton})
+            While:!JediOmni.Wait For Object (${JediOmniFlatbedScanPrompt},1):20 
+            {
+                Sleep(5)              
+            }
+        }
+        Info.Mark End (STF_ScanJob,2)
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (scr-contains-scan-btn-${R}.png)
+            Fail (Failed to scan document)
+            Return With Fail (Failed to scan document: ${R})
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (scr-contains-scan-btn-${R}.png)
+            Fail (Error while trying to scan document)
+            Return With Error (Error while trying to scan document: ${R})
+        }
+    }
+    Info.Mark Start (STF_ProcessingJob,3)
+    While:!JediOmni.Wait For Object (${DoneButton},2):10
+    {
+        Sleep(3)
+    }
+    If: JediOmni.Wait For Object (${DoneButton},2)
+    {
+        JediOmni.Touch ID (${DoneButton})
+        While:!Android.Wait For XPath (${NextStepButton},2):20
+        {
+            Sleep(5)
+        }
+        JediOmni.Capture Screen Shot (nxt-step-btn-scrn.png)
+    }
+    Info.Mark End (STF_ProcessingJob,3)
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-done-btn.png)
+        Fail (Failed to click on Done button)
+        Return With Fail (Failed to click on Done button)
+        Stop Test Case
+    }
+}
+
+Click_NextStepButton
+{
+    If:Android.Wait For XPath (${NextStepButton},100)
+    {
+        Android.Touch XPath (${NextStepButton})
+    }
+    Fail:
+    {
+        // Check if next screen is loaded. If it is, return with pass. If not, try again.
+        If:Android.Wait For XPath (${ValidateButton},5)
+        {
+            Pass(Next Step Button has been clicked)
+        }
+        Fail:
+        {
+            // Second Attempt to press Next Step Button.
+            If:Android.Wait For XPath (${NextStepButton},100)
+            {
+                Android.Touch XPath (${NextStepButton})
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+                Fail (Failed to click Next Step Button)
+                Stop Test Case
+            }
+        }
+        JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+    }
+    Error:
+    {
+        // Check if next screen is loaded. If it is, return with pass. If not, try again.
+        If:Android.Wait For XPath (${ValidateButton},5)
+        {
+            Pass(Next Step Button has been clicked)
+        }
+        Fail:
+        {
+            // Second Attempt to press Next Step Button.
+            If:Android.Wait For XPath (${NextStepButton},100)
+            {
+                Android.Touch XPath (${NextStepButton})
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+                Fail (Failed to click Next Step Button)
+                Stop Test Case
+            }
+        }
+        JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+    }
+}
+
+Perform_ValidationOfScannedDocuments
+{ 
+    Repeat:${TotalValidationDocCount}
+    {
+        While:!Android.Wait For XPath (//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[${R}]/node[1] ,2):10
+        {
+            Sleep(2)
+        }
+        If:Android.Wait For XPath (//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[${R}]/node[1] ,2)
+        {
+            Android.Touch XPath (//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[${R}]/node[1])
+        }
+        
+     
+        // Click on Preview Document button
+        While:!Android.Wait For XPath (${PreviewDocument1},2):3 
+        {
+            Sleep(2)
+        }
+        If:Android.Wait For XPath (${PreviewDocument1},2)
+        {
+            Android.Touch XPath (${PreviewDocument1})
+            Sleep (1)
+        }
+        
+        If: NotEquals (${R},6)
+        {
+            While:!Android.Wait For XPath (${DocumentTypeFeild},2):5
+            {
+                Sleep(1)
+            }
+            //Document Type
+            If: Android.Wait For XPath (${DocumentTypeFeild},2)
+            {
+                Android.Touch XPath (${DocumentTypeFeild})
+                sleep(1)
+                If: Android.Wait For XPath (${DocumentTypeDeliveryNoteValue}, 2)
+                {
+                    Android.Touch XPath  (${DocumentTypeDeliveryNoteValue})
+                }
+            }
+            
+            JediOmni.Capture Screen Shot (drop-down-should-contains-3-fields.png)
+            //Delevery Note Number
+            If: Android.Wait For XPath (${DeleveryNoteNumber},2)
+            {
+                Android.Touch XPath (${DeleveryNoteNumber}) 
+                //Delevery Note Number
+                If:Android.Wait For XPath (${DeleveryNoteNumberValue},2)
+                {
+                    Android.Touch XPath (${DeleveryNoteNumberValue})
+                    Android.Input Text (1234)
+                }
+                If:Android.Wait For XPath (${CheckKeyOnAlphabaticKeyboard},2)
+                {
+                    Android.Touch XPath (${CheckKeyOnAlphabaticKeyboard})
+                }
+            }
+        
+            //Delivery Date
+            If: Android.Wait For XPath (${DeliveryDateField},2)
+            {
+                Android.Touch XPath (${DeliveryDateField})
+                If:Android.Wait For XPath (${DeliveryDateFieldValue},2)
+                {
+                    Android.Touch XPath (${DeliveryDateFieldValue})
+                    Android.Input Text (12/03/2025)
+                }
+                If:Android.Wait For XPath (${CheckKeyOnAlphabaticKeyboard},2)
+                {
+                    Android.Touch XPath (${CheckKeyOnNumberKeyboard})
+                } 
+            }
+            
+            // Click on close preview button
+            If: Android.Wait For XPath (${ClosePreviewButton},2)
+            {
+                Android.Touch XPath (${ClosePreviewButton})
+            }
+        }
+        If:  Equals (${R},6)
+        {
+            //Document Type
+            If: Android.Wait For XPath (${DocumentTypeFeild},2)
+            {
+                Android.Touch XPath (${DocumentTypeFeild})
+                If:Android.Wait For XPath (${DocumentTypeInvoiceValue},2)
+                {
+                    Android.Touch XPath  (${DocumentTypeInvoiceValue})
+                }
+            }
+            JediOmni.Capture Screen Shot (scr-should-contain-6-fields.png)
+            
+            //Invoice Date
+            If: Android.Wait For XPath (${InvoiceDate},2)
+            {
+                Android.Touch XPath (${InvoiceDate})
+                If:Android.Wait For XPath (${InputTextField},2)
+                {
+                    Android.Touch XPath (${InputTextField})
+                    Android.Input Text (12/03/2025)
+                }
+                If:Android.Wait For XPath (${CheckKeyOnNumberKeyboard},2)
+                {
+                    Android.Touch XPath (${CheckKeyOnNumberKeyboard}) 
+                }
+            }
+            
+            //Invoice Number
+            If: Android.Wait For XPath (${InputTextField},2)
+            {
+                Android.Touch XPath (${InputTextField})
+                Android.Input Text (1234)
+                If:Android.Wait For XPath (${CheckKeyOnAlphabaticKeyboard},2)
+                {
+                    Android.Touch XPath (${CheckKeyOnAlphabaticKeyboard}) 
+                }
+            }
+            
+            //Net Total
+            If: Android.Wait For XPath (${InputTextField},2)
+            {
+                Android.Touch XPath (${InputTextField})
+                Android.Input Text (1234)
+                If:Android.Wait For XPath (${CheckKeyOnAlphabaticKeyboard},2)
+                {
+                    Android.Touch XPath (${CheckKeyOnAlphabaticKeyboard}) 
+                }  
+            }
+            
+            //Tax Total
+            If: Android.Wait For XPath (${InputTextField},2)
+            {
+                Android.Touch XPath (${InputTextField})
+                Android.Input Text (1234)
+                If:Android.Wait For XPath (${CheckKeyOnAlphabaticKeyboard},2)
+                {
+                    Android.Touch XPath (${CheckKeyOnAlphabaticKeyboard}) 
+                }
+            }
+            
+            //Gross Total
+            If: Android.Wait For XPath (${InputTextField},2)
+            {
+                Android.Touch XPath (${InputTextField})
+                Android.Input Text (1234)
+                If:Android.Wait For XPath (${CheckKeyOnAlphabaticKeyboard},2)
+                {
+                    Android.Touch XPath (${CheckKeyOnAlphabaticKeyboard}) 
+                }
+            }
+            
+            // Click on close preview button
+            If: Android.Wait For XPath (${ClosePreviewButton},2)
+            {
+                Android.Touch XPath (${ClosePreviewButton})
+            }
+        }
+    }
+}
+  
+Click_Validate_Button
+{
+    If:Android.Wait For XPath (${ValidateButton},100)
+    {
+       Android.Touch XPath (${ValidateButton}) 
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (validate-btn-scr.png)
+        Fail(Failed to find or click validate button)
+        Stop Test Case
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (validate-btn-scr.png)
+        If:Android.Wait For XPath (${FinishValidationButton},15)
+        {
+            Pass (Validate Button Was Pressed Successfully)
+        }
+        Fail:
+        {
+            //Attemp again
+            If:Android.Wait For XPath (${ValidateButton},100)
+            {
+                Android.Touch XPath (${ValidateButton}) 
+                Pass(Pressed Validate button in second attempt)
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (validate-btn-scr-fail-2.png)
+                Fail(Failed to Press Validate Button)
+                Stop Test Case
+            }
+            Error:
+            {
+                JediOmni.Capture Screen Shot (validate-btn-scr-err-2.png)
+                Error(Failed to Press Validate Button)
+                Stop Test Case
+            }
+        }
+    } 
+}
+
+Click_FinishValidation_Button
+{ 
+    If:Android.Wait For XPath (${FinishValidationButton},100)
+    {
+        JediOmni.Capture Screen Shot (scr-contains-finish-validation-btn.png)
+        Android.Touch XPath (${FinishValidationButton})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-should-contain-finish-btn.png)
+        Fail (Failed to click Finish Validation)
+        Stop Test Case
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (scr-should-contain-finish-btn.png)
+        // If Wait for xPath has given us error, we attemp to click Finsih second time
+        // after checking some conditions.
+        If:Android.Wait For XPath (${DemoProjectPortalValidation},10)
+        {
+            // Finish Validation button has been pressed.
+            Pass (Finish Validation button has been pressed)
+            Return With Pass (Finish Validation button has been pressed)
+        }
+        Fail:
+        {
+            //Finish validation button has not been pressed yet
+            If: Android.Wait For XPath (${FinishValidationButton},100)
+            {
+                Android.Touch XPath (${FinishValidationButton})
+                Pass (Finish Validation button has been pressed in 2nd attempt)
+                Return With Pass (Finish Validation button has been pressed in 2nd attempt)
+            }
+            Error:
+            {
+                JediOmni.Capture Screen Shot (finish-validation-press-atmpt-2.png)
+                Error (Couldn't press Finish Validation button in second attempt.)
+                Stop Test Case
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (finish-validation-press-atmpt-2.png)
+                Fail (Couldn't press Finish Validation button in second attempt.)
+                Stop Test Case
+            }   
+        }
+    }
+}
+
+Teardown
+{
+    JediOmni.Press Home Key
+}

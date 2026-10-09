@@ -1,0 +1,36 @@
+using Vision
+using Dune
+
+Tc
+{
+    //Click on PullPrintAuthDemo
+    Dune.Wait For (#37531a6f-50a8-4153-9bfe-d865f4493376,5)
+    Dune.Click (#37531a6f-50a8-4153-9bfe-d865f4493376)
+
+    Vision.Set Target (Dune)
+    Vision.Set Text Grouping (word)
+    Sleep (1)
+    
+    Dune.Capture Screen Shot (after click on pullprint)
+    
+    //click text- text should be unique 
+    Vision.Is Text Exist (TestPDFFile.pdf)
+    Vision.Click Text (TestPDFFile.pdf)
+    Sleep (1)
+    
+    Dune.Capture Screen Shot (after selecting print files)
+    //Vision.Click Text (Delete1)
+    //Vision.Click Text (Priority)
+  
+    //If more than one text has the same name, give the index value.
+    Vision.Click Text with index (Print,5)
+    Sleep (2)
+    Dune.Capture Screen Shot (after giving print)
+   
+    Dune.Wait For (#footerRectangle,10)
+    Dune.Click (#footerRectangle)
+    Sleep (2)
+    Dune.Wait For Active Job (print,3)
+    Dune.Wait For Active Job Gone (print,5)
+}
+

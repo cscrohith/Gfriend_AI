@@ -1,0 +1,14 @@
+﻿// App variables
+${ButtonText} = HP for Google Drive \(Special Edition\)
+${ButtonID} = hpid-f655491f-ba6b-4729-bd6d-e97016af65ab-homescreen-button
+
+// App user varibles
+${AppUserID}=rdllabboise@gmail.com
+${AppPassword}=1qaz2wsx#EDC
+
+${SaveSIO_AppCredentials}=Y
+${VerifySIOConnectDuringAppOpen}=N
+
+// General variables
+${BackOutOfApp} = Y
+${DeviceSignOut} = Y

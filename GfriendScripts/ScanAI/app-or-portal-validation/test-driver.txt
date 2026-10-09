@@ -1,0 +1,25 @@
+﻿using printer-validation-testcases.gflib
+using portal-validation-testcases.gflib
+
+AppOrPortalValidation
+{
+	printer-validation-testcases.Setup
+	printer-validation-testcases.Open_HPScanAIEnhanced
+	printer-validation-testcases.Select_WorkflowProject
+	printer-validation-testcases.Scan_DocMultipleTime
+	printer-validation-testcases.Click_NextStepButton
+	printer-validation-testcases.Wait_DocumentSeparationScreen
+	printer-validation-testcases.Click_ContinueOnDesktopButton
+	printer-validation-testcases.Input_ProjectIdentifierName
+	printer-validation-testcases.Click_Continue_SendToAlumaPortal
+	printer-validation-testcases.Click_Finish
+	printer-validation-testcases.Wait_WorkflowProjectsListPage
+	portal-validation-testcases.OpenAlumaWebApplication
+	portal-validation-testcases.LoginToAlumaWebApplication
+	portal-validation-testcases.OpenValidationPage
+	portal-validation-testcases.SelectDemoProjectForValidation
+	portal-validation-testcases.PerformDocumentSeperation_AlumaPortal
+	portal-validation-testcases.PerformDocumentFeildsValidation_AlumaPortal
+	portal-validation-testcases.CompleteReview
+	printer-validation-testcases.Teardown
+}

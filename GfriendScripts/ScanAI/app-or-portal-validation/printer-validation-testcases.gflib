@@ -1,0 +1,392 @@
+﻿using Android
+using JediOmni
+using Info
+using printer-identifiers.gfvar
+
+Setup
+{
+    If: JediOmni.Wait For Object (${JediOmniFlatbedScanPrompt},3)
+    {
+       JediOmni.Touch ID (${CancelButton})
+    }
+
+    // If previous iteration has failed, screen may be stuck in middle of scan.
+    If: JediOmni.Wait For Object (${CancelScanNotifictaion},5) 
+    {
+        JediOmni.Touch ID (${YesButton_CancelScanNotification})
+        If: Android.Wait For XPath (${StartNewJob},7)
+        {
+            Android.Touch XPath (${StartNewJob})
+        }
+    }
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    JediOmni.Wait For Text Gone (${ClearingSettingsMsg},5)
+}
+
+Open_HPScanAIEnhanced
+{
+    Info.Start Time Check (STF_AppShown)
+    If: JediOmni.Check Screen Contains Full Text (${HPScanAIEnhanced})
+    {
+        JediOmni.Touch ID (${ScanAIApplicationIcon})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-app.png)
+        Fail (Failed to find application on home screen)
+        Stop Test Case
+    }
+}
+
+Select_WorkflowProject
+{
+    // Check if screen with project list is loaded on screen or not.
+    // We do this by checking availability of first demo project from
+    // the list on the screen.
+    While:!Android.Wait For XPath (${DemoProjectPortalValidation},2):10
+    {
+        Sleep(5)
+    }
+    if:Android.Wait For XPath (${XPathProjectUnderTest},10)
+    {
+        Android.Touch XPath (${XPathProjectUnderTest})
+        Android.Touch XPath (${StartNewJobbutton})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-should-hv-demo-prj.png)
+        Fail(Failed to find or click on workflow project: ${DemoProjectUnderTest})
+        Stop Test Case
+    }
+}
+
+Scan_DocMultipleTime
+{
+    Info.Start Time Check (STF_ScanJob)
+    Info.Start Time Check (STF_ProcessingJob)
+    Repeat:${ScanCount}
+    {
+        Info.Mark Start (STF_ScanJob,2)
+        While:!JediOmni.Wait For Object (${ScanButton},2):10
+        {
+            Sleep(3)
+        }
+
+        If: JediOmni.Wait For Object (${ScanButton},2)
+        {
+            JediOmni.Capture Screen Shot (scan-completed-${R}.png)
+            JediOmni.Touch ID (${ScanButton}
+            While:!JediOmni.Wait For Object (${JediOmniFlatbedScanPrompt},1):20 
+            {
+                Sleep(5)              
+            }
+        }
+        Info.Mark End (STF_ScanJob,2)
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (scr-contains-scan-btn-${R}.png)
+            Fail (Failed to scan document)
+            Return With Fail (Failed to scan document: ${R})
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (scr-contains-scan-btn-${R}.png)
+            Fail (Error while trying to scan document)
+            Return With Error (Error while trying to scan document: ${R})
+        }
+    }
+    Info.Mark Start (STF_ProcessingJob,3)
+    While:!JediOmni.Wait For Object (${DoneButton},2):10
+    {
+        Sleep(3)
+    }
+    If: JediOmni.Wait For Object (${DoneButton},2)
+    {
+        JediOmni.Touch ID (${DoneButton})
+        While:!Android.Wait For XPath (${NextStepButton},2):20
+        {
+            Sleep(5)
+        }
+        JediOmni.Capture Screen Shot (nxt-step-btn-scrn.png)
+    }
+    Info.Mark End (STF_ProcessingJob,3)
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-done-btn.png)
+        Fail (Failed to click on Done button)
+        Return With Fail (Failed to click on Done button)
+        Stop Test Case
+    }
+}
+
+Click_NextStepButton
+{
+    If:Android.Wait For XPath (${NextStepButton},100)
+    {
+        Android.Touch XPath (${NextStepButton})
+    }
+    Fail:
+    {
+        // Check if next screen is loaded. If it is, return with pass. If not, try again.
+        If:Android.Wait For XPath (${ValidateButton},5)
+        {
+            Pass(Next Step Button has been clicked)
+        }
+        Fail:
+        {
+            // Second Attempt to press Next Step Button.
+            If:Android.Wait For XPath (${NextStepButton},100)
+            {
+                Android.Touch XPath (${NextStepButton})
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+                Fail (Failed to click Next Step Button)
+                Stop Test Case
+            }
+        }
+        JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+    }
+    Error:
+    {
+        // Check if next screen is loaded. If it is, return with pass. If not, try again.
+        If:Android.Wait For XPath (${ValidateButton},5)
+        {
+            Pass(Next Step Button has been clicked)
+        }
+        Fail:
+        {
+            // Second Attempt to press Next Step Button.
+            If:Android.Wait For XPath (${NextStepButton},100)
+            {
+                Android.Touch XPath (${NextStepButton})
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+                Fail (Failed to click Next Step Button)
+                Stop Test Case
+            }
+        }
+        JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+    }
+}
+
+Wait_DocumentSeparationScreen
+{
+    While:!Android.Wait For XPath (${ContinueOnDesktopButton},2):10
+    {
+        Sleep(3)
+    }
+}
+
+Click_ContinueOnDesktopButton
+{
+    If:Android.Wait For XPath (${ContinueOnDesktopButton},5)
+    {
+        Android.Touch XPath (${ContinueOnDesktopButton})
+    }
+    Fail:
+    {
+        If:Android.Wait For XPath (${TaskNameTextFeild},5)
+        {
+            Pass(Continue on desktop button has been clicked)
+        }
+        Fail:
+        {
+            // Second Attempt to press 'Continue On Desktop' button.
+            If:Android.Wait For XPath (${ContinueOnDesktopButton},100)
+            {
+                Android.Touch XPath (${ContinueOnDesktopButton})
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (does-scr-contains-cnt-desktp-btn.png)
+                Fail (Failed to click continue on desktop button)
+                Stop Test Case
+            }
+        }
+    }
+    Error:
+    {
+        // Check if next screen is loaded. If it is, return with pass. If not, try again.
+        If:Android.Wait For XPath (${TaskNameTextFeild},5)
+        {
+            Pass(Continue On Desktop Button has been clicked)
+        }
+        Fail:
+        {
+            // Second Attempt to press Next Step Button.
+            If:Android.Wait For XPath (${ContinueOnDesktopButton},100)
+            {
+                Android.Touch XPath (${ContinueOnDesktopButton})
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+                Fail (Failed to click continue on desktop button)
+                Stop Test Case
+            }
+        }
+        JediOmni.Capture Screen Shot (is-exist-continue-on-desktop-btn.png)
+    }
+}
+
+Input_ProjectIdentifierName
+{
+    If:Android.Wait For XPath (${TaskNameTextFeild},30) 
+    {
+        Android.Touch XPath (${TaskNameTextFeild})
+        Android.Input Text (demo-1)
+    }
+    Fail:
+    {
+        If:Android.Wait For XPath (${TaskNameTextFeild},30) 
+        {
+            Android.Touch XPath (${TaskNameTextFeild})
+            Android.Input Text (demo-1)
+            Pass(Task name was filled successfully)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (scr-contain-task-name-feild.png)
+            Fail (Failed to input text name)
+            Stop Test Case
+        }
+    }
+    Error:
+    {
+        If:Android.Wait For XPath (${TaskNameTextFeild},30) 
+        {
+            Android.Touch XPath (${TaskNameTextFeild})
+            Android.Input Text (demo-1)
+            Pass(Task name was filled successfully)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (scr-contain-task-name-feild.png)
+            Fail (Failed to input text name)
+            Stop Test Case
+        }
+    }
+    
+    If:Android.Wait For XPath (${CheckToHideKeyboard},5)
+    {
+        Android.Touch XPath (${CheckToHideKeyboard})
+    }
+    Fail:
+    {
+        // Second attempt
+        If:Android.Wait For XPath (${CheckToHideKeyboard},5)
+        {
+            Android.Touch XPath (${CheckToHideKeyboard})
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (scr-cntn-keyboard.png)
+            Fail (Failed to click check button on keyboard)
+            Stop Test Case
+        }
+    }
+    Error:
+    {
+        // Second attempt
+        If:Android.Wait For XPath (${CheckToHideKeyboard},5)
+        {
+            Android.Touch XPath (${CheckToHideKeyboard})
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (scr-cntn-keyboard.png)
+            Fail (Failed to click check button on keyboard)
+            Stop Test Case
+        }
+    }
+}
+
+Click_Continue_SendToAlumaPortal
+{
+    If:Android.Wait For XPath (${ContinueSendingToPortal},30)
+    {
+        Android.Touch XPath (${ContinueSendingToPortal})
+    }
+    Fail:
+    {
+        // Second Attempt
+        If:Android.Wait For XPath (${ContinueSendingToPortal},30)
+        {
+            Android.Touch XPath (${ContinueSendingToPortal})
+        }
+        Fail:
+        {
+           JediOmni.Capture Screen Shot (scr-cntns-continue-sending-portal.png)
+           Fail (Failed to click continue sending to portal)
+           Stop Test Case
+        }
+    }
+    Error:
+    {
+        // Second Attempt
+        If:Android.Wait For XPath (${ContinueSendingToPortal},30)
+        {
+            Android.Touch XPath (${ContinueSendingToPortal})
+        }
+        Fail:
+        {
+           JediOmni.Capture Screen Shot (scr-cntns-continue-sending-portal.png)
+           Fail (Failed to click continue sending to portal)
+           Stop Test Case
+        }
+    }
+	JediOmni.Capture Screen Shot (uploading-to-aluma-portl.png)
+}
+
+Click_Finish
+{
+    If: Android.Wait For XPath (${FinishSendingToPortal},60)
+    {
+        Android.Touch XPath (${FinishSendingToPortal})
+    }
+    Fail:
+    {
+        // Second Attempt
+        If: Android.Wait For XPath (${FinishSendingToPortal},60)
+        {
+            Android.Touch XPath (${FinishSendingToPortal})
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (scr-contains-finish-btn.png)
+            Fail (Failed to click 'Finish' button.)
+            Stop Test Case 
+        } 
+    }
+    Error:
+    {
+        // Second Attempt
+        If: Android.Wait For XPath (${FinishSendingToPortal},60)
+        {
+            Android.Touch XPath (${FinishSendingToPortal})
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (scr-contains-finish-btn.png)
+            Fail (Failed to click 'Finish' button.)
+            Stop Test Case 
+        }
+    }
+}
+
+Wait_WorkflowProjectsListPage
+{
+    Android.Wait For Text (${DemoProjectUnderTest},15)
+    JediOmni.Capture Screen Shot (scr-contains-wrkflw-prjct.png)
+}
+
+Teardown
+{
+    JediOmni.Press Home Key
+    Sleep(2)
+}

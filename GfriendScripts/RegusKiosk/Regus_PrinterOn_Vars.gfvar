@@ -1,0 +1,15 @@
+﻿//Production
+${PrinterOn_JobSubmit_url} = go.printanywhere.com/cps
+${Regus_Username} = rdl.etl.boise@gmail.com
+
+${Regus_UserPassWord} = 007L@z3r
+
+
+// Specifying Default as the Browser uses Chrome in Headless Mode with no visible UI
+//${Regus_Browser} = Default
+${Regus_Browser} = Chrome
+//${Regus_Browser} = FireFox
+//${Regus_Browser} = Edge
+
+
+

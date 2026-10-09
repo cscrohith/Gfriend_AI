@@ -1,0 +1,57 @@
+{
+  "if": {
+    "description": "Can execute a block of code if the condition of If block succeeds.\r\n",
+    "syntax": "If:Condition{}\r\n",
+    "script": "${DeviceType}=Jedi\r\n\r\ntc_If_Sample\r\n\r\n{\r\n\r\n   If:Equals (${DeviceType},Jedi)\r\n\r\n    {\r\n\r\n        Pass(This is a Jedi device)\r\n\r\n        //script to do with Jedi Device\r\n\r\n    }\r\n\r\n    Fail:\r\n\r\n    {\r\n\r\n        Pass(This is not a Jedi device)\r\n\r\n    }\r\n\r\n}"
+  },
+  "error": {
+    "description": "Can execute a block of code if the condition of If block gets error.\r\n",
+    "syntax": "Error:{}\r\n",
+    "script": "${DeviceType}=Dune\r\n\r\ntc_Error_Sample\r\n\r\n{\r\n\r\n   If:Equals1 (${DeviceType},Jedi)\r\n\r\n    {\r\n\r\n        Pass(This is a Jedi device)\r\n\r\n        //script to do with Jedi Device\r\n\r\n    }\r\n\r\n    Error:\r\n\r\n    {\r\n\r\n        Error(This is not a Jedi device)\r\n\r\n    }\r\n\r\n}"
+  },
+  "fail": {
+    "description": "Can execute a block of code if the condition of If block gets failed.\r\n",
+    "syntax": "Fail:{}\r\n",
+    "script": "${DeviceType}=Dune\r\n\r\ntc_Fail_Sample\r\n\r\n{\r\n\r\n   If:Equals (${DeviceType},Jedi)\r\n\r\n    {\r\n\r\n        Pass(This is a Jedi device)\r\n\r\n        //script to do with Jedi Device\r\n\r\n    }\r\n\r\n    Fail:\r\n\r\n    {\r\n\r\n        Fail(This is not a Jedi device)\r\n\r\n    }\r\n\r\n}"
+  },
+  "while": {
+    "description": "can repeat certaion block with condition.\r\n",
+    "syntax": "While:condition:MaxItearions {}\r\n",
+    "script": "tc_While_Sample\r\n\r\n{\r\n\r\n    While:!Folder Exist (C:\\sample):3 //While loop condition will be validated for 10 times , if :10 is not mentioned it will be validated until the condition satisfies.\r\n\r\n    {\r\n\r\n        Sleep(1)\r\n\r\n    }\r\n\r\n}"
+  },
+  "for each row": {
+    "description": "You can repeat each row of Excel table while GFriend execution. With this you can load variables from Excel file and write result to it.\r\n",
+    "syntax": "For Each Row:{}\r\n",
+    "script": "tc_ForEachRow_Sample\r\n\r\n{\r\n\r\n    For Each Row:BasicPrint.Combination.PaperTest\r\n\r\n    {\r\n\r\n        Wait For User Confirm(Please load ${PaperType} ${PaperSize} at ${Tray} and Click OK)\r\n\r\n        Fleet.Send File (TestFile/${TestPrn})\r\n\r\n        Request User Verification (Check output)\r\n\r\n        Write To Data Set (Result,${KEYWORD_OUTPUT})\r\n\r\n    }\r\n\r\n}"
+  },
+  "for selected row": {
+    "description": "Filters the dataset based on specific conditions you define (e.g., !=, <, >, =, <=, >=)\r\n",
+    "syntax": "For Selected Row:{}\r\n",
+    "script": "tc_ForSelectedRow_Sample\r\n\r\n{\r\n\r\n        For Selected Row:Test.OptionCombination.Combination1.PaperSource!=Tray1,Tray3\r\n\r\n        {\r\n\r\n            Pass (${TCID}--${PaperSize}--${PaperType}--${PaperSource}---${TestPrn}--${ColorMode})\r\n\r\n        }\r\n\r\n}"
+  },
+  "for": {
+    "description": "It is a control flow statement and executes the code written in the body of the loop for each element of the array or collection.\r\n",
+    "syntax": "For:{}\r\n",
+    "script": "${DocTypes}=Pdf, Doc, xls, xlsx, CSV\r\n\r\n${Iteartions}=1\r\n\r\ntc_For_Sample\r\n\r\n{\r\n\r\n    for:${DocTypes}\r\n\r\n    {\r\n\r\n        Pass (${ITEM}) //prints each item of ${DocTypes} in the report file and ${ITEM} is a system variable which holds data in each loop\r\n\r\n        for:${Iteartions}\r\n\r\n        {\r\n\r\n            Pass (${ITEM}) //prints each item of ${Iteartions} in the report file\r\n\r\n        }\r\n\r\n    }\r\n\r\n}"
+  },
+  "remote run": {
+    "description": "A functionality to execute keywords in remote machine.By using 'At' in the end of using statement, GFriend will notice that remote executor will be used for script.\r\n",
+    "syntax": "Remote Run:{}\r\n",
+    "script": "Using JediOmni With Ruby At Remote01\r\n\r\nRemote Run:[RemoteExecutorName]\r\n\r\n{\r\n\r\n// Keywords to run in remote executor.\r\n\r\n}"
+  },
+  "repeat": {
+    "description": "For simple repeating the Keywords use Repeat with repeat count/duration(s(seconds)|m(minutes)|h(hours))\r\n",
+    "syntax": "Repeat:5{}\r\n",
+    "script": "tc_Repeat_Sample\r\n\r\n{\r\n\r\n    Repeat:10\r\n\r\n    {\r\n\r\n        //write script which needs to be repeated for a particular iterations\r\n\r\n        Pass (${R})\r\n\r\n    }\r\n\r\n}"
+  },
+  "spread sheet for each row": {
+    "description": "You can repeat each row of Excel table while GFriend execution. With this you can load variables from Excel file and write result to it.If user's don't have excel, they can use this keyword.'\r\n",
+    "syntax": "Spread Sheet For Each Row:{}\r\n",
+    "script": "tc_SpreadSheetForEachRow_Sample\r\n\r\n{\r\n\r\n    Spread Sheet For Each Row:BasicPrint.Combination.PaperTest\r\n\r\n    {\r\n\r\n        Wait For User Confirm(Please load ${PaperType} ${PaperSize} at ${Tray} and Click OK)\r\n\r\n        Fleet.Send File (TestFile/${TestPrn})\r\n\r\n        Request User Verification (Check output)\r\n\r\n        Write To Data Set (Result,${KEYWORD_OUTPUT})\r\n\r\n    }\r\n\r\n}"
+  },
+  "variables": {
+    "description": "GFriend treats text with format ${variable_name} as variable. Tester can also use other variable name with [A-Za-z0-9_-]\r\n",
+    "syntax": "\r\n\r\nStatic Variables : ${Variable_Name}=Variable_Value\r\n\r\nDynamic Variables : Android.Get Text(textboxid1, ${Buffer})\r\n",
+    "script": "${Variable_Name}=Variable_Value //Declare the variable before writing any test case."
+  }
+}

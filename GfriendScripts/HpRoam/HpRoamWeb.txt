@@ -1,0 +1,143 @@
+﻿${ROAM_Url}=www.roamprint.com
+${ROAM_UserID}=rdl.etl.boise+u05348@gmail.com
+${ROAM_Password}=007L@z3r
+
+// Specifying Default as the Browser uses Chrome in Headless Mode with no visible UI
+//${ROAM_Browser} = Default
+${ROAM_Browser} = Chrome
+//${ROAM_Browser} = FireFox
+//${ROAM_Browser} = Edge
+
+${DeleteCount}=10
+
+using HpRoam_Web.gflib
+using Web
+
+/////////////////////////////////////////////////
+// Routine:         OpenRoamAccount
+// Description:     open the HP Roam cloud site
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+OpenRoamAccount
+{
+    //Signin
+    IF: HpRoam_Web.SignIn (${ROAM_UserID},${ROAM_Password},${ROAM_Url},${ROAM_Browser})
+    {
+        Sleep(2)
+    }
+    Fail:
+    {
+        Fail (Roam Account Sign In Failed!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Roam Account Sign In Errored!)
+        Stop Test Suite
+    }
+    Sleep (0)
+}
+
+/////////////////////////////////////////////////
+// Routine:         DeleteJob
+// Description:     delete a single job from the open user's queue
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+DeleteJob
+{// delete 1 job
+    // ensure at the Jobs list page
+    IF: HpRoam_Web.AccessJobQueue
+    {
+        IF: HpRoam_Web.DeletePrintJob
+        {
+        }
+        Fail:
+        {
+            Fail (Roam job deletion Failed!)
+        }
+        Sleep (0)
+    }
+    Fail:
+    {
+        Fail (Roam access job queue Failed!)
+    }
+    
+    //Wait For User Confirm (?)
+}
+
+
+/////////////////////////////////////////////////
+// Routine:         DeleteJobs
+// Description:     delete multiple jobs from the open user's queue
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+DeleteJobs
+{// delete multiple jobs defined by var DeleteCount
+    // ensure at the Jobs list page
+    IF: HpRoam_Web.AccessJobQueue
+    {
+        Repeat:${DeleteCount}
+        {// loop deleting the jobs
+            IF: HpRoam_Web.DeletePrintJob
+            {
+            }
+            Fail:
+            {
+                Fail (Roam job deletion Failed!)
+            }
+            Sleep (0)
+        }
+    }
+    Fail:
+    {
+        Fail (Roam access job queue Failed!)
+    }
+    
+    //    Wait For User Confirm (?)
+}
+
+/////////////////////////////////////////////////
+// Routine:         CloseRoamAccount
+// Description:     close the HP Roam app on a device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+CloseRoamAccount
+{
+    //Signout
+    IF: HpRoam_Web.SignOut
+    {
+    }
+    Fail:
+    {
+        Fail (Roam Account Sign In Failed!)
+    }
+    Web.Close
+}

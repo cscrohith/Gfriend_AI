@@ -1,0 +1,114 @@
+﻿${UserID}=u05212
+${UserPassword}=1qaz2wsx
+${HPID_UserID}=rdl.etl.boise+u05301@gmail.com
+${HPID_Password}=007L@z3r
+${HPID_PIN}=454545
+
+${RoamButtonID}=hpid-0EBF13D1-F50A-472E-B204-3E74E7B7D78E-homescreen-button
+
+//using HpRoam_Device.gflib
+using JediOmni with LTL-20370
+using Oxpd with LTL-20370
+
+/////////////////////////////////////////////////
+// Routine:         OpenRoam
+// Description:     open the HP Roam app on a device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+OpenRoam
+{
+    // start at the Home screen
+    JediOmni.Press Home Key
+    Sleep (1)
+    // press the HP Roam button
+    If: JediOmni.Touch ID (${RoamButtonID})
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OpenRoam.png)
+        Fail (Failed pressing the HP Roam button!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OpenRoam.png)
+        Error (Error pressing the HP Roam button!)
+        Stop Test Suite
+    }
+    Sleep (3)
+    
+    // get the OXPd browser
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Fail (Failed connecting to the device browser for OXPd service!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error connecting to the device browser for OXPd service!)
+        Stop Test Case
+    }
+    
+    // wait for the Roam initial page
+    If: Oxpd.Wait For Text (Sign in manually,10)
+    {
+        // handle the manuall sign in with HPID
+        Oxpd.Touch Text (Sign in manually)
+        Sleep (3)
+        If: Oxpd.Wait For Text (username,10)
+        {
+            Oxpd.Touch ID (username)
+            Oxpd.Input Text (${HPID_UserID})
+            // handle the keyboard if visible
+            If: JediOmni.Wait For Object (hpid-keyboard,0)
+            {
+                JediOmni.Touch ID (hpid-keyboard-key-enter)
+                //Sleep (1)
+            }
+            //Oxpd.Touch Text (NEXT)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (OpenRoam.png)
+            Oxpd.Return Browser Engine
+            Fail (Failed finding the username on the HPID auth screen!)
+            Stop Test Case
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (OpenRoam.png)
+            Oxpd.Return Browser Engine
+            Error (Error finding the username on the HPID auth screen!)
+            Stop Test Case
+        }
+        Sleep (2)
+        Oxpd.Touch Id (password)
+        Oxpd.Input Text (${HPID_Password})
+        // handle the keyboard if visible
+        If: JediOmni.Wait For Object (hpid-keyboard,0)
+        {
+            JediOmni.Touch ID (hpid-keyboard-key-enter)
+            JediOmni.Touch ID (hpid-keyboard-key-done)
+            //Sleep (1)
+        }
+        //Oxpd.Touch Text (SIGN IN)
+
+    }
+    // wait for the Roam app screen
+    If: Oxpd.Wait For Text (Select all,30)
+    {
+        // made it to the app screen
+    }
+    Oxpd.Return Browser Engine
+}

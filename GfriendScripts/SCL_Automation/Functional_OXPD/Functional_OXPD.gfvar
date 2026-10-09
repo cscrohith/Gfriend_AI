@@ -1,0 +1,184 @@
+﻿//Printer Queue name
+${PrinterQueuename} =
+
+//INF path
+${inf_Path} =
+
+//Driver name
+${Driver_Name} = 
+
+//gets the count before printing or before sending the job
+${Before} =
+
+
+//gets the count After printing or before sending the job
+${After} =
+
+
+﻿// ********************************************************************
+// * Variables for logging into SafeQ Cloud website                   *
+// ********************************************************************
+${website-url}=https://hpautomation.us.ysoft.cloud/
+${Username}=admin
+${Password}=Automation@123
+
+// ********************************************************************
+// * Variables for time duration or keeping count                     *            
+// * Testers are free to updated these numbers based on slowness or   *
+// * speed of the VM.                                                 *
+// ********************************************************************
+${small-timeduration}=5
+${medium-timeduration}=10
+${large-timeduration}=15
+${ultra-long-timeduration}=300
+
+// ********************************************************************
+// * Variables for working with SafeQ Cloud website                   *
+// ********************************************************************
+${pc-client-tab}=PC Client
+${safeq-windows-client}=/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div/div[2]/div[2]/div[2]/div[2]/div/span[1]
+
+//${downloading-carousel}=/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div/div[2]/div[2]/div[2]/div[2]/div/span[1]
+
+// ********************************************************************
+// * Variables for installing the SafeQ client in Windows VM.         *
+// ********************************************************************
+${SafeQExeFilePath}= 
+${safeQ-filename}=safeq-cloud-client-2026.05.28.3-setup[hpautomation.us.ysoft.cloud]
+${agree-button}=I Agree
+${finish-button}=Finish
+${next-button}=Next >
+${EULA-window}=SAFEQ Cloud Client 2026.05.28.3 Setup 
+${SAFEQ Cloud Client}=SAFEQ Cloud Client
+${context-box}=Context
+${login-option}=1128
+${perform-full-installation}=1202
+
+
+//${username-2}=//*[@id="id7"]
+//${password-2}=//*[@id="id9"]
+${login-button}=Log in
+${taskbar}=Taskbar
+${windows-start-button}=Start
+${search-textbox}=4101
+${print-queue-listbox}=SystemSettings_Device_PrinterList_ListView
+${secure-print-printer-queue}=Secure Print
+
+// ********************************************************************
+// * Variables for validating print queues.                           *
+// ********************************************************************
+${left-nav-bar-printers}=/html/body/div[1]/div[3]/div[2]/div/div[3]/a
+${print-queues-tab}=/html/body/div[1]/div[4]/div/div[2]/div[2]/div[2]/form/div[2]/div[2]/div[1]/div/div/div/ul/li[2]/a
+${first-print-queue}=//*[@id="id112"]/div[3]/table/tbody/tr[1]/td[2]
+${second-print-queue}=//*[@id="id112"]/div[3]/table/tbody/tr[2]/td[2]
+${true-value}=True
+
+// ********************************************************************
+// * File paths where result of commands are saved.                   *
+// * If these are not available, user can change them                 *
+// ********************************************************************
+${file-path-1}=C:\Temp\printer_check.txt
+${file-path-2}=C:\Temp\printer_check2.txt
+
+//File Name of the Jobs
+${File_Name1}=
+${File_Name2}=
+
+${job_Path}=
+${print-queue-name}=Secure Print
+
+// *****************************************************************************
+// * THESE VARIABLE ARE USED FOR SENDING DOCUMENT TO PRINT QUEUE FROM COMPUTER *
+// *****************************************************************************
+${word-document-file}=..\print-documents\word-doc\testfile.docx
+${excel-document-file}=..\print-documents\excel-doc\testfile.xlsx
+${ppt-document-file}=..\print-documents\ppt-doc\testfile.pptx
+
+${print-queue-name}=SafeQ_Pull_Print
+
+${alt-f}=%f
+${alt-f4}=%[F4]
+${p-key}=p
+${enter-key}=[ENTER]
+${cannot-complete-operation-OK-button}=CloseButton
+${print-image-button}=PrintButton
+${browser-pdf-print-queue-dropdown}=//*[@id="selecttrigger-1"]
+${pdf-browser-print-button}=//*[@id="sidebar"]/div[3]/div/button[1]
+
+// These are absolute file paths.
+// Testers need to update these paths to reflect the files/executables in their test computer.
+${mspaint-executable-path}=C:\Users\ChAr202\AppData\Local\Microsoft\WindowsApps\mspaint.exe
+
+${image-document-file}=C:\Users\rdladmin.AMBLR\source\repos\GFriendLibs\SCL_Automation\print-documents\image-doc\testfile.jpg
+${pdf-document-file}=C:\Users\rdladmin.AMBLR\source\repos\GFriendLibs\SCL_Automation\print-documents\pdf-doc\testfile.pdf
+${text-document-file}=C:\Users\rdladmin.AMBLR\source\repos\GFriendLibs\SCL_Automation\print-documents\text-doc\testfile.txt
+
+// ***********************************************************
+// * Wait durations for printer screen transitions.          *
+// * These values can be adjusted depending on printer speed *
+// ***********************************************************
+${ultra-short-wait}=1
+${short-wait}=3
+${medium-wait}=5
+${long-wait}=10
+${extra-long-wait}=25
+${max-printing-wait}=900 
+
+// *****************************************************
+// * THESE VARIABLE ARE USED FOR OPERATING THE PRINTER.*
+// *****************************************************
+${jediomni-reset-button}=hpid-button-reset
+${jediomni-sign-in-button}=hpid-control-signin
+${signout-text}=Sign Out
+${jediomni-sign-out-button}=hp-button-signin-or-signout
+${jediomni-sign-in-dropdown}=hpid-dropdown-agent
+${jediomni-safeq-cloud-login-dropdown-option}=hpid-dropdown-agent-oxp_3940c5aaf60a4214b7a9278ef2332fb7_v1
+${jediomni-job-processing-spinner}=hpid-oxpd-spinner
+${jediomni-number-pad-2-button}=hpid-keypad-key-2
+${jediomni-number-pad-ok-button}=hpid-keypad-key-close
+
+${username-textbox-id}=usernameLoginFormText
+${password-textbox-id}=usernameLoginFormPass
+${shortID-textbox-id}=shortIdLoginFormText
+${username-password-login-button}=usernameLoginFormSubmitButton
+${shortID-login-button}=shortIdLoginFormSubmitButton
+
+// *****************************
+// * IDs for Secure print page *
+// *****************************
+${select-all-button}=select_all_button
+${unselect-all-button}=unselect_all_button
+${refresh-image-xpath}=//*[@id="refresh_form"]/input[3]
+${delete-print-job-button}=delete_selected_button
+${print-job-button}=print_selected_button
+${print-options-image-id}=options_button
+${print-options-text}=Print options
+${holdjob-option-button-id}=keep
+${duplex-option-button-id}=duplex
+${mono-option-button-id}=mono
+${copies-option-textbox-id}=copiesOptionsFormText
+${options-print-button}=options_print_button
+${home-button-on-app}=hpid-button-oxpd-home
+${logout-button-xpath}=/html/body/div[2]/form/input[2]
+
+${secure-print-app-icon}=hpid-2b0d0eba-3cf8-4830-833a-b024645b07fb-homescreen-button
+${print-documents-form}=refresh_form
+
+// *********************************************************************************************************************************
+// * These test file names should be changed if the user has changed the test files or testfile name in the print-documents folder *
+// *********************************************************************************************************************************
+${excel-doc-name-on-printer}=testfile.xlsx
+${word-doc-name-on-printer}=Microsoft Word - testfile
+${powerpoint-doc-name-on-printer}=Microsoft PowerPoint - testfile
+${image-doc-name-on-printer}=testfile
+${pdf-doc-name-on-printer}=Configuring the Electronic Bank statement and Manual Bank statement:-.pdf
+${text-doc-name-on-printer}=testfile - Notepad
+
+${DownLoadFolderPath}=
+${IsColorMFP}=Y
+${DevicePrintReportName}=\PPReport_
+${DeviceScanReportName}=\PSReport_
+${UserPrintReportName}=\UPReport_
+${UserScanReportName}=\USReport_
+${DepartmentPrintReportName}=\DPReport_
+${DepartmentScanReportName}=\DSReport_

@@ -1,0 +1,27 @@
+﻿/// <File>WP_Set_AppAttestation.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Run the AppAttestation utility on a device for 1 or all workpath app(s)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using WP_Set_AppAttestation.gfvar
+
+Using WP_CommonLibrary.gflib
+
+Using JediOmni
+
+AppAttestation
+{
+    
+    If: WP_CommonLibrary.RunAppAttestation(${DUT_Address},${UtilityPath},${UtilityExe},${UtilityAccount},${UtilityOption})
+    {
+    }
+    Fail:
+    {
+        Fail (Fail while running the AppAttestation utiity workpath app(s)!)
+    }
+    Error:
+    {
+        Error (Error while running the AppAttestation utiity workpath app(s)!)
+    }
+}

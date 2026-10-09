@@ -1,0 +1,551 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+using ..\Common\Common_Copy_Library.gflib
+
+
+Authentication
+{
+    Common_Library.CheckHomeScreen
+    Common_Library.AuthenticationEager(${UserName},${Password})
+}
+
+Copy_WorkFlow
+{
+    //waits and clicks on the copy app in home screen
+    If: Dune.Navigate To Application On Home Screen (#cedab422-33b3-4638-b6a1-604e54525215)
+    {
+        Dune.Click (#cedab422-33b3-4638-b6a1-604e54525215)
+    }
+    Fail:
+    {
+        Return With Fail (Copy app button was not found on the home screen)
+        Stop Test Suite
+    }
+    
+    //Options checks will starts from here
+    If: Dune.Wait For (#optionsDetailPanelButton,3)
+    {
+        Dune.Click Id (#optionsDetailPanelButton)
+    }
+    Fail:
+    {
+        Return With Fail (unable to click on option button )
+        Dune.Go To Home Screen
+    }
+}
+
+TC_Copy_ContentType
+{
+   Common_Copy_Library.Copy_ContentType
+}
+
+TC_Copy_ContentType_Photo
+{
+    Common_Copy_Library.Copy_ContentType_Photo
+}
+
+TC_Copy_ContentType_Text
+{
+    Common_Copy_Library.Copy_ContentType_Text
+}
+
+TC_Copy_ContentType_Image
+{
+    Common_Copy_Library.Copy_ContentType_Image
+}
+
+TC_Copy_ContentType_Mixed
+{
+    Common_Copy_Library.Copy_ContentType_Mixed
+}
+
+TC_Copy_BlankpageSuppression
+{
+    Common_Copy_Library.Copy_BlankpageSuppression
+}
+
+TC_Copy_BlankpageSuppression_On
+{
+    Common_Copy_Library.Copy_BlankpageSuppression_On
+}
+
+TC_Copy_BlankpageSuppression_off
+{
+    Common_Copy_Library.Copy_BlankpageSuppression_off
+}
+
+TC_Copy_ColorMode
+{
+    Common_Copy_Library.Copy_ColorMode
+}
+
+TC_Copy_ColorMode_Color
+{
+    Common_Copy_Library.Copy_ColorMode_Color
+}
+
+TC_Copy_ColorMode_Grayscale
+{
+    Common_Copy_Library.Copy_ColorMode_Grayscale
+}
+
+TC_Copy_ColorMode_Autodetect
+{
+    Common_Copy_Library.Copy_ColorMode_Autodetect
+}
+
+TC_Copy_Sides
+{
+    Common_Copy_Library.Copy_Sides
+}
+
+TC_Copy_Sides_one_To_Two_Sided
+{
+    Common_Copy_Library.Copy_Sides_One_to_Two_sided
+}
+
+TC_Copy_Sides_Two_to_Two_sided
+{
+    Common_Copy_Library.Copy_Sides_Two_to_Two_sided
+}
+
+TC_Copy_Two_Sided_Page_Flip_Up
+{
+    Common_Copy_Library.Copy_Two_Sided_Page_Flip_Up
+}
+
+TC_Copy_Sides_Two_to_One_sided
+{
+    Common_Copy_Library.Copy_Sides_Two_to_One_sided
+}
+
+TC_Copy_Sides_One_to_One_sided
+{
+    Common_Copy_Library.Copy_Sides_One_to_One_sided
+} 
+
+TC_Copy_OriginalSize
+{
+    Common_Copy_Library.Copy_OriginalSize
+}
+
+TC_Copy_OriginalSize_Letter
+{
+    Common_Copy_Library.Copy_OriginalSize_Letter
+}
+
+TC_Copy_OriginalSize_Executive
+{
+    Common_Copy_Library.Copy_OriginalSize_Executive
+}
+
+TC_Copy_OriginalSize_5x8in
+{
+    Common_Copy_Library.Copy_OriginalSize_5x8in
+}
+
+TC_Copy_OriginalSize_a4_210x297mm
+{
+    Common_Copy_Library.Copy_OriginalSize_a4_210x297mm
+}
+
+TC_Copy_OriginalSize_a5_148x210mm
+{
+    Common_Copy_Library.Copy_OriginalSize_a5_148x210mm
+}
+
+TC_Copy_OriginalSize_b5_182x257
+{
+    Common_Copy_Library.Copy_OriginalSize_b5_182x257
+}
+
+TC_Copy_OriginalSize_b6_128x182mm
+{
+    Common_Copy_Library.Copy_OriginalSize_b6_128x182mm
+}
+
+TC_Copy_OriginalSize_Oficio_216x340mm
+{
+    Common_Copy_Library.Copy_OriginalSize_Oficio_216x340mm
+}
+
+TC_Copy_OriginalSize_16k_195x270mm
+{
+    Common_Copy_Library.Copy_OriginalSize_16k_195x270mm
+}
+
+TC_Copy_OriginalSize_16k_184x260mm
+{
+    Common_Copy_Library.Copy_OriginalSize_16k_184x260mm
+}
+
+TC_Copy_OriginalSize_16k_197x273mm
+{
+    Common_Copy_Library.Copy_OriginalSize_16k_197x273mm
+}
+
+TC_Copy_OriginalSize_DoublePostcard_JIS_148X200mm
+{
+    Common_Copy_Library.Copy_OriginalSize_DoublePostcard_JIS_148X200mm
+}
+
+TC_Copy_OriginalSize_Statement_5_dot_5x8_dot_5in
+{
+    Common_Copy_Library.Copy_OriginalSize_Statement_5_dot_5x8_dot_5in
+}
+
+TC_Copy_OriginalSize_16k_195x270mm
+{
+    Common_Copy_Library.Copy_OriginalSize_16k_195x270mm
+}
+
+TC_Copy_OriginalSize_any_size
+{
+    Common_Copy_Library.Copy_OriginalSize_any_size
+}
+
+TC_Copy_Lighter_Or_Darker
+{
+    Common_Copy_Library.Copy_Lighter_Or_Darker
+}
+
+TC_Copy_Sharpness
+{
+    Common_Copy_Library.Copy_Sharpness
+}
+
+TC_Copy_Contrast
+{
+    Common_Copy_Library.Copy_Contrast
+}
+
+TC_Copy_Background_Cleanup
+{
+    Common_Copy_Library.Copy_Background_Cleanup
+}
+
+TC_Copy_Collate
+{
+    Common_Copy_Library.Copy_Collate
+}
+
+TC_Copy_OutputScale
+{
+    Common_Copy_Library.Copy_OutputScale
+}
+
+TC_Copy_OutputScale_custom
+{
+    Common_Copy_Library.Copy_OutputScale_custom
+}
+
+TC_Copy_OutputScale_legalToLetter
+{
+    Common_Copy_Library.Copy_OutputScale_legalToLetter
+}
+
+TC_Copy_OutputScale_none
+{
+    Common_Copy_Library.Copy_OutputScale_none
+}
+
+TC_Copy_Pages_Per_Sheet
+{
+    Common_Copy_Library.Copy_Pages_Per_Sheet
+}
+
+TC_Copy_Pages_Per_Sheet_FourRightThenDown
+{
+    Common_Copy_Library.Copy_Pages_Per_Sheet_FourRightThenDown
+}
+
+TC_Copy_Pages_Per_Sheet_FourDownThenRight
+{
+    Common_Copy_Library.Copy_Pages_Per_Sheet_FourDownThenRight
+}
+
+TC_Copy_Pages_Per_Sheet_AddPageBorders
+{
+    Common_Copy_Library.Copy_Pages_Per_Sheet_AddPageBorders
+}
+
+TC_Copy_Pages_Per_Sheet_twoUp
+{
+    Common_Copy_Library.Copy_Pages_Per_Sheet_twoUp
+}
+
+TC_Copy_Pages_Per_Sheet_oneUp
+{
+    Common_Copy_Library.Copy_Pages_Per_Sheet_oneUp
+}
+
+TC_Copy_Paper_Selection
+{
+    Common_Copy_Library.Copy_Paper_Selection
+}
+
+TC_Copy_Paper_Selection_Paper_Size
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size
+}
+
+TC_Copy_Paper_Selection_Paper_Size_letter
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_letter
+}
+
+TC_Copy_Paper_Selection_Paper_Size_Legal
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_Legal
+}
+
+TC_Copy_Paper_Selection_Paper_Size_Executive
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_Executive
+}
+
+TC_Copy_Paper_Selection_Paper_Size_Statement
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_Statement
+}
+
+TC_Copy_Paper_Selection_Paper_Size_FourXSix
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_FourXSix
+}
+
+TC_Copy_Paper_Selection_Paper_Size_FiveXSeven
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_FiveXSeven
+}
+
+TC_Copy_Paper_Selection_Paper_Size_A4
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_A4
+}
+
+TC_Copy_Paper_Selection_Paper_Size_A6
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_A6
+}
+
+TC_Copy_Paper_Selection_Paper_Size_RA4
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_RA4
+}
+
+TC_Copy_Paper_Selection_Paper_Size_B5
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_B5
+}
+
+TC_Copy_Paper_Selection_Paper_Size_TenxFifteen
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_TenxFifteen
+}
+
+TC_Copy_Paper_Selection_Paper_Size_Oficio216x340
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_Oficio216x340
+}
+
+TC_Copy_Paper_Selection_Paper_Size_Sixteen184x260
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_Sixteen184x260
+}
+
+TC_Copy_Paper_Selection_Paper_Size_PostcardJis
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_PostcardJis
+}
+
+TC_Copy_Paper_Selection_Paper_Size_DoublePostcard
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_DoublePostcard
+}
+
+TC_Copy_Paper_Selection_Paper_Size_EnvelopeHashTen
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_EnvelopeHashTen
+}
+
+TC_Copy_Paper_Selection_Paper_Size_EnvelopeMonarch
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_EnvelopeMonarch
+}
+
+TC_Copy_Paper_Selection_Paper_Size_EnvelopeB5
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_EnvelopeB5
+}
+
+TC_Copy_Paper_Selection_Paper_Size_EnvelopeC5
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_EnvelopeC5
+}
+
+TC_Copy_Paper_Selection_Paper_Size_EnvelopeDL
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_EnvelopeDL
+}
+
+TC_Copy_Paper_Selection_Paper_Size_Any
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Size_Any
+}
+
+TC_Copy_Paper_Selection_Paper_Type
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type
+}
+
+TC_Copy_Paper_Selection_Paper_Type_anysize
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_anysize
+}
+
+TC_Copy_Paper_Selection_Paper_Type_Envelope
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_Envelope
+}
+
+TC_Copy_Paper_Selection_Paper_Type_Automatic
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_Automatic
+}
+
+TC_Copy_Paper_Selection_Paper_Type_Light
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_Light
+}
+
+TC_Copy_Paper_Selection_Paper_Type_HpEcoEFFICIENT
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_HpEcoEFFICIENT
+}
+
+TC_Copy_Paper_Selection_Paper_Type_MidWeight
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_MidWeight
+}
+
+TC_Copy_Paper_Selection_Paper_Type_Heavy
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_Heavy
+}
+
+TC_Copy_Paper_Selection_Paper_Type_ExtraHeavy
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_ExtraHeavy
+}
+
+TC_Copy_Paper_Selection_Paper_Type_ColorTransparency
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_ColorTransparency
+}
+
+TC_Copy_Paper_Selection_Paper_Type_Labels
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_Labels
+}
+
+TC_Copy_Paper_Selection_Paper_Type_StationeryLetterhead
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_StationeryLetterhead
+}
+
+TC_Copy_Paper_Selection_Paper_Type_StationeryPreprinted
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_StationeryPreprinted
+}
+
+TC_Copy_Paper_Selection_Paper_Type_Colored
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_Colored
+}
+
+TC_Copy_Paper_Selection_Paper_Type_Bond
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_Bond
+}
+
+TC_Copy_Paper_Selection_Paper_Type_Recycled
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Type_Recycled
+}
+
+TC_Copy_Paper_Selection_Paper_Tray
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Tray
+}
+
+TC_Copy_Paper_Selection_Paper_Tray_One
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Tray_One
+}
+
+TC_Copy_Paper_Selection_Paper_Tray_Two
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Tray_Two
+}
+
+TC_Copy_Paper_Selection_Paper_Tray_Three
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Tray_Three
+}
+
+TC_Copy_Paper_Selection_Paper_Tray_Four
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Tray_Four
+}
+
+TC_Copy_Paper_Selection_Paper_Tray_Manual
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Tray_Manual
+}
+
+TC_Copy_Paper_Selection_Paper_Tray_Automatic
+{
+    Common_Copy_Library.Copy_Paper_Selection_Paper_Tray_Automatic
+}
+
+TC_Copy_Resetting_Options_To_Set_Booklet
+{
+    Common_Copy_Library.Copy_Resetting_Options_To_Set_Booklet
+}
+
+TC_Copy_ScanMode
+{
+    Common_Copy_Library.Copy_ScanMode
+}
+
+TC_Copy_ScanMode_Two_Sided_Id
+{
+    Common_Copy_Library.Copy_ScanMode_Two_Sided_Id
+}
+
+TC_Copy_ScanMode_BookMode
+{
+    Common_Copy_Library.Copy_ScanMode_BookMode
+}
+
+TC_Copy_ScanMode_StandardDocument
+{
+    Common_Copy_Library.Copy_ScanMode_StandardDocument
+}
+
+TC_Copy_Booklet
+{
+    Common_Copy_Library.Copy_Booklet
+}
+
+TC_Copy_Booklet_BookletFormat
+{
+    Common_Copy_Library.Copy_Booklet_BookletFormat
+}
+
+Tc_Copy_ExecuteManager
+{
+    Common_Copy_Library.Copy_ExecuteManager
+}

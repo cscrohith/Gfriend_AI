@@ -1,0 +1,28 @@
+﻿/// <File>SIO_Unlink.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Unlink a HPID account from a device user account</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using DeviceAuth.gflib
+Using JediOmni
+Using Oxpd
+
+/// <Name>Unlink</Name>
+/// <Description>Unlink a HPID account from a device user account</Description>
+/// <Notes></Notes>
+Unlink
+{
+    // unlink the signed in account
+    If: DeviceAuth.UnLinkHpidAccount
+    {
+    }
+    Fail:
+    {
+        Fail (Failed unlinking!)
+    }
+    Error:
+    {
+        Error (Error unlinking!)
+    }
+}

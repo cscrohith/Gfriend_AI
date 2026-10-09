@@ -1,0 +1,325 @@
+﻿using Vision
+using JediOmni
+using BadgeBox
+using Info
+using Papercut_Vision.gfvar
+
+SetupAzureVision
+{
+    //${AzureEndpoint} is a variable from AzureVariables.gfvar file which has actual value of the Azure Endpoint , ${AzureEndpointEncryptedValue} stores the encrypted value of Azure Endpoint
+    Encrypt(${AzureEndpoint},${AzureEndpointEncryptedValue})
+    //${SubscriptionKey} is a variable from AzureVariables.gfvar file which has actual value of the Subscription Key , ${SubscriptionKeyEncryptedValue} stores the encrypted value of Subscription Key
+    Encrypt(${SubscriptionKey},${SubscriptionKeyEncryptedValue})
+    //Pass the encrypted values of Azure Endpoint and Subscription key in the Set OCR Method Keyword
+    //1.If the endpoint and subscriptionkey are encrypted in the Encrypted Variables form , then pass the 3rd parameter as "UI" 
+    //2.If the endpoint and subscriptionkey are encrypted using Encrypt Keyword , then pass the 3rd parameter as "ENCRYPT"
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+}
+
+Authentication(${USERNAME},${PASSWORD},${BADGE_AUTH},${BADGE_INDEX})
+{
+    If: Equals IgnoreCase (${BADGE_AUTH},Y)
+    {
+        PapercutTC_Vision.BadgeSignInPapercut(${BADGE_INDEX})
+    }
+    Fail:
+    {
+        PapercutTC_Vision.CredentialsLogin(${USERNAME},${PASSWORD})
+    }
+}
+
+//////////////////////////////////////////////////
+//Routine:         VerifyUserLoggedIn
+//Description:     Make sure user is signed In
+//
+//Arguments:
+//     
+//Pre-requisites:
+//
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+BadgeSignInPapercut(${BADGE_INDEX})
+{
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Mark Start (STF_Authentication,4)
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    Sleep (2)
+    Vision.Crop Screenshot (right,15)
+    If: Vision.Is Text Exist (Sign Out)
+    {
+        Vision.Stop Crop
+        Return With Pass (Badge Sign In was Successful)
+    }
+    Fail:
+    {
+        Vision.Stop Crop
+        Fail (Sign In was not Successful within 300 Seconds)
+        Stop Test Case
+    }
+    Info.Mark End (STF_Authentication,4)      
+}
+
+CredentialsLogin(${USERNAME},${PASSWORD})
+{
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_DeviceButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    Sleep (1)
+    Info.Mark End (STF_DeviceButtonPress,1)
+    Vision.Crop Screenshot (right,15)
+    if: Vision.Is Text Exist (Sign In)
+    {
+        Vision.Click Text (Sign In)
+    }
+    Fail:
+    {
+        Vision.Stop Crop
+        Return With Fail (SignIn Button was not available)
+        Stop Test Case
+    }
+    Vision.Stop Crop
+    Info.Mark Start (STF_Authentication,4)
+    Info.Mark Start (STF_EnterCredentials,5)
+    Sleep (2)
+    // handle network username/password screen
+    // enter userID
+    Vision.Crop Screenshot (right,15)
+    If: Vision.Is Text Exist (Username)
+    {
+        Vision.Click Text (Username)
+        Vision.Stop Crop
+        Sleep (1)
+        JediOmni.Input Text (${USERNAME})
+        Vision.Crop Screenshot (top,15)
+        Vision.Click Text (OK)
+        Vision.Stop Crop
+        Sleep (1)
+    }
+    Vision.Crop Screenshot (right,15)
+    If: Vision.Is Text Exist (Password)
+    {
+        //enter password
+        Vision.Click Text (Password)
+        Vision.Stop Crop
+        Sleep (1)
+        JediOmni.Input Text (${PASSWORD})
+        Vision.Crop Screenshot (top,15)
+        Vision.Click Text (OK)
+        Vision.Stop Crop
+        Sleep (1)
+    }
+    Info.Mark End (STF_EnterCredentials,5)
+    //Click on Login
+    Vision.Crop Screenshot (right,15)
+    If: Vision.Is Text Exist (Log in)
+    {
+        Vision.Click Text with index (Log in,2)
+        Vision.Stop Crop
+        Info.Mark End (STF_Authentication,4)
+    }
+    Fail:
+    {
+        Vision.Stop Crop
+        Fail (Sign In was not Successful)
+        Stop Test Case
+    }
+}
+
+Papercut_PullPrint(${PRINT_ALL},${ActivityId})
+{
+    Info.Start Time Check (STF_ProcessingJob)
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_AppButtonPress)
+    
+    //Click on Print Application
+    Vision.Crop Screenshot (right,15)
+    If: Vision.Is Text Exist (Print Release)
+    {
+        Info.Mark End (STF_AppButtonPress,2)
+        Vision.Click Text (Print Release)
+    }
+    Vision.Stop Crop
+    Info.Mark End (STF_AppShown,3)
+    Sleep (2)
+    Vision.Crop Screenshot (top,15)
+    If: Vision.Is Text Exist (Select all jobs)
+    {
+        Info.Mark Start (STF_ProcessingJob,6)
+        If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            //Clicking on Select all jobs check box
+            Vision.Click Next To Text(Select all jobs,-80,0)
+            Sleep(1)
+            //Clicking on Print button to Print jobs.
+            Vision.Click Text with index (Print,2)
+            Vision.Stop Crop
+            Return With Pass (All Jobs Printed successfully)
+        } 
+        //To Print Only 1 Job
+        Fail:
+        {
+            If: Vision.Is Text Exist (Select all jobs)
+            {
+                //Clicking on first job using Activity Id
+                PapercutTC_Vision.ClickOnPrintJob(${ActivityId})
+                Sleep(1)
+                Vision.Click Text with index (Print,2)
+                Vision.Stop Crop
+                Return With Pass (One job printed successfully)
+            }
+            Fail:
+            {
+                Vision.Stop Crop
+                Fail (Print job not selected and Print button is not available)
+                PapercutTC_Vision.SignOut
+                Stop Test Case
+            }
+            Sleep (2)
+        }
+        Info.Mark End (STF_ProcessingJob,6)
+    }
+    Fail:
+    {
+        Vision.Stop Crop
+        Fail (No Jobs found)
+    }
+}
+
+Papercut_Delete(${PRINT_ALL},${ActivityId})
+{
+    Info.Start Time Check (STF_ProcessingJob)
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_AppButtonPress))
+    
+    //Click on Print Application
+    Vision.Crop Screenshot (top,15)
+    If: Vision.Is Text Exist (Print Release)
+    {
+        Info.Mark End (STF_AppButtonPress,2)
+        Vision.Click Text (Print Release)
+    }
+    Vision.Stop Crop
+    Info.Mark End (STF_AppShown,3)
+    Sleep (2)
+    Vision.Crop Screenshot (top,15)
+    If: Vision.Is Text Exist (Select all jobs)
+    {
+        Info.Mark Start (STF_ProcessingJob,6)
+        If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            //Clicking on Select all jobs check box
+            Vision.Click Next To Text (Select all jobs,-80,0)
+            Sleep(1)
+            //Clicking on Delete button
+            Vision.Click Next To Text with index (Print,2,${XValueForDeleteButton},0)
+            Vision.Stop Crop
+            Return With Pass (All Jobs Cancelled)
+        } 
+        //To Delete Only 1 Job
+        Fail:
+        {
+            If: Vision.Is Text Exist (Select all jobs)
+            {
+                //Clicking on first job using Activity Id
+                PapercutTC_Vision.ClickOnPrintJob(${ActivityId})
+                Sleep(1)
+                //Clicking on Delete button
+                Vision.Click Next To Text with index (Print,2,${XValueForDeleteButton},0)
+                Vision.Stop Crop
+                Return With Pass (Single Job Cancelled)
+            }
+            Fail:
+            {
+                Vision.Stop Crop
+                Fail (Print job not selected and Print button is not available)
+                PapercutTC_Vision.SignOut
+                Stop Test Case
+            }
+            Sleep (2)
+        }
+        Info.Mark End (STF_ProcessingJob,6)
+    }
+    Fail:
+    {
+        Vision.Stop Crop
+        Fail (No Jobs found)
+    }     
+}
+
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SignOut
+{
+    //Clicking on home button
+    JediOmni.Press Home Key
+    Sleep(1)
+    Info.Start Time Check (STF_DeviceSignOutBegin)
+    Info.Start Time Check (STF_DeviceSignOutEnd)
+    Info.Mark Start (STF_DeviceSignOutBegin,4)
+    Vision.Crop Screenshot (right,15)
+    If: Vision.Is Text Exist (Sign Out)
+    {
+        Vision.Click Text (Sign Out)
+    }
+    Fail:
+    {
+        Fail (Failed to find Home Screen Sign Out!)
+    }
+    Vision.Stop Crop
+    Info.Mark End (STF_DeviceSignOutEnd,4)
+    Info.Draw Time Graph (STF_DeviceSignOutBegin)
+    Info.Draw Time Graph (STF_DeviceSignOutEnd)
+}
+
+/////////////////////////////////////////////////
+// Routine:         Print job ID
+// Description:     Gets the Print job id and clicks on the same 
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+ClickOnPrintJob(${JobName})
+{
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (block)
+    Substring (${JobName},0,4,${PaperCutJOBID_1})
+    Substring (${JobName},1,4,${PaperCutJOBID_2})
+    Substring (${JobName},2,4,${PaperCutJOBID_3})
+    Substring (${JobName},3,4,${PaperCutJOBID_4})
+    Substring (${JobName},4,4,${PaperCutJOBID_5})
+       Repeat:5
+       {
+           Concatenate Variables And Store Result (${PaperCutJOBID_},${R},${newvalue})
+              Vision.Crop Screenshot (top,15)
+              If: Vision.Is Text Exist (${newvalue})
+              {
+                  Vision.Click Text (${newvalue})
+                  Vision.Stop Crop
+                  Sleep (3)
+                  Return With Pass (Print Job ID Clicked)
+              }
+              Vision.Stop Crop
+       }
+}

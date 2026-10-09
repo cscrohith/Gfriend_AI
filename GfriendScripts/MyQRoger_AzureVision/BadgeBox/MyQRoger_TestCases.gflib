@@ -1,0 +1,242 @@
+﻿using Vision
+using JediOmni
+using Info
+using BadgeBox
+
+AzureVision(${AzureEndpoint},${SubscriptionKey})
+{  
+    Encrypt(${AzureEndpoint},${AzureEndpointEncryptedValue})
+    Encrypt(${SubscriptionKey},${SubscriptionKeyEncryptedValue})
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+}
+
+Authentication(${BADGE_INDEX},${XValueForHomeButton},${YValueForHomeButton})
+{
+   Info.Start Time Check (STF_Authentication)    
+   Info.Start Time Check (STF_EnterCredentials)
+   Info.Start Time Check (STF_AppShown)
+   Info.Start Time Check (STF_AppButtonPress)
+   Info.Start Time Check (STF_DeviceButtonPress)
+
+   MyQRoger_TestCases.ClickSignIn(${XValueForHomeButton},${YValueForHomeButton})   
+   MyQRoger_TestCases.AuthenticateWithBadgeBox(${BADGE_INDEX}) 
+}
+
+ClearAuth(${XValueForHomeButton},${YValueForHomeButton})
+{   
+    If:Vision.Is Text Exist (Signin)
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {    
+        If:Vision.Is Text Exist (Username)
+        {
+            //Clicking on the home button in login page            
+            Vision.Click XY Location (${XValueForHomeButton},${YValueForHomeButton},20,27) 
+            Sleep (1) 
+        }
+        Fail:
+        {
+            JediOmni.Press Home Key
+            Sleep(1) 
+        }        
+        If:JediOmni.Check Screen Contains Full Text (Sign Out)
+        {
+            Sleep(1)
+            JediOmni.Touch ID (hp-button-signin-or-signout)
+            While:!Vision.Is Text Exist (Signing out): 10 
+            {
+                Sleep(1)   
+            }
+            JediOmni.Wait For Text Gone (Signing out,30)
+        }
+    }  
+    
+    Vision.Click Text (Reset)
+    Sleep (3)
+}
+
+ClickSignIn(${XValueForHomeButton},${YValueForHomeButton})
+{
+   Info.Start Time Check (STF_Authentication)
+   Info.Start Time Check (STF_EnterCredentials)
+   Info.Start Time Check (STF_AppShown)
+   Info.Start Time Check (STF_AppButtonPress)
+   Info.Start Time Check (STF_DeviceButtonPress)
+
+   If: MyQRoger_TestCases.ClearAuth(${XValueForHomeButton},${YValueForHomeButton})
+   {
+   }
+   Fail:
+   {
+        Return With Fail (Failed clearing any existing authentication!)
+        Stop Test Case
+   }
+   Error:
+   {
+        Return With Error (Error clearing any existing authentication!)
+        Stop Test Case
+   }
+   Info.Mark End (STF_DeviceButtonPress,1)
+
+   While:!Vision.Is Text Exist (Signin): 10 
+   {
+        Sleep(1)   
+   }
+   
+   If:JediOmni.Check Screen Contains Full Text (Sign In)
+   {
+        Info.Mark End (STF_AppButtonPress,1)
+        JediOmni.Touch ID (hp-button-signin-or-signout)
+   }
+   Fail:
+   {  
+      Fail(No Sign In button Found)
+      Stop Test Case
+   }
+
+   Sleep (2)
+}
+
+AuthenticateWithBadgeBox(${BADGE_INDEX})
+{   
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)    
+    Info.Mark Start (STF_Authentication,4)  
+    Info.Mark Start (STF_EnterCredentials,3)
+    BadgeBox.Scan Badge (${BADGE_INDEX})
+    Info.Mark End (STF_EnterCredentials,3)
+    Sleep (1)
+    
+    MyQRoger_TestCases.IsLoginSuccess     
+  
+    Info.Mark End (STF_Authentication,4)
+    Info.Mark End (STF_AppShown,4)
+
+    Sleep(2)      
+}
+
+IsLoginSuccess
+{    
+    While:!Vision.Is Text Exist (Ready to Print): 5
+    {
+        Sleep(1)   
+    }
+    
+    If: Vision.Is Text Exist (Ready to Print)
+    {        
+       Sleep(1)       
+       Return With Pass (Login was Successful)
+    }
+    Fail:
+    {         
+       Fail (Sign In was not Successful)
+       Stop Test Case
+    }    
+}
+
+Execute_PullPrint(${ActivityId},${XValueForPrintButton},${YValueForPrintButton},${XValueForSelectAllButton},${YValueForSelectAllButton},${SelectAll})
+{
+   Info.Start Time Check (STF_ProcessingJob)
+   
+   If:Vision.Is Text Exist (You have nothing to print) 
+   {
+        Fail (No jobs found)
+        Stop Test Case
+   }    
+
+   Info.Mark Start (STF_ProcessingJob,6)
+   MyQRoger_TestCases.ClickOnPrintJob(${ActivityId})
+   Sleep (1)
+   
+   If: Equals IgnoreCase (${SelectAll},Y)
+   {
+        //Clicks on Select All button        
+        Vision.Click Next To Text (Teams,${XValueForSelectAllButton},${YValueForSelectAllButton})
+        Sleep (1)
+   } 
+
+   //Clicks on Print button  
+   Vision.Click Next To Text (Teams,${XValueForPrintButton},${YValueForPrintButton})    
+   Sleep (1)
+
+   While:Vision.Is Text Exist (Printing server job) 
+   {
+        Sleep(1)   
+   }
+
+   Info.Mark End (STF_ProcessingJob,6)
+}
+
+Execute_Delete(${ActivityId},${XValueForDeleteButton},${YValueForDeleteButton},${XValueForSelectAllButton},${YValueForSelectAllButton},${SelectAll})
+{
+   Info.Start Time Check (STF_ProcessingJob)  
+
+   If:Vision.Is Text Exist (You have nothing to print) 
+   {
+        Fail (No jobs found)
+        Stop Test Case
+   }
+
+   Info.Mark Start (STF_ProcessingJob,6)
+   MyQRoger_TestCases.ClickOnPrintJob(${ActivityId})
+   Sleep (1)
+   
+   If: Equals IgnoreCase (${SelectAll},Y)
+   {
+     //Clicks on Select All button
+     Vision.Click Next To Text (Teams,${XValueForSelectAllButton},${YValueForSelectAllButton})
+     Sleep (1)
+   } 
+
+   //Clicks on Delete button       
+   Vision.Click Next To Text (Teams,${XValueForDeleteButton},${YValueForDeleteButton})   
+   
+   Sleep (2)
+   Info.Mark End (STF_ProcessingJob,6)
+   
+   //If Ok button exist incase error message
+   If:Vision.Is Text Exist (Ok) 
+   {
+        Vision.Click Text (Ok)
+   }
+}
+
+ClickOnPrintJob(${JobName})
+{  
+   Substring (${JobName},0,4,${MyQRogerJOBID_1})
+   Substring (${JobName},1,4,${MyQRogerJOBID_2})
+   Substring (${JobName},2,4,${MyQRogerJOBID_3})
+   Substring (${JobName},3,4,${MyQRogerJOBID_4})
+   Substring (${JobName},4,4,${MyQRogerJOBID_5})
+   Repeat:5
+   {
+       Concatenate Variables And Store Result (${MyQRogerJOBID_},${R},${newvalue})
+       While:!Vision.Is Text Exist (${newvalue}): 30
+       {
+           Sleep(1)   
+       }
+       If: Vision.Is Text Exist (${newvalue})
+       {
+           Vision.Click Text (${newvalue})
+           Return With Pass (Print Job ID Clicked)
+       }
+       Fail:
+       {           
+          Return With Fail ( Print Job Not Found)           
+       }
+   } 
+}
+
+Teardown()
+{
+    //clicking on Home button
+    JediOmni.Press Home Key
+    Sleep (2)
+    JediOmni.Touch ID (hp-button-signin-or-signout)      
+}

@@ -1,0 +1,147 @@
+﻿/// <File>SignIn.txt</File>
+/// <Modified>2021-04-28</Modified>
+/// <Description>Sign in on a device with the specified authentication type</Description>
+/// <Precondition>SignIn.gfvar contains the needed authentication variables.
+///   If this script is run from STF/STB the variables with names beginning
+///   with STF_ can be commented to use the values from the STF/STB virtual 
+///   worker user</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using SignIn.gfvar
+
+Using DeviceAuth.gflib
+
+Using JediOmni
+Using Oxpd
+
+/// <Name>SignIn</Name>
+/// <Description>Sign in on a device with the specified authentication type</Description>
+/// <Notes>SignIn.gfvar contains the needed User variables.
+///   If this script is run from STF/STB the variables with names beginning
+///   with STF_ can be commented to use the values from the STF/STB virtual worker user.
+///   This routine handles SIO as needed, including linking to an HPID account</Notes>
+SignIn
+{
+    // authenticate if specified
+    Set Variable (${SignedInComplete},N)
+    If: Equals IgnoreCase (${AuthenticationType},NONE)
+    {
+        Set Variable (${SignedInComplete},Y)
+    }
+    If: Contains (${AuthenticationType},${)
+    {
+        Set Variable (${SignedInComplete},Y)
+    }
+    If: Equals IgnoreCase (${AuthenticationType},)
+    {
+        Set Variable (${SignedInComplete},Y)
+    }
+    If: Equals IgnoreCase (${AuthenticationType},Admin)
+    {
+        // sign in with device admin
+        If: DeviceAuth.AdminSignIn (${DUT_AdminPW})
+        {
+            Set Variable (${SignedInComplete},Y)
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Admin authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Admin authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},Windows)
+    {
+        // sign in with Windows
+        If: DeviceAuth.SignIn_Windows (${STF_UserName},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+            
+            Set Variable (${SignedInComplete},Y)
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Windows authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Windows authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},HPAC)
+    {
+        // sign in with HPAC
+        If: DeviceAuth.Sign_In_HPAC (${UserCode},${STF_UserName},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+            
+            Set Variable (${SignedInComplete},Y)
+        }
+        Fail:
+        {
+            Fail (Failed signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},SafeCom)
+    {
+        // sign in with SafeCom
+        If: DeviceAuth.SignIn_SafeCom (${STF_UserName},${UserCode},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+            
+            Set Variable (${SignedInComplete},Y)
+        }
+        Fail:
+        {
+            Fail (Failed signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},Papercut)
+    {
+        // sign in with Papercut
+        If: DeviceAuth.Sign_In_PaperCut (${STF_UserName},${UserCode},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+            
+            Set Variable (${SignedInComplete},Y)
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+    }
+    // if got to here either authentication was successful
+    // or not authentication type specified
+    If: Equals IgnoreCase (${SignedInComplete},Y)
+    {
+        Pass (Sign In complete!)
+    }
+    Fail:
+    {
+        Fail (Failed signing due to invalid specified Authentication Type!)
+    }
+}

@@ -1,0 +1,327 @@
+﻿/// <File>RFO_Performance_Test.txt</File>
+/// <Modified>2021-08-10</Modified>
+/// <Description>Perform the RFO Performance test in HPCC. 
+///   This configures a devices as a master using multicast protocol. 
+///   Then it initiates and times a discovery checking the total number 
+///   of discovered devices against a specified number. Then it onboards (adds) 
+///   all of the discovered devices while timing the onboarding and checking 
+///   the number of devices onboarded against the total number discovered.</Description>
+/// <Precondition>Master device is onboarded to the customer account in 
+///   HPCC and is the only device in the account.</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Common_LIbrary.gflib
+Using ..\Common\Common_LIbrary.gflib
+
+// common HPCC variables
+Using HPCC.gfvar
+
+// Performance test variables
+Using RFO_Performance_Test.gfvar
+
+Using HPCC_Library.gflib
+
+Using JediOmni
+Using Info
+
+/// <Name>OpenCustomerDiscoveredDevicePage</Name>
+/// <Description>Sign in to HPCC and go to the customer Discovered Device page</Description>
+/// <Notes></Notes>
+OpenCustomerDiscoveredDevicePage
+{
+    Set Variable (${OverallDiscoverResult},${EMPTY})
+    Set Variable (${OverallOnboardResult},${EMPTY})
+    
+    // Sign in
+    If: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Fail signing in to HPCC! '${KEYWORD_OUTPUT}')
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Error signing in to HPCC! '${KEYWORD_OUTPUT}')
+        Stop Test Suite
+    }
+    
+    // initialize the time measurement set
+    Info.Start Time Check (${RFO_Performance_TimeSet})
+}
+
+/// <Name>ConfigureMasterDevice</Name>
+/// <Description>Configure the specified devices as a master using WS-Discovery Multi-cast protocol</Description>
+/// <Notes></Notes>
+ConfigureMasterDevice
+{
+    // Access the customer Device Discovery page
+    If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+    {
+        Sleep (${Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Fail accessing the customer Device Discovery page! '${KEYWORD_OUTPUT}')
+        @Web.Close
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Error accessing the customer Device Discovery page! '${KEYWORD_OUTPUT}')
+        @Web.Close
+        Stop Test Suite
+    }
+    
+    // enable master device
+    If: HPCC_Library.EnableMasterDevice(${HPCC_Customer},${RFO_MasterDevice_SerialNo},${Discover_Method_Multicast_YN},${Discover_Multicast_Period},${Discover_Multicast_Hour},${Discover_Multicast_Minute},${Discover_Multicast_AM_PM},${Discover_Method_DeviceAnnounce_YN},${Discover_DeviceAnnounce_TrustedAuth_YN},${Discover_DeviceAnnounce_SecondaryListeners_YN},${ConfigureOption_AddAllDevices_YN},${HPCC_TaskCompleteLimit})
+    {
+        Pass (Master device enabled as master!)
+    }
+    Fail:
+    {
+        Fail (Fail while enabling Master device! '${KEYWORD_OUTPUT}')
+        @Web.Close
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Error while enabling Master device! '${KEYWORD_OUTPUT}')
+        @Web.Close
+        Stop Test Suite
+    }
+}
+
+/// <Name>Discover</Name>
+/// <Description>Initiate the device discovery up to the specified # of times.
+///   As soon as the number of discovered devices is >= to the expected device count,
+///   or the number of retries has been reached, the discoveries ends.</Description>
+/// <Notes></Notes>
+Discover
+{
+    // Access the customer Device Discovery page again
+    If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+    {
+        Sleep (${Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Fail accessing the customer Device Discovery page! '${KEYWORD_OUTPUT}')
+        @Web.Close
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Error accessing the customer Device Discovery page! '${KEYWORD_OUTPUT}')
+        @Web.Close
+        Stop Test Suite
+    }
+    
+    If: Common_LIbrary.CheckVariableContainsValue (${RFO_ExpectedSecondaryDeviceCount})
+    {
+        Set Variable (${OverallDiscoverResult},Expected Count: ${RFO_ExpectedSecondaryDeviceCount}${CARRIAGE_RETURN}${LINE_FEED})
+    }
+    Fail:
+    {
+        Set Variable (${OverallDiscoverResult},${CARRIAGE_RETURN}${LINE_FEED})
+    }
+    
+    // loop for up to the max # of discover attempts
+    Set Variable (${ContinueDiscovery},Y)
+    While:Equals (${ContinueDiscovery},Y):${RFO_MaximumDiscoverAttempts}
+    {
+        Set Variable (${DiscoverAttemptCount},${R})
+        
+        // initiate device discovery
+        If: HPCC_Library.InitiateMasterDeviceDiscovery(${RFO_MasterDevice_SerialNo},${RFO_Performance_TimeSet},${RFO_Performance_DiscoveryTime}_${R})
+        {
+            Pass (Device discovery # ${DiscoverAttemptCount} initiated!)
+        }
+        Fail:
+        {
+            Fail (Fail occured while initiating discovery # ${DiscoverAttemptCount}! '${KEYWORD_OUTPUT}')
+            @Web.Close
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error occured while initiating discovery # ${DiscoverAttemptCount}! '${KEYWORD_OUTPUT}')
+            @Web.Close
+            Stop Test Suite
+        }
+            
+        // monitor until devices discovered or timeout
+        If: HPCC_Library.VerifySecondaryDevicesDiscovered (${RFO_MasterDevice_SerialNo},${RFO_ExpectedSecondaryDeviceCount},${RFO_MaxDiscoverTime},${RFO_Performance_TimeSet},${RFO_Performance_DiscoveryTime}_${R})
+        {
+            Set Variable (${DiscoveredDeviceCount},${KEYWORD_OUTPUT})
+            
+            Set Variable (${DiscoverResult},Passed)
+            
+            // indicate to end loop for additional discovery attempts
+            Set Variable (${ContinueDiscovery},N)
+            
+            Pass (Device discovery # ${DiscoverAttemptCount} verified! ${DiscoveredDeviceCount} devices discovered.)
+        }
+        Fail:
+        {
+            Set Variable (${DiscoveredDeviceCount},${KEYWORD_OUTPUT})
+
+            Set Variable (${DiscoverResult},Failed)
+            
+            Fail (Fail verifying devices discovered! ${DiscoveredDeviceCount} devices discovered.)
+        }
+        Error:
+        {
+            Set Variable (${DiscoveredDeviceCount},${KEYWORD_OUTPUT})
+
+            Set Variable (${DiscoverResult},Errored)
+            
+            Error (Error verifying devices discovered! ${DiscoveredDeviceCount} devices discovered.)
+        }
+        
+        // get the number of non-supported devices discovered
+        HPCC_Library.GetDiscoveredNon-SupportedCount
+        Set Variable (${NonSupporteDeviceCount},${KEYWORD_OUTPUT})
+        
+        // set the discovery results
+        Replace (${DiscoveredDeviceCount},Discovered Device count = ,)
+
+        Set Variable (${OverallDiscoverResult},${OverallDiscoverResult}${CARRIAGE_RETURN}${LINE_FEED}Discovery # ${DiscoverAttemptCount} ${DiscoverResult}  -  Discovered Devices = ${DiscoveredDeviceCount}    Non-supported = ${NonSupporteDeviceCount})
+        
+        // if the # of discovered devices is >= the # of expected then end the loop of attempts
+        If: Common_LIbrary.CheckVariableContainsValue (${RFO_ExpectedSecondaryDeviceCount})
+        {
+            // if more that expected devices found then end loop for additional discovery attempts
+            If: Common_LIbrary.Compare (${DiscoveredDeviceCount},${RFO_ExpectedSecondaryDeviceCount},>=)
+            {
+                Set Variable (${ContinueDiscovery},N)
+            }
+        }
+//Wait For User Confirm (Discovery # ${R} Done! Disc Count '${DiscoveredDeviceCount}'${CARRIAGE_RETURN}${LINE_FEED}${CARRIAGE_RETURN}${LINE_FEED}${DiscoverResult})
+    }
+//Wait For User Confirm (Discovery Done!)
+}
+
+/// <Name>Onboard</Name>
+/// <Description>Onboard the discovered devices up to the specified # of times.
+///   As soon as the number of discovered devices = 0,
+///   or the number of retries has been reached, the onboarding ends.</Description>
+/// <Notes></Notes>
+Onboard
+{
+    // Access the customer Device Discovery page again
+    If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+    {
+        Sleep (${Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Fail accessing the customer Device Discovery page!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error accessing the customer Device Discovery page!)
+        Stop Test Case
+    }
+    
+    // loop for up to the max # of onboard attempts
+    Set Variable (${ContinueOnboard},Y)
+    While:Equals (${ContinueOnboard},Y):${RFO_MaximumOnboardAttempts}
+    {
+        Set Variable (${OnboardAttemptCount},${R})
+        Set Variable (${OnboardResult},Oboard Attempt # ${OnboardAttemptCount}
+        
+        // add (onboard) all discovered devices
+        If: HPCC_Library.OnboardDiscoveredDevice(${RFO_Onboard_All_Devices},${RFO_Performance_TimeSet},${RFO_Performance_DiscoveryTime}_${R})
+        {
+            Pass (Onboard attempt # ${DiscoverAttemptCount} initiated!)
+        }
+        Fail:
+        {
+            // set the discovery results and end onboarding
+            Set Variable (${OnboardResult},${OnboardResult} - Fail occured during onboarding! '${KEYWORD_OUTPUT}')
+            Fail (${OnboardResult})
+            
+            Set Variable (${ContinueOnboard},N)
+        }
+        Error:
+        {
+            // set the discovery results and end onboarding
+            Set Variable (${OnboardResult},${OnboardResult} - Error occured during onboarding! '${KEYWORD_OUTPUT}')
+            Error (${OnboardResult})
+            
+            Set Variable (${ContinueOnboard},N)
+        }
+        
+        If: Equals (${ContinueOnboard},Y)
+        {
+            // add (onboard) all discovered devices
+            If: HPCC_Library.MonitorDiscoveredDeviceOnboarding(${RFO_MaxOnboardTime},${RFO_Performance_TimeSet},${RFO_Performance_OnboardTime}_${R},${HPCC_User},${HPCC_PassWord})
+            {
+                // set the discovery results and indicate no more attempts needed
+                Set Variable (${OnboardResult},${OnboardResult} Completed - All Devices onboarded! ${KEYWORD_OUTPUT})
+                Set Variable (${ContinueOnboard},N)
+                Pass (${OnboardResult})
+            }
+            Fail:
+            {
+                // set the discovery results
+                Set Variable (${OnboardResult},${OnboardResult} - ${KEYWORD_OUTPUT})
+                Fail (${OnboardResult})
+            }
+            Error:
+            {
+                // set the discovery results
+                Set Variable (${OnboardResult},${OnboardResult} - ${KEYWORD_OUTPUT})
+                Error (${OnboardResult})
+            }
+        }
+        
+        // update the overall onboarding results
+        If: Equals (${OnboardAttemptCount},1)
+        {
+            Set Variable (${OverallOnboardResult},${OnboardResult})
+        }
+        Fail:
+        {
+            Set Variable (${OverallOnboardResult},${OverallOnboardResult}${CARRIAGE_RETURN}${LINE_FEED}${OnboardResult})
+        }
+//Wait For User Confirm (Onboard # ${R} Done!${CARRIAGE_RETURN}${LINE_FEED}${OverallOnboardResult})
+    }
+}
+
+/// <Name>ReportAndSignOut</Name>
+/// <Description>Generate the report info, including discovery and onboarding timing,
+///   then sign out of HPCC. The report info is shown in the Pass text at the end of the
+///   routine, which will be shown in the HTML generated report.</Description>
+/// <Notes></Notes>
+ReportAndSignOut
+{        
+    // sign out of HPCC and close browsser
+    @HPCC_Library.SignOut()
+    
+    @Web.Close
+    
+    // get the timings
+    If: File Exist (${OUTPUT_FOLDER}\${RFO_Performance_TimeSet}.csv)
+    {
+        Read From File (${OUTPUT_FOLDER}\${RFO_Performance_TimeSet}.csv,${Timings})
+        Replace (${Timings},\,,:   )
+    }
+    
+    // report results
+    Set Variable (${Results},Discover results:${CARRIAGE_RETURN}${LINE_FEED}${OverallDiscoverResult}${CARRIAGE_RETURN}${LINE_FEED}${CARRIAGE_RETURN}${LINE_FEED}Onboard results:${CARRIAGE_RETURN}${LINE_FEED}${OverallOnboardResult}${CARRIAGE_RETURN}${LINE_FEED}${CARRIAGE_RETURN}${LINE_FEED}${Timings})
+    
+    Pass (${Results})
+}

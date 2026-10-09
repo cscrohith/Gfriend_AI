@@ -1,0 +1,41 @@
+﻿//device username 
+${Device_Username} = admin
+//device Password
+${Device_Password} = Hp123456789!
+//Portal
+${Site} = https://hpapp.ap.ysoft.cloud/
+//protal username
+${Username} =
+//Portal password
+${Password} = 
+//Device PIN
+${Device_PIN} =
+//Device NAme
+${Device_Name} = 
+//Device IP
+${Device_IP} = 
+//Device_serialNo
+${Device_Serial_No} = 
+//Printer name
+${Queue_Name} =
+// File path
+${Job_Path} = 
+//Badge box idex 1 
+${BADGE_INDEX_1} = 0
+//BadgeBox index 2
+${BADGE_INDEX_2} = 1 
+//User can change the username of card 2 as per they need 
+${BadgeBox_2_username} =
+//EWS portal
+${EWS_Site} = 
+//EWS password
+${EWS_Password} = 
+${BadgeBox_2_username} = u1111
+//Badgebox
+${BADGE_INDEX} =
+//wait time for badgebox authentication
+${WaitTime} = 15
+//Complete filepath for print queue
+${FilePath}=
+//Print queue name
+${PrintQueueName}=SafeQ_Pull_Print

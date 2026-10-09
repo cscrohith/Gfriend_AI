@@ -1,0 +1,40 @@
+﻿using Vision
+using JediOmni
+Using Printix_CommonVariables.gfvar
+Using Printix_TestCases.gflib
+
+/////////////////////////////////////////////////
+// Routine:         Printix_FLOW
+// Description:     Printix Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+AzureVisionSetup
+{
+    Printix_TestCases.AzureVision(${AzureEndpoint},${SubscriptionKey})
+}
+
+Printix_FLOW
+{ 
+    JediOmni.Enable Paperless Mode
+     If: Printix_TestCases.Printix_PullPrint(${PRINT_ALL},${BADGE_AUTH},${BADGE_INDEX},${First_Digit},${Second_Digit},${Third_Digit},${Fourth_Digit},${Fifth_Digit},${Sixth_Digit},${First_PIN},${Second_PIN},${Third_PIN},${Fourth_PIN},${Crop_Percentage},${XValueForSelectAll},${YValueForSelectAll},${XValueForPrintButton},${YValueForPrintButton},${ActivityId})
+    { 
+        //Continue  
+    }
+    Fail:
+    {
+        Return With Fail (Failed while Performing pull print operation!)
+    }
+    Error:
+    {
+        Return With Error (Error while Performing pull print operation!)
+    }
+    Printix_TestCases.SignOut
+}

@@ -1,0 +1,91 @@
+﻿///<File>DevHealth_PortalDeviceSearch.txt</File>
+///<Modified>2020-04-22</Modified>
+///<Description>Sign in to the Device Health portal site then search for the specified device</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using DevHealth_PortalDeviceSearch.gfvar
+
+// name of performance timing file
+${PerformanceFileName} = PortalReliability
+
+Using DevHealth_Web_Library.gflib
+
+Using Web
+Using Info
+
+/// <Name>DevHealth_SignIn</Name>
+/// <Description>Sign in to the Device Health portal site</Description>
+/// <Notes></Notes>
+DevHealth_SignIn
+{
+    Info.Start Time Check(${PerformanceFileName})
+
+    // Signin
+    Info.Mark Start(${PerformanceFileName},SignIn)
+    IF: DevHealth_Web_Library.SignIn (${DevHealth_User},${DevHealth_PassWord},${DevHealth_url},${DevHealth_Browser},${DevHealth_LogInTimeOut})
+    {
+        Info.Mark End(${PerformanceFileName},SignIn)
+        Sleep(${Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Device Health Sign In Failed!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Device Health Sign In Errored!)
+        Stop Test Suite
+    }
+}
+
+/// <Name>DevHealth_DeviceSearch</Name>
+/// <Description>Search for the specified device</Description>
+/// <Notes></Notes>
+DevHealth_DeviceSearch
+{
+    Info.Mark Start(${PerformanceFileName},SearchForDevice)
+    IF: DevHealth_Web_Library.SearchForDevice(${DevHealth_SN})
+    {
+        Info.Mark End(${PerformanceFileName},SearchForDevice)
+        Sleep (${Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Device Health device search Failed!)
+    }
+    Error:
+    {
+        Error (Device Health device search Errored!)
+    }
+}
+
+/// <Name>DevHealth_SignOut</Name>
+/// <Description>Sign out of the portal and close the browser</Description>
+/// <Notes></Notes>
+DevHealth_SignOut
+{
+    Info.Mark Start(${PerformanceFileName},SignOut)
+    IF: DevHealth_Web_Library.SignOut
+    {
+        Info.Mark End(${PerformanceFileName},SignOut)
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Device Health sign out Failed!)
+    }
+    Error:
+    {
+        Error (Device Health sign out Errored!)
+    }
+    
+    Web.Close
+    Sleep (${Very_Short_Wait_Time})
+}

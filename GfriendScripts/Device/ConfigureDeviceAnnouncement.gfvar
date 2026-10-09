@@ -1,0 +1,4 @@
+﻿${Configure_DeviceAnnouncement}=N
+${DeviceAnnouncement_Enable}=Y
+${DeviceAnnouncement_ServerIP}=15.86.231.33
+${DeviceAnnouncement_EnableMaxTime}=180

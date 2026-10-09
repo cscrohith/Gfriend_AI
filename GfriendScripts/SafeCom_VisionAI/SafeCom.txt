@@ -1,0 +1,23 @@
+﻿using SafeCom.gfvar
+using SafeComTC.gflib
+
+Setup_AIVision
+{
+    SafeComTC.VisionAISetup(${STF_AzureEndpoint},${SOLUTION_NAME})
+}
+
+Authentication
+{
+    SafeComTC.Authentication(${STF_UserName},${BADGE_AUTH},${STF_BadgeIndex})
+}
+
+Execute_Job_Flow
+{
+    //To Print the job
+   SafeComTC.Execute_PullPrint(${PRINT_ALL}) 
+}
+
+Teardown
+{
+    SafeComTC.Teardown()
+}

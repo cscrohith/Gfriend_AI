@@ -1,0 +1,1615 @@
+﻿using ..\Workpath_Common\Common_Workpath_Variables.gfvar
+using ..\Workpath_Common\Common_Workpath_Library.gflib
+using Functional_workpath.gflib
+using Functional_workpath.gfvar
+
+
+T1984992393_Validate_SafeQ_Cloud_Scan_To_Email
+{
+    
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.T1984992393_Validate_SafeQ_Cloud_Scan_To_Email
+    Common_Workpath_Library.Device_Logout
+    
+  
+}
+T1984992419_Validate_Scan_to_Email_functionality_using_SafeQ 
+{
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.T1984992393_Validate_SafeQ_Cloud_Scan_To_Email
+    Common_Workpath_Library.Device_Logout  
+    
+}
+
+//Validate_pull_print_Functionality_using_SafeQ_(Embedded_and_Workpath_devices)
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the print job is going to release.
+//${Excel_File_Name},${Pdf_Name},${pptx_Name},${TXT_Name},${Word_Name},${JPG_Name},${GIF_Name},${BMP_Name} - Path of the File
+//${App_Name}     - Name of the Application
+T1984992418_Validate_pull_print_Functionality_using_SafeQ_(Embedded_and_Workpath_devices)
+{
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    Common_Workpath_Library.Large_File_Job(${Excel_File_Name},${Pdf_Name},${pptx_Name},${TXT_Name},${Word_Name},${JPG_Name},${GIF_Name},${BMP_Name},${Queue_Name},${App_Name})
+    Common_Workpath_Library.Pull_Print_Operations()  
+    Functional_workpath.T1984992418_Validate_pull_print_Functionality_JobDetails
+    Repeat:3
+    {
+        Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    }
+    Functional_workpath.T1984992418_Validate_pull_print_functionality_Single_Print_SelectAll_Print
+    Repeat:3
+    {
+        Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    }
+    Functional_workpath.T1984992418_Validate_Pull_Print_functionality_Signle_Job_Delete_SelectAll_Delete
+    Common_Workpath_Library.Device_Logout
+}
+
+//Print_Queue_Creation-Pull_Print_Direct_Print
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Direct_Print_Queue_Name}   - Name of the direct print queue
+//${Pull_Print_Queue_Name}     - Name of the Pull print queue 
+//${Printer_Name}              - Name of the printer
+//${Job_Name}                  - Name of the print job is going to release.
+T1984992404_Print_Queue_Creation-Pull_Print_Direct_Print
+{
+    Common_Workpath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workpath.T1984992404_Validate_Print_Queue_Creation-Direct_Print(${Direct_Print_Queue_Name},${Printer_Name})
+    Functional_workpath.SynchronizePrinter()
+    //Sending job to the Direct Print queue
+    Windows.Print File To Print Queue (${Job_Path},${Direct_Print_Queue_Name})
+    JediOmni.Enable Paperless Mode
+    Functional_workpath.Validate_Direct_Job_Printed(${Job_Name}) 
+    Functional_workpath.T1984992404_Validate_Print_Queue_Creation-Pull_Print(${Pull_Print_Queue_Name},${Printer_Name})
+    Functional_workpath.SynchronizePrinter()
+    //Sending job to the Pull Print queue
+    Windows.Print File To Print Queue (${Job_Path},${Pull_Print_Queue_Name})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode 
+    Functional_workpath.Validate_Pull_Job_Printed(${Job_Name})    
+    Common_Workpath_Library.Device_Logout
+}    
+
+//Scanning_workflows_not_truncated-Workpath
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Scan_to_Email}   - Update the ‘Scan to Email’ to a more detailed and lengthy version.
+T1993711401_Scanning_workflows_not_truncated-Workpath
+{
+    Common_Workpath_Library.Portal_Login (${Site},${Username},${Password})
+    //Updating the Scan-to-Email name.
+    Functional_workpath.T1993711401_Validate_Scanning_workflows_not_truncated(${Scan_to_Email})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode 
+    //Verifying that the Scan-to-Email name is updated successfully.
+    Functional_workpath.Validate_ScanToEMail_Name_Updated(${Scan_to_Email})   
+    Common_Workpath_Library.Device_Logout
+}
+
+//Validate_and_generate_the_SafeQ_report
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+//${Before_Print} - Print Jobs count before printing the jobs.
+T1984992423_Validate_and_generate_the_SafeQ_report
+{
+    Common_Workpath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workpath.Validate_and_generate_the_SafeQ_report_Before_Print()
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    Common_Workpath_Library.Pull_Print_Operations
+    Common_Workpath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workpath.Validate_and_generate_the_SafeQ_report_after_Print(${Before_Print})   
+}
+
+//Validate_SafeQ_Cloud_Pull_Print_Options-Workpath()
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+//${Excel_File_Name},${Pdf_Name},${pptx_Name},${TXT_Name},${Word_Name},${JPG_Name},${GIF_Name},${BMP_Name} - Path of the File
+//${App_Name}     - Name of the Application
+T1984992392_Validate_SafeQ_Cloud_Pull_Print_Options-Workpath()
+{
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    //Sending multiple print jobs
+    Common_Workpath_Library.Large_File_Job(${Excel_File_Name},${Pdf_Name},${pptx_Name},${TXT_Name},${Word_Name},${JPG_Name},${GIF_Name},${BMP_Name},${Queue_Name},${App_Name})
+    //Releasing all the jobs.
+    Functional_workpath.T1984992392_Validate_SafeQ_Cloud_Pull_Print_Options-Workpath_PrintAll
+    Common_Workpath_Library.Large_File_Job(${Excel_File_Name},${Pdf_Name},${pptx_Name},${TXT_Name},${Word_Name},${JPG_Name},${GIF_Name},${BMP_Name},${Queue_Name},${App_Name})
+    //Releasing only three the jobs.
+    Functional_workpath.T1984992392_Validate_SafeQ_Cloud_Pull_Print_Options-Workpath_Threejobs
+    Repeat:2
+    {
+        Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    }
+    Functional_workpath.T1984992392_Validate_SafeQ_Cloud_Pull_Print_Options-Workpath()
+    Common_Workpath_Library.Device_Logout
+}
+
+//Validate_SafeQ_Cloud_Web_Portal_My_Documents_Upload_Functionality
+//Prerequisites:
+//First ensure that the pull print queue is empty for that User.
+//${File_Path1} and ${File_Path2} - Name of the file path
+//${Pull_Print_Queue_Name}        - Name of the Pull print Queue 
+//${File_Name1} and ${File_Name2} - Name of the files
+T1984992409_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Upload_Functionality
+{
+    Common_Workpath_Library.Send_Jobs (${File_Path1},${Pull_Print_Queue_Name})
+    Common_Workpath_Library.Send_Jobs (${File_Path2},${Pull_Print_Queue_Name})
+    Common_Workpath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workpath.T1984992409_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Functionality(${File_Name1},${File_Name2}) 
+    Common_Workpath_Library.Send_Jobs (${File_Path1},${Pull_Print_Queue_Name})
+    Common_Workpath_Library.Send_Jobs (${File_Path2},${Pull_Print_Queue_Name})
+    Functional_workpath.T1984992409_Validate_SafeQ_Cloud_Web_Portal_My_Documents_Upload_Functionality(${File_Name1},${File_Name2},${File_Path1},${Pull_Print_Queue_Name})
+    Functional_workpath.T1984992409_Validate_SafeQ_Cloud_Web_Portal_My_Documents_File_upload_Functionality(${File_Path2})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    Functional_workpath.Validate_SafeQ_Cloud_Web_Portal_My_Documents_File_upload_Functionality_Release_All 
+    Common_Workpath_Library.Device_Logout
+}
+// Prerequisites:
+// Add printer to send DirectIP print jobs and provide DirectIp printer name as variable
+// Keep all the trays empty
+
+T1984992422_Validate_Pull_Print_Single_Function_Swipe_to_Print_All_Pull_Print_with_Paper_Out_and_Direct_IP_Print
+{
+   JediOmni.Enable Paperless Mode
+   Repeat:3
+   {
+       Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+   }
+   Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+   Common_Workpath_Library.Pull_Print_Operations
+   Common_Workpath_Library.Device_Logout
+   JediOmni.Disable Paperless Mode
+   Repeat:3
+   {
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+   }
+   Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+   Common_Workpath_Library.Pull_Print_Operations
+   Common_Workpath_Library.T1984992422_Paper_Out_and_Direct_IP_Print_Trays
+   JediOmni.Enable Paperless Mode
+   Common_Workpath_Library.Device_Logout
+   JediOmni.Enable Paperless Mode
+   Common_Workpath_Library.DirectIP_Print_Send_Jobs(${Printer_Name})
+}
+
+T1984992403_Validate_SafeQCloudClientSoftware_InstallationandUse
+{
+    Functional_workpath.T1984992403_Portal_Login_WaitForWindowsDownloadedFile(${Site},${Username},${Password},${SafeQExeFilePath})
+    Functional_workpath.T1993711397_RunExeAsAdministrator(${SafeQExeFilePath})
+    Common_Workpath_Library.Portal_Login(${Site},${Username},${Password})
+    Functional_workpath.T1993711397_FetchPrintQueueNames_Tenent_Portal
+    Functional_workpath.T1993711397_NavigateWindowsPrinters_and_Scanners_Validate_PrintQueueExists
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Repeat:2
+    {
+        Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+        Common_Workpath_Library.Pull_Print_Operations
+        JediOmni.Press Home Key
+    }
+}
+/// <remarks>
+/// Prerequisite: Card must be registered manually before execution.
+/// </remarks>
+
+T1993711397_Card_Authentication_On_Slower_Device
+{
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})    
+    Repeat: ${Total_Iteration}
+    {
+       JediOmni.Enable Paperless Mode       
+       Common_Workpath_Library.Badgebox_Login(${BADGE_INDEX})
+       Sleep (1)    
+       If: Equals (${R},${Total_Iteration})
+       {
+           Functional_workpath.T1993711397_PullPrintFirstJobOrSelectAll(Y)
+       }
+       Fail:
+       {
+           Functional_workpath.T1993711397_PullPrintFirstJobOrSelectAll(N)
+       }       
+       Common_Workpath_Library.Badgebox_LogOut(${BADGE_INDEX},${WaitTime})
+    }
+}
+
+T1993711399_SafeQ_Workpath_Print_LargeFile
+{
+    Functional_workpath.T1993711399_LargeFile_More_Than_10MB (${Job_Path_MB},${Pull_Print_Queue_Name})
+    //Common_Workpath_Library.Device_PIN_Login (${Device_PIN})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    //Common_Workpath_Library.Badgebox_Login (${BADGE_INDEX_1})
+    Functional_workpath.T1993711399_Check_Previous_Job
+    Common_Workpath_Library.Pull_Print_Operations
+    Common_Workpath_Library.Device_Logout
+    
+    Functional_workpath.T1993711399_LargeFile_More_Than_100Pages (${Job_Path_Pages},${Pull_Print_Queue_Name})
+    //Common_Workpath_Library.Device_PIN_Login (${Device_PIN})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    //Common_Workpath_Library.Badgebox_Login (${BADGE_INDEX_1})
+    Functional_workpath.T1993711399_Check_Previous_Job
+    Common_Workpath_Library.Pull_Print_Operations
+    Common_Workpath_Library.Device_Logout
+}
+T1984992389_Validate_SafeQ_Cloud_Authentication_PIN_Workpath()
+{
+        Common_WorkPath_Library.Portal_Login (${Site},${Username},${Password})
+        Functional_workpath.T1984992389_Validate_SafeQ_Cloud_Authentication_PIN_Workpath (${EWS_Password},${Device_PIN},${Device_IP})
+        Common_WorkPath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+        Common_WorkPath_Library.Device_PIN_Login(${Device_PIN})
+        Common_WorkPath_Library.Pull_Print_Operations()
+        Common_WorkPath_Library.Device_Logout()
+}
+
+T1984992390_Validate SafeQ Cloud Authentication - Username & Password - Workpath()
+{
+    Common_WorkPath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workpath.T1984992390_Validate_SafeQ_Cloud_Authentication_Username_&_Password_Workpath(${EWS_Password})
+    Common_WorkPath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_WorkPath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Common_WorkPath_Library.Pull_Print_Operations()
+    Common_WorkPath_Library.Device_Logout()
+}
+
+//As we don't use HPCC we have written the script for this testcase only in tenant
+T1984992391_Validate_SafeQ_Cloud_Device_Configuration_Workpath()
+{
+    Common_WorkPath_Library.WorkPath_Installation()
+    Common_WorkPath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workpath.T1984992391_Validate_SafeQ_Cloud_Device_Configuration_Workpath(${Device_IP},${Device_name},${Device_Serial_No})
+    Common_WorkPath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_WorkPath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Common_WorkPath_Library.Pull_Print_Operations()
+    Common_WorkPath_Library.Device_Logout()
+}
+
+//As we don't use HPCC we have written the script for this testcase only in tenant
+T1984992396_Validate_the_Workpath_Agentless_in_SafeQ_Cloud()
+{
+    Common_WorkPath_Library.WorkPath_Installation()
+    Common_WorkPath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workpath.T1984992396_Validate_the_Workpath_Agentless_in_SafeQ_Cloud (${Device_IP},${Device_name},${Device_Serial_No})
+}
+
+
+
+T1984992410_Validate_SafeQ_Authentication_Username_and_Password_Workpath_devices
+{
+    Common_WorkPath_Library.WorkPath_Installation()
+    Common_WorkPath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workpath.T1984992410_Validate_SafeQ_Authentication_Username_and_Password_Workpath_devices (${Device_IP},${Device_name},${Device_Serial_No})
+    Common_WorkPath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Common_WorkPath_Library.Device_Logout
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         T1984992426: Pull Print Functionality and Exploratory
+//        
+// Description:     1) Validate Pull Print functionality using various document sizes and types.  
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+T1984992426_Pull_Print_Functionality_and_Exploratory
+{
+    Common_Workpath_Library.Enable_Paperless_Mode
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_All_Print_Jobs(${first-print-job-radio-button},${select-all-printjobs-button},${medium-wait})
+    If:Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    {
+    }
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    
+    //Validate_PullPrint_Using_Excel_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+   
+    //Validate_PullPrint_Using_Presentation_Document
+    // Send small presentation document to print queue.
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    
+    //Validate_PullPrint_Using_Word_Document
+    // Send small word document to print queue.
+    Functional_workpath.Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+   
+    //Validate_PullPrint_Using_PDF_Document
+    // Send small word document to print queue.
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    
+    //Validate_PullPrint_Using_Image_Document
+    // Send small word document to print queue.
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    
+    //Validate_PullPrint_Using_Notepad_Document
+    // Send small word document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout 
+    // Send multiple document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_Print_All(${print-all-app-icon},${short-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    
+    //Validate_Select_All_And_Click_Print
+    // Send multiple document to print queue.
+    Functional_workpath.Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_All_Print_Jobs(${first-print-job-radio-button},${select-all-printjobs-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_Excel_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_Presentation_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_Word_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_PDF_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_Image_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_Notepad_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_All_And_Delete
+    // Send multiple document to print queue.
+    Functional_workpath.Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_All_Print_Jobs(${first-print-job-radio-button},${select-all-printjobs-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Refresh_Option
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Send second document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    // Reload the print queue
+    Functional_workpath.Click_Reload_Button(${reload-print-jobs-button},${medium-wait})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Changing_Side_To_OneSided
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_OneSided_Setting_In_Sides_Dropdown(${one-sided-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Changing_Side_To_FlipOnLongEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnLongEdge_Setting_In_Sides_Dropdown
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Changing_Side_To_FlipOnShortEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnShortEdge_Setting_In_Sides_Dropdown(${flip-on-short-edge-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Increasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Changes settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Decreasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+   Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change Settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Decrease_Copy_Count_In_Settings(${decrease-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+}
+
+
+// Routine:         T1984767221: PullPrint Functionality and Exploratory
+//        
+// Description:     1) Validate Pull Print functionality using various document sizes and types.
+//                  2) Validate Pull Print functionality using Print-Delete and Print-Keep settings.
+//                  3) Validate Pull Print functionality using Print All, Delete and Refresh Options.
+//                  4) Validate Pull Print functionality using change Print Options.  
+
+T1984767221_PullPrint_Functionality_and_Exploratory
+{
+    Common_Workpath_Library.Enable_Paperless_Mode
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_All_Print_Jobs(${first-print-job-radio-button},${select-all-printjobs-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // ****************************************************************************************************
+    // *        Validate print-delete using various document sizes and types                                *
+    // ****************************************************************************************************
+    //Validate_PullPrint_Using_Excel_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Functional_workpath.Device_Logout
+    //Validate_PullPrint_Using_Presentation_Document
+    // Send small presentation document to print queue.
+    Common_Workpath_Library.Send_Small_Presentation_For_Print
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load
+    Functional_workpath.Open_My_Print_Jobs
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Word_Document
+    // Send small word document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})  
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_PDF_Document
+    // Send small word document to print queue.
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Image_Document
+    // Send small word document to print queue.
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Notepad_Document
+    // Send small word document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout  
+    //Validate_MyQuickAction_PrintAll_Option
+    // Send multiple document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_Print_All(${print-all-app-icon},${short-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_All_And_Click_Print
+    // Send multiple document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_All_Print_Jobs(${first-print-job-radio-button},${select-all-printjobs-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // ****************************************************************************************************
+    // *        Validate pull print functionality using delete option                                     *
+    // ****************************************************************************************************
+    //Validate_Select_First_And_Delete_Using_Excel_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_Presentation_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_Word_Document
+    // Send small excel document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpathWait_For_MyQuickActions_Page_To_Load
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_PDF_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_Image_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_First_And_Delete_Using_Notepad_Document
+    // Send small excel document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_Select_All_And_Delete
+    // Send multiple document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_All_Print_Jobs(${first-print-job-radio-button},${select-all-printjobs-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // ****************************************************************************************************
+    // *        Validate pull print functionality using refresh option                                    *
+    // ****************************************************************************************************
+    //Validate_PullPrint_Using_Refresh_Option
+    // Send document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    // Printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Send second document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    // Reload the print queue
+    Functional_workpath.Click_Reload_Button(${reload-print-jobs-button},${medium-wait})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Functional_workpath.Select_First_Print_Job(${first-print-job-radio-button},${medium-wait})
+    Functional_workpath.Click_Print_Button(${print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // ****************************************************************************************************
+    // *        Validate pull print functionality after changing the print options.                       *
+    // ****************************************************************************************************
+    //Validate_PullPrint_Changing_Side_To_OneSided
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_OneSided_Setting_In_Sides_Dropdown(${one-sided-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Changing_Side_To_FlipOnLongEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnLongEdge_Setting_In_Sides_Dropdown
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Changing_Side_To_FlipOnShortEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnShortEdge_Setting_In_Sides_Dropdown(${flip-on-short-edge-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Increasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Changes settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Decreasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change Settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Decrease_Copy_Count_In_Settings(${decrease-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Routine:         T1984767212: Validate pull print Functionality using SafeQ (Embedded and Workpath devices)
+//        
+// Description:     Validate pull print Functionality using SafeQ(Embedded and Workpath devices)  
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+T1984767212_Validate_PullPrint_Functionality
+{
+    Common_Workpath_Library.Enable_Paperless_Mode
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Select_All_Print_Jobs(${first-print-job-radio-button},${select-all-printjobs-button},${medium-wait})
+    Functional_workpath.Click_Delete_Button(${delete-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // ****************************************************************************************************
+    // *        Perform print operation with an excel file. Select all possible options                   *
+    // ****************************************************************************************************
+
+    //Validate_PullPrint_Using_Excel_Document_And_Changing_Side_To_OneSided
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key}) 
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})  
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_OneSided_Setting_In_Sides_Dropdown(${one-sided-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Excel_And_Changing_Side_To_FlipOnLongEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})   
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnLongEdge_Setting_In_Sides_Dropdown
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Excel_And_Changing_Side_To_FlipOnShortEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})  
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnShortEdge_Setting_In_Sides_Dropdown(${flip-on-short-edge-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Excel_And_Increasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})   
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})    
+    // Changes settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    //Validate_PullPrint_Using_Excel_And_Decreasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Excel_Document_For_Print(${excel-document-file},${print-queue-name},${alt-f},${ultra-short-wait},${medium-wait},${p-key})  
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})  
+    // Change Settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Decrease_Copy_Count_In_Settings(${decrease-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // ****************************************************************************************************
+    // *        Perform print operation with a word file. Select all possible options                     *
+    // ****************************************************************************************************
+
+    //Validate_PullPrint_Using_Word_Document_And_Changing_Side_To_OneSided
+    // Send document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})    
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_OneSided_Setting_In_Sides_Dropdown(${one-sided-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Word_And_Changing_Side_To_FlipOnLongEdge
+    // Send document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})   
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnLongEdge_Setting_In_Sides_Dropdown
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Word_And_Changing_Side_To_FlipOnShortEdge
+    // Send document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})    
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})    
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnShortEdge_Setting_In_Sides_Dropdown(${flip-on-short-edge-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Word_And_Increasing_CountOfCopies
+    // Send document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})   
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})    
+    // Changes settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Word_And_Decreasing_CountOfCopies
+    // Send document to print queue.
+    Send_Small_Word_Document_For_Print(${word-document-file},${print-queue-name},${alt-f},${p-key})    
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})   
+    // Change Settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Decrease_Copy_Count_In_Settings(${decrease-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // **********************************************************************************************************
+    // *        Perform print operation with a power point presentation file. Select all possible options       *
+    // **********************************************************************************************************
+    //Validate_PullPrint_Using_Presentation_Document_And_Changing_Side_To_OneSided
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})    
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})    
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_OneSided_Setting_In_Sides_Dropdown(${one-sided-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Presentation_And_Changing_Side_To_FlipOnLongEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})    
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})   
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnLongEdge_Setting_In_Sides_Dropdown
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Presentation_And_Changing_Side_To_FlipOnShortEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})  
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})   
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnShortEdge_Setting_In_Sides_Dropdown(${flip-on-short-edge-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Presentation_And_Increasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})  
+    // Changes settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Presentation_And_Decreasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Presentation_For_Print(${ppt-document-file},${print-queue-name},${ultra-short-wait},${alt-f},${p-key})  
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})    
+    // Change Settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Decrease_Copy_Count_In_Settings(${decrease-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // *************************************************************************************
+    // *        Perform print operation with a PDF file. Select all possible options       *
+    // *************************************************************************************
+    //Validate_PullPrint_Using_PDF_Document_And_Changing_Side_To_OneSided
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})   
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})    
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_OneSided_Setting_In_Sides_Dropdown(${one-sided-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_PDF_And_Changing_Side_To_FlipOnLongEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})   
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})  
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnLongEdge_Setting_In_Sides_Dropdown
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_PDF_And_Changing_Side_To_FlipOnShortEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})   
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnShortEdge_Setting_In_Sides_Dropdown(${flip-on-short-edge-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_PDF_And_Increasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})    
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})    
+    // Changes settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_PDF_And_Decreasing_CountOfCopies
+     // Send document to print queue.
+    Functional_workpath.Send_Small_Pdf_For_Print(${pdf-document-file},${print-queue-name},${extra-long-wait},${alt-f4})  
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})  
+    // Change Settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Decrease_Copy_Count_In_Settings(${decrease-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // *************************************************************************************
+    // *        Perform print operation with a text file. Select all possible options      *
+    // *************************************************************************************
+    //Validate_PullPrint_Using_Text_Document_And_Changing_Side_To_OneSided
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait}) 
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_OneSided_Setting_In_Sides_Dropdown(${one-sided-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Text_And_Changing_Side_To_FlipOnLongEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})  
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnLongEdge_Setting_In_Sides_Dropdown
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Text_And_Changing_Side_To_FlipOnShortEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})   
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnShortEdge_Setting_In_Sides_Dropdown(${flip-on-short-edge-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Text_And_Increasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})    
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Changes settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Text_And_Decreasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Notepad_File_For_Print(${text-document-file},${print-queue-name},${medium-wait})
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change Settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Decrease_Copy_Count_In_Settings(${decrease-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    // *************************************************************************************
+    // *        Perform print operation with a image file. Select all possible options     *
+    // *************************************************************************************
+    //Validate_PullPrint_Using_Image_Document_And_Changing_Side_To_OneSided
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})  
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_OneSided_Setting_In_Sides_Dropdown(${one-sided-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Image_And_Changing_Side_To_FlipOnLongEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})    
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})   
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnLongEdge_Setting_In_Sides_Dropdown
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Image_And_Changing_Side_To_FlipOnShortEdge
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait}) 
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})  
+    // Change settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Open_Sides_Dropdown_In_Settings(${sides-selection-dropdown},${medium-wait})
+    Functional_workpath.Select_FlipOnShortEdge_Setting_In_Sides_Dropdown(${flip-on-short-edge-dropdown-item},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Image_And_Increasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})  
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})   
+    // Changes settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+    //Validate_PullPrint_Using_Image_And_Decreasing_CountOfCopies
+    // Send document to print queue.
+    Functional_workpath.Send_Small_Image_File_For_Print(${mspaint-executable-path},${image-document-file},${print-queue-name},${cannot-complete-operation-OK-button},${short-wait})    
+    // Perform printer operation
+    Functional_workpath.Reset_Printer(${signout-text},${jediomni-sign-out-button}, ${logout-button},${short-wait}, ${medium-wait}, ${long-wait})
+    Functional_workpath
+    Functional_workpath.Open_SafeQ_SecurePrint_And_Scan_App(${secure-print-and-scan-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Wait_For_MyQuickActions_Page_To_Load(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    Functional_workpath.Open_My_Print_Jobs(${my-print-jobs-app-icon},${short-wait},${medium-wait})
+    // Change Settings
+    Functional_workpath.Open_First_Print_Job_Settings(${first-print-job-settings},${medium-wait})
+    Functional_workpath.Increase_Copy_Count_In_Settings(${increase-copy-count},${medium-wait})
+    Functional_workpath.Decrease_Copy_Count_In_Settings(${decrease-copy-count},${medium-wait})
+    Functional_workpath.Click_Print_Button_On_Job_Details(${job-details-print-button},${medium-wait})
+    Functional_workpath.Wait_Till_Printing_Is_Complete(${cancel-printing-button},${max-printing-wait})
+    Common_Workpath_Library.Device_Logout
+}
+
+///Add the printer to HP Command Centre
+///Sync the printer in the HP Command Centre Website
+///Install and configure the printer from the HP Command Centre Website
+///Add the printer to the tenant website printer queue
+///We can run all three at once or one by one for HP, Gmail and Azure
+///Since we dont have gmail domain and Azure tenant id, validation for HP has been done, but not for the other 2
+// Add HPCC  URL in GFVar file - ${HPCC_Site}
+// Add HPCC Username in GFVar file - ${HPCC_User}
+// Add HPCC Password in GFVar file - ${HPCC_Pwd}
+// Add Device PIN in GFVar file - ${Device_PIN}
+// Add SIO PIN in GFVar file - ${SIO_Pin}
+// Add Printer Name in GFVar file - ${HPCC_Printer}
+// Add Print Queue Name in GFVar file - ${Queue_Name}
+// Add Print Job File Path in GFVar file - ${Job_Path}
+// Add Google Domain in GFVar file - ${Google_domain}
+T1984992405_Validate_SafeQ_Cloud_Authentication_with_SIO
+{
+    Functional_workpath.T1984992405_Enable_Printer_HP_SIO
+    //Functional_workpath.T1984992405_Enable_Printer_Azure_SIO
+    //Functional_workpath.T1984992405_Enable_Printer_Google_SIO
+}
+
+//Add the printer to HP Command Center.
+//Sync the printer with the HP Command Center website.
+//Install and configure the printer through the HP Command Center website.
+//Add the printer to the tenant website printer queue.
+//We can perform all three integrations (HP, Gmail, and Azure) either simultaneously or individually.
+//Since the Gmail domain and Azure tenant ID are currently unavailable, validation has been completed only for HP and has not yet been performed for Gmail or Azure.
+//Although the heading mentions SSO, the steps provided are for SIO, so I followed the SIO steps.
+// Add HPCC Tenant URL in GFVar file - ${HPCC_Site}
+// Add HPCC Username in GFVar file - ${HPCC_User}
+// Add HPCC Password in GFVar file - ${HPCC_Pwd}
+// Add Device PIN in GFVar file - ${Device_PIN}
+// Add SIO PIN in GFVar file - ${SIO_Pin}
+// Add Printer Name in GFVar file - ${HPCC_Printer}
+// Add Print Queue Name in GFVar file - ${Queue_Name}
+// Add Print Job File Path in GFVar file - ${Job_Path}
+// Add Google Domain in GFVar file - ${Google_domain}
+T1984992411_Validate_SafeQ_Authentication_Two_Factor_Single_sign_on
+{
+    Functional_workpath.T1984992405_Enable_Printer_HP_SIO
+    Functional_workpath.T1984992405_Enable_Printer_Azure_SIO
+    Functional_workpath.T1984992405_Enable_Printer_Google_SIO
+}
+
+///Add whether printer is color or mono by setting IsColorMFP to Y or N
+T1984992407_Validate_SafeQ_Cloud_Report_Color_Mono
+{
+    Functional_workpath.T1984992407_Mono_Color_Report_Device_Print${IsColorMFP}
+    Functional_workpath.T1984992407_Mono_Color_Report_Device_Scan${IsColorMFP}
+    Functional_workpath.T1984992407_Mono_Color_Report_User_Print${IsColorMFP}
+    Functional_workpath.T1984992407_Mono_Color_Report_User_Scan${IsColorMFP}
+    Functional_workpath.T1984992407_Mono_Color_Report_Department_Print${IsColorMFP}
+    Functional_workpath.T1984992407_Mono_Color_Report_Department_Scan${IsColorMFP}
+}
+
+// Prerequisite:
+// Install and configure the device with SafeQ Cloud in the SCL team tenant.
+// Log in using PIN authentication.
+// Note: Currently, only Chandra Prakash's credentials are supported for Sharepoint setup.
+T1984992395_Validate_SafeQ_Cloud_Sharepoint_Behavior_Workpath_only
+{  
+    Common_Workpath_Library.Device_PIN_Login(${Device_PIN})
+    Functional_workpath.T1984992395_Validate_SafeQ_Cloud_Sharepoint_Behavior_Workpath_only
+    Common_Workpath_Library.Device_Logout  
+}
+  
+// Prerequisite:
+// Install and configure the device with SafeQ Cloud in the SCL team tenant.
+// Log in using PIN authentication.
+// Note: Currently, only Chandra Prakash's credentials are supported for Sharepoint setup.
+T1984992420_Validate_SharePoint_behavior_in_SafeQ
+{  
+    Common_Workpath_Library.Device_PIN_Login(${Device_PIN})
+    Functional_workpath.T1984992395_Validate_SafeQ_Cloud_Sharepoint_Behavior_Workpath_only
+    Common_Workpath_Library.Device_Logout   
+}
+
+// Prerequisite:
+// Install and configure the device with SafeQ Cloud in the SCL team tenant.
+// Log in using PIN authentication.
+// Note: Currently, only Chandra Prakash's credentials are supported for OneDrive setup.
+T1984992394_Validate_SafeQ_Cloud_OneDrive_Behavior_Workpath_only
+{
+    Common_Workpath_Library.Device_PIN_Login(${Device_PIN})
+    Functional_workpath.T1984992394_Validate_SafeQ_Cloud_OneDrive_Behavior_Workpath_only
+    Common_Workpath_Library.Device_Logout
+}
+
+// Prerequisite:
+// Install and configure the device with SafeQ Cloud in the SCL team tenant.
+// Log in using PIN authentication.
+// Note: Currently, only Chandra Prakash's credentials are supported for OneDrive setup.
+T1984992421_Validate_OneDrive_behavior_in_SafeQ
+{
+    Common_Workpath_Library.Device_PIN_Login(${Device_PIN})
+    Functional_workpath.T1984992394_Validate_SafeQ_Cloud_OneDrive_Behavior_Workpath_only
+    Common_Workpath_Library.Device_Logout
+}
+
+// Prerequisite:
+//Provide the Installed IPP Printer name
+//install workpath from HPCC,Add the printer to HP Command Center.
+//Sync the printer with the HP Command Center website.
+//Install and configure the printer through the HP Command Center website.
+//Add the printer to the tenant website printer queue.
+T1984992388_Validate_SafeQ_Cloud_Color_and_Stapling_Behavior_With_UPD_PCL6_Driver_and_IPP_Port(Subaru)
+{
+    Common_WorkPath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workPath.Printer_and_Printerqueue_Settings
+    Functional_workPath.IPP_Port(${ControlPanelPath})
+    Functional_workPath.Printing_Properties(${IPP_Printername})
+    Common_WorkPath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_WorkPath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Common_WorkPath_Library.Pull_Print_Operations()
+    Common_WorkPath_Library.Device_Logout()
+}
+
+// Prerequisites:
+//Provide the Installed IPP Printer name in the variable
+//Install workpath from HPCC, Add the printer to HP Command Center.
+//Sync the printer with the HP Command Center website.
+//Install and configure the printer through the HP Command Center website.
+//Add the printer to the tenant website printer queue.
+T1993711242_Booklet_and_Staple
+{
+    Common_WorkPath_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_workPath.Printer_and_Printerqueue_Settings
+    Functional_workPath.IPP_Port(${ControlPanelPath})
+    Functional_workPath.Printing_Properties(${IPP_Printername})
+    Common_WorkPath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_WorkPath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Common_WorkPath_Library.Pull_Print_Operations()
+    Common_WorkPath_Library.Device_Logout()
+}

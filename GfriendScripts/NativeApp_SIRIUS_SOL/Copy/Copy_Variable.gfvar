@@ -1,0 +1,16 @@
+﻿//Copy Variables
+
+//Variable for Copy Sides
+//For 1 -> 1, provide the variable ${Copy_Sides} value as 1 -> 1
+//For 2 -> 2, provide the variable ${Copy_Sides} 2 -> 2
+//For 1 -> 2, provide the variable ${Copy_Sides} value as 1 -> 2
+//For 2 -> 1, provide the variable ${Copy_Sides} 2 -> 1
+
+${Copy_Sides} = 1 -> 2
+
+//Variable for Copy Tray
+//For Tray 1, provide the variable ${Copy_Tray} value as Tray 1
+//For Tray 2, provide the variable ${Copy_Tray} value as Tray 2
+//For Automatic, provide the variable ${Copy_Tray} value as Automatic
+
+${Copy_Tray} = Tray 2

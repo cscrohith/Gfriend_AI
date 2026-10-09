@@ -1,0 +1,55 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+
+Authentication
+{
+    Common_Library.CheckHomeScreen
+    Common_Library.AuthenticationEager(${UserName},${Password})
+}
+ScanToEmailWorkFlow
+{
+    If: Dune.Wait For (#ScanFolderGUID,10)
+    {
+        //clicks on Scan Folder 
+        Dune.Click (#ScanFolderGUID)
+        
+        //wait and clicks on Scan to Email app 
+        Dune.Wait For (#b8460c9e-43c8-4290-a0f8-8ce450867f09,5)
+        Dune.Click (#b8460c9e-43c8-4290-a0f8-8ce450867f09)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to click on Scan Application)
+        Stop Test Suite
+    }
+         
+    //entering To address, From address
+    If: Dune.Wait For (#emailToFieldDestination #toEditor #emailTextFieldContainer,10)
+    {
+        Sleep (3)
+        //clicks on To address text field 
+        Dune.Click Id (#emailToFieldDestination #toEditor #emailTextFieldContainer)
+        Sleep (1)
+        //types the Email address 
+        Dune.GenericKeyPadClick (${ToAddress})
+        //waits and clicks on save file name 
+        Sleep (1)
+        Dune.SwipeVertically (#emailLandingView #DetailPanelverticalLayout,#DetailPanelverticalLayoutScrollBar,#fileNameTextField,0.05)
+        Dune.Click Id (#fileNameTextField)
+        //gives the randow file name as number 
+        Get Random Number (01,1000,${FileName})
+        Dune.Set Text (#fileNameTextField,${FileName})
+    }
+    Fail:
+    {
+        Return With Fail (Unable to update to Address)
+    }
+}
+Option_Check 
+{
+    Common_Library.Scan_Option_Validation_For_Camden_and_Busch
+}
+
+

@@ -1,0 +1,254 @@
+﻿/// <File>WP_CommonLibrary.gflib</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Library of common workpath app routines</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${AppAttestationOpenWait}=20
+${AppAttestationOptionWait}=30
+${AppAttestationMapDrive}=z
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using JediOmni
+Using Preparation
+Using Windows
+
+/// <Name>InstallApp</Name>
+/// <Description>Install 1 or more workpath apps</Description>
+/// <Parameters>${AppPath} : full path to file, or folder of files, to install</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+InstallApp(${AppPath})
+{
+    // check for app path specified
+    If: Equals (${AppPath},)
+    {
+        Return With Error (No app path specified!)
+    }
+    If: Contains (${AppPath},${)
+    {
+        Return With Error (No app path specified!)
+    }
+
+    // validate app path exists as file or folder
+    Set Variable (${AppPathValid},N)
+    If: Contains Ignore Case (${AppPath},.hpk)
+    {
+        // validate the file exists
+        If: File Exist (${AppPath})
+        {
+            Set Variable (${AppPathValid},Y)
+        }
+    }
+    Fail:
+    {
+        // assume folder so validate it exists
+        If: Folder Exist (${AppPath})
+        {
+            Set Variable (${AppPathValid},Y)
+        }
+    }
+    // if file or folder do not exist return with error
+    If: Equals (${AppPathValid},Y)
+    {
+    }
+    Fail:
+    {
+        Return With Error (Specified app path does not exist or is incorrect!)
+    }
+    
+    // attempt to install
+    If: Preparation.Install HPK (${AppPath})
+    {
+        JediOmni.Reset
+        Return With Pass (InstallApp complete!)
+    }
+    Fail:
+    {
+        Return With Fail (Fail while installing Workpath app!)
+    }
+}
+
+/// <Name>UninstallApp</Name>
+/// <Description>Uninstall 1 or more workpath apps</Description>
+/// <Parameters>${AppPath} : full path to file, or folder of files, to install</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+UninstallApp(${AppPath})
+{
+    // check for app path specified
+    If: Equals (${AppPath},)
+    {
+        Return With Error (No app path specified!)
+    }
+    If: Contains (${AppPath},${)
+    {
+        Return With Error (No app path specified!)
+    }
+
+    // validate app path exists as file or folder
+    Set Variable (${AppPathValid},N)
+    If: Contains Ignore Case (${AppPath},.hpk)
+    {
+        // validate the file exists
+        If: File Exist (${AppPath})
+        {
+            Set Variable (${AppPathValid},Y)
+        }
+    }
+    Fail:
+    {
+        // assume folder so validate it exists
+        If: Folder Exist (${AppPath})
+        {
+            Set Variable (${AppPathValid},Y)
+        }
+    }
+    // if file or folder do not exist return with error
+    If: Equals (${AppPathValid},Y)
+    {
+    }
+    Fail:
+    {
+        Return With Error (Specified app path does not exist or is incorrect!)
+    }
+    
+    // attempt to uninstall
+    If: Preparation.Uninstall HPK (${AppPath})
+    {
+        JediOmni.Reset
+        Return With Pass (UninstallApp complete!)
+    }
+    Fail:
+    {
+    Return With Fail (Fail while uninstalling Workpath app!)
+    }
+
+}
+
+/// <Name>UninstallAllApps</Name>
+/// <Description>Uninstall all workpath apps</Description>
+/// <Parameters></Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+UninstallAllApps
+{
+    Preparation.Uninstall all HPK
+}
+
+/// <Name>RunAppAttestation</Name>
+/// <Description>Run the AppAttestation utility on the device to configure
+///AppAttestion for the specified utiity option</Description>
+/// <Parameters>DeviceIP : IP of device</Parameters>
+/// <Parameters>Utility_Path : full path to the AppAttestation utility folder</Parameters>
+/// <Parameters>Utility_Exe : AppAttestation utility executable</Parameters>
+/// <Parameters>Utility_Account : account user name to use</Parameters>
+/// <Parameters>Utility_Option : app option in utility</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+RunAppAttestation(${DeviceIP},${Utility_Path},${Utility_Exe},${Utility_Account},${Utility_Option})
+{
+    // check for device IP specified
+    If: Equals (${DeviceIP},)
+    {
+        Return With Error (No device IP specified!)
+    }
+    If: Contains (${DeviceIP},${)
+    {
+        Return With Error (No device IP specified!)
+    }
+    
+    // check for utility path specified
+    If: Equals (${Utility_Path},)
+    {
+        Return With Error (No AppAttestation path specified!)
+    }
+    If: Contains (${Utility_Path},${)
+    {
+        Return With Error (No AppAttestation path specified!)
+    }
+    
+    // check for utility executable specified
+    If: Equals (${Utility_Exe},)
+    {
+        Return With Error (No AppAttestation executable specified!)
+    }
+    If: Contains (${Utility_Exe},${)
+    {
+        Return With Error (No AppAttestation executable specified!)
+    }
+    
+    // check for account user name specified
+    If: Equals (${Utility_Account},)
+    {
+        Return With Error (No account user name specified!)
+    }
+    If: Contains (${Utility_Account},${)
+    {
+        Return With Error (No account user name specified!)
+    }
+    
+    // open a command window
+    If: Windows.Open With Path (c:\Windows\system32\cmd.exe)
+    {
+        Sleep (${Short_Wait_Time})
+    }
+    Fail:
+    {
+        Return With Fail (Fail opening a command window needed to run the utility!)
+    }
+    
+    // move to the utility path, connecting as z drive if network
+    Set Variable (${NetShareUsed},N)
+    If: Contains (${Utility_Path},\\)
+    {
+        Windows.Send Key (net use ${AppAttestationMapDrive}: ${Utility_Path} /PERSISTENT:NO)
+        Windows.Send Special Key ([ENTER])
+        Sleep (${Wait_Time})
+        Windows.Send Key (${AppAttestationMapDrive}:)
+        Set Variable (${NetShareUsed},Y)
+    }
+    Fail:
+    {
+        Windows.Send Key (cd ${Utility_Path})
+    }
+    Windows.Send Special Key ([ENTER])
+    Sleep (${Short_Wait_Time})
+    
+    // run the utility
+    Windows.Send Key (${Utility_Exe} ${DeviceIP} ${Utility_Account})
+    Windows.Send Special Key ([ENTER])
+    Sleep (${AppAttestationOpenWait})
+
+    // enter the option
+    Windows.Send Key (${Utility_Option})
+    Windows.Send Special Key ([ENTER])
+    Sleep (${AppAttestationOptionWait})
+
+    // exit from the utiity
+    Windows.Send Key (${Zero_Wait_Time})
+    Windows.Send Special Key ([ENTER])
+    Windows.Send Special Key ([ENTER])
+    Sleep (${Short_Wait_Time})
+    
+    // disconnect the net if necessary
+    If: Equals (${NetShareUsed},Y)
+    {
+        Windows.Send Key (c:)
+        Windows.Send Special Key ([ENTER])
+        Sleep (${Minimal_Wait_Time})
+        Windows.Send Key (net use ${AppAttestationMapDrive}: /DELETE)
+        Windows.Send Special Key ([ENTER])
+        Sleep (${Minimal_Wait_Time})
+        Windows.Send Key (y)
+        Windows.Send Special Key ([ENTER])
+    }
+
+    //close the command window
+    Windows.Send Key (exit)
+    Windows.Send Special Key ([ENTER])
+}

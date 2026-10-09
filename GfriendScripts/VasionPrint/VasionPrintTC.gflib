@@ -1,0 +1,184 @@
+﻿using Oxpd
+using JediOmni
+using BadgeBox
+using Info
+
+Authentication(${USERNAME},${PASSWORD},${BADGE_AUTH},${BADGE_INDEX})
+{
+   If: Equals IgnoreCase (${BADGE_AUTH},Y)
+   {
+       VasionPrintTC.BadgeBoxSignIn(${BADGE_INDEX})
+   }
+   Fail:
+   {  
+       VasionPrintTC.CredentialsLogin(${USERNAME},${PASSWORD})
+   }
+}
+
+BadgeBoxSignIn(${BADGE_INDEX})
+{
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_AppShown)
+    If: JediOmni.Wait For Object (hpid-aa8109df-7933-465d-bf6d-bc9e6a92f430-homescreen-button,5)
+    {
+        JediOmni.Touch ID (hpid-aa8109df-7933-465d-bf6d-bc9e6a92f430-homescreen-button)
+        Info.Mark End (STF_AppButtonPress,1)
+    } 
+    Fail:
+    {
+        Return With Fail (PrinterLogic not available)
+        Stop Test Case
+    }
+    Oxpd.Get Browser Engine
+    Info.Mark Start (STF_Authentication,2)
+    If:Oxpd.Wait For Id (badgescan-container,2)
+    {
+        Info.Mark Start (STF_EnterCredentials,3)
+       BadgeBox.Scan Badge (${BADGE_INDEX})
+       Info.Mark End (STF_EnterCredentials,3)
+       If: Oxpd.Wait For Id (release-table-container,2)
+       {
+           Info.Mark End (STF_Authentication,2)
+           Return With Pass (Login was Successful)
+       }
+       Fail:
+       {
+           Fail (Sign In was not Successful)
+           Stop Test Case
+       }
+       Info.Mark End (STF_AppShown,4)
+   }
+   Fail:
+   {
+       Return with Fail (Not entered into Badbox Authentication screen)
+   }
+}
+
+CredentialsLogin(${USERNAME},${PASSWORD})
+{
+   Info.Start Time Check (STF_Authentication)
+   Info.Start Time Check (STF_EnterCredentials)
+   Info.Start Time Check (STF_AppButtonPress)
+   Info.Start Time Check (STF_AppShown)
+   If: JediOmni.Wait For Object (hpid-aa8109df-7933-465d-bf6d-bc9e6a92f430-homescreen-button,5)
+   {   
+       JediOmni.Touch ID (hpid-aa8109df-7933-465d-bf6d-bc9e6a92f430-homescreen-button)
+       Info.Mark End (STF_AppButtonPress,1)
+   }
+   Fail:
+   {
+       Return With Fail (PrinterLogic not available)
+       Stop Test Case
+   }
+   Oxpd.Get Browser Engine
+   Info.Mark Start (STF_Authentication,2)
+   If:Oxpd.Wait For Id (username,2) 
+   {
+      Info.Mark Start (STF_EnterCredentials,3)
+      Oxpd.Touch Id (username)
+      Oxpd.Input Text (${USERNAME})
+      JediOmni.Touch ID (hpid-keyboard-key-done)
+      Oxpd.Touch Id (password)
+      Oxpd.Input Text (${PASSWORD})
+      JediOmni.Touch ID (hpid-keyboard-key-done)
+      Oxpd.Touch Id (login-btn)
+      Info.Mark End (STF_EnterCredentials,3)
+      If: Oxpd.Wait For Id (release-table-container,2)
+      {
+          Info.Mark End (STF_Authentication,2)
+          Return With Pass (Login was Successful)
+      }
+      Fail:
+      {
+       Fail (Sign In was not Successful)
+       Stop Test Case
+      }
+      Info.Mark End (STF_AppShown,4)
+   }
+   Fail:
+   {
+       Fail (Not entered into Username and Password Authentication screen) 
+   }
+}
+
+VasionPrint_PullPrint(${PRINT_ALL})
+{
+    Info.Start Time Check (STF_ProcessingJob)
+    If: Oxpd.Wait For Id (check-all-span,5)
+    {
+       //To Print all the Jobs
+       Info.Mark Start (STF_ProcessingJob,6)
+       If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            Oxpd.Touch Id (check-all-span)
+            If: Oxpd.Wait For Id (check-all-span,5)
+            {
+                Oxpd.TouchByElementId (release-btn)
+                Sleep (2)
+            }
+        } 
+        //To Print Only 1 Job
+        Fail:
+        {
+          If: Oxpd.Wait For Css (#release-table .job .checkbox-wrap,5)
+          {
+              Oxpd.Touch Css (#release-table .job .checkbox-wrap)
+              If: Oxpd.Wait For Css (#release-table .job .checkbox-wrap,5)
+              {
+                  Oxpd.TouchByElementId (release-btn)
+                  Sleep (2)
+              }
+          } 
+        }
+        Info.Mark End (STF_ProcessingJob,6)
+    }
+   Fail:
+   {
+       Fail (No Jobs found)
+   }
+}
+
+VasionPrint_Delete(${PRINT_ALL})
+{
+    Info.Start Time Check (STF_ProcessingJob)
+    If: Oxpd.Wait For Id (check-all-span,5)
+    {
+        //To Delete all the Jobs
+        Info.Mark Start (STF_ProcessingJob,6)
+        If: Equals IgnoreCase (${PRINT_ALL},Y)
+        {
+            Oxpd.Touch Id (check-all-span)
+            If:Oxpd.Wait For Id (check-all-span,5)
+            {
+                Oxpd.TouchByElementId (delete-btn)
+                Sleep (2)
+            }
+        }
+        //To Delete Only 1 Job
+        Fail:
+        {
+            If: Oxpd.Wait For Css (#release-table .job .checkbox-wrap,5)
+            {
+                Oxpd.Touch Css (#release-table .job .checkbox-wrap)
+                If: Oxpd.Wait For Css (#release-table .job .checkbox-wrap,2)
+                {
+                    Oxpd.TouchByElementId (delete-btn)
+                    Sleep (2)
+                }
+            }
+        }
+        Info.Mark End (STF_ProcessingJob,6)
+    }
+    Fail:
+    {
+        Fail (No Jobs found)
+    }     
+}
+ 
+VasionPrint_Teardown()
+{
+    JediOmni.Press Home Key
+    JediOmni.Reset
+}

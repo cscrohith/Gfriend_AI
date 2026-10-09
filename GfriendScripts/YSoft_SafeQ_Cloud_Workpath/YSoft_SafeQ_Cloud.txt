@@ -1,0 +1,40 @@
+﻿using JediOmni
+using Info
+using YSoft_SafeQ_Cloud_AUTH.gflib
+using YSoft_SafeQ_Cloud_Variables.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         YSoft_SafeQ_Cloud_Flow
+// Description:     YSoft_SafeQ_Cloud Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+YSoft_SafeQ_Cloud_FLOW
+{     
+    JediOmni.Enable Paperless Mode
+    
+    If: YSoft_SafeQ_Cloud_AUTH.YSoft_SafeQ_Cloud_PullPrint (${PRINT_ALL},${BADGE_AUTH},${BADGE_INDEX})  
+    { 
+        //Continue  
+    }
+    
+    Fail:
+    {
+        Fail (Failed while Performing pull print operation!)
+    }
+    Error:
+    {
+        Error (Error while Performing pull print operation!)
+    } 
+    YSoft_SafeQ_Cloud_AUTH.SignOut
+}
+
+
+

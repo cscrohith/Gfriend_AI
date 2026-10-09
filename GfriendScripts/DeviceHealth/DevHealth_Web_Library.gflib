@@ -1,0 +1,211 @@
+﻿///<File>DevHealth_Web_Library.gflib</File>
+///<Modified>2020-04-22</Modified>
+///<Description>Library of routines for Device Health Web Portal</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using Web
+
+///<Name>SignIn</Name>
+///<Description>Sign in to Devcie Health portal</Description>
+///<Parameters>ID : UserID</Parameters>
+///<Parameters>PW : Password</Parameters>
+///<Parameters>url : portal url</Parameters>
+///<Parameters>BRW : browser to use</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SignIn(${ID}, ${PW}, ${url}, ${BRW}, ${LoginPopupTimeout})
+{
+    // open the specified browser to the DeviceHealth url
+    IF: Equals (${BRW},Default)
+    {
+        Web.Open (https://${url})
+    }
+    IF: Equals (${BRW},Chrome)
+    {
+        Web.Open with Chrome (https://${url})
+    }
+    IF: Equals (${BRW},FireFox)
+    {
+        Web.Open with FireFox (https://${url})
+    }
+    IF: Equals (${BRW},Edge)
+    {
+        Web.Open with Edge (https://${url})
+    }
+
+    // sign in
+    If: Web.Wait For Object(//*[@id='username'],${Long_Wait})
+    {
+        Sleep (${Minimal_Wait_Time})
+        Web.Click Object(//*[@id='username'])
+        Web.Set Text(//*[@id='username'],${ID})
+        Web.Click Object(//button)
+
+        // enter the password
+        If: Web.Wait For Object(//*[@id='passwordContainer'],${Long_Wait})
+        { 
+            Web.Click Object(//*[@id='password'])
+            Web.Set Text(//*[@id='password'],${PW})
+            Web.Click Object(//button)
+
+            // check that reached the portal page
+            If: Web.Wait For Text (DEVICE HEALTH,${LoginPopupTimeout})
+            {
+                // wait for the loggin in message to disappear
+//                @Web.Wait For Text (Logging in. Please wait...,${Wait_Time})
+                Web.Wait For Object (//*[@id="overlayMsg"],${Wait_Time})
+                 
+//                While: Web.Wait For Text (Logging in. Please wait...,${Zero_Wait_Time}): ${LoginPopupTimeout}
+//                {
+//                    Sleep (${Minimal_Wait_Time})
+//                }
+//                If: Web.Wait For Text (Logging in. Please wait...,${Zero_Wait_Time})
+//                {
+//                    Web.Capture Screenshot (SignIn_Fail.png)
+//                    Return With Fail (DeviceHealth SignIn Failed to complete Loggin in!)
+//                }
+//                If: Web.Wait For Text Disappear (Logging in. Please wait...,${LoginPopupTimeout})
+                If: Web.Wait For Object Disappear (//*[@id="overlayMsg"],${LoginPopupTimeout})
+                {
+                    Return With Pass (SignIn completed!)
+                }
+                Fail:
+                {
+                   Return With Fail (DeviceHealth SignIn Failed to complete Loggin in!)
+                }
+            }
+            Fail:
+            {
+                Return With Fail (DeviceHealth SignIn Failed to reach the portal page!)
+            }
+        }
+        Fail:
+        {
+            Return With Fail (DeviceHealth SignIn Failed to reach Password page!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Failed to open the browser!)
+    }
+}
+
+///<Name>SignOut</Name>
+///<Description>Sign out of Device Health portal</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SignOut
+{// sign out of the Device Health site
+    If: Web.Click Object (//header-component//descendant::i[@class='fa fa-angle-double-down fa-2x'])
+    {
+        Sleep (${Minimal_Wait_Time})
+        
+        If: Web.Click Object (//header-component//descendant::table//descendant::button[@class='primary-btn-custom'])
+        {
+            Sleep (${Minimal_Wait_Time})
+            Return With Pass (SignOut completed!)
+        }
+        Fail:
+        {
+            Return With Fail (Fail clicking the Logout button to sign out of DeviceHealth!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail opening the user profile to sign out of DeviceHealth!)
+    }
+}
+
+///<Name>SearchForDevice</Name>
+///<Description>Search for a specific device</Description>
+///<Parameters>Device_SN : device serial number</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SearchForDevice(${Device_SN})
+{
+    // check for the search serial number textbox avaliable
+    If: Web.Click Object (//app-lookup//descendant::input[@placeholder='Search By Serial Number'])
+    {
+        Web.Set Text (//app-lookup//descendant::input[@placeholder='Search By Serial Number'],${Device_SN})
+        If: Web.Click Object (//app-lookup//descendant::button[@type='submit'])
+        {
+            // wait for the device tab
+            Web.Wait For Object (//app-lookup//descendant::li/a,${Wait_Time})
+            Sleep (${Minimal_Wait_Time})
+            Web.Wait For Object (//app-lookup//descendant::span[@class='dashboard-title'],${Wait_Time})
+            If: Web.Wait For Text (${Device_SN},${Zero_Wait_Time})
+            {
+                Return With Pass (SearchForDevice completed!)
+            }
+            Fail:
+            {
+                Return With Fail (Fail searching for the serial number ${Device_SN}!)
+            }
+        }
+        Fail:
+        {// fail clicking on the search button
+            Return With Fail (Fail searching for the serial number ${Device_SN}!)
+        }
+    }
+    Fail:
+    {// fail to find the serial number textbox for the search
+        Return With Fail (Fail selecting the serial number search!)
+    }
+}
+
+///<Name>RefreshEventLogs</Name>
+///<Description>Refresh the device event logs</Description>
+///<Parameters>Refresh_MaxCount : the max number of loop iterations waiting
+///   for the event log refresh to complete</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+RefreshEventLogs (${Refresh_MaxCount})
+{
+    // check for the event log refresh button in the tool panel availalbe
+    If: Web.Wait For Object (//div[@class='toolbar-panel']//descendant::i[@class='fa fa-refresh fa-2x'],${Wait_Time})
+    {
+        Web.Click Object (//div[@class='toolbar-panel']//descendant::i[@class='fa fa-refresh fa-2x'])
+        
+        // check for the message "Checking for Event Log Live Data. Please wait..." appears and disappears
+        If: Web.Wait For Text (Checking for Event Log, ${Wait_Time})
+        {
+            Web.Wait For Text Disappear (Checking for Event Log, 1${Long_Wait})
+        }
+        
+        // wait for the refresh spinner
+        While:Web.Wait For Object (//i[@class='fa fa-lg fa-refresh fa-spin'],${Very_Long_Wait}):${Refresh_MaxCount}
+        {
+            
+            @Web.Wait For Object Disappear (//i[@class='fa fa-lg fa-refresh fa-spin'],${Very_Long_Wait})
+        }
+        
+        // check for success message
+        If: Web.Wait For Text (Event Log Live Read is Successful,${Zero_Wait_Time})
+        {
+            Return With Pass (RefreshEventLogs completed!)
+        }
+        Fail:
+        {
+            // not success, so check for Failed status
+            If: Web.Wait For Text (Event Log Live Read is Failed,${Zero_Wait_Time})
+            {
+                Return With Fail (The event log refresh completed with a Failed status!)
+            }
+            Fail:
+            {
+                Return With Fail (Fail event log refresh did not complete in the allowed time!)
+            }
+        }
+    }
+    Fail:
+    {// fail to find the refresh button in the tool bar
+        Return With Fail (Fail refreshing the device event logs!)
+    }
+}

@@ -1,0 +1,14 @@
+﻿// System Health app parameters
+${DevHealth_AppButtonID}=hpid-systemHealthApps-homescreen-button
+${DevHealth_AppButtonTest}=System Health Apps
+
+// proxy parameters
+${Device_ProxyServer}=web-proxy.austin.hpicorp.net
+${Device_ProxyPort}=8080
+${Device_ProxyExceptionsList}=*.etl.boi.rd.hpicorp.net;15.13.*;127.0.0.1;15.86.*
+
+// timing parameters
+${DevHealth_FlowLoopMax} = 80
+${SysHealthAppLoadTimeout} = 30
+${DevHealthAppLoadTimeout} = 30
+${WebSerivceRegistrationTimeout} = 90

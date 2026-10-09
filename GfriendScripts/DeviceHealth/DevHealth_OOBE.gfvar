@@ -1,0 +1,7 @@
+﻿// OOBE screen settings
+${OOBE_InitLanguage} = English
+${OOBE_InitLocation} = United States
+${OOBE_EnableDevHealthApp_YN} = Y
+${OOBE_EnableAutoSend_YN} = N
+${OOBE_EnableUSB_YN} = Y
+${OOBE_FinalSummaryTimeout} = 120

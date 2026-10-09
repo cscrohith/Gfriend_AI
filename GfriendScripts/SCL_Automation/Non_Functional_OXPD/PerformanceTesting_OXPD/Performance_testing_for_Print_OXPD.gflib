@@ -1,0 +1,372 @@
+﻿using Info
+using SpreadSheet
+using BadgeBox
+using JediOmni
+using Oxpd
+
+T1985577798_Performance_testing_for_Print_BootTime(${Device_IP},${Device_name},${Device_Serial_No},${Site},${Username},${Password}})
+{
+    Info.Start Time Check (Baseline_Boot_Time)
+    Set Variable (${Message},${KEYWORD_OUTPUT})
+    Set Variable (${Text},Time check is started and output will be saved to)
+    Trim (${Message},${Text})
+     ReAssign Value To Variable(${filePath},${Message})
+    //adding csv extension to the path
+    Concatenate Variable Values And Store Result (${filePath},csv,${fullfilePath})
+    Info.Mark Start (Baseline_Boot_Time,Boot_Time)
+    OXPD_Common_Library.Device_Reboot
+    Info.Mark End (Baseline_Boot_Time,Boot_Time)
+    Concatenate Variable Values And Store Result (${filePath},xlsx,${filepathxls})
+    //converting csv to xlsx to read cell value
+    Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath}');$wb.SaveAs('${filepathxls}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+    //setExcel Path and Fetch Cell value
+    SpreadSheet.Set Excel Path(${filepathxls})
+    SpreadSheet.Read Cell Value (Boot_Time,Time (ms),${BaselineBoot})    
+    ////1.Baseline_Boot_Time////
+    Calculate And Assign (${BaselineBoot}-0,${BaselineBoot_Time})
+    ////installing hpk file and Config in Tenet.
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+    Functional_OXPD.T1984767199_Validate_the_Embedded_OXP_Agent_in_SafeQ_Cloud_Configure_device(${Device_Name},${Device_IP},${Device_Serial_No})
+    ////First Boot////
+    Info.Start Time Check (First_Boot_With_Solution)
+    Set Variable (${CSV_Text_Path},${KEYWORD_OUTPUT})
+    Set Variable (${Trim_Text},Time check is started and output will be saved to)
+    Trim (${CSV_Text_Path},${Trim_Text})
+    ReAssign Value To Variable(${fileP]ath_CDrive},${CSV_Text_Path})
+    //adding csv extension to the path
+    Concatenate Variable Values And Store Result (${filePath_CDrive},csv,${fullfilePath_CSV})
+    Info.Mark Start (First_Boot_With_Solution,First_Boot_Time)
+    OXPD_Common_Library.Device_Reboot
+    Info.Mark End (First_Boot_With_Solution,First_Boot_Time)
+    Concatenate Variable Values And Store Result (${filePath_CDrive},xlsx,${filepathxlsx})
+    //converting csv to xlsx to read cell value
+    Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath_CSV}');$wb.SaveAs('${filepathxlsx}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+    //setExcel Path and Fetch Cell value
+    SpreadSheet.Set Excel Path(${filepathxlsx})
+    SpreadSheet.Set Worksheet(First_Boot_With_Solution)
+    SpreadSheet.Read Cell Value (First_Boot_Time,Time (ms),${FirstBoot})
+    ////////First Boot ends here ////
+     ////2.FirstBoot_Difference////
+    Calculate And Assign (${FirstBoot}-${BaselineBoot},${FirstBoot_Difference})
+    ////Second Boot////
+    Info.Start Time Check (Second_Boot_With_Solution)
+    Set Variable (${CSV_Path},${KEYWORD_OUTPUT})
+    Set Variable (${Trim_Text},Time check is started and output will be saved to)
+    Trim (${CSV_Path},${Trim_Text})
+    ReAssign Value To Variable(${filePath_C_Drive},${CSV_Path})
+    //adding csv extension to the path
+    Concatenate Variable Values And Store Result (${filePath_C_Drive},csv,${CSV_FullfilePath})
+    Info.Mark Start (Second_Boot_With_Solution,Second_Boot_Time)
+    OXPD_Common_Library.Device_Reboot
+    Info.Mark End (Second_Boot_With_Solution,Second_Boot_Time)
+    Concatenate Variable Values And Store Result (${filePath_C_Drive},xlsx,${filepath_xlsx})
+    //converting csv to xlsx to read cell value
+    Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${CSV_FullfilePath}');$wb.SaveAs('${filepath_xlsx}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+    //setExcel Path and Fetch Cell value
+    SpreadSheet.Set Excel Path(${filepath_xlsx})
+    SpreadSheet.Set Worksheet(Second_Boot_With_Solution)
+    SpreadSheet.Read Cell Value (Second_Boot_Time,Time (ms),${SecondBoot})
+    ////Second Boot end here ////    
+    ////3.SecondBoot_Difference////
+    Calculate And Assign (${SecondBoot}-${BaselineBoot},${SecondBoot_Difference})    
+}
+
+T1985577798_Authentication Timings_UserName_Password
+{
+    Set Variable (${SignIn_Sum},0)
+    Set Variable (${SignOut_Sum},0)
+    Repeat:4
+    {
+        Info.Start Time Check (UserName_Password_Sign_In_${R})
+        Set Variable (${Message},${KEYWORD_OUTPUT})
+        Set Variable (${Text},Time check is started and output will be saved to)
+        Trim (${Message},${Text})        
+        //Concatenate Variable Values And Store Result (C,${Message},${filePath}_${R})
+        ReAssign Value To Variable(${filePath_variable},${Message})
+        Concatenate Variable Values And Store Result (${filePath_variable},csv,${fullfilePath}_${R})
+        ReAssign Value To Variable(${fullfilePath_variable},${fullfilePath}_${R}) 
+        Info.Mark Start (UserName_Password_Sign_In_${R},SignIn_${R})
+        OXPD_Common_Library.OXPD_Device_Username_Login (${Device_Username},${Device_Password})
+        Info.Mark End (UserName_Password_Sign_In_${R},SignIn_${R})
+        //Concatenate Variable Values And Store Result (${filePath},xlsx,${filepathxls})        
+        Concatenate Variable Values And Store Result (${filePath_variable},xlsx,${filepathxls}_${R})
+        ReAssign Value To Variable(${filepathxls_variable},${filepathxls}_${R})
+        //converting csv to xlsx to read cell value
+        Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath_variable}');$wb.SaveAs('${filepathxls_variable}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+        //setExcel Path and Fetch Cell value
+        SpreadSheet.Set Excel Path(${filepathxls_variable})
+        SpreadSheet.Set Worksheet(UserName_Password_Sign_In_${R})
+        SpreadSheet.Read Cell Value (SignIn_${R},Time (ms),${SignIn_Authentication}_${R})        
+        ReAssign Value To Variable(${SignIn_Authentication_Time},${SignIn_Authentication}_${R})
+        Calculate And Assign (${SignIn_Sum}+${SignIn_Authentication_Time},${SignIn_Sum})        
+        //=======================
+        //SignOut
+        Info.Start Time Check (UserName_Password_Sign_Out_${R})
+        Set Variable (${Message},${KEYWORD_OUTPUT})
+        Set Variable (${Text},Time check is started and output will be saved to)
+        Trim (${Message},${Text})        
+        ReAssign Value To Variable(${filePath_variable},${Message})
+        Concatenate Variable Values And Store Result (${filePath_variable},csv,${fullfilePath}_${R})
+        ReAssign Value To Variable(${fullfilePath_variable},${fullfilePath}_${R})
+        Info.Mark Start (UserName_Password_Sign_Out_${R},SignOut_${R})
+        OXPD_Common_Library.Device_Signout
+        Info.Mark End (UserName_Password_Sign_Out_${R},SignOut_${R})
+        Concatenate Variable Values And Store Result (${filePath_variable},xlsx,${filepathxls}_${R})
+        ReAssign Value To Variable(${filepathxls_variable},${filepathxls}_${R})
+        //converting csv to xlsx to read cell value
+        Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath_variable}');$wb.SaveAs('${filepathxls_variable}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+        //setExcel Path and Fetch Cell value
+        SpreadSheet.Set Excel Path(${filepathxls_variable})
+        SpreadSheet.Set Worksheet(UserName_Password_Sign_Out_${R})
+        SpreadSheet.Read Cell Value (SignOut_${R},Time (ms),${SignOut_Authentication}_${R})
+        ReAssign Value To Variable(${SignOut_Authentication_Time},${SignOut_Authentication}_${R})
+        Calculate And Assign (${SignOut_Sum}+${SignOut_Authentication_Time},${SignOut_Sum})
+    }
+    Calculate And Assign (${SignIn_Sum}/4,${Avg_SignIn})
+    Calculate And Assign (${SignOut_Sum}/4,${Avg_SignOut})
+}
+
+
+T1985577798_Authentication Timings_BadgeBox_SignIn_SignOut(${BADGE_INDEX},${WaitTime})
+{
+    Set Variable (${SignIn_Sum},0)
+    Set Variable (${SignOut_Sum},0)
+    Repeat:4
+    {
+        Info.Start Time Check (BadgeBox_SignIn_${R})
+        Set Variable (${Message},${KEYWORD_OUTPUT})
+        Set Variable (${Text},Time check is started and output will be saved to)
+        Trim (${Message},${Text})        
+        //Concatenate Variable Values And Store Result (C,${Message},${filePath}_${R})
+        ReAssign Value To Variable(${filePath_variable},${Message})
+        Concatenate Variable Values And Store Result (${filePath_variable},csv,${fullfilePath}_${R})
+        ReAssign Value To Variable(${fullfilePath_variable},${fullfilePath}_${R})
+        Info.Mark Start (BadgeBox_SignIn_${R},SignIn_${R})
+        OXPD_Common_Library.Badgebox_Login(${BADGE_INDEX})
+        Info.Mark End (BadgeBox_SignIn_${R},SignIn_${R})        
+        Concatenate Variable Values And Store Result (${filePath_variable},xlsx,${filepathxls}_${R})
+        ReAssign Value To Variable(${filepathxls_variable},${filepathxls}_${R})
+        //converting csv to xlsx to read cell value
+        Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath_variable}');$wb.SaveAs('${filepathxls_variable}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+        //setExcel Path and Fetch Cell value
+        SpreadSheet.Set Excel Path(${filepathxls_variable})
+        SpreadSheet.Set Worksheet(BadgeBox_SignIn_${R})
+        SpreadSheet.Read Cell Value (SignIn_${R},Time (ms),${SignIn_Authentication}_${R})        
+        ReAssign Value To Variable(${SignIn_Authentication_Time},${SignIn_Authentication}_${R})
+        Calculate And Assign (${SignIn_Sum}+${SignIn_Authentication_Time},${SignIn_Sum})        
+        //=======================
+        //SignOut
+        Info.Start Time Check (BadgeBox_SignOut_${R})
+        Set Variable (${Message},${KEYWORD_OUTPUT})
+        Set Variable (${Text},Time check is started and output will be saved to)
+        Trim (${Message},${Text})        
+        Concatenate Variable Values And Store Result (C,${Message},${filePath}_${R})
+        ReAssign Value To Variable(${filePath_variable},${filePath}_${R})
+        Concatenate Variable Values And Store Result (${filePath_variable},csv,${fullfilePath}_${R})
+        ReAssign Value To Variable(${fullfilePath_variable},${fullfilePath}_${R})
+        Info.Mark Start (BadgeBox_SignOut_${R},SignOut_${R})
+        OXPD_Common_Library.Badgebox_LogOut(${BadgeIndex},${WaitTime})
+        Info.Mark End (BadgeBox_SignOut_${R},SignOut_${R})        
+        Concatenate Variable Values And Store Result (${filePath_variable},xlsx,${filepathxls}_${R})
+        ReAssign Value To Variable(${filepathxls_variable},${filepathxls}_${R})
+        //converting csv to xlsx to read cell value
+        Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath_variable}');$wb.SaveAs('${filepathxls_variable}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+        //setExcel Path and Fetch Cell value
+        SpreadSheet.Set Excel Path(${filepathxls_variable})
+        SpreadSheet.Set Worksheet(BadgeBox_SignOut_${R})
+        SpreadSheet.Read Cell Value (SignOut_${R},Time (ms),${SignOut_Authentication}_${R})
+        ReAssign Value To Variable(${SignOut_Authentication_Time},${SignOut_Authentication}_${R})
+        Calculate And Assign (${SignOut_Sum}+${SignOut_Authentication_Time},${SignOut_Sum})
+    }
+    Calculate And Assign (${SignIn_Sum}/4,${Avg_SignIn})
+    Calculate And Assign (${SignOut_Sum}/4,${Avg_SignOut})
+}
+
+T1985577798_Authentication Timings_Device_PIN_Login_Logout(${Device_PIN})
+{
+    Set Variable (${SignIn_Sum},0)
+    Set Variable (${SignOut_Sum},0)
+    Repeat:4
+    {
+        Info.Start Time Check (PIN_Sign_In_${R})
+        Set Variable (${Message},${KEYWORD_OUTPUT})
+        Set Variable (${Text},Time check is started and output will be saved to)
+        Trim (${Message},${Text})
+        
+        //Concatenate Variable Values And Store Result (C,${Message},${filePath}_${R})
+        ReAssign Value To Variable(${filePath_variable},${Message})
+        Concatenate Variable Values And Store Result (${filePath_variable},csv,${fullfilePath}_${R})
+        ReAssign Value To Variable(${fullfilePath_variable},${fullfilePath}_${R})
+        
+        
+        Info.Mark Start (PIN_Sign_In_${R},SignIn_${R})
+        OXPD_Common_Library.OXPD_Device_PIN_Login(${Device_PIN})
+        Info.Mark End (PIN_Sign_In_${R},SignIn_${R})        
+        Concatenate Variable Values And Store Result (${filePath_variable},xlsx,${filepathxls}_${R})
+        ReAssign Value To Variable(${filepathxls_variable},${filepathxls}_${R})
+        //converting csv to xlsx to read cell value
+        Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath_variable}');$wb.SaveAs('${filepathxls_variable}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+        //setExcel Path and Fetch Cell value
+        SpreadSheet.Set Excel Path(${filepathxls_variable})
+        SpreadSheet.Set Worksheet(PIN_Sign_In_${R})
+        SpreadSheet.Read Cell Value (SignIn_${R},Time (ms),${SignIn_Authentication}_${R})        
+        ReAssign Value To Variable(${SignIn_Authentication_Time},${SignIn_Authentication}_${R})
+        Calculate And Assign (${SignIn_Sum}+${SignIn_Authentication_Time},${SignIn_Sum})        
+        //=======================
+        //SignOut
+        Info.Start Time Check (PIN_SignOut_${R})
+        Set Variable (${Message},${KEYWORD_OUTPUT})
+        Set Variable (${Text},Time check is started and output will be saved to)
+        Trim (${Message},${Text})        
+        ReAssign Value To Variable(${filePath_variable},${Message})
+        Concatenate Variable Values And Store Result (${filePath_variable},csv,${fullfilePath}_${R})
+        ReAssign Value To Variable(${fullfilePath_variable},${fullfilePath}_${R})
+        Info.Mark Start (PIN_SignOut_${R},SignOut_${R})
+        OXPD_Common_Library.Device_Signout
+        Info.Mark End (PIN_SignOut_${R},SignOut_${R})        
+        Concatenate Variable Values And Store Result (${filePath_variable},xlsx,${filepathxls}_${R})
+        ReAssign Value To Variable(${filepathxls_variable},${filepathxls}_${R})
+        //converting csv to xlsx to read cell value
+        Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath_variable}');$wb.SaveAs('${filepathxls_variable}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+        //setExcel Path and Fetch Cell value
+        SpreadSheet.Set Excel Path(${filepathxls_variable})
+        SpreadSheet.Set Worksheet(PIN_SignOut_${R})
+        SpreadSheet.Read Cell Value (SignOut_${R},Time (ms),${SignOut_Authentication}_${R})
+        ReAssign Value To Variable(${SignOut_Authentication_Time},${SignOut_Authentication}_${R})
+        Calculate And Assign (${SignOut_Sum}+${SignOut_Authentication_Time},${SignOut_Sum})
+    }
+    Calculate And Assign (${SignIn_Sum}/4,${Avg_SignIn})
+    Calculate And Assign (${SignOut_Sum}/4,${Avg_SignOut})
+}
+
+T1985577798_Wake_Cases_BeforeAndAfterInstallation_App(${Device_IP},${Device_name},${Device_Serial_No},${Site},${Username},${Password})
+{
+      Set Variable (${Wakeup_Sum},0)
+      Set Variable (${Wakeup_Sum_AfterInstallApp},0)
+      Repeat:3
+      {
+        Info.Start Time Check (BaseLine_WakeTime_${R})
+        Set Variable (${Message},${KEYWORD_OUTPUT})
+        Set Variable (${Text},Time check is started and output will be saved to)
+        Trim (${Message},${Text})
+        ReAssign Value To Variable(${filePath_Awake_variable},${Message})
+        //adding csv extension to the path
+        Concatenate Variable Values And Store Result (${filePath_Awake_variable},csv,${fullfilePath_Awake}_${R})
+        ReAssign Value To Variable(${fullfilePath_Awake_variable},${fullfilePath_Awake}_${R})      
+        If: JediOmni.Is Awake
+        {
+            JediOmni.Wait Until Sleep (300)
+        } 
+        Info.Mark Start (BaseLine_WakeTime_${R},WakeTime_${R})
+        JediOmni.Reset
+        If: JediOmni.Is Awake
+        {
+            Info.Mark End (BaseLine_WakeTime_${R},WakeTime_${R})
+        }
+        Fail:
+        {
+            JediOmni.Reset
+            Info.Mark End (BaseLine_WakeTime_${R},WakeTime_${R})
+        }        
+        Concatenate Variable Values And Store Result (${filePath_Awake_variable},xlsx,${filepathxls_Awake}_${R})
+        ReAssign Value To Variable(${filepathxls_Awake_variable},${filepathxls_Awake}_${R})
+        //converting csv to xlsx to read cell value
+        Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath_Awake_variable}');$wb.SaveAs('${filepathxls_Awake_variable}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+        //setExcel Path and Fetch Cell value
+        SpreadSheet.Set Excel Path(${filepathxls_Awake_variable})
+        SpreadSheet.Set Worksheet(BaseLine_WakeTime_${R})
+        SpreadSheet.Read Cell Value (WakeTime_${R},Time (ms),${WakeUp_Duration}_${R})
+        ReAssign Value To Variable(${WakeUp_TimeAssign},${WakeUp_Duration}_${R})
+        Calculate And Assign (${Wakeup_Sum}+${WakeUp_TimeAssign},${Wakeup_Sum})
+      }      
+       ////installing hpk file and Config in Tenet. // remove if device is already added in tenet        
+        OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+        Functional_OXPD.T1984767199_Validate_the_Embedded_OXP_Agent_in_SafeQ_Cloud_Configure_device(${Device_Name},${Device_IP},${Device_Serial_No})
+      Repeat:3
+      {
+        Info.Start Time Check (WakeupTime_AfterInstallApp_${R})
+        Set Variable (${Message},${KEYWORD_OUTPUT})
+        Set Variable (${Text},Time check is started and output will be saved to)
+        Trim (${Message},${Text})
+        ReAssign Value To Variable(${AfterInstallApp_filePath_variable},${Message})
+        Concatenate Variable Values And Store Result (${AfterInstallApp_filePath_variable},csv,${AfterInstallApp_fullfilePath}_${R})
+        ReAssign Value To Variable(${AfterInstallApp_fullfilePath_variable},${AfterInstallApp_fullfilePath}_${R})
+        If: JediOmni.Is Awake
+        {
+            JediOmni.Wait Until Sleep (300)
+        } 
+        Info.Mark Start (WakeupTime_AfterInstallApp_${R},WakeTime_${R})
+        JediOmni.Reset
+        If: JediOmni.Is Awake
+        {
+            Info.Mark End (WakeupTime_AfterInstallApp_${R},WakeTime_${R})
+        }
+        Fail:
+        {
+            JediOmni.Reset
+            Info.Mark End (WakeupTime_AfterInstallApp_${R},WakeTime_${R})
+        }        
+        Concatenate Variable Values And Store Result (${AfterInstallApp_filePath_variable},xlsx,${AfterInstallApp_filepathxls}_${R})
+        ReAssign Value To Variable(${AfterInstallApp_filepathxls_variable},${AfterInstallApp_filepathxls}_${R})
+        //converting csv to xlsx to read cell value
+        Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${AfterInstallApp_fullfilePath_variable}');$wb.SaveAs('${AfterInstallApp_filepathxls_variable}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+        //setExcel Path and Fetch Cell value
+        SpreadSheet.Set Excel Path(${AfterInstallApp_filepathxls_variable})
+        SpreadSheet.Set Worksheet(WakeupTime_AfterInstallApp_${R})
+        SpreadSheet.Read Cell Value (WakeTime_${R},Time (ms),${AfterInstallApp_WakeUp_Duration}_${R})        
+        ReAssign Value To Variable(${AfterInstallApp_WakeUp_TimeAssign},${AfterInstallApp_WakeUp_Duration}_${R})
+        Calculate And Assign (${Wakeup_Sum_AfterInstallApp}+${AfterInstallApp_WakeUp_TimeAssign},${Wakeup_Sum_AfterInstallApp})
+      }
+        Calculate And Assign (${Wakeup_Sum}+${Wakeup_Sum_AfterInstallApp},${Wakeup_Sum_Before_and_AfterInstallApp})
+        Calculate And Assign (${Wakeup_Sum_Before_and_AfterInstallApp}/2,${Avg_Wakeup_Sum})    
+}
+
+T1985577798_WakeUpDevice_from_Card_Swipe(${BADGE_INDEX})
+{
+      Set Variable (${WakeupByCardSwipe_Sum},0)
+      Repeat:3
+      {
+        Info.Start Time Check (BaseLine_WakeTime_${R})
+        Set Variable (${Message},${KEYWORD_OUTPUT})
+        Set Variable (${Text},Time check is started and output will be saved to)
+        Trim (${Message},${Text})
+        ReAssign Value To Variable(${filePath_SwipeCard_Awake_variable},${Message})
+        //adding csv extension to the path
+        Concatenate Variable Values And Store Result (${filePath_SwipeCard_Awake_variable},csv,${fullfilePath_SwipeCard_Awake}_${R})
+        ReAssign Value To Variable(${fullfilePath_SwipeCard_Awake_variable},${fullfilePath_SwipeCard_Awake}_${R})        
+        If: JediOmni.Is Awake
+        {
+            JediOmni.Wait Until Sleep (300)
+        } 
+        Info.Mark Start (BaseLine_WakeTime_${R},WakeTime_${R})
+        BadgeBox.Scan Badge (${BADGE_INDEX})
+        If: JediOmni.Is Awake
+        {
+            Info.Mark End (BaseLine_WakeTime_${R},WakeTime_${R})
+        }
+        Fail:
+        {
+            If: JediOmni.Wait For Text (Sign Out,1)
+            {
+                Info.Mark End (BaseLine_WakeTime_${R},WakeTime_${R})   
+            }
+            Fail:
+            {
+                BadgeBox.Scan Badge (${BADGE_INDEX})
+                Info.Mark End (BaseLine_WakeTime_${R},WakeTime_${R})
+            }            
+        }
+        
+        Concatenate Variable Values And Store Result (${filePath_SwipeCard_Awake_variable},xlsx,${filepathxls_SwipeCard_Awake}_${R})
+        ReAssign Value To Variable(${filepathxls_SwipeCard_Awake_variable},${filepathxls_SwipeCard_Awake}_${R})        
+        //converting csv to xlsx to read cell value
+        Run Command (powershell -Command "$excel=New-Object -ComObject Excel.Application;$wb=$excel.Workbooks.Open('${fullfilePath_SwipeCard_Awake_variable}');$wb.SaveAs('${filepathxls_SwipeCard_Awake_variable}'\,51);$wb.Close();$excel.Quit()",${CreateXls})
+        //setExcel Path and Fetch Cell value
+        SpreadSheet.Set Excel Path(${filepathxls_SwipeCard_Awake_variable})
+        SpreadSheet.Set Worksheet(BaseLine_WakeTime_${R})
+        SpreadSheet.Read Cell Value (WakeTime_${R},Time (ms),${WakeUp_SwipeCard_Duration}_${R})
+        ReAssign Value To Variable(${WakeUp_SwipeCard_TimeAssign},${WakeUp_SwipeCard_Duration}_${R})
+        Calculate And Assign (${WakeupByCardSwipe_Sum}+${WakeUp_SwipeCard_TimeAssign},${WakeupByCardSwipe_Sum})
+      }
+      Calculate And Assign (${WakeupByCardSwipe_Sum}/3,${Avg_WakeupByCardSwipe})    
+}

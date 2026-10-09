@@ -1,0 +1,65 @@
+﻿/// <File>ConfigureDeviceAnnouncement.txt</File>
+/// <Modified>2021-05-25</Modified>
+/// <Description>Configure a device</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using ConfigureDeviceAnnouncement.gfvar
+
+Using Device_Library.gflib
+Using Device_EWS_Library.gflib
+
+Using Web As EWS_Web
+Using JediOmni
+
+/// <Name>ConfigureDevice</Name>
+/// <Description>Confgure the device as specified from EWS and/or directly</Description>
+/// <Notes></Notes>
+ConfigureDeviceAnnouncement
+{
+    // oepn the device EWS
+    If: Device_EWS_Library.OpenEWS (${DUT_Address})
+    {
+    }
+    Fail:
+    {
+        Fail (Fail accessing device ${DUT_Address} EWS!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error accessing device ${DUT_Address} EWS!)
+        Stop Test Case
+    }
+    
+    // check admin password set, set if not set
+    If: Device_EWS_Library.SignInWithAdmin (${DUT_AdminPW}, Y, Y)
+    {
+    }
+    Fail:
+    {
+        Fail (Fail setting device admin password!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error setting device admin password!)
+        Stop Test Case
+    }
+    
+    // configure device announcement agent
+    If: Equals IgnoreCase (${Configure_DeviceAnnouncement},Y)
+    {
+        If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${DeviceAnnouncement_ServerIP},${DeviceAnnouncement_EnableMaxTime})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting device announcement configuration!)
+        }
+        Error:
+        {
+            Error (Error setting device announcement configuration!)
+        }
+    }
+}

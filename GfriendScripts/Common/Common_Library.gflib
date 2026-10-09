@@ -1,0 +1,170 @@
+﻿/// <File>Common_LIbrary.gflib</File>
+/// <Modified>2021-07-15</Modified>
+/// <Description>Library of general common routines</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+/// <Name>CheckVariableContainsValue</Name>
+/// <Description>Check a passed variable for containing a value.
+///    Return Pass if the variable contains a value.
+///    Return Fail if the variable contains no value or is not defined</Description>
+/// <Parameters>VariableInput : varible value</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+CheckVariableContainsValue(${VariableInput})
+{
+    If: Equals (${VariableInput},)
+    {
+        Return With Fail (Variable contains no value!)
+    }
+    If: Contains (${VariableInput},${)
+    {
+        Return With Fail (Variable not defined!)
+    }
+    Return With Pass (Variable contains value!)
+}
+
+/// <Name>Compare</Name>
+/// <Description>Compare 2 numbers using the specified comparison type</Description>
+/// <Parameters>Value1 : first value</Parameters>
+/// <Parameters>Value2 : second value</Parameters>
+/// <Parameters>ComparisonType : comparison type</Parameters>
+/// <Precondition></Precondition>
+/// <Notes>Uses the Windows cmd.exe id command to perform the comparison</Notes>
+Compare(${Value1},${Value2},${ComparisonType})
+{
+    // set the command line comparison operator
+    Set Variable (${Comp},Invalid)
+    
+    If: Equals (${ComparisonType},=)
+    {
+        Set Variable (${Comp},EQU)
+    }
+    If: Equals (${ComparisonType},!=)
+    {
+        Set Variable (${Comp},NEQ)
+    }
+    If: Equals (${ComparisonType},<)
+    {
+        Set Variable (${Comp},LSS)
+    }
+    If: Equals (${ComparisonType},<=)
+    {
+        Set Variable (${Comp},LEQ)
+    }
+    If: Equals (${ComparisonType},>)
+    {
+        Set Variable (${Comp},GTR)
+    }
+    If: Equals (${ComparisonType},>=)
+    {
+        Set Variable (${Comp},GEQ)
+    }
+    
+    // check for an invalid comparison type
+    If: Equals (${Comp},Invalid)
+    {
+        Return With Error (Invalid ComparisonType!)
+    }
+
+    // execute a command line to evaluate the expression, return True or False
+    Run Command (cmd.exe /Q /C if ${Value1} ${Comp} ${Value2} (echo True) else (echo False),${Result})
+    
+    // remove the CR LF characters and return Pass or Fail
+    Replace (${Result},${CARRIAGE_RETURN}${LINE_FEED},)
+    If: Equals (${Result},True)
+    {
+        Return With Pass (Pass)
+    }
+    Fail:
+    {
+        Return With Fail (Fail)
+    }
+}
+
+/// <Name>AddNum</Name>
+/// <Description>Adds 2 numbers</Description>
+/// <Parameters>Value1 : first value</Parameters>
+/// <Parameters>Value2 : second value</Parameters>
+/// <Precondition></Precondition>
+/// <Notes>Uses the Windows cmd.exe set command to perform the math</Notes>
+AddNum(${Value1},${Value2})
+{
+    // execute a command line to evaluate the expression, return the answer
+    Run Command (cmd.exe /Q /C set /a t=${Value1}+${Value2},${Result})
+
+    // remove the CR LF characters and return the answer
+    Replace (${Result},${CARRIAGE_RETURN}${LINE_FEED},)
+    Return With Pass (${Result})
+}
+
+/// <Name>SubtractNum</Name>
+/// <Description>Subtracts 2 numbers</Description>
+/// <Parameters>Value1 : first value</Parameters>
+/// <Parameters>Value2 : second value</Parameters>
+/// <Precondition></Precondition>
+/// <Notes>Uses the Windows cmd.exe set command to perform the math</Notes>
+SubtractNum(${Value1},${Value2})
+{
+    // execute a command line to evaluate the expression, return the answer
+    Run Command (cmd.exe /Q /C set /a t=${Value1}-${Value2},${Result})
+
+    // remove the CR LF characters and return the answer
+    Replace (${Result},${CARRIAGE_RETURN}${LINE_FEED},)
+    Return With Pass (${Result})
+}
+
+/// <Name>MultiplyNum</Name>
+/// <Description>Multiplies 2 numbers</Description>
+/// <Parameters>Value1 : first value</Parameters>
+/// <Parameters>Value2 : second value</Parameters>
+/// <Precondition></Precondition>
+/// <Notes>Uses the Windows cmd.exe set command to perform the math</Notes>
+MultiplyNum(${Value1},${Value2})
+{
+    // execute a command line to evaluate the expression, return the answer
+    Run Command (cmd.exe /Q /C set /a t=${Value1}*${Value2},${Result})
+
+    // remove the CR LF characters and return the answer
+    Replace (${Result},${CARRIAGE_RETURN}${LINE_FEED},)
+    Return With Pass (${Result})
+}
+
+/// <Name>DivideNum</Name>
+/// <Description>Divides 2 numbers</Description>
+/// <Parameters>Value1 : first value</Parameters>
+/// <Parameters>Value2 : second value</Parameters>
+/// <Precondition></Precondition>
+/// <Notes>Uses the Windows cmd.exe set command to perform the math</Notes>
+DivideNum(${Value1},${Value2})
+{
+    If: Equals (${Value2},0)
+    {
+        Return With Error (Divide by 0 error!)
+    }
+    
+    // execute a command line to perform integer division, return the answer
+    Run Command (cmd.exe /Q /C "set /a t=${Value1}/${Value2}",${Result1})
+    Replace (${Result1},${CARRIAGE_RETURN}${LINE_FEED},)
+    
+    // execute a command line to perform modulo division for the remainder, return the answer
+    Run Command (cmd.exe /Q /C "set /a r=${Value1}%${Value2}",${Result2})
+    Replace (${Result2},${CARRIAGE_RETURN}${LINE_FEED},)
+    
+    // adjust the remainder if non-zero
+    If: Equals (${Result2},0)
+    {
+        Set Variable (${Result},${Result1})
+    }
+    Fail:
+    {
+        Set Variable (${Value3},${Result2}0)
+        Run Command (cmd.exe /Q /C "set /a t=${Value3}/${Value2}",${Result3})
+        Replace (${Result},${CARRIAGE_RETURN}${LINE_FEED},)
+        Replace (${Result3},-,)
+        Set Variable (${Result},${Result1}.${Result3})
+    }
+    
+    // return the final answer
+    Return With Pass (${Result})
+}

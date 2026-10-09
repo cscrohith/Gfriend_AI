@@ -1,0 +1,1328 @@
+﻿///<File>Device_EWS_Library.gflib</File>
+///<Modified>2021-10-18</Modified>
+///<Description>Library of common device EWS routines</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+//Using Web As EWS_Web
+
+///<Name>OpenEWS</Name>
+///<Description>Open EWS in Chrome for a specified device</Description>
+///<Parameters>OpenEWS_IP : device IP address</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+OpenEWS (${OpenEWS_IP})
+{
+    // access the device EWS page
+    If: EWS_Web.Open with Chrome (${OpenEWS_IP})
+    {
+        Sleep (${Very_Short_Wait_Time})
+        // check for cert issue
+        If: EWS_Web.Wait For Text (Your connection is not private,${Zero_Wait_Time})
+        {
+            // click the Advanced button
+            EWS_Web.Click Object (//*[@id="details-button"])
+            Sleep (${Minimal_Wait_Time})
+            EWS_Web.Click Object (//*[@id="proceed-link"])
+        }
+        
+        // check for the device page to show
+        If: EWS_Web.Wait For Object (//*[@id="HomeDeviceIp"],${Long_Wait})
+        {
+            Return With Pass (OpenEWS completed!)
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (OpenEWS_Fail.png)
+            Return With Fail (Open device EWS failed to complete!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (OpenEWS_Fail.png)
+        Return With Fail (Device EWS failed to open!)
+    }
+    Error:
+    {
+        EWS_Web.Capture Screenshot (OpenEWS_Error.png)
+        Return With Error (Error while opeing device EWS!)
+    }
+}
+
+///<Name>CloseEWS</Name>
+///<Description>Close EWS in Chrome</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+CloseEWS
+{
+    EWS_Web.Close
+}
+
+///<Name>SignInWithAdmin</Name>
+///<Description>Sign in to EWS with the admin password optionally, if the 
+///   password has not been set sign in as admin with a blank password,
+///   and set the admin password if blank</Description>
+///<Parameters>Dev_Password : device admin password</Parameters>
+///<Parameters>CheckBlankPW : Y to check for blank password if above failed</Parameters>
+///<Parameters>SetWhenBlank : Y to set password if it was blank</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+SignInWithAdmin (${Dev_Password}, ${CheckBlankPW}, ${SetWhenBlank})
+{
+    // check for sign in available
+    If: EWS_Web.Wait For Object (//*[@id="EwsLogin"],${Zero_Wait_Time})
+    {
+        EWS_Web.Click Object (//*[@id="EwsLogin"])
+        // check for sign in
+        If: EWS_Web.Wait For Object (//*[@id="PageSignIn"],${Wait_Time})
+        {
+            EWS_Web.Set Text (//*[@id="PasswordTextBox"],${Dev_Password})
+            EWS_Web.Click Object (//*[@id="signInOk"])
+            // check for success, if not attempt to sign in with no password
+            If: EWS_Web.Wait For Object (//*[@id="EwsLogoff"],${Short_Wait_Time})
+            {// success no further action
+                Return With Pass (SignInWithAdmin completed!)
+            }
+            Fail:
+            {// if specified to check for blank password, then do so, else Fail
+                If: Equals (${CheckBlankPW},Y)
+                {// checking for blank
+                    EWS_Web.Clear Text (//*[@id="PasswordTextBox"])
+                    EWS_Web.Click Object (//*[@id="signInOk"])
+                    If: EWS_Web.Wait For Object (//*[@id="EwsLogoff"],${Short_Wait_Time})
+                    {// success with blank, set the password if specified to
+                        If: Equals (${SetWhenBlank},Y)
+                        {
+                            // set the admin password
+                            If: DevHealth_EWS_Library.SetAdminPassword (${Dev_Password})
+                            {// success
+                                Return With Pass (SignInWithAdmin completed!)
+                            }
+                            Fail:
+                            {// signed in with blank, failed to set new admin password
+                                EWS_Web.Capture Screenshot (SignInWithAdmin_Fail.png)
+                                Fail (Signed in to admin with blank password but failed setting password!)
+                            }
+                        }
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Capture Screenshot (SignInWithAdmin_Fail.png)
+                        Return With Fail (Failed signing in with admin using both specified and blank password!)
+                    }
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (SignInWithAdmin_Fail.png)
+                    Return With Fail (Failed signing in with admin using specified password and blank password not checked!)
+                }
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (SignInWithAdmin_Fail.png)
+            Return With Fail (Failed signing in with admin!)
+        }
+    }
+}
+
+///<Name>SetAdminPassword</Name>
+///<Description>Set the device admin password</Description>
+///<Parameters>Dev_Password : device admin password</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+SetAdminPassword (${Dev_Password})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the General Security page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/device/GeneralSecurity/Index)
+        {
+            // make sure it gets to the page
+            If: EWS_Web.Wait For Object (//*[@id="PageGeneralSecurity"],${Short_Wait_Time})
+            {
+                // enter the password
+                EWS_Web.Set Text (//*[@id="GeneralSecuritySectionId"]//descendant::input[@id="newPassword"],${Dev_Password})
+                
+                EWS_Web.Set Text (//*[@id="GeneralSecuritySectionId"]//descendant::input[@id="verifyPassword"],${Dev_Password})
+                
+                EWS_Web.Click Object (//*[@id="FormButtonSubmit"])
+                Return With Pass (SetAdminPassword completed!)
+            }
+            Fail:
+            {
+                // check for sign in
+                If: EWS_Web.Wait For Object (//*[@id="PageSignIn"],${Wait_Time})
+                {
+                    EWS_Web.Set Text (//*[@id="PasswordTextBox"],${Dev_Password})
+                    EWS_Web.Click Object (//*[@id="signInOk"])
+                    EWS_Web.Wait For Object (//*[@id="PageGeneralSecurity"],${Wait_Time})
+                    Return With Pass (SetAdminPassword completed!)
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (SetAdminPassword_Fail.png)
+                    Return With Fail (Failed locating the Sign In page!)
+                }
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (SetAdminPassword_Fail.png)
+            Return With Fail (Failed locating the General Security page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (SetAdminPassword_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>SetProxy</Name>
+///<Description>Set the network proxy</Description>
+///<Parameters>Dev_ProxyServer : proxy server IP or DNS name</Parameters>
+///<Parameters>Dev_ProxyPort : proxy port number</Parameters>
+///<Parameters>Dev_ProxyExceptions : exceptions for the proxy</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+SetProxy (${Dev_ProxyServer},${Dev_ProxyPort},${Dev_ProxyExceptions})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the General Security page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/webserviceproxy.htm)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="cloudproxy_server"],${Short_Wait_Time})
+            {
+                EWS_Web.Set Text (//*[@id="cloudproxy_server"],${Dev_ProxyServer})
+                EWS_Web.Set Text (//*[@id="cloudproxy_port"],${Dev_ProxyPort})
+                EWS_Web.Set Text (//*[@id="cloudproxy_exceptions"],${Dev_ProxyExceptions})
+                EWS_Web.Click Object (//*[@id="Apply"])
+                EWS_Web.Wait For Object (//*[@id="Result_type"],${Long_Wait})
+                If: EWS_Web.Wait For Text (Success:,${Zero_Wait_Time})
+                {
+                    Return With Pass (SetProxy completed!)
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (SetProxy_Fail.png)
+                    Return With Fail (Failed setting the Web Services Proxy!)
+                }
+            }
+            Fail:
+            {
+                EWS_Web.Capture Screenshot (SetProxy_Fail.png)
+                Return With Fail (Failed locating the Web Services Proxy page!)
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (SetProxy_Fail.png)
+            Return With Fail (Failed locating the Web Services Proxy page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (SetProxy_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>ClearProxy</Name>
+///<Description>Clear the network proxy settings</Description>
+///<Parameters></Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+ClearProxy
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the General Security page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/webserviceproxy.htm)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="cloudproxy_server"],${Short_Wait_Time})
+            {
+                EWS_Web.Clear Text (//*[@id="cloudproxy_server"])
+                EWS_Web.Set Text (//*[@id="cloudproxy_port"],8${Zero_Wait_Time})
+                EWS_Web.Clear Text (//*[@id="cloudproxy_exceptions"])
+                EWS_Web.Click Object (//*[@id="Apply"])
+                EWS_Web.Wait For Object (//*[@id="Result_type"],${Long_Wait})
+                If: EWS_Web.Wait For Text (Success:,${Zero_Wait_Time})
+                {
+                    Return With Pass (ClearProxy completed!)
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (ClearProxy_Fail.png)
+                    Return With Fail (Failed clearing the Web Services Proxy!)
+                }
+            }
+            Fail:
+            {
+                EWS_Web.Capture Screenshot (ClearProxy_Fail.png)
+                Return With Fail (Failed locating the Web Services Proxy page!)
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (ClearProxy_Fail.png)
+            Return With Fail (Failed locating the Web Services Proxy page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ClearProxy_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>EnableWebServices</Name>
+///<Description>Enable Web Services</Description>
+///<Parameters></Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+EnableWebServices
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the General Security page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/webservice)
+        {
+            // check for the link to enable web services
+            If: EWS_Web.Wait For Object (//*[@id="Register"],${Short_Wait_Time})
+            {
+                // click the Register link
+                EWS_Web.Click Object (//*[@id="Register"])
+                
+                // wait for the result, checking for success
+                EWS_Web.Wait For Object (//*[@id="Result_type"],${Long_Wait})
+                If: EWS_Web.Wait For Text (Success:,${Zero_Wait_Time})
+                {
+                    Return With Pass (EnableWebServices completed!)
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (EnableWebServices_Fail.png)
+                    Return With Fail (Failed enabling Web Services!)
+                }
+            }
+            Fail:
+            {
+                EWS_Web.Capture Screenshot (EnableWebServices_Fail.png)
+                Return With Fail (Failed locating the Web Services Enable link page!)
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (EnableWebServices_Fail.png)
+            Return With Fail (Failed locating the Web Services page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (EnableWebServices_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>DisableWebServices</Name>
+///<Description>Disable Web Services</Description>
+///<Parameters></Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+DisableWebServices
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the web services page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/webservice)
+        {
+            // check for the link to disnable web services
+            If: EWS_Web.Wait For Object (//*[@id="Remove"],${Short_Wait_Time})
+            {
+                // click the remove link
+                EWS_Web.Click Object (//*[@id="Remove"])
+                
+                // wait for the verification popup and click OK
+                EWS_Web.Wait For Object (//input[@class='buttonA' and @value='OK'],${Wait_Time})
+                EWS_Web.Click Object (//input[@class='buttonA' and @value='OK'])
+                
+                // wait for the result, checking for success
+                If: EWS_Web.Wait For Object (//*[@id="Result_type"],${Long_Wait})
+                {
+                    If: EWS_Web.Wait For Text (Success:,${Zero_Wait_Time})
+                    {
+                        Return With Pass (DisableWebServices complete!)
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Capture Screenshot (DisableWebServices_Fail.png)
+                        Return With Fail (Failed disabling Web Services!)
+                    }
+                }
+                Fail:
+                {
+                    If: EWS_Web.Wait For Object (//*[@id="Register"],${Zero_Wait_Time})
+                    {
+                        Return With Pass (DisableWebServices complete!)
+                    }
+                }
+            }
+            Fail:
+            {
+                // check for web services not enabled
+                If: EWS_Web.Wait For Object (//*[@id="Register"],${Zero_Wait_Time})
+                {
+                    Return With Pass (DisableWebServices complete!)
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (DisableWebServices_Fail.png)
+                    Return With Fail (Failed locating the Web Services disable link page!)
+                }
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (DisableWebServices_Fail.png)
+            Return With Fail (Failed locating the Web Services page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (DisableWebServices_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>ResetDevice</Name>
+///<Description>Reset the device using the EWS Reset Firmware function
+///   equivilant to a partial clean</Description>
+///<Parameters></Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+ResetDevice
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the Reset Factory Settings page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/device/ResetFactoryDefaults)
+        {
+            // check for the reset firmware button
+            If: EWS_Web.Wait For Object (//*[@id="ResetFirmwareButton"],${Wait_Time})
+            {
+                EWS_Web.Click Object (//*[@id="ResetFirmwareButton"])
+                EWS_Web.Wait For Text (Confirmation Page,${Short_Wait_Time})
+                EWS_Web.Click Object (//*[@id="DialogButtonYes"])
+                Sleep (${Wait_Time})
+                Return With Pass (ResetDevice completed!)
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (ResetDevice_Fail.png)
+            Return With Fail (Failed locating the device reset page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ResetDevice_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>WaitForDeviceResetComplete</Name>
+///<Description>Wait for the device to reboot after the ResetDevice routine was executed</Description>
+///<Parameters>Dev_IP : device IP address</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+WaitForDeviceResetComplete(${Dev_IP})
+{
+    // try to go to the device ews default page looking for the information page
+    @EWS_Web.Go To (${Dev_IP})
+    While:!EWS_Web.Wait For Object (//*[@id="Information"],${Minimal_Wait_Time}):30
+    {
+        // check for cert issue
+        If: EWS_Web.Wait For Text (Your connection is not private,${Zero_Wait_Time})
+        {
+            // click the Advanced button
+            EWS_Web.Click Object (//*[@id="details-button"])
+            Sleep (${Minimal_Wait_Time})
+            EWS_Web.Click Object (//*[@id="proceed-link"])
+        }
+        // wait then retry the default page
+        Sleep (${Long_Wait})
+        @EWS_Web.Go To (${Dev_IP})
+        Sleep (${Long_Wait})
+    }
+    
+    // rechedk that on the information page
+    If: EWS_Web.Wait For Object (//*[@id="Information"],${Long_Wait})
+    {
+        Return With Pass (WaitForDeviceResetComplete completed!)
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (WaitForDeviceResetComplete_Fail.png)
+        Return With Fail (Failed checking for device reset completion!)
+    }
+}
+
+///<Name>CheckForDevMode</Name>
+///<Description>Check EWS for the IP/webserviceDebug.htm page, 
+///   which indicates Dev Mode</Description>
+///<Parameters>Dev_IP : device IP address</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+CheckForDevMode(${Dev_IP})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${Dev_IP})
+    {
+        // goto the WebService Debug page
+        // if successful, then in Dev Mode
+        // if not, then in Prod Mode
+        If: EWS_Web.Go To (${Dev_IP}/webserviceDebug.htm)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="stackSelection"],${Short_Wait_Time})
+            {
+                // success - in Dev Mode
+                Return With Pass (CheckForDevMode completed!)
+            }
+            Fail:
+            {
+                If: EWS_Web.Wait For Text (HTTP ERROR 404,${Zero_Wait_Time})
+                {
+                    // page not found - in Prod Mode
+                    EWS_Web.Capture Screenshot (CheckForDevMode_Fail.png)
+                    Return With Fail (Failed locating the Web Services Debug page! Device not in Dev Mode.)
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (CheckForDevMode_Error.png)
+                    Return With Error (Failed locating the Web Services Debug page!)
+                }
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (CheckForDevMode_Error.png)
+            Return With Error (Failed locating the Web Services Debug page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (CheckForDevMode_Error.png)
+        Return With Error (Failed verifying the device IP on the EWS site!)
+    }
+}
+
+///<Name>SetDateTimeSettings</Name>
+///<Description>Set the Date/Time settings</Description>
+///<Parameters>Setting_TimeZone : the time zone, just needs to be valid patial text</Parameters>
+///<Parameters>Setting_AdjustDaylightSavings : Y/N to check/uncheck Adjust Daylight Savings</Parameters>
+///<Parameters>Setting_DateFormat : Date Format (MM_DD_YYYY, DD_MM_YYYY, YYYYMM_DD)</Parameters>
+///<Parameters>Setting_TimeFormat : Time Format (HOUR_12, HOUR_24)</Parameters>
+///<Parameters>Setting_SynchToTimeServer : Y/N to check/uncheck Synch To Time Server</Parameters>
+///<Parameters>Setting_TimeServerAddress : time server address or name</Parameters>
+///<Parameters>Setting_TimeServerPort : time server port</Parameters>
+///<Parameters>Setting_TimeServerPeriod : time update period in hours</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+SetDateTimeSettings(${Setting_TimeZone},${Setting_AdjustDaylightSavings},${Setting_DateFormat},${Setting_TimeFormat},${Setting_SynchToTimeServer},${Setting_TimeServerAddress},${Setting_TimeServerPort},${Setting_TimeServerPeriod})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the Date Time settings page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/device/DateAndTime)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="PageDateAndTime"],${Short_Wait_Time})
+            {
+                // set the time zone
+                EWS_Web.Click Object (//input[@id="TimeZoneSettings"])
+                EWS_Web.Wait For Object (//select[@id="CurrentTimeZone"],${Short_Wait_Time})
+                EWS_Web.Click Object (//*[@id="CurrentTimeZone"])
+                If: EWS_Web.Click Text (${Setting_TimeZone})
+                {
+                    EWS_Web.Click Object (//*[@id="FormButtonSubmit"])
+                    EWS_Web.Wait For Object (//*[@id="PageDateAndTime"],${Short_Wait_Time})
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (SetDateTimeSettings_Fail.png)
+                    Return With Fail (Fail setting the Time Zone!)
+                }
+                
+                
+                // set the daylight savings checkbox
+                If: Contains Ignore Case (${Setting_AdjustDaylightSavings},Y)
+                {
+                    If: EWS_Web.Wait For Object (//input[@name="AdjustForDaylightSavings"]/../label[@class="checked"],${Zero_Wait_Time})
+                    {
+                        // already checked
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Click Object (//input[@name="AdjustForDaylightSavings"]/..)
+                    }
+                }
+                Fail:
+                {
+                    If: EWS_Web.Wait For Object (//input[@name="AdjustForDaylightSavings"]/../label[@class="checked"],${Zero_Wait_Time})
+                    {
+                        // uncheck
+                        EWS_Web.Click Object (//input[@name="AdjustForDaylightSavings"]/..)
+                    }
+                }
+                
+                // set the date format
+                If: EWS_Web.Click Object (//input[@name="DateFormat" and @value="${Setting_DateFormat}"]/../label)
+                {
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (SetDateTimeSettings_Fail.png)
+                    Return With Fail (Fail setting the Date Format!)
+                }
+                
+                // set the time format
+                If: EWS_Web.Click Object (//input[@name="TimeFormat" and @value="${Setting_TimeFormat}"]/../label)
+                {
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (SetDateTimeSettings_Fail.png)
+                    Return With Fail (Fail setting the Date Format!)
+                }
+                
+                // set the network time synch checkbox
+                If: Contains Ignore Case (${Setting_SynchToTimeServer},Y)
+                {
+                    If: EWS_Web.Wait For Object (//input[@name="AutoAdjustClock"]/../label[@class="checked"],${Zero_Wait_Time})
+                    {
+                        // already checked
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Click Object (//input[@name="AutoAdjustClock"]/..)
+                    }
+                }
+                Fail:
+                {
+                    If: EWS_Web.Wait For Object (//input[@name="AutoAdjustClock"]/../label[@class="checked"],${Zero_Wait_Time})
+                    {
+                        // uncheck
+                        EWS_Web.Click Object (//input[@name="AutoAdjustClock"]/..)
+                    }
+                }
+                
+                // set the network time server settings
+                EWS_Web.Click Object (//*[@id="NTSSettings"])
+                EWS_Web.Wait For Object (//*[@id="PageNetworkTimeServerSettings"],${Short_Wait_Time})
+                EWS_Web.Set Text (//*[@id="ServerAddress"],${Setting_TimeServerAddress})
+                EWS_Web.Set Text (//*[@id="LocalPort"],${Setting_TimeServerPort})
+                EWS_Web.Set Text (//*[@id="TimeSync"],${Setting_TimeServerPeriod})
+                EWS_Web.Click Object (//*[@id="SyncNow"])
+                
+                If: EWS_Web.Wait For Text (Searching..Please Wait,${Short_Wait_Time})
+                {
+                    EWS_Web.Wait For Text Disappear (Searching..Please Wait,${Long_Wait})
+                }
+                
+                If: EWS_Web.Click Object (//*[@id="FormButtonSubmit"])
+                {
+                    EWS_Web.Wait For Object (//*[@id="PageDateAndTime"],${Short_Wait_Time})
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (SetDateTimeSettings_Fail.png)
+                    Return With Fail (Fail setting the Time Server settings!)
+                }
+                
+                // apply settings
+                If: EWS_Web.Click Object (//*[@id="FormButtonSubmit"])
+                {
+                    Return With Pass (SetDateTimeSettings completed!)
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (SetDateTimeSettings_Fail.png)
+                    Return With Fail (Fail applying the Date Time settings!)
+                }
+                
+            }
+            Fail:
+            {
+                EWS_Web.Capture Screenshot (SetDateTimeSettings_Fail.png)
+                Return With Fail (Failed locating the Date Time settings page!)
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (SetDateTimeSettings_Fail.png)
+            Return With Fail (Failed locating the Date Time Settings page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (SetDateTimeSettings_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>ConfigureWindowsAuth</Name>
+///<Description>Configure Windows Auth</Description>
+///<Parameters>Enable_WinsAuth : Y to enable Windows authentication, N to disable</Parameters>
+///<Parameters>Win_Domain : domain to set</Parameters>
+///<Parameters>Use_SSL_YN : Y to enable Use SSL</Parameters>
+///<Parameters>Name_Match_Attrribute : the attribute to Match in the user search</Parameters>
+///<Parameters>Email_Attribute : the attribute to return for the user's email address</Parameters>
+///<Parameters>User_Name_Attribute : the attribute to return for the user's name</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+ConfigureWindowsAuth(${Enable_WinsAuth},${Win_Domain},${Use_SSL_YN},${Name_Match_Attrribute},${Email_Attribute},${User_Name_Attribute})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the Windows Auth page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/device/WindowsAuthentication)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="TrustedDomainLabel"],${Short_Wait_Time})
+            {
+                If: Equals IgnoreCase (${Enable_WinsAuth},Y)
+                {
+                    // check the enable checkbox
+                    If: EWS_Web.Wait For Object (//label[@for="EnableField" and @class="checked"],${Zero_Wait_Time})
+                    {// already checked, do nothing
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Click Object (//*[@id="EnableField"]/..)
+                    }
+                }
+                Fail:
+                {
+                    If: Equals IgnoreCase (${Enable_WinsAuth},N)
+                    {
+                        // check the enable checkbox
+                        If: EWS_Web.Wait For Object (//label[@for="EnableField" and @class="checked"],${Zero_Wait_Time})
+                        {// already checked, uncheck
+                            EWS_Web.Click Object (//*[@id="EnableField"]/..)
+                        }
+                    }
+                }
+                
+                // set the domain
+                EWS_Web.Set Text (//*[@id="TrustedDomainLabel"],${Win_Domain})
+                EWS_Web.Click Object (//*[@id="AddTrustedDomainLinkButton"])
+                
+                // set the ssl option
+                If: Equals IgnoreCase (${Use_SSL_YN},Y)
+                {
+                    If: EWS_Web.Wait For Object (//label[@for="EnableSsl" and @class="checked"],${Zero_Wait_Time})
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Click Object (//*[@id="EnableSsl"]/..)
+                    }
+                }
+                Fail:
+                {
+                    If: Equals IgnoreCase (${Use_SSL_YN},N)
+                    {
+                        If: EWS_Web.Wait For Object (//label[@for="EnableSsl" and @class="checked"],${Zero_Wait_Time})
+                        {
+                            EWS_Web.Click Object (//*[@id="EnableSsl"]/..)
+                        }
+                    }
+                }
+                
+                // set the attributes if specified, else leave as defaults
+                // name match attribute
+                If: Contains (${Name_Match_Attrribute},${)
+                {
+                }
+                Fail:
+                {
+                    If: Equals (${Name_Match_Attrribute},)
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Set Text (//*[@id="SearchMatchField"],${Name_Match_Attrribute})
+                    }
+                }
+                // user's mail adddress match attribute
+                If: Contains (${Email_Attribute},${)
+                {
+                }
+                Fail:
+                {
+                    If: Equals (${Email_Attribute},)
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Set Text (//*[@id="EmailMatchField"],${Email_Attribute})
+                    }
+                }
+                // user name match attribute
+                If: Contains (${User_Name_Attribute},${)
+                {
+                }
+                Fail:
+                {
+                    If: Equals (${User_Name_Attribute},)
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Set Text (//*[@id="DisplayNameMatchField"],${User_Name_Attribute})
+                    }
+                }
+                
+                // click OK
+                EWS_Web.Click Object (//*[@id="FormButtonSubmit"])
+                
+                If: EWS_Web.Wait For Text (The operation was completed successfully.,${Long_Wait})
+                {
+                    Return With Pass (ConfigureWindowsAuth completed!)
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (ConfigureWindowsAuth_Fail.png)
+                    Return With Fail (Failed setting the Windows Sign-In Setup!)
+                }
+            }
+            Fail:
+            {
+                EWS_Web.Capture Screenshot (ConfigureWindowsAuth_Fail.png)
+                Return With Fail (Failed locating the Windows Sign-In Setup page!)
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (ConfigureWindowsAuth_Fail.png)
+            Return With Fail (Failed locating the Windows Sign-In Setup page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ConfigureWindowsAuth_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>SetDefaultSignInMethod</Name>
+///<Description>Set the Default Sign In Method</Description>
+///<Parameters>SignIn_Method_Text : sign in method text to set</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+SetDefaultSignInMethod(${SignIn_Method_Text})
+{
+    If: Contains (${SignIn_Method_Text},${)
+    {
+        Return With Fail (No sign in method specified!)
+    }
+    If: Equals (${SignIn_Method_Text},)
+    {
+        Return With Fail (No sign in method specified!)
+    }
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the access control page
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/device/AccessControlSetup)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="SignInMethod__DefaultValue"],${Long_Wait})
+            {
+                //EWS_Web.Click Object (//*[@id="SignInMethod__DefaultValue"])
+                //Sleep (${Very_Short_Wait_Time})
+                If: EWS_Web.Click Object (//*[@id="SignInMethod__DefaultValue"]/option[text\(\)="${SignIn_Method_Text}"])
+                {
+                    // click Apply
+                    EWS_Web.Click Object (//*[@id="FormButtonSubmit"])
+                    
+                    If: EWS_Web.Wait For Text (The operation was completed successfully.,${Long_Wait})
+                    {
+                        Return With Pass (ConfigureWindowsAuth completed!)
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Capture Screenshot (SetDefaultSignInMethod_Fail.png)
+                        Return With Fail (Failed setting default Sign In method!)
+                    }
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (SetDefaultSignInMethod_Fail.png)
+                    Return With Fail (Failed setting default Sign In method!)
+                }
+            }
+            Fail:
+            {
+                EWS_Web.Capture Screenshot (SetDefaultSignInMethod_Fail.png)
+                Return With Fail (Failed locating the Access Control page!)
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (SetDefaultSignInMethod_Fail.png)
+            Return With Fail (Failed locating the Access Control page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (SetDefaultSignInMethod_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>ConfigureEmail</Name>
+///<Description>Configure Send to Email settings</Description>
+///<Parameters>Enable_Email : Y to enable Send to Email, N to disable it</Parameters>
+///<Parameters>SmptServer : SMTP server address or name</Parameters>
+///<Parameters>FromAddressSource : source of the From address</Parameters>
+///<Parameters>FromAddress : the From address to set if needed</Parameters>
+///<Parameters>DefaultSubject : default Subject</Parameters>
+///<Parameters>DefaultMessage : default Message</Parameters>
+///<Parameters>DefaultFileName : default File Name</Parameters>
+///<Parameters>DefaultFileType : default File Type</Parameters>
+///<Parameters>DefaultColor : default Color option</Parameters>
+///<Parameters>DefaultResolution : default Resolution</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+ConfigureEmail(${Enable_Email}, ${SmptServer}, ${FromAddressSource}, ${FromAddress}, ${DefaultSubject}, ${DefaultMessage}, ${DefaultFileName}, ${DefaultFileType}, ${DefaultColor}, ${DefaultResolution})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+        // goto the email configuration
+        If: EWS_Web.Go To (${EWS_Dev_IP}/hp/device/BasicSend/Index)
+        {
+            If: EWS_Web.Wait For Object (//*[@id="EmailEnabled"],${Short_Wait_Time})
+            {
+                If: Equals IgnoreCase (${Enable_Email},Y)
+                {
+                    // check the enable checkbox
+                    If: EWS_Web.Wait For Object (//label[@for="EmailEnabled" and @class="checked"],${Zero_Wait_Time})
+                    {// already checked, do nothing
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Click Object (//*[@id="EmailEnabled"]/..)
+                    }
+                }
+                Fail:
+                {
+                    If: Equals IgnoreCase (${EmailEnabled},N)
+                    {
+                        // check the enable checkbox
+                        If: EWS_Web.Wait For Object (//label[@for="EmailEnabled" and @class="checked"],${Zero_Wait_Time})
+                        {// already checked, uncheck
+                            EWS_Web.Click Object (//*[@id="EmailEnabled"]/..)
+
+                        }
+                    }
+                }
+                
+                // set the smtp server
+                If: Equals (${SmptServer},)
+                {
+                }
+                Fail:
+                {
+                    If: Contains (${SmptServer},${)
+                    {
+                    }
+                    Fail:
+                    {
+                        // check for the server already configured
+                        If: EWS_Web.Wait For Object (//table[@id="SmtpTable"]/descendant::td[text\(\)="${SmptServer}"],${Zero_Wait_Time})
+                        {
+                            // smtp server already listed
+                        }
+                        Fail:
+                        {
+                            // add the smtp server
+                            EWS_Web.Click Object (//*[@id="FormButtonAddSmtpServer"])
+                            EWS_Web.Wait For Object (//*[@id="SmtpServerName"],${Short_Wait_Time})
+                            EWS_Web.Set Text (//*[@id="SmtpServerName"],${SmptServer})
+                            EWS_Web.Click Object (//*[@id="FormButtonFinish"])
+                            EWS_Web.Wait For Object (//*[@id="EmailEnabled"],${Wait_Time})
+                        }
+                    }
+                }
+                
+                // set the from address
+                If: Contains Ignore Case (${FromAddressSource},User)
+                {
+                    //EWS_Web.Click Object (//*[@id="UseSignedInUserAsSender"])
+                    EWS_Web.Click Object (//*[@id="UseSignedInUserAsSender"]/option[@value="True"])
+                }
+                Fail:
+                {
+                    If: Contains (${FromAddress},@)
+                    {
+                        EWS_Web.Click Object (//*[@id="UseSignedInUserAsSender"]/option[@value="False"])
+                        EWS_Web.Set Text (//*[@id="EmailFromAddress"],${FromAddress})
+                    }
+                    Fail:
+                    {
+                        // invalid from address
+                        Return With Fail (Invalid From Address specified!)
+                    }
+                }
+                
+                // set the subject
+                If: Equals (${DefaultSubject},)
+                {
+                }
+                Fail:
+                {
+                    If: Contains (${DefaultSubject},${)
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Set Text (//*[@id="EmailSubject"],${DefaultSubject})
+                    }
+                }
+               
+                // set the messag (body)
+                If: Equals (${DefaultMessage},)
+                {
+                }
+                Fail:
+                {
+                    If: Contains (${DefaultMessage},${)
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Set Text (//*[@id="EmailBody"],${DefaultMessage})
+                    }
+                }
+               
+                // set the file name
+                If: Equals (${DefaultFileName},)
+                {
+                }
+                Fail:
+                {
+                    If: Contains (${DefaultFileName},${)
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Set Text (//*[@id="FileName"],${DefaultFileName})
+                    }
+                }
+                
+                // set the file type
+                If: Equals (${DefaultFileType},)
+                {
+                }
+                Fail:
+                {
+                    If: Contains (${DefaultFileType},${)
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Click Object (//*[@id="FileType"]/option[text\(\)="${DefaultFileType}"])
+                    }
+                }
+                
+                // set the scan color/black
+                If: Equals (${DefaultColor},)
+                {
+                }
+                Fail:
+                {
+                    If: Contains (${DefaultColor},${)
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Click Object (//*[@id="ColorPreference"]/option[text\(\)="${DefaultColor}"])
+                    }
+                }
+                
+                // set the resolution
+                If: Equals (${DefaultResolution},)
+                {
+                }
+                Fail:
+                {
+                    If: Contains (${DefaultResolution},${)
+                    {
+                    }
+                    Fail:
+                    {
+                        EWS_Web.Click Object (//*[@id="Resolution"]/option[text\(\)="${DefaultResolution}"])
+                    }
+                }
+                
+                // click OK
+                EWS_Web.Click Object (//*[@id="FormButtonSubmit"])
+                
+                If: EWS_Web.Wait For Text (The operation was completed successfully.,${Long_Wait})
+                {
+                    Return With Pass (ConfigureEmail completed!)
+                }
+                Fail:
+                {
+                    EWS_Web.Capture Screenshot (ConfigureEmail_Fail.png)
+                    Return With Fail (Failed setting the Scan to Email configuration!)
+                }
+            }
+            Fail:
+            {
+                EWS_Web.Capture Screenshot (ConfigureEmail_Fail.png)
+                Return With Fail (Failed locating the Scan to Email configuration!)
+            }
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (ConfigureEmail_Fail.png)
+            Return With Fail (Failed locating the email configuration page!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ConfigureEmail_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+}
+
+///<Name>SetDateTimeSettings</Name>
+///<Description>Set the Date/Time settings</Description>
+///<Parameters>Dev_Announce_Enable : Y to enable, else disable</Parameters>
+///<Parameters>Dev_Announce_ServerIP : the IP of the configuration server</Parameters>
+///<Parameters>Dev_Announce_EnableMaxTime : max time to wait for enabling to complete</Parameters>
+///<Precondition>Browser opened to device EWS</Precondition>
+///<Notes></Notes>
+ConfigureDeviceAnnouncement(${Dev_Announce_Enable},${Dev_Announce_ServerIP},${Dev_Announce_EnableMaxTime})
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ConfigureDeviceAnnouncement_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+    
+    // goto the device announcement settings page
+    If: EWS_Web.Go To (${EWS_Dev_IP}/announcement.htm)
+    {
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ConfigureDeviceAnnouncement_Fail.png)
+        Return With Fail (Failed locating the Device Annoucement Settings page!)
+    }
+    
+    If: EWS_Web.Wait For Object (//form[@id="AnnounceAgent"],${Short_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ConfigureDeviceAnnouncement_Fail.png)
+        Return With Fail (Failed locating the Device Annoucement Settings page!)
+    }
+    
+    // if enabled, disable and apply first
+    If: EWS_Web.Wait For Object (//label[@for="En_DeviceAgent" and @class="checked"],${Short_Wait_Time})
+    {
+        //        EWS_Web.Click Object (//input[@id="En_DeviceAgent"])
+        EWS_Web.Click Object (//label[@for="En_DeviceAgent"])
+        EWS_Web.Click Object (//*[@id="Apply"])
+        EWS_Web.Wait For Text (Success:,${Short_Wait_Time})
+    }
+    
+    // check for needing to enable
+    If: Equals IgnoreCase (${Dev_Announce_Enable},Y)
+    {
+        // neeeding to enable so continue
+    }
+    Fail:
+    {
+        // needing to disable, already done so return success
+        Return With Pass (ConfigureDeviceAnnouncement completed!)
+    }
+    
+    // set the configuration server IP, enable and apply
+    EWS_Web.Set Text (//input[@id="ConfigIPAddr"],${Dev_Announce_ServerIP})
+    //    EWS_Web.Click Object (//input[@id="En_DeviceAgent"])
+    EWS_Web.Click Object (//label[@for="En_DeviceAgent"])
+    EWS_Web.Click Object (//*[@id="Apply"])
+    EWS_Web.Wait For Text (Success:,${Short_Wait_Time})
+    
+    // goto to the configuration page to check the status of the enabling
+    If: EWS_Web.Go To (${EWS_Dev_IP}/configpage.htm)
+    {
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ConfigureDeviceAnnouncement_Fail.png)
+        Return With Fail (Failed locating the JetDirect Configuration page!)
+    }
+    
+    If: EWS_Web.Wait For Text (Jetdirect Configuration Page,${Short_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ConfigureDeviceAnnouncement_Fail.png)
+        Return With Fail (Failed locating the JetDirect Configuration page!)
+    }
+    
+    // loop checking for success, disabled or failure
+    Set Variable (${Continue_Loop},Y)
+    
+    While:Equals (${Continue_Loop},Y):${Dev_Announce_EnableMaxTime}
+    {
+        If: EWS_Web.Wait For Text (Announcement Agent:              Success,${Zero_Wait_Time})
+        {
+            Set Variable (${Continue_Loop},N)
+        }
+        If: EWS_Web.Wait For Text (Announcement Agent:               Failed,${Zero_Wait_Time})
+        {
+            Set Variable (${Continue_Loop},N)
+        }
+        If: EWS_Web.Wait For Text (Announcement Agent:             Disabled,${Zero_Wait_Time})
+        {
+            Set Variable (${Continue_Loop},N)
+        }
+        EWS_Web.Refresh
+    }
+    
+    // check the final status and return based on the status
+    If: EWS_Web.Wait For Text (Announcement Agent:              Success,${Zero_Wait_Time})
+    {
+        Return With Pass (ConfigureDeviceAnnouncement completed!)
+    }
+
+    If: EWS_Web.Wait For Text (Announcement Agent:             Disabled,${Zero_Wait_Time})
+    {
+        EWS_Web.Capture Screenshot (ConfigureDeviceAnnouncement_Fail.png)
+        Return With Fail (Device Announce Agent enablement completed with a Disabled status!)
+    }
+    
+    If: EWS_Web.Wait For Text (Announcement Agent:               Failed,${Zero_Wait_Time})
+    {
+        // check for the sever IP blank, if so then this is a Pass
+        If: Equals (${Dev_Announce_ServerIP},)
+        {
+            Return With Pass (ConfigureDeviceAnnouncement completed!)
+        }
+        Fail:
+        {
+            EWS_Web.Capture Screenshot (ConfigureDeviceAnnouncement_Fail.png)
+            Return With Fail (Device Announce Agent enablement completed with a Failed status!)
+        }
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (ConfigureDeviceAnnouncement_Fail.png)
+        Return With Fail (Device Announce Agent enablement did not complete!)
+    }
+}
+
+/// <Name>MemoryGarbageCollection</Name>
+/// <Description>Perform the memory garbage collection function on the diagnostics memory page of EWS</Description>
+/// <Parameters></Parameters>
+/// <Precondition>EWS is open in the browser.
+///     The device must be in Development mode for the diagnostics page to be available.</Precondition>
+/// <Notes></Notes>
+MemoryGarbageCollection
+{
+    // get the device IP
+    If: EWS_Web.Get Text (//*[@id="HomeDeviceIp"],${EWS_Dev_IP})
+    {
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (MemoryGarbageCollection_Fail.png)
+        Return With Fail (Failed getting the device IP!)
+    }
+    
+    // goto the diagnostics memory page
+    If: EWS_Web.Go To (${EWS_Dev_IP}:9222/diagnostics/memory?clean)
+    {
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (MemoryGarbageCollection_Fail.png)
+        Return With Fail (Failed locating the diagnostics memory page!)
+    }
+    
+    // check for the collect garbage button
+    If: EWS_Web.Wait For Object (//button[text\(\)="Collect Garbage"],${Short_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        EWS_Web.Capture Screenshot (MemoryGarbageCollection_Fail.png)
+        Return With Fail (Failed locating the Collect Garbage button!)
+    }
+    
+    // click the collect garbage button
+    Repeat:2
+    {
+        EWS_Web.Click Object (//button[text\(\)="Collect Garbage"])
+        
+        Sleep (${Very_Short_Wait_Time})
+        
+        // wait for the result, checking for success
+        EWS_Web.Wait For Object (//button[text\(\)="Collect Garbage"],${Short_Wait_Time})
+    }
+    
+    Return With Pass (EnableWebServices completed!)
+}
+
+/// <Name>DisconnectInspectablePages</Name>
+/// <Description>Force all inspectable pages for a device to be disconnected</Description>
+/// <Parameters>device_IP : device IP address</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+DisconnectInspectablePages (${device_IP})
+{
+    // access the device EWS inspector disconnect page
+//    If: EWS_Web.Open (http://${device_IP}:9222/inspector/disconnect/1)
+    If: EWS_Web.Open with Chrome (http://${device_IP}:9222/inspector/disconnect/1)
+    {
+        EWS_Web.Close
+        
+        Return With Pass (DisconnectInspectablePages complteed!)
+    }
+    Fail:
+    {
+        @EWS_Web.Close
+        Return With Fail (Fail disconnecting inspectable pages!)
+    }
+    Error:
+    {
+        @EWS_Web.Close
+        Return With Error (Error disconnecting inspectable pages!)
+    }
+}

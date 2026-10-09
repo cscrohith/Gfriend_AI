@@ -1,0 +1,51 @@
+﻿//For PIN Auth, provide the ${UID} value as N
+//For username\password Auth, provide the ${UID} value as Y
+${UID} = Y
+
+//For LAZY Authentication, provide the variable (${LAZY_AUTH}) value as Y
+//For EAGER Authentication, provide the variable (${LAZY_AUTH}) value as N
+${LAZY_AUTH} = N
+
+//Pin parameter for IRM Authentication 
+//While running in STF, ${UserCode} variable can be commented to use the values from the STF/STB virtual worker user.
+//While running in STB, uncomment ${UserCode} variable and provide the IRM Authentication code value.
+//${UserCode} = 1111
+
+//Username\Password parameters
+${STF_UserName} =rdladmin   
+${STF_UserPassword} = rdl@123
+
+//Text field name
+${TEXT_FIELD_NAME} = SCAN
+
+//Provide file name in Text box field
+${TEXT_FIELD} = Text
+
+//For SIMPLEX, provide the variable ${PAPER_SUPPLY} value as adv_simplex
+//For DUPLEX, provide the variable ${PAPER_SUPPLY} value as adv_duplex
+${PAPER_SUPPLY} = adv_duplex
+
+//For COLOR, provide the variable ${COLOR_MODE} value as adv_color
+//For GREYSCALE, provide the variable ${COLOR_MODE} value as adv_greyscale
+//For MONOCHROME, provide the variable ${COLOR_MODE} value as adv_monochrome
+${COLOR_MODE} = adv_greyscale
+  
+//For LOW, provide the variable ${QUALITY} value as adv_low
+//For NORMAL, provide the variable ${QUALITY} value as adv_normal
+//For HIGH, provide the variable ${QUALITY} value as adv_high
+${QUALITY} = adv_normal
+
+//For ON, provide the variable ${JOB_BUILD} value as adv_append_enabled
+//For OFF, provide the variable ${JOB_BUILD} value as adv_append_disabled
+${JOB_BUILD} = adv_append_enabled
+
+//Value to provide: Integer
+${SCAN_COUNT} = 2
+
+// standard defined wait time variables for consistency and ease of adjustment
+${Short_Wait_Time}=5
+${Wait_Time}=15
+${Long_Wait}=30
+${Very_Long_Wait}=60
+${Longest_Wait}=300
+

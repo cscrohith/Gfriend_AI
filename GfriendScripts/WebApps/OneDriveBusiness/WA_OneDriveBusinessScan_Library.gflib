@@ -1,0 +1,782 @@
+﻿/// <File>WA_OneDriveBusinessScan_Library</File>
+/// <Modified>2021-09-27</Modified>
+/// <Description>Library of print routines for use with the HP for OneDrive Business Web App</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Common_LIbrary.gflib
+Using ..\..\Common\Common_LIbrary.gflib
+
+Using Oxpd
+Using JediOmni
+
+/// <Name>OpenScanOptions</Name>
+/// <Description>Open the scan options screen</Description>
+/// <Parameters></Parameters>
+/// <Precondition>Already in the scan screen</Precondition>
+/// <Notes></Notes>
+OpenScanOptions
+{
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while opening scan job options!)
+    }
+    Error:
+    {
+        Return With Error (Error while opening scan job options!)
+    }
+
+    // open the options screen
+    If: Oxpd.Wait For Css (button#Options,${Short_Wait_Time})
+    {
+        Oxpd.Touch ID (Options)
+        
+        // wait for the button to show Hide Options text
+        Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+        Oxpd.Return Browser Engine
+        Return With Pass (Open Scan Options complete!)
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while opening scan job options!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while opening scan job options!)
+    }
+}
+
+/// <Name>CloseScanOptions</Name>
+/// <Description>Close the scan options screen</Description>
+/// <Parameters></Parameters>
+/// <Precondition>Already in the scan options screen</Precondition>
+/// <Notes></Notes>
+CloseScanOptions
+{
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while closing scan options!)
+    }
+    Error:
+    {
+        Return With Error (Error while closing scan options!)
+    }
+
+    // close the options screen
+    If: Oxpd.Touch ID (HideOptions)
+    {
+        // wait for the Scan Options button to display
+        Oxpd.Wait For Css (button#Options,${Short_Wait_Time})
+        Oxpd.Return Browser Engine
+        Return With Pass (Close Scan Options complete!)
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while closing scan options!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while closing scan options!)
+    }
+}
+
+/// <Name>SelectScanOption</Name>
+/// <Description>Select the specified option from the scan options screen</Description>
+/// <Parameters>OptionText : text of option</Parameters>
+/// <Precondition>Oxpd.Get Browser a has been executed</Precondition>
+/// <Notes>Called by multiple routines in this library</Notes>
+SelectScanOption (${OptionText})
+{
+    If: Oxpd.Wait For Css (div#Options,${Minimal_Wait_Time})
+    {
+        @Oxpd.Touch Text (${OptionText})
+        // short delay to ensure the option screen displays
+        Sleep (${Minimal_Wait_Time})
+        // if still not displayed then swipe up to 4 pages
+        While:Oxpd.Wait For Css (div#Options,${Minimal_Wait_Time}):4
+        {
+            JediOmni.Drag (50,80,50,20)
+            @Oxpd.Touch Text (${OptionText})
+            // short delay for possible screen change
+            Sleep (${Minimal_Wait_Time})
+        }
+
+        // check for in specified option screen
+        If: Oxpd.Wait For Text (${OptionText},${Minimal_Wait_Time})
+        {
+            Return With Pass (Select Scan Option '${OptionText}' complete!)
+        }
+        Fail:
+        {
+            Return With Fail (Fail while selecting the specified scan option '${OptionText}'!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting specified scan option '${OptionText}'!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting specified scan option '${OptionText}'!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting specified scan option '${OptionText}'!)
+    }
+}
+
+/// <Name>SetScanOption_FileType</Name>
+/// <Description>Set the File Type</Description>
+/// <Parameters>FileType : type text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetScanOption_FileType (${FileType})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${FileType})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No FileType specified!)
+    }
+    
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting File Type scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting File Type scan option!)
+    }
+
+    If: WA_OneDriveBusinessScan_Library.SelectScanOption (File Type and Resolution)
+    {
+        // check for type already selected
+        Oxpd.Get Text (fileTypeValue,${CurrentFileType})
+        Replace (${CurrentFileType},",)
+        Trim (${CurrentFileType})
+        
+        If: Equals (${CurrentFileType},${FileType})
+        {// type already selected
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Text Gone (Done,${Short_Wait_Time})
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Scan Option File Type complete!)
+        }
+        Fail:
+        {// type not already selected
+            Oxpd.Touch ID (fileTypeValue)
+            Oxpd.Wait For CSS (#FileTypeHeader,${Short_Wait_Time})
+            Sleep (${Minimal_Wait_Time})
+            
+            // find the file type in the list
+            // loop trying to select the specified item
+            // and scrolling the screen until the item
+            // has been set to the active (selected) item
+            @Oxpd.Touch Text (${FileType})
+            While:!Oxpd.Wait For Xpath (//li[contains\(@class\,"active-list"\)]/div[text\(\)="${FileType}"],${Minimal_Wait_Time}):4
+            {
+                JediOmni.Drag (50,80,50,20)
+                Sleep (${Minimal_Wait_Time})
+                @Oxpd.Touch Text (${FileType})
+            }
+            
+            // verify the specified item is selelcted
+            If: Oxpd.Wait For Xpath (//li[contains\(@class\,"active-list"\)]/div[text\(\)="${FileType}"],${Minimal_Wait_Time})
+            {
+                // succuss, close and return to the Options screen
+                Oxpd.Touch ID (Done)
+                Sleep (${Minimal_Wait_Time})
+                Oxpd.Touch ID (Done)
+                Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+                Oxpd.Return Browser Engine
+                Return With Pass (Set Scan Option File Type '${FileType}' complete!)
+            }
+            Fail:
+            {
+                // failure backout and return to the Options screen
+                Oxpd.Touch Css (.back)
+                Sleep (${Minimal_Wait_Time})
+                Oxpd.Touch ID (Done)
+                Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+                Oxpd.Return Browser Engine
+                Return With Fail (Fail while selecting File Type scan option '${FileType}'!)
+            }
+            Error:
+            {
+                // error backout and return to the Options screen
+                Oxpd.Touch Css (.back)
+                Sleep (${Minimal_Wait_Time})
+                Oxpd.Touch ID (Done)
+                Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+                Oxpd.Return Browser Engine
+                Return With Error (Error while selecting File Type scan option '${FileType}'!)
+            }
+        }
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while selecting File Type scan option!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting File Type scan option!)
+    }
+}
+
+/// <Name>SetScanOption_FileType</Name>
+/// <Description>Set the File Type</Description>
+/// <Parameters>FileType : type text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetScanOption_Resolution (${Resolution})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Resolution})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Resolution specified)
+    }
+    
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Resolution scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Resolution scan option!)
+    }
+
+    If: WA_OneDriveBusinessScan_Library.SelectScanOption (File Type and Resolution)
+    {
+        // check for type already selected
+        Oxpd.Get Text (resolutionValue,${CurrentResolution})
+        Replace (${CurrentResolution},",)
+        Trim (${CurrentResolution})
+        
+        If: Equals (${CurrentResolution},${Resolution})
+        {// type already selected
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Text Gone (Done,${Short_Wait_Time})
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Scan Option Resolution '${Resolution}' complete!)
+        }
+        Fail:
+        {// type not already selected
+            Oxpd.Touch ID (resolutionValue)
+            Oxpd.Wait For CSS (#ResolutionHeader,${Short_Wait_Time})
+            Sleep (${Minimal_Wait_Time})
+
+            // find the resolution in the list
+            // loop trying to select the specified item
+            // and scrolling the screen until the item
+            // has been set to the active (selected) item
+            @Oxpd.Touch Text (${Resolution})
+            While:!Oxpd.Wait For Xpath (//li[contains\(@class\,"active-list"\)]/div[contains\(text\(\)\,"${Resolution}"\)],${Minimal_Wait_Time}):4
+            {
+                JediOmni.Drag (50,80,50,20)
+                Sleep (${Minimal_Wait_Time})
+                @Oxpd.Touch Text (${Resolution})
+            }
+            
+            // verify the specified item is selelcted
+            If: Oxpd.Wait For Xpath (//li[contains\(@class\,"active-list"\)]/div[contains\(text\(\)\,"${Resolution}"\)],${Minimal_Wait_Time})
+            {
+                // succuss, close and return to the Options screen
+                Oxpd.Touch ID (Done)
+                Sleep (${Minimal_Wait_Time})
+                Oxpd.Touch ID (Done)
+                Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+                Oxpd.Return Browser Engine
+                Return With Pass (Set Scan Option Resolution '${Resolution}' complete!)
+            }
+            Fail:
+            {
+                // failure backout and return to the Options screen
+                Oxpd.Touch Css (.back)
+                Sleep (${Minimal_Wait_Time})
+                Oxpd.Touch ID (Done)
+                Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+                Oxpd.Return Browser Engine
+                Return With Fail (Fail while selecting Resolution scan option '${Resolution}'!)
+            }
+            Error:
+            {
+                // error backout and return to the Options screen
+                Oxpd.Touch Css (.back)
+                Sleep (${Minimal_Wait_Time})
+                Oxpd.Touch ID (Done)
+                Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+                Oxpd.Return Browser Engine
+                Return With Error (Error while selecting Resolution scan option '${Resolution}'!)
+            }
+        }
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while selecting Resolution scan option!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Resolution scan option!)
+    }
+}
+
+/// <Name>SetScanOption_ColorBlack</Name>
+/// <Description>Set the Color Black option</Description>
+/// <Parameters>Color_Black : color/black text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetScanOption_ColorBlack (${Color_Black})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Color_Black})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Color Black specified)
+    }
+    
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Color/Black scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Color/Black scan option!)
+    }
+    
+    // drag slightly to work around an issue clicking when list at top
+    JediOmni.Drag (50,80,50,60)
+    
+    If: WA_OneDriveBusinessScan_Library.SelectScanOption (Color/Black)
+    {
+        // scroll down for Black or Black Gray
+        If: Contains (${Color_Black},Black)
+        {
+            JediOmni.Drag (50,80,50,20)
+            Sleep (${Minimal_Wait_Time})
+        }
+
+        Oxpd.Touch Text (${Color_Black})
+        Sleep (${Minimal_Wait_Time})
+        
+        // succuss, close and return to the Options screen
+        Oxpd.Touch ID (Done)
+        Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+        
+        Oxpd.Return Browser Engine
+        Return With Pass (Set Scan Option Color/Black '${Color_Black}' complete!)
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while selecting Color/Black scan option!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Color/Black scan option!)
+    }
+}
+
+/// <Name>SetScanOption_OriginalSize</Name>
+/// <Description>Set the original size option</Description>
+/// <Parameters>OriginalSize : original size text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetScanOption_OriginalSize (${OriginalSize})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${OriginalSize})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No OriginalSize specified)
+    }
+    
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Original Size scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Original Size scan option!)
+    }
+    
+    If: WA_OneDriveBusinessScan_Library.SelectScanOption (Original Size)
+    {
+        Sleep (${Minimal_Wait_Time})
+        
+        // find the size in the list
+        // loop trying to select the specified item
+        // and scrolling the screen until the item
+        // has been set to the active (selected) item
+        @Oxpd.Touch Text (${OriginalSize})
+        While:!Oxpd.Wait For Xpath (//li[contains\(@class\,"selected"\)]/descendant::div[text\(\)="${OriginalSize}"],${Minimal_Wait_Time}):6
+        {
+            JediOmni.Drag (50,60,50,20)
+            Sleep (${Minimal_Wait_Time})
+            @Oxpd.Touch Text (${OriginalSize})
+        }
+        
+        // verify the specified item is selelcted
+        If: Oxpd.Wait For Xpath (//li[contains\(@class\,"selected"\)]/descendant::div[text\(\)="${OriginalSize}"],${Minimal_Wait_Time})
+        {
+            // succuss, close and return to the Options screen
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Scan Option Original Size '${OriginalSize}' complete!)
+        }
+        Fail:
+        {
+            // failure backout and return to the Options screen
+            Oxpd.Touch Css (.back)
+            Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while selecting Original Size scan option '${OriginalSize}'!)
+        }
+        Error:
+        {
+            // error backout and return to the Options screen
+            Oxpd.Touch Css (.back)
+            Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+            Oxpd.Return Browser Engine
+            Return With Error (Error while selecting Original Size scan option '${OriginalSize}'!)
+        }
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while selecting Original Size scan option!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Original Size scan option!)
+    }
+} 
+
+/// <Name>SetScanOption_Orientation</Name>
+/// <Description>Set the orientation option</Description>
+/// <Parameters>Orientation : orientation text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetScanOption_Orientation (${Orientation})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Orientation})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Orientation specified)
+    }
+    
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Orientation scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Orientation scan option!)
+    }
+    
+    // drag slightly to work around an issue clicking when list at top
+    JediOmni.Drag (50,80,50,60)
+    
+    If: WA_OneDriveBusinessScan_Library.SelectScanOption (Content Orientation)
+    {
+        // find the file type in the list
+        If: Equals IgnoreCase (${Orientation},Landscape)
+        {
+            Oxpd.Touch Id (Landscape)
+        }
+        Fail:
+        {
+            Oxpd.Touch Id (Portrait)
+        }
+        
+        Oxpd.Touch ID (Done)
+        Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+        Oxpd.Return Browser Engine
+        Return With Pass (Set Scan Option Orientation '${Orientation}' complete!)
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while selecting Orientation scan option!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Orientation scan option!)
+    }
+}
+
+/// <Name>InitiateScanJob</Name>
+/// <Description>Initiate a scan job</Description>
+/// <Parameters></Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+InitiateScanJob
+{
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while initaiting scan job!)
+    }
+    Error:
+    {
+        Return With Error (Error while initaiting scan job!)
+    }
+
+    // slight delay to ensure button is avaliable
+    Sleep (${Minimal_Wait_Time})
+    
+    // press the Scan button
+    If: Oxpd.Touch ID (Scan)
+    {
+        Oxpd.Wait For Css (#scanJob,${Wait_Time})
+    
+        Oxpd.Return Browser Engine
+        Return With Pass (Initiate Scan Job complete!)
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while initiating scan job!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while initiating scan job!)
+    }
+}
+
+/// <Name>SetFileName</Name>
+/// <Description>Set the file name</Description>
+/// <Parameters>ScanFilename : name of file(s) to save</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetFileName(${ScanFilename})
+{
+    // set the filename if needed
+    If: Common_LIbrary.CheckVariableContainsValue (${ScanFilename})
+    {
+    }
+    Fail:
+    {
+        // filename is not specified so leave as default
+        Return With Pass (Set File Name complete - left as default!)
+    }
+
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while initaiting scan job!)
+    }
+    Error:
+    {
+        Return With Error (Error while initaiting scan job!)
+    }
+    
+    // enter the filename
+    Oxpd.Touch CSS (.file-name>input)
+    // short delay to ensure the keyboard is available
+    Sleep (${Minimal_Wait_Time})
+    
+    // check for need to clear the default file name
+    Oxpd.Get Text (scanText,${ExistingFileName})
+    If: Equals (${ExistingFileName},"")
+    {
+    }
+    Fail:
+    {
+        // clear the filename texbox
+        Repeat:25
+        {
+            JediOmni.Touch ID (hpid-keyboard-key-backspace)
+        }
+    }
+    // enter the specified file name
+    Oxpd.Input Text (${ScanFilename})
+    
+    JediOmni.Touch ID (hpid-keyboard-key-done)
+    Sleep (${Minimal_Wait_Time})
+
+    Oxpd.Return Browser Engine
+    
+    Return With Pass (Set File Name '${ScanFilename}' complete!)
+}
+
+/// <Name>ScanAndCompleteJob</Name>
+/// <Description>Scan page(s) and complete the scan job</Description>
+/// <Parameters>OptNumPagesionText : number of pages to scan</Parameters>
+/// <Parameters>JobCompleteTimeout : number of seconds to wait for completion</Parameters>
+/// <Precondition>scan job has been initiated, options and file name set</Precondition>
+/// <Notes></Notes>
+ScanAndCompleteJob(${NumPages}, ${JobCompleteTimeout})
+{
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while completing scan job!)
+    }
+    Error:
+    {
+        Return With Error (Error while completing scan job!)
+    }
+
+    // if only 1 page then complete without preview
+    If: Equals (${NumPages},${Minimal_Wait_Time})
+    {
+        // press the scan button
+        Oxpd.Touch ID (Send)
+
+        // wait for the scanning screen to show/disappear
+        If: JediOmni.Wait For Text (Scanning,${Wait_Time})
+        {
+            JediOmni.Wait For Text Gone (Scanning,${Long_Wait})
+        }
+    
+        // clear the Add Pages screen if it appears
+        If: JediOmni.Wait For Object (hpid-prompt-add-pages,${Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-button-done)
+        }
+    }
+    Fail:
+    {
+        // start the scan by pressing the preview frame
+        Oxpd.Touch ID (Preview)
+        
+        // wait for the scanning screen to show/disappear
+        If: JediOmni.Wait For Text (Scanning...,${Wait_Time})
+        {
+            JediOmni.Wait For Text Gone (Scanning...,${Long_Wait})
+        }
+        
+        // clear the Add Pages screen if it appears
+        If: JediOmni.Wait For Object (hpid-prompt-add-pages,${Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-button-done)
+        }
+        
+        // wait for the image preview screen
+        If: JediOmni.Wait For Object (hpid-oxp-preview-dialog,${Wait_Time})
+        {
+            // at this point 1 page has been scanned into the preview
+            // handle additional pages if necessary
+            If: Equals (${NumPages},${Minimal_Wait_Time})
+            {// 1 page, no action
+            }
+            Fail:
+            {// multiple pages
+                Repeat:${NumPages}
+                {
+                    If: Equals (${NumPages},${R})
+                    {// last scan already done, no action
+                    }
+                    Fail:
+                    {// add a page
+                        JediOmni.Wait For Object Gone (#hpid-preview-button-add-pages.hp-disabled,${Long_Wait})
+                        Sleep (${Minimal_Wait_Time})
+                        JediOmni.Touch ID (hpid-preview-button-add-pages)
+                        JediOmni.Wait For Object (hpid-button-scan,${Long_Wait})
+                        JediOmni.Touch ID (hpid-button-scan)
+                    }
+                }
+            }
+        
+            // all pages added, finish the scan
+            JediOmni.Wait For Object Gone (#hpid-button-start.hp-disabled,${Long_Wait})
+            Sleep (${Very_Short_Wait_Time})
+            JediOmni.Touch ID (hpid-button-start)
+        }
+        Fail:
+        {
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while accessing scan job preview!)
+        }
+        Error:
+        {
+            Oxpd.Return Browser Engine
+            Return With Error (Error while accessing scan job preview!)
+        }
+    }
+    
+    // wait for the job to complete within the specified time
+    //    If: Oxpd.Wait For Xpath (//*[@id="storage-description" or text\(\)="Scan Complete"],${JobCompleteTimeout})
+    
+    If: Oxpd.Wait For Xpath (//*[@id="scanJob"]/descendant::*[contains\(translate\(text\(\)\, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\, "abcdefghijklmnopqrstuvwxyz"\)\, "complete"\) or contains\(translate\(text\(\)\, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\, "abcdefghijklmnopqrstuvwxyz"\)\, "success"\)],${JobCompleteTimeout})
+    {
+        //        If: Oxpd.Wait For Text (Scan Complete,${Minimal_Wait_Time})
+        
+        If: Oxpd.Wait For Xpath (//*[@id="scanJob"]/descendant::*[contains\(translate\(text\(\)\, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\, "abcdefghijklmnopqrstuvwxyz"\)\, "complete"\) or contains\(translate\(text\(\)\, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\, "abcdefghijklmnopqrstuvwxyz"\)\, "success"\)], ${Minimal_Wait_Time})
+        {
+            Oxpd.Touch Id (scan-cancel-button)
+        }
+        Sleep (${Short_Wait_Time})
+        Oxpd.Return Browser Engine
+        Return With Pass (Complete Scan Job complete!)
+    }
+    Fail:
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail completing scan job with specified timeout!)
+    }
+    Error:
+    {
+        Oxpd.Return Browser Engine
+        Return With Error (Error while completing scan job!)
+    }
+}

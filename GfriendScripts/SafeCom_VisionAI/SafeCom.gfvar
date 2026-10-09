@@ -1,0 +1,18 @@
+﻿//Code to login using KOFAX
+//${STF_UserName} = 
+
+//To Print all the jobs, mention the variable (${PRINT_ALL}) value as Y
+//To Print one job, mention the variable (${PRINT_ALL}) value as N
+${PRINT_ALL} = Y
+
+//For Badgebox,mention the variable (${BADGE_AUTH}) value as Y
+//For Credentials,mention the variable (${BADGE_AUTH}) value as N
+${BADGE_AUTH} = N
+
+//BadgeIndex 
+//${STF_BadgeIndex} = 
+
+//API Endpoint and Solution Name
+//${STF_AzureEndpoint}=
+//${STF_AzureKey}=
+${SOLUTION_NAME}=Safecom

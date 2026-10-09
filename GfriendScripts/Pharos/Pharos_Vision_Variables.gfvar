@@ -1,0 +1,24 @@
+﻿//API Endpoint and Solution Name Details
+//${STF_AzureEndpoint} =
+//${STF_AzureKey} =
+${SOLUTION_NAME} = pharos
+
+//To Authenticate through BadgeBox, provide the variable (${BadgeBox_Auth}) value as Y
+//Sign in through username and password, provide the variable (${BadgeBox_Auth}) value as N
+${BADGE_AUTH} = N
+
+//BadgeIndex
+//${STF_BadgeIndex} =
+
+//To Select all the jobs, provide the variable (${Select_ALL}) value as Y
+//To Select one job, provide the variable (${Select_ALL}) value as N
+${SELECT_ALL} = N
+
+//To Delete all the jobs, provide the variable (${Delete}) value as Y
+//To Select Print job, provide the variable (${Delete}) value as N
+${PRINT} = Y
+
+//Username and Password Authentication
+//${STF_UserName} =
+//${STF_UserPassword} =
+ 

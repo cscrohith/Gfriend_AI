@@ -1,0 +1,61 @@
+﻿//Total scans is alway one plus the scan count i.e. 6 if scan count is 5.
+${ScanCount} = 5
+
+//Clearing Settings toast message
+${ClearingSettingsMsg} = Clearing Settings
+
+//Application Name
+${HPScanAIEnhanced} = HP Scan AI Enhanced
+
+${ScanAIApplicationIcon} = hpid-627b8ca8-0e68-11ed-861d-0242ac120002-homescreen-button
+
+// xPath of first workflow project to test if screen is loaded or not.
+${DemoProjectPortalValidation} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvAlumaProjects']/node[1]
+
+//DemoWorkflowProjectUnderTest
+${DemoProjectUnderTest} =Demo Project - App or Portal Validation
+
+// XPath of 'App Or Portal Validation' workflow project
+${XPathProjectUnderTest} =//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvAlumaProjects']/node[4]
+
+//xPath of 'Start New Job' button
+${StartNewJobbutton} =//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btStartNewJob']
+
+${JediOmniFlatbedScanPrompt} = hpid-prompt-flatbed-duplex
+
+${CancelScanNotifictaion} = hpid-cancel-confirm
+
+${YesButton_CancelScanNotification} = hpid-button-yes
+
+${ScanButton} = hpid-button-scan
+
+${DoneButton} = hpid-button-done
+
+// Cancel button on JediOmni scan page screen.
+${CancelButton} = hpid-button-cancel-job
+
+// xPath for Cancel Upload to Aluma portal
+${CancelUpload} = //node[@text='CANCEL JOB']
+
+${CheckToHideKeyboard} =//node[@index='20']
+
+//xPath of 'Next Step Button'
+${NextStepButton} =//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btJobActionButton']
+
+// xPath for 'Validate' Button to verify if screen is loaded
+${ValidateButton} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btValidate']
+
+//xPath of 'Continue On Desktop Button'
+${ContinueOnDesktopButton} =//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btPortal']
+
+//xPath of 'Text Feild for giving Task Name'
+${TaskNameTextFeild} =//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/linearLayout2']/node[2]
+
+//xPath for 'Continue' button for sending to Aluma portal 
+${ContinueSendingToPortal} =//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btContinue']
+
+//xPath for 'Finish' button to end workflow execution
+${FinishSendingToPortal} =//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btFinishValidations']
+
+//xPath for 'Home' button to go to Home Screen.
+${HomeScreenButton} = //node[@resource-id='com.android.systemui:id/home']

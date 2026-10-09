@@ -1,0 +1,214 @@
+﻿using JediOmni
+using Vision
+using Oxpd
+using HPAC_Variables_AI_Vision.gfvar
+using Info
+using BadgeBox
+
+Setup_AIVision
+{
+    Vision.Set AI OCR Method (${STF_AzureEndpoint},HPAC)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (block)
+}
+
+HPAC_Authentication_AI_Vision(${STF_UserName},${STF_UserPassword},${BADGE_AUTH},${STF_BadgeIndex})
+{
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)    
+    Info.Start Time Check (STF_AppShown)
+    If: HPAC_AI_Vision.ClearAuth_AIVision
+    {
+        //continue
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+    If:Equals IgnoreCase (${BADGE_AUTH},Y) 
+    {
+        Info.Mark Start (STF_Authentication,2)
+        Info.Mark Start (STF_EnterCredentials,3) 
+        BadgeBox.Scan Badge (${STF_BadgeIndex})
+        Info.Mark End (STF_EnterCredentials,3)
+        Info.Mark End (STF_Authentication,2) 
+        If:Vision.Is Text Exist (Sign Out) 
+        {
+            Pass (Sign In successful)
+        } 
+        If: Vision.Is Text Exist (HPACSecurePullPrint)  
+        {
+            Vision.Click Text (HPACSecurePullPrint)
+            Info.Mark End (STF_AppButtonPress,1)
+            If: Vision.Is Text Exist (Refresh)
+            {
+                Info.Mark End (STF_AppShown,4)
+            }
+        }
+        Fail:
+        {
+            Return With Fail (Failed to load PullPrint button!)
+        }
+     }
+    Fail:
+    {
+        Vision.Click Text (HPACSecurePullPrint)
+        Info.Mark End (STF_AppButtonPress,1)
+        Oxpd.Get Browser Engine (15)
+        Info.Mark Start (STF_Authentication,2)
+        If: Vision.Is Text Exist (Network)
+        {
+            Vision.Click Text (Network)
+            If: Vision.Is Text Exist (Username)
+            {
+                Info.Mark Start (STF_EnterCredentials,3)  
+                Vision.Click Next To Text (Username,0,10)
+                Oxpd.Input Text (${STF_UserName})
+                JediOmni.Touch Text (OK)
+                Vision.Click Next To Text (Password,0,10)
+                Oxpd.Input Text (${STF_UserPassword})
+                    
+                // Keyboard OK
+                JediOmni.Touch Text (OK)
+                Info.Mark End (STF_EnterCredentials,3)
+                If: Vision.Is Text Exist (OK)
+                {
+                    Vision.Click Text (OK)
+                    Info.Mark End (STF_Authentication,2)                    
+                }
+                Info.Mark End (STF_AppShown,4)
+            }
+        }
+        Fail:
+        {
+            Return With Fail (Failed to load authentication text field!)
+        }
+      }
+}
+
+ClearAuth_AIVision
+{
+    JediOmni.Press Home Key
+    If: Vision.Is Text Exist (SignIn)
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+       If: Vision.Click Text (SignOut)
+       {
+           Vision.Is Text Exist (SignIn)
+       } 
+       Fail:
+       {
+           Return With Fail (Failed clicking Sign Out!)
+       }
+    }
+   Vision.Click Text (Reset)
+}
+
+HPAC_Print_AI_Vision(${PRINT_RELEASE_ACTION})
+{
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_PrintAll)
+    Info.Start Time Check (STF_Delete)
+    Info.Start Time Check (STF_PrintDelete)
+    Info.Start Time Check (STF_PrintKeep)
+    Info.Start Time Check (STF_PullingJobFromServer)
+    Info.Start Time Check (STF_ProcessingJob)
+    
+    Sleep (3)    
+    
+    If: Vision.Is Text Exist (FirstJob)
+    {
+        //To Print all the Documents
+        If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},PrintAll)
+        {
+            Vision.Is Text Exist (PrintAll) 
+            Info.Mark Start (STF_PrintAll,5)
+            Vision.Click Text (PrintAll)  
+            Info.Mark End (STF_PrintAll,5)
+        } 
+        //To Print Only 1 Document
+        Fail:
+        {
+            Vision.Click Text (FirstJob)
+            If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},PrintKeep)
+            {
+                If: Vision.Is Text Exist (PrintKeep)
+                {
+                    Vision.Is Text Exist (PrintKeep)
+                    Info.Mark Start (STF_PrintKeep,6)
+                    Vision.Click Text (PrintKeep)
+                    Info.Mark End (STF_PrintKeep,6)
+                }
+            }
+            If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},PrintDelete)
+            {
+               Vision.Is Text Exist (PrintDelete)
+               Info.Mark Start (STF_PrintDelete,7)
+               Vision.Click Text (PrintDelete) 
+               Info.Mark End (STF_PrintDelete,7)
+            }
+            If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Delete)
+            {
+               Vision.Is Text Exist (Delete)
+               Info.Mark Start (STF_Delete,8)
+               Vision.Click Text (Delete)
+               Info.Mark End (STF_Delete,8)
+            }
+        }
+        If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Delete)
+        { 
+            Return With Pass(Deleted Job successfully)
+        }
+        Fail:
+        {
+            Info.Mark Start (STF_PullingJobFromServer,9)
+            If: JediOmni.Wait For Active Job (${Wait_Time})
+            {
+                //Continue
+                Info.Mark End (STF_PullingJobFromServer,9)
+            }
+            Fail:
+            {
+                Return With Fail(Failed to initiate print jobs within ${Wait_Time} seconds!!)
+            }
+
+            Info.Mark Start (STF_ProcessingJob,10)
+            If: JediOmni.Wait For Active Job Gone (${Long_Wait_Time})
+            {
+                Return With Pass (Print Job Completed Successfully) 
+                Info.Mark End (STF_ProcessingJob,10)
+            }
+            Fail:
+            {
+                Return With Fail (Failed to print jobs within ${Long_Wait_Time} seconds!!)
+            }
+        }
+    }
+    Fail:
+    {
+        Return With Fail (No Jobs found to Pull!!) 
+    }
+    Error:
+    {
+        Return With Error (Error while selecting print Job!!)
+    } 
+    
+    If: Vision.Is Text Exist (Exit)
+    {
+        Vision.Click Text (Exit)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to find Exit button!)
+    }
+
+}

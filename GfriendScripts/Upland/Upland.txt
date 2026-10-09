@@ -1,0 +1,37 @@
+﻿using Upland.gflib
+using Upland.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         Upland_Flow
+// Description:     Complete Upland Flow
+//
+// Arguments:       ${STF_ScanFileName}: File Name for Scanned Document
+//                  ${UPLAND_INSTANCE}: Upland Instance URL
+//                  ${STF_USER_NAME}: User Name
+//                  ${STF_PASSWORD}: Password
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Upland_Flow
+{
+   
+    If: Upland.Upland Intelligent Capture(${Profile_NAME},${STF_ScanFileName},${UPLAND_INSTANCE},${STF_USER_NAME},${STF_PASSWORD},${FILEBOUND_INSTANCE},${FILEBOUND_PROJECT})
+    {
+        //Continue
+    }
+
+    Fail:
+    {
+        Return With Fail (Failed while Scanning!)
+    }
+    Error:
+    {
+        Return With Error (Error while Scanning!)
+    }
+    Upland.SignOut
+}

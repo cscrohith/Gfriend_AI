@@ -1,0 +1,101 @@
+//ScanCount
+${ScanCount} = 5
+
+//TotalScanCount
+${TotalValidationDocCount} = 4
+
+//SignoutButton
+${SignOutButton} = hp-button-signin-or-signout
+
+//Application Name
+${HPScanAIEnhanced} = HP Scan AI Enhanced
+
+//Clearing Settings toast message
+${ClearingSettingsMsg} = Clearing Settings
+
+//ScanAIApplicationIcon native Id
+${ScanAIApplicationIcon} = hpid-627b8ca8-0e68-11ed-861d-0242ac120002-homescreen-button
+
+//DemoWorkflowProjectUnderTest
+${DemoProjectUnderTest} = (Demo) Delivery notes with document separation
+
+${XPathProjectUnderTest} = //node[@text='(Demo) Delivery notes with document separation']
+
+//xPath-StartNewJobbutton
+${StartNewJobbutton} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btStartNewJob']
+
+// Scan Button
+${ScanButton} = hpid-button-scan
+
+// Done Button
+${DoneButton} = hpid-button-done
+
+// xPath for cancel button that appears while scanning document
+${CancelScan} = //node[@text='CANCEL JOB']
+
+// xPath for Cancel Upload to Aluma portal
+${CancelUpload} = //node[@text='CANCEL JOB']
+
+// xPath for button 'Next Step'
+${NextStepButton} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btJobActionButton']
+
+// xPath for Document Separation Text
+${DocumentSeparationText} = //node[@text='Document separation']
+
+// xPath for document 1
+${DestinationDocument1} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[1]/node[2]/node[1]/node[3]/node[2]
+
+// xPath for document 2
+${SourceDocument2} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[2]/node[2]/node[1]/node[3]/node[1]
+
+// xPath for merging two documents at 3 to 2.
+${DestinationDocument2} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[2]/node[2]/node[1]/node[3]/node[2]
+
+// xPath for document 3
+${DestinationDocment3} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[3]/node[2]/node[1]/node[3]/node[2]
+
+// xPath for document 4
+${SourceDocument4} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[4]/node[2]/node[1]/node[3]/node[1]
+
+// xPath for document 3 source
+${SourceDocument3} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[3]/node[2]/node[1]/node[3]/node[1]
+
+// xPath for document 2 as source for separation
+${SeparationSourceDocument2} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[2]/node[2]/node[1]/node[3]/node[3]
+
+// xPath for document 3 as destination for separation
+${NewDocumentDestination} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[3]/node[2]/node[1]/node[3]/node[1]
+
+// xPath for 'Save And Start Validation Button'
+${SaveAndStartValidtationButton} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btSave']
+
+// xPath for Preview Document Icon
+${PreviewDocument1} =  //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btPreview']
+
+${DocumentTypeFeild} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvFieldValidation']/node[1]/node[1]
+
+${DocumentTypeValue} = //node[@class='android.widget.ListView']
+
+${NumeroDocFeild} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvFieldValidation']/node[2]/node[1]
+
+${NumberKeypad} = //node[@index='32']
+
+${Number1Key} = //node[@content-desc='1']
+
+${DataDocFeild} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvFieldValidation']/node[3]/node[1]
+
+${FornitoreFeild} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvFieldValidation']/node[4]/node[1]
+
+${CheckKeyOnKeyboard} = //node[@index='20']
+
+${CodiceFornitoreFeild} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvFieldValidation']/node[5]/node[1]
+
+${PartitaIvaFeild} = //node[@index='5']/node[1]
+
+${PartitaIvaFeildValue} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/etValue']/node[1]
+
+${ClosePreviewButton} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btClosePreview']
+
+${ValidateButton} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btValidate']
+
+${FinishValidationButton} = //node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/btFinishValidations']

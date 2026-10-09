@@ -1,0 +1,48 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+Authentication
+{
+    Common_Library.CheckHomeScreen
+    Common_Library.AuthenticationEager(${UserName},${Password})
+}
+ScanToFolderWorkFlow
+{
+    If: Dune.Wait For (#ScanFolderGUID,10)
+    {
+        Dune.Click (#ScanFolderGUID)
+        Dune.Wait For (#65acca51-619d-4e29-b1d0-6414e52f908b,5)
+        Dune.Click (#65acca51-619d-4e29-b1d0-6414e52f908b)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to click on Scan Application)
+        Stop Test Suite
+    }
+    //entering To address, From address
+    If: Dune.Wait For (#folderLandingView #DetailPanelverticalLayout #scanFileNameFieldDestination,10)
+    {
+        Sleep (1)
+        Dune.Click Id (${STNQuickSetName})
+        Dune.Wait For (#fileNameTextField,10)
+        Dune.Click Id (#fileNameTextField)
+        Get Random Number (01,1000,${FileName})
+        Dune.Set Text (#fileNameTextField,${FileName})
+        If: Dune.Wait For (#enterKey1,2)
+        {
+            Dune.Click Id (#enterKey1)
+        }
+        Sleep (1)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to update to Address)
+    }
+}
+Option_Check 
+{
+    Common_Library.Scan_Option_Validation_For_Camden_and_Busch
+} 
+
+

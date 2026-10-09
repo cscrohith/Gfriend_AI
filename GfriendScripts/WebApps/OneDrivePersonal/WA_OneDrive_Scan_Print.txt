@@ -1,0 +1,602 @@
+﻿/// <File>WA_OneDrive_Scan_Print.txt</File>
+/// <Modified>2021-09-02</Modified>
+/// <Description>Perform a scan job then a print job in the HP for OneDrive workpath app.
+///   Optionally authenticate on the device. Handle SIO as necessary.</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+Using WA_OneDrive.gfvar
+Using WA_OneDriveAuth.gfvar
+Using WA_OneDrive_Scan.gfvar
+Using WA_OneDrive_Print_1_File.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\..\Device\Device_Library.gflib
+//Using DeviceAuth.gflib
+Using ..\..\DeviceAuth\DeviceAuth.gflib
+//Using Common_LIbrary.gflib
+Using ..\..\Common\Common_LIbrary.gflib
+
+Using WA_OneDrive_Library.gflib
+Using WA_OneDriveScan_Library.gflib
+Using WA_OneDrivePrint_Library.gflib
+
+Using JediOmni
+
+/// <Name>OpenApp</Name>
+/// <Description>Authenticate on device, if specified, and open the OneDrive app</Description>
+/// <Notes>WA_OneDriveAuth.gfvar contains the needed authentication and User variables. 
+///   WA_OneDrive.gfvar contains needed app variables.
+///   If this script is run from STF/STB the variables with names beginning
+///   with STF_ can be commented to use the values from the STF/STB virtual worker user.
+///   This routing handles SIO 2FA as needed</Notes>
+OpenApp
+{
+    // get the user code/PIN to use
+    DeviceAuth.GenerateUserCode (${STF_UserName})
+    
+    // authenticate if specified
+    If: Equals IgnoreCase (${AuthenticationType},Windows)
+    {
+        // sign in with Windows
+        If: DeviceAuth.SignIn_Windows (${STF_UserName},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Windows authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Windows authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},HPAC)
+    {
+        // sign in with HPAC
+        If: DeviceAuth.Sign_In_HPAC (${UserCode},${STF_UserName},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},SafeCom)
+    {
+        // sign in with SafeCom
+        If: DeviceAuth.SignIn_SafeCom (${STF_UserName},${UserCode},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},Papercut)
+    {
+        // sign in with Papercut
+        If: DeviceAuth.Sign_In_PaperCut (${STF_UserName},${UserCode},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+    }
+    // if got to here either authentication was successful
+    // or not authentication type specified
+    
+    // open the app
+    If: Device_Library.LaunchApp(${ButtonID},${ButtonText})
+    {
+        Sleep (${Very_Short_Wait_Time})
+        
+        // check for and handle SIO 2 factor auth PIN
+        If: DeviceAuth.Check_HPID_SIO(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        {
+            Sleep (${Very_Short_Wait_Time})
+            // handle the app opening (EULA, Sign In and Guide screen)
+            If: WA_OneDrive_Library.HandleAppOpening(${AppUserID},${AppPassword},${SaveSIO_AppCredentials},${VerifySIOConnectDuringAppOpen})
+            {
+            }
+            Fail:
+            {
+                JediOmni.Press Home Key
+                
+                // if specified to verify SIO connection then
+                // check the user SIO link status
+                If: Equals (${VerifySIOConnectDuringAppOpen},Y)
+                {
+                    If: DeviceAuth.VerifyUserSIO_Linked
+                    {
+                    }
+                    Fail:
+                    {
+                        // user not linked to SIO so fail with
+                        // message to indicate
+                        Fail (User SIO link verfication failed!)
+                        Stop Test Suite
+                    }
+                }
+                
+                Fail (Fail while handling the opening of OneDrive Personal app!)
+                Stop Test Suite
+            }
+            Error:
+            {
+                JediOmni.Press Home Key
+                Error (Error occurred while handling the opening of OneDrive Personal app!)
+                Stop Test Suite
+            }
+        }
+        Fail:
+        {
+            // clear out of the app
+            Sleep (${Minimal_Wait_Time})
+            JediOmni.Press Home Key
+            Fail (Launch OneDrive Personal app failed!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            JediOmni.Press Home Key
+            Error (Error occurred while launching OneDrive Personal app!)
+            Stop Test Suite
+        }
+    }
+    Fail:
+    {
+        JediOmni.Press Home Key
+        Fail (Launch OneDrive Personal app failed!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        JediOmni.Press Home Key
+        Error (Error occurred while launching OneDrive Personal app!)
+        Stop Test Suite
+    }
+    
+    Pass (Open App complete!)
+}
+
+/// <Name>ScanJob</Name>
+/// <Description>Perform a scan job. Optionally set scan options. Optionally repeat the scan job.</Description>
+/// <Notes>WA_OneDrive_Scan.gfvar contains needed app print variables.</Notes>
+ScanJob
+{
+    // repeat scan job the number of times specified
+    Repeat: ${Scan_Repetitions}
+    {
+        // locate the folder if specified
+        If: Common_LIbrary.CheckVariableContainsValue (${Scan_Folder})
+        {
+            // search for the folder
+            If: WA_OneDrive_Library.SearchFolder(${Scan_Folder})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail searching for folder '${Scan_Folder}' while performing scan job!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error searching for folder '${Scan_Folder}' while performing scan job!)
+                Stop Test Case
+            }
+        }
+        
+        // initiate the scan job
+        If: WA_OneDriveScan_Library.InitiateScanJob
+        {
+        }
+        Fail:
+        {
+            Fail (Fail ccurred while initiating scan job!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error occurred while initiating scan job!)
+            Stop Test Case
+        }
+        
+        // open the options screen and set the options, if no specified to skip
+        If: Equals IgnoreCase (${Scan_SkipOptions},Y)
+        {
+            // specified to skip setting options
+        }
+        Fail:
+        {
+            If: WA_OneDriveScan_Library.OpenScanOptions
+            {
+                // set the file type option
+                If: WA_OneDriveScan_Library.SetScanOption_FileType(${Scan_FileType})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option File Type!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option File Type!)
+                    Stop Test Case
+                }
+                
+                // set the resolution option
+                If: WA_OneDriveScan_Library.SetScanOption_Resolution (${Scan_Resolution})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option Resolution!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option Resolution!)
+                    Stop Test Case
+                }
+                
+                // set the Color/Black option
+                If: WA_OneDriveScan_Library.SetScanOption_ColorBlack (${Scan_Color})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option Color/Black!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option Color/Black!)
+                    Stop Test Case
+                }
+                
+                // set the Orienation option
+                If: WA_OneDriveScan_Library.SetScanOption_Orientation (${Scan_ContentOrientation})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option Orienation!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option Orienation!)
+                    Stop Test Case
+                }
+                
+                // set the Original Size option
+                If: WA_OneDriveScan_Library.SetScanOption_OriginalSize (${Scan_OriginalSize})
+                {
+                }
+                Fail:
+                {
+                    Fail (Fail occurred while setting scan option Original Size!)
+                    Stop Test Case
+                }
+                Error:
+                {
+                    Error (Error occurred while setting scan option Original Size!)
+                    Stop Test Case
+                }
+
+                WA_OneDriveScan_Library.CloseScanOptions
+            }
+            Fail:
+            {
+                Fail (Fail occurred while opening the scan options!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while opening the scan options!)
+                Stop Test Case
+            }
+        }
+        
+        // set the file name
+        If: Common_LIbrary.CheckVariableContainsValue (${STF_ScanFileName})
+        {
+            Set Variable (${ScanFileName},${STF_ScanFileName})
+        }
+        Fail:
+        {
+            If: Common_LIbrary.CheckVariableContainsValue (${Scan_Filename})
+            {
+                Get Time Stamp (${Time})
+                Set Variable (${ScanFileName},${Scan_Filename}_${Time})
+            }
+            Fail:
+            {
+                Set Variable (${ScanFileName},)
+            }
+        }
+        If: WA_OneDriveScan_Library.SetFileName(${ScanFileName})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail occurred while setting scan file name!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error occurred while setting scan file name!)
+            Stop Test Case
+        }
+
+        // complete the scan
+        If: WA_OneDriveScan_Library.ScanAndCompleteJob (${Scan_Pages}, ${Scan_JobCompleteTimeout})
+        {
+            WA_OneDrive_Library.ReturnToMainFolder
+        }
+        Fail:
+        {
+            Fail (Fail occurred while completing scan job!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error occurred while completing scan job!)
+            Stop Test Case
+        }
+    }
+    
+    Pass (Scan Job complete!)
+}
+
+/// <Name>PrintJob</Name>
+/// <Description>Perform a print job. Optionally set print options. Optionally repeat the print job.</Description>
+/// <Notes>WA_OneDrive_Print_1_File.gfvar contains needed app print variables.</Notes>
+PrintJob
+{
+    // repeat print job the number of times specified
+    Repeat: ${Print_Repetitions}
+    {
+        // locate the folder if specified
+        If: Common_LIbrary.CheckVariableContainsValue (${Print_Folder})
+        {
+            // search for the folder
+            If: WA_OneDrive_Library.SearchFolder(${Print_Folder})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail searching for folder '${Print_Folder}' while performing print job!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error searching for folder '${Print_Folder}' while performing print job!)
+                Stop Test Case
+            }
+        }
+
+        // select the file
+        If: WA_OneDrive_Library.SearchFile(${Print_Filename})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail searching for file '${Print_Filename}' while performing print job!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error searching for file '${Print_Filename}' while performing print job!)
+            Stop Test Case
+        }
+
+        If: Equals IgnoreCase (${Print_SkipOptions},Y)
+        {
+            // specified to skip setting options
+        }
+        Fail:
+        {
+            // set the output sides option
+            If: WA_OneDrivePrint_Library.SetPrintOption_OutputSides (${Print_OutputSides})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail occurred while setting print option Output Sides!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Output Sidesd!)
+                Stop Test Case
+            }
+
+            // set the Color/Black option
+            If: WA_OneDrivePrint_Library.SetPrintOption_ColorBlack (${Print_Color})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail occurred while setting print option Color!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Color!)
+                Stop Test Case
+            }
+
+            // set the paper size option
+            If: WA_OneDrivePrint_Library.SetPrintOption_PaperSelection_PaperSize (${Print_PaperSize})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail occurred while setting print option Paper Size!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Paper Size!)
+                Stop Test Case
+            }
+
+            // set the paper type option
+            If: WA_OneDrivePrint_Library.SetPrintOption_PaperSelection_PaperType (${Print_PaperType})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail occurred while setting print option Paper Type!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Paper Type!)
+                Stop Test Case
+            }
+
+            // set the paper tray option
+            If: WA_OneDrivePrint_Library.SetPrintOption_PaperSelection_PaperTray (${Print_PaperTray})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail occurred while setting print option Paper Tray!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Paper Tray!)
+                Stop Test Case
+            }
+
+            // set the collate option
+// the collate option is currently not available in the app
+//            If: WA_OneDrivePrint_Library.SetPrintOption_PaperSelection_Collate (${Print_Collate})
+//            {
+//            }
+//            Fail:
+//            {
+//                Fail (Fail occurred while setting print option Collate failed!)
+//                Stop Test Case
+//            }
+//            Error:
+//            {
+//                Error (Error occurred while setting print option Collate failed!)
+//                Stop Test Case
+//            }
+            
+            // set the number of copies option
+            If: WA_OneDrivePrint_Library.SetPrintOption_Copies(${Print_NumberOfCopies})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail occurred while setting print option Number Of Copies!)
+                Stop Test Case
+            }
+            Error:
+            {
+                Error (Error occurred while setting print option Number Of Copies!)
+                Stop Test Case
+            }
+        }
+
+        Sleep (${Minimal_Wait_Time})
+        
+        // complete the print job
+        If: WA_OneDrivePrint_Library.Perform_PrintJob (${Print_JobCompleteTimeout})
+        {
+            WA_OneDrive_Library.ReturnToMainFolder
+        }
+        Fail:
+        {
+            Fail (Fail occurred while performing print job!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error occurred while performing print job!)
+            Stop Test Case
+        }
+    }
+    
+    Pass (Print Job complete!)
+}
+
+/// <Name>ExitAppSignOut</Name>
+/// <Description>Exit the OneDrive app and sign out</Description>
+/// <Notes>WA_OneDrive.gfvar contains needed app exit variables.</Notes>
+ExitAppSignOut
+{
+    // exit the app
+    If: WA_OneDrive_Library.AppExit (${BackOutOfApp})
+    {
+    }
+    Fail:
+    {
+        Fail (OneDrive Personal app exit failed!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (OneDrive Personal app exit errored!)
+        Stop Test Case
+    }
+    
+    // sign out on the device if specified
+    If: Equals IgnoreCase(${DeviceSignOut},Y)
+    {
+        If: DeviceAuth.SignOut
+        {
+        }
+        Fail:
+        {
+            Fail (Fail while signing out!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error while signing out!)
+            Stop Test Case
+        }
+    }
+    
+    Pass (Exit App complete!)
+}

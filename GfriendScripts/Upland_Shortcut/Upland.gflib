@@ -1,0 +1,542 @@
+﻿using Web
+using Android
+using JediOmni
+using Info
+
+/////////////////////////////////////////////////
+// Routine:         Verify User Signed-In
+//
+// Description:     Make sure at Home screen, signed In
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Verify User Signed-In
+{
+    If: JediOmni.Wait For Text(Sign Out,3)
+    {
+        // all good, no action needed
+    }
+    
+    Fail:
+    {
+        If: JediOmni.Wait For Text (Sign In,3)
+        {
+            Fail (User is not logged on!)
+            Stop Test Case
+        } 
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         Upland Intelligent Capture
+//
+// Description:     Upland Intelligent Capture
+//
+// Arguments:       ${STF_ScanFileName}: File Name for Scanned Document
+//                  ${UPLAND_INSTANCE}: Upland Instance URL
+//                  ${STF_USER_NAME}: User Name
+//                  ${STF_PASSWORD}: Password
+//                  ${Profile_NAME}: Profile Name
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Upland Intelligent Capture(${Profile_NAME},${STF_ScanFileName},${Upland_Instance},${STF_User_Name},${STF_Password},${FileBound_Instance},${FileBound_Project})
+{
+    JediOmni.Press Home Key
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_ScanJob)
+    Info.Start Time Check (STF_ProcessingJob)
+    Info.Start Time Check (STF_Delete)
+    
+    If: Upland.Verify User Signed-In
+    {
+        //All Good, No actions Needed
+    }
+   
+    //Eager Authentication
+    Info.Mark Start (STF_AppShown,1) 
+    JediOmni.Wait For Object (hpid-4a6b62a2-4951-4faf-863f-a3e6c8a8cb77-homescreen-button,5)
+    Info.Mark End (STF_AppShown,1) // Will be recorded "AppShown" in STF
+    
+    Info.Mark Start (STF_AppButtonPress,2) 
+    JediOmni.Touch ID (hpid-4a6b62a2-4951-4faf-863f-a3e6c8a8cb77-homescreen-button)
+    Info.Mark End (STF_AppButtonPress,2) // Will be recorded "AppButtonPress" in STF
+    
+    If: Android.Wait For Text (${Profile_NAME},300)
+    {
+        Info.Mark Start (STF_ScanJob,3) 
+        Android.Touch Text (${Profile_NAME})
+    }
+    
+    Fail:
+    {
+        Fail (Failed to click on ${Profile_NAME} icon!)
+        Stop Test Case
+    }
+    
+    If: Android.Wait For Text (Scan to ${Profile_NAME},60) 
+    {
+        Android.Input Text (field-text-Document Name,${STF_ScanFileName})
+        Android.Touch Text (SCAN)
+       
+        If: JediOmni.Wait For Active Job (5)
+        {
+            Info.Mark Start (STF_ProcessingJob,4) 
+            JediOmni.Wait For Active Job Gone (15)  
+            Info.Mark End (STF_ProcessingJob,2)  
+        }
+    }
+    
+    Fail:
+    {
+        Return With Fail (Failed to enter the Job Name and Scan!)
+    }
+    
+    If: Android.Wait For Text (Scan to ${Profile_NAME},60)
+    {
+        @Android.Touch Text (OK)
+        Pass (Scan Job was Successfully Submitted)
+    }
+    
+    Fail:
+    {
+        Return With Fail (Failed to Submit Scan Job!)
+    }
+    Info.Mark End (STF_ScanJob,3) // Will be recorded "ScanJob" in STF
+    
+    If: Upland.Verify Scan Delivered(${Upland_Instance},${STF_User_Name},${STF_Password},${Profile_NAME},${STF_ScanFileName})
+    {
+        //All Good, No actions Needed
+    }
+    
+    
+    If: Upland.ManualIndexing(${STF_ScanFileName},${Profile_NAME})
+    {
+        Upland.FileBound(${STF_User_Name},${STF_Password},${FileBound_Instance},${FileBound_Project},${Invoice_Number},${Vendor},${Line_Total},${PONumber},${Department})
+    }
+    Fail:
+    {
+        Return With Fail (Manual Indexing Process Failed!)
+        Stop Test Case
+    }
+    Info.Draw Time Graph (STF_AppShown)
+    Info.Draw Time Graph (STF_AppButtonPress)
+    Info.Draw Time Graph (STF_ProcessingJob)
+    Info.Draw Time Graph (STF_ScanJob)
+}
+
+/////////////////////////////////////////////////
+// Routine:         Verify Scan Delivered
+//
+// Description:     Open Intelligent Capture Application. Select the MyFiles icon and Verify that Scan was Delivered.
+//
+// Arguments:       ${UPLAND_INSTANCE}: Upland Instance URL
+//                  ${STF_USER_NAME}: User Name
+//                  ${STF_PASSWORD}: Password
+//                  ${STF_ScanFileName}: File Name for Scanned Document
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Verify Scan Delivered(${Upland_Instance},${STF_User_Name},${STF_Password},${Profile_NAME},${STF_ScanFileName})
+{
+    //Open Intelligent Capture Application
+    Web.Open with Chrome (${Upland_Instance},100)
+    
+    //Sign-In with Credentials
+    Web.Set Text (//*[@id="field-text-Login.Username"],${STF_User_Name})
+    Web.Click Object (//*[@id="btn-login-next"])
+    
+    Web.Wait For Object (//*[@id="btn-signin"],20)
+    Web.Set Text (//*[@id="field-text-Password"],${STF_Password})
+    Web.Click Object (//*[@id="btn-signin"])
+    
+    //Wait till next page elements to completely load
+    If: Web.Wait For Object (/html/body/app-root/ngx-spinner/div/div,5)
+    {
+       Web.Wait For Object Disappear (/html/body/app-root/ngx-spinner/div/div,50)
+    }
+   
+    Web.Click Object (//*[@id="leftnav-action-BambaApplication-Upland.Bamba.Application.ScanDocument"]/div[1]/img[1])
+    
+    //Wait till next page elements to completely load
+    If:  Web.Wait For Object (/html/body/app-root/ngx-spinner/div/div,5)
+    {
+       Web.Wait For Object Disappear (/html/body/app-root/ngx-spinner/div/div,50)
+    }
+    
+    If: Contains (${Profile_NAME},MyFiles)
+    {
+        If: Web.Wait For Object (//*[@id="leftnav-action-BambaApplication-Upland.Bamba.Application.ManageMyFiles"]/div[1]/img[2],5)
+        {
+            Web.Click Object (//*[@id="leftnav-action-BambaApplication-Upland.Bamba.Application.ManageMyFiles"]/div[1]/img[2])
+        }
+        Fail:
+        {
+            Return With Fail (Failed to click MyFiles!)
+        }
+    }
+    Fail:
+    {
+        //Selecting Profile
+        If: Web.Wait For Object (//*[@id="app-spinner-panel"]/ng-component/section/div/div/div[1]/app-toolbar/div/div[1]/div[1]/div/div/div/button,5)
+        {
+            Web.Click Object (//*[@id="app-spinner-panel"]/ng-component/section/div/div/div[1]/app-toolbar/div/div[1]/div[1]/div/div/div/button)
+            
+            //Clicking Profile Name
+            Web.Wait For Text (${Profile_NAME},5)
+            Web.Click Object(//a[@title="${Profile_NAME}"])
+        }
+        Fail:
+        {
+            Return With Fail (Failed to set the Profile!)
+        }
+    }
+   
+    //Verify that Scan was Delivered
+    If: Web.Wait For Text (${STF_ScanFileName},20) 
+    {
+        Return With Pass (Scan Job Delivered Successfully)
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find the Scan Job!)
+        Stop Test Case
+    } 
+}
+
+/////////////////////////////////////////////////
+// Routine:         Manual Indexing
+//
+// Description:     Manual Indexing
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+ManualIndexing(${STF_ScanFileName},${Profile_NAME})
+{
+    //Scan Document Click in INtelligent Capture
+    Sleep (5)
+    Web.Click Object(//div[@title="${STF_ScanFileName}"])
+    Sleep (5)
+    
+    //Manual Index click in Intelligent Capture
+    If: Equals IgnoreCase (${Profile_NAME},Accounts Payable)
+    {
+        Web.Click Object (//div[@title="Manual Indexing (F12)"])
+        Sleep (5)
+     
+        //LineItems Creation
+        
+        //Plus Button click
+        Web.Wait For Object (//*[@id="line-item-indexing"]/div/div[2]/div/button/div/i,5)
+        Web.Click Object (//*[@id="line-item-indexing"]/div/div[2]/div/button/div/i)
+     
+        //Qty field data Entry
+        Get Random Number (1,9,${Line_Quantity})
+        Web.Wait For Object (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[1]/app-field/div/div/field-text/div/input,5)
+     
+        Web.Set Text (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[1]/app-field/div/div/field-text/div/input,${Line_Quantity})
+     
+        //ItemID Field data Entry
+     
+        Get Random Number (10,99,${Line_ItemID})
+        Web.Click Object (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[2]/app-field/div/div/field-text/div/input)
+        Sleep (5)
+     
+        Web.Set Text (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[2]/app-field/div/div/field-text/div/input,ITM-${Line_ItemID})
+     
+        //Line_Description
+        Get Random Number (10,99,${Line_Description})
+        Web.Click Object (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[3]/app-field/div/div/field-text/div/input)
+        Sleep (5)
+     
+        Web.Set Text (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[3]/app-field/div/div/field-text/div/input,Des-${Line_Description})
+     
+        //Line_UnitAmount
+        Get Random Number (10,99,${Line_UnitAmount})
+        Web.Click Object (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[4]/app-field/div/app-integer/div/input)
+        Sleep (5)
+    
+        Web.Set Text (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[4]/app-field/div/app-integer/div/input,${Line_UnitAmount})
+     
+        //Line_Total
+      
+        Calculate (${Line_Quantity}*${Line_UnitAmount},${Line_Total})
+        Web.Click Object (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[5]/app-field/div/div/field-text/div/input) 
+        Sleep (5)
+        Web.Set Text (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[5]/app-field/div/div/field-text/div/input,${Line_Total})
+    
+        //Line_GICode
+        Get Random Number (100,900,${Line_GICode})
+        Web.Click Object (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[6]/app-field/div/div/field-text/div/input)  
+        Sleep (5)
+     
+        Web.Set Text (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[2]/app-line-item-indexing/section/perfect-scrollbar/div/div[1]/table/tbody/tr/td[6]/app-field/div/div/field-text/div/input,GIC-${Line_GICode})
+        Sleep (5)
+        //End of Line Item Creation
+      
+        //Clicking on DataField-InvoiceNumber
+        Get Random Number (10000,99999,${Invoice_Number})
+        Web.Wait For Object (//*[@id="field-text-InvoiceNumber"],5)
+        Web.Set Text (//*[@id="field-text-InvoiceNumber"],${Invoice_Number})
+        Sleep (2)
+     
+        //Vendor Search Icon Click
+        Web.Click Object (//*[@id="indexing-panel"]/form/app-field[2]/div/app-lookup/div/button)
+        
+        //Selecting Vendor Name for the existing List of Vendors
+        Web.Wait For Object (//*[@id="matchesTableBody"]/tr[1]/td,5)
+        Web.Click Object (//*[@id="matchesTableBody"]/tr[1]/td)
+     
+        Web.Get Text (/html/body/app-root/div/div/ng-component/section/div/div/div[2]/div[1]/app-indexing-panel/section/perfect-scrollbar/div/div[1]/div/form/app-field[2]/div/app-lookup/ngx-smart-modal/div/div/div/div/div/div[2]/app-lookup-modal/div/div/table/tbody/tr[1]/td,${Vendor})
+        sleep(2)
+        
+        //Ok Button Click
+        Web.Click Object (//*[@id="indexing-panel"]/form/app-field[2]/div/app-lookup/ngx-smart-modal/div/div/div/div/div/div[3]/button[2])
+         
+        //InvoiceDate Field selection
+        Web.Wait For Object (//*[@id="indexing-panel"]/form/app-field[3]/div/app-date/div/input,5)
+        //Calender control click
+        Web.Click Object (//*[@id="indexing-panel"]/form/app-field[3]/div/app-date/div/button)
+        Sleep(3)
+        Get Time Stamp (${Invoice_Date},dd)
+        Sleep(2)
+        Web.Click Object (//*[@data-pika-day=${Invoice_Date}])
+     
+        //InvoiceTotal Field Entry
+     
+        Web.Wait For Object (//*[@id="field-text-InvoiceTotal"],5)
+        Web.Set Text (//*[@id="field-text-InvoiceTotal"],${Line_Total})
+        Sleep (2)
+     
+        //Clicking Invoice Total Label to Scroll the Page Down
+        Web.Click Object (//*[@id="indexing-panel"]/form/app-field[3]/div/app-label/div/label)
+     
+        Web.Scroll Down To The End (//*[@id="indexing-panel"]/form/app-field[7]/div/app-label/div/label)
+     
+        Web.Wait For Object (//*[@id="field-text-Pay Amount"],5)
+        Web.Set Text (//*[@id="field-text-Pay Amount"],${Line_Total})
+     
+        //PO NUmber Field Entry
+        Get Random Number (100,999,${PONumber})
+        Web.Wait For Object (//*[@id="field-text-PONumber"],5)
+        Web.Set Text (//*[@id="field-text-PONumber"],PO-${PONumber})
+        Sleep (2)
+     
+        //Department DropDown Selection
+        Web.Wait For Object (//*[@id="field-list-Department"]/i,5)
+        Web.Click Object (//*[@id="field-list-Department"]/i)
+    
+     
+        Web.Wait For Object (//*[@id="field-list-Department-General Management"],5)
+        Web.Get Text (//*[@id="field-list-Department-General Management"],${Department})
+        Web.Click Object (//*[@id="field-list-Department-General Management"])
+        Sleep (2)
+     
+        //Clicking FileBound
+        Web.Click Object (//*[@id="app-spinner-panel"]/ng-component/section/div/div/div[1]/app-toolbar/div/div[2]/span/button/div)
+        Sleep (5)
+     }
+     Fail:
+     {
+         Web.Click Object (//div[@title="Manual Indexing (F10)"])
+     }
+     Web.Close 
+}
+
+/////////////////////////////////////////////////
+// Routine:         FileBound
+//
+// Description:     FileBound for Manual Indexing field data comparision
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+FileBound(${STF_User_Name},${STF_Password},${FileBound_Instance},${FileBound_Project},${Invoice_Number},${Vendor},${Line_Total},${PONumber},${Department})
+{
+    //Open FileBound Application
+    Web.Open with Chrome (${FileBound_Instance},100)
+
+    //Sign-In with Credentials
+    Web.Wait For Object (//*[@id="UserName"],20)
+    Web.Set Text (//*[@id="UserName"],${STF_User_Name})
+    Web.Set Text (//*[@id="Password"],${STF_Password})
+    Web.Click Object (//*[@id="Login"])
+   
+    //Clicking on Project
+    If: Web.Wait For Text (${FileBound_Project},20)
+    {
+        Web.Click Text (${FileBound_Project})
+
+        //Clicking on Search
+        If: Web.Wait For Object (//*[@id="CommonSearchForm"]/div[3]/div[1]/div[1],10)
+        {
+            Web.Click Object (//*[@id="CommonSearchForm"]/div[3]/div[1]/div[1])
+            Web.Scroll Down To The End (//*[@id="btnSavedSearch"])
+            If: Web.Wait For Object (//*[@id="SavedSearchDialog"]/div/div/div[3]/button[2],20)
+            {
+                Web.Click Object (//*[@id="SavedSearchDialog"]/div/div/div[3]/button[2])
+                
+                //Search Button
+                Web.Click Object (/html/body/div[2]/div[3]/div[2]/div[3]/div/div[2]/form/div[10]/div[2]/div/button[1])
+            }
+
+            //EditSearch for searching InvoiceNumber
+            If: Web.Wait For Object (//*[@id="fb-grids-edit-search"],20)
+            {
+                Web.Click Object (//*[@id="fb-grids-edit-search"])
+                Web.Wait For Object (//*[@id="Field1"],20)
+                Web.Set Text (//*[@id="Field1"],${Invoice_Number}) 
+                Sleep (2)
+                
+                //Search Button
+                Web.Click Object (/html/body/div[2]/div[3]/div[2]/div[3]/div/div[4]/div/div/div[3]/div[2]/div[2]/div/button[1])
+                Sleep (3)
+                
+                //Comparision of Fields goes here
+                If: Web.Check Text Of Object (/html/body/div[2]/div[3]/div[2]/div[3]/div/div[3]/div[2]/div[2]/table/tbody/tr[2]/td[3],${Invoice_Number})
+                {
+                    Return With Pass (InvoiceNuber Matched with IntelligentCapture!)
+                }
+                Fail:
+                {
+                    Return With Fail (InvoiceNuber did not Matched with IntelligentCapture!!)
+                }
+             
+                If: Web.Check Text Of Object (/html/body/div[2]/div[3]/div[2]/div[3]/div/div[3]/div[2]/div[2]/table/tbody/tr[2]/td[4]/div,${Vendor})
+                {
+                    Return With Pass (Vendor Matched with IntelligentCapture!)
+                }
+                Fail:
+                {
+                    Return With Fail (Vendor did not Matched with IntelligentCapture!!)
+                } 
+                Get Time Stamp (${Invoice_Date},MM'/'dd'/'yyyy)
+             
+                If: Web.Check Text Of Object (/html/body/div[2]/div[3]/div[2]/div[3]/div/div[3]/div[2]/div[2]/table/tbody/tr[2]/td[5],${Invoice_Date})
+                {
+                    Return With Pass (Invoice Date Matched with IntelligentCapture!)
+                }
+                Fail:
+                {
+                    Return With Fail (Invoice Date did not Matched with IntelligentCapture!!)
+                } 
+             
+                If: Web.Check Text Of Object (/html/body/div[2]/div[3]/div[2]/div[3]/div/div[3]/div[2]/div[2]/table/tbody/tr[2]/td[6],$${Line_Total}.00)
+                {
+                    Return With Pass (Invoice Total Matched with IntelligentCapture!)
+                }
+                Fail:
+                {
+                    Return With Fail (Invoice Total did not Matched with IntelligentCapture!!)
+                }
+             
+                If: Web.Check Text Of Object (/html/body/div[2]/div[3]/div[2]/div[3]/div/div[3]/div[2]/div[2]/table/tbody/tr[2]/td[8],PO-${PONumber})
+                {
+                    Return With Pass (PO Number Matched with IntelligentCapture!)
+                }
+                Fail:
+                {
+                    Return With Fail (PO Number did not Matched with IntelligentCapture!!)
+                }
+             
+                If: Web.Check Text Of Object (/html/body/div[2]/div[3]/div[2]/div[3]/div/div[3]/div[2]/div[2]/table/tbody/tr[2]/td[10]/div,${Department})
+                {
+                    Return With Pass (Department Matched with IntelligentCapture!)
+                }
+                Fail:
+                {
+                    Return With Fail (Department did not Matched with IntelligentCapture!!)
+                }
+                Sleep (2)
+                
+                //Checkbox Click to Delete
+                Web.Click Object (/html/body/div[2]/div[3]/div[2]/div[3]/div/div[3]/div[2]/div[1]/table/tbody/tr/th[1]/label[2])
+                Sleep (2)
+                
+                //Delete Text click
+                Web.Click Object (//*[@id="placeholder"]/div[1]/div/table/tbody/tr/td[1]/ul/li/ul/li[2]/a)
+                Sleep (2)
+                
+                //Delete continue button Click
+                Web.Click Object (//*[@id="DeleteContinue"])
+                Sleep (2)
+            
+            }
+            Fail:
+            {
+                Return With Fail (Failed to click on Edit Search!)
+            }
+         
+        }
+        Fail:
+        {
+            Return With Fail (Failed to click on Search!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Please enter valid credentials!)
+    }
+}    
+
+/////////////////////////////////////////////////
+// Routine:         SignOut
+//
+// Description:     sign out on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignOut
+{
+    // make sure at Home screen, signed out and reset 
+    JediOmni.Press Home Key
+    
+    Info.Start Time Check (STF_DeviceSignOut)
+    Info.Mark Start (STF_DeviceSignOut,6)
+    If: JediOmni.Wait For Text (Sign Out,10)
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Fail:
+    {
+        Fail (Failed to find Home Screen Sign Out!)
+    }
+    Info.Mark End (STF_DeviceSignOut,6)
+    Info.Draw Time Graph (STF_DeviceSignOut)
+}

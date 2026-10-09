@@ -1,0 +1,322 @@
+﻿using ..\Workpath_Common\Common_Workpath_Library.gflib
+using ..\Workpath_Common\Common_Workpath_Variables.gfvar
+using NonFunctional_Workpath.gflib
+using NonFunctional_Workpath.gfvar
+
+//Print Stress - Citrine
+// Prerequisites:
+// Provide the following details in the input variable file:
+// ${Job_Path}      - Path of the file to be printed
+// ${Queue_Name} - Name of the print queue
+// ${BADGE_INDEX}    - Badge index to be used for authentication
+T1985577800_Print_Stress
+{
+    //continuously sending print jobs
+    Repeat:8
+    {
+        Common_WorkPath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+        Sleep (5)
+    }
+    //Verify Large File Print Test
+    Common_WorkPath_Library.Badgebox_Login(${BADGE_INDEX})
+    Common_WorkPath_Library.Pull_Print_Operations()
+    Sleep (2) 
+    //Large Number of Print Queues Test
+    NonFunctional_Workpath.T1985577800_Print_Queues_Test()
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/home_icon'],10)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/home_icon'])
+    Android.Wait For XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/home_icon'],10)
+    Android.Touch XPath (//node[@resource-id='com.ysoft.safeq.terminals.hp.hcp:id/home_icon'])
+    //Badge Authentication Stress
+    Repeat:5
+    {
+        NonFunctional_Workpath.T1985577800_Print_Stress_Badge(${WaitTime})
+    } 
+}
+
+//Verify the card reader's behavior when User1 swipes first, followed immediately by User2 - Citrine 10"
+// Prerequisites:
+// Provide the following details in the input variable file:
+// ${BADGE_INDEX} - Badge index to be used for authentication
+// ${Second_BADGE_INDEX} - Secondary badge index
+T1988557836_Verify_cardreaders_2Users_swipes
+{
+    Common_WorkPath_Library.Badgebox_Login(${BADGE_INDEX})
+    Common_WorkPath_Library.Pull_Print_Operations()
+    NonFunctional_Workpath.T1988557836_Verify_cardreaders_2Users_swipes(${Second_BADGE_INDEX},${WaitTime})
+}
+
+//Validate Card Authentication by Rebooting the Device - Mystic 8"
+// Prerequisites:
+// Provide the following details in the input variable file:
+// ${BADGE_INDEX} - Badge index to be used for authentication
+T1988557837_Reboot_And_Validate_CardAuthentication
+{
+    Common_WorkPath_Library.Device_Reboot()
+    Common_WorkPath_Library.Badgebox_Login(${BADGE_INDEX})
+}
+
+T1985577791_Validate_SNMP_Security_Settings
+{
+    Common_Workpath_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    NonFunctional_Workpath.T1985577791_Validate_SNMP_Security_Settings
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Common_Workpath_Library.Pull_Print_Operations()
+    Common_Workpath_Library.Device_Logout
+}
+
+
+
+T1985577794_Validate_PJL_Setting
+{
+     //Login to EWS
+    Common_Workpath_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    NonFunctional_Workpath.T1985577794_Validate_PJL_Setting
+     //Send Print Job
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+
+    //Login to Device
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+
+    // Release Print Job
+     Common_Workpath_Library.Pull_Print_Operations()
+     Common_Workpath_Library.Device_Logout
+    
+}
+T1988557831_Verify_card_reader_behavior_for_2_cards_registered
+{
+    Repeat: 2
+    {
+       
+        Calculate And Assign (${R}-1,${BadgeIndex})
+        
+        Common_Workpath_Library.Device_BadgeBox_Login(${BadgeIndex})
+        Common_Workpath_Library.Send_Jobs
+        Common_Workpath_Library.Pull_Print_Operations
+        Sleep (20)
+        Common_Workpath_Library.Device_BadgeBox_Login(${BadgeIndex})
+        Sleep (10)
+    }
+}
+T1985577792_Security_FIPS_encryption
+{
+    Common_Workpath_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    NonFunctional_Workpath.T1985577792_Security_FIPS(${EWS_Site})
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    Common_Workpath_Library.Pull_Print_Operations()
+    Common_Workpath_Library.Device_Logout
+}
+
+// Functionality_SafeQ_Cloud_after_firmwareUpgrade(FS4_to_FS5)
+// Prerequisites:
+// downgrade firmware into the FS4 version and deploy the solution and run the below testcase
+// Provide the following details in the input variable file:
+// ${FilePath}       - Path of the BDL file for the respective device (single file).
+// ${BADGE_INDEX}    - Badge index to be used for authentication
+
+T1985577802_Functionality_SafeQ_Cloud_after_firmwareUpgrade(FS4_to_FS5)-Cordoba
+{
+    Common_Workpath_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    NonFunctional_Workpath.T1985577802_Firmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password},${EWS_Site})
+    Common_Workpath_Library.Device_BadgeBox_Login(${BADGE_INDEX})
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    JediOmni.Enable Paperless Mode
+    Common_Workpath_Library.Pull_Print_Operations()
+    Common_Workpath_Library.Device_Logout
+}
+
+// Functionality_SafeQ_Cloud_after_firmwareUpgrade(older_FS5 _to_latest_FS5)
+// Prerequisites:
+// downgrade firmware into the FS5 version and deploy the solution and run the below testcase
+// Provide the following details in the input variable file:
+// ${FilePath}       - Path of the BDL file for the respective device (single file).
+// ${BADGE_INDEX}    - Badge index to be used for authentication
+
+T1985577803_Functionality_SafeQ_Cloud_after_firmwareUpgrade(older_FS5 _to_latest_FS5)_Citrine
+{
+    Common_Workpath_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    NonFunctional_Workpath.T1985577802_Firmware_Upgrade(${Device_IP},${BADGE_INDEX},${File_Path},${EWS_Password})
+    Common_Workpath_Library.Device_BadgeBox_Login(${BADGE_INDEX})
+    Common_Workflow_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    JediOmni.Enable Paperless Mode
+    Common_Workflow_Library.Pull_Print_Operations()
+    Common_Workpath_Library.Device_Logout
+}
+
+T1985577793_Security_CSRFsetting_Citrine
+{
+    Common_Workpath_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    Sleep (2)
+    NonFunctional_Workpath.T1985577793_Validate_CSRF_setting()
+    Sleep (2)
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    Common_Workpath_Library.Pull_Print_Operations()
+    Common_Workpath_Library.Device_Logout
+}
+
+T1988557833_Validate_the_Card_enrollment_after_48hours_Citrine10
+{
+    JediOmni.Press Home Key
+    //48 hours sleep time
+    Sleep (172800)
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.Badgebox_Login(${BADGE_INDEX})
+    Common_Workpath_Library.Pull_Print_Operations
+    Common_Workpath_Library.Badgebox_LogOut(${BADGE_INDEX},${WaitTime})
+}
+
+//Security -> SHA256 - Citrine()
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+T1985577797_Security -> SHA256 - Citrine()
+{
+    //Login to EWS
+    Common_Workpath_Library.EWS_Login (${EWS_Site},${EWS_Password})
+    NonFunctional_Workpath.T1985577797_Validate_Security_SHA256()
+    //Send Print Job
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    //Login to Device
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    // Release Print Job
+    Common_Workpath_Library.Pull_Print_Operations()
+    Common_Workpath_Library.Device_Logout
+}
+
+//Validate_User_session
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+T1985577799_User_session 
+{
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.Pull_Print_Operations()
+    NonFunctional_Workpath.T1985577799_Validate_User_session()
+    Common_Workpath_Library.Device_Username_Login (${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.Pull_Print_Operations()
+    Common_Workpath_Library.Device_Logout
+}
+//Validate_Server_Upgrade
+//Prerequisites:
+//Provide the following details in the input variable file:
+//${Queue_Name}   - Name of the queue ex: pull print queue name
+//${Job_Path}     - Path of the file to be printed
+T1985577801_Server_Upgrade
+{
+    Common_Workpath_Library.Portal_Login (${Site},${Username},${Password})
+    NonFunctional_Workpath.T1985577801_Validate_Server_Upgrade()
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.Device_Username_Login(${Device_Username},${Device_Password})
+    JediOmni.Enable Paperless Mode
+    Common_Workpath_Library.Pull_Print_Operations()
+    Common_Workpath_Library.Device_Logout
+}
+
+T1988557834_Validate-the_card_enrollment_after_72hours_Twister_4_3
+{
+    JediOmni.Press Home Key
+    //72 hours sleep time
+    Sleep (259200)
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.Badgebox_Login(${BADGE_INDEX})
+    Common_Workpath_Library.Pull_Print_Operations
+    Common_Workpath_Library.Badgebox_LogOut(${BADGE_INDEX},${WaitTime})
+}
+
+T1988557827_Validate_the_Hot_Swap_card_reader_using_different_model_of_cardreader_Citrine10
+{
+    Common_Workpath_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    Common_Workpath_Library.EWS_Login(${EWS_Site},${EWS_Password})
+    NonFunctional_Workpath.T1988557827_RebootDevice(${EWS_Site},${EWS_Password})
+    JediOmni.Enable Paperless Mode
+    Sleep (10)
+    Common_Workpath_Library.Badgebox_Login(${BADGE_INDEX})
+    Sleep (10)
+    NonFunctional_Workpath.T1988557827_PullPrintAfterReboot
+    Common_Workpath_Library.Badgebox_LogOut(${BADGE_INDEX},${WaitTime})
+}
+// Prerequisite:
+// 1. Configure two different card types using the rfIDEAS Configuration Utility tool.
+// 2. Register both cards to the same card reader/device.
+// 3. Place both configured cards in the Badge Box before executing the test.
+
+T1988557831_Verify_the_card_reader_behavior_when_two_(2)_cards_are_registered_to_the_same_device_using_the_rfIDEAS_Configuration_Utility_tool
+{
+    //Verify Card 1
+    Common_Workpath_Library.BadgeBox_Login(${BadgeIndex})
+    Common_Workpath_Library.BadgeBox_Logout(${BadgeIndex})
+
+    //Verify Card 2
+    NonFunctional_Workpath.Second_Badge_Login(${Second_BADGE_INDEX})
+    NonFunctional_Workpath.Second_Badge_Logout(${Second_BADGE_INDEX})
+}
+T1988557832_Verify_how_the card_reader_behaves_when_the_device_has_been_in_deep_sleep_mode_for_24_hours
+{
+    JediOmni.Press Home Key
+    // 24hours sleep time
+    Sleep (86400)
+    OXPD_Common_Library.Send_Jobs(${Job_Path},${Queue_Name})
+    OXPD_Common_Library.Badgebox_Login(${BadgeIndex})
+    OXPD_Common_Library.Pull_Print_Operation
+    Sleep (20)
+    OXPD_Common_Library.Badgebox_LogOut(${BadgeIndex},${WaitTime})
+}
+// Prerequisite:
+// 1. Install and configure the required solution on the device.
+// 2. Use the HP Card Reader Configuration Utility to configure two different cards for two different users (User1 and User2).
+// 3. Register both cards to the same device/card reader.
+// 4. Place both configured cards in the Badge Box before executing the test.
+T1988557828_Verify_the_card_reader_behavior_when_two_cards_are_registered_to_same_device_with_different_users 
+{
+     // Login with User1
+    BadgeBox.Scan Badge (${User1_BADGE_INDEX})
+
+    If: JediOmni.Wait For Text (Sign Out,${WaitTime_SignIn_SignOut})
+    {
+        Pass (User1 logged in successfully.)
+    }
+    Fail:
+    {
+        Fail (Failed to log in User1.)
+        Stop Test Case
+    }
+
+    //Swipe User2 - User1 should be logged out
+    BadgeBox.Scan Badge (${User2_BADGE_INDEX})
+
+    If: JediOmni.Wait For Text (Sign In,${WaitTime_SignIn_SignOut})
+    {
+        Pass (User1 logged out successfully after swiping User2's badge.)
+    }
+    Fail:
+    {
+        Fail (User1 was not logged out after swiping User2's badge.)
+        Stop Test Case
+    }
+
+    //Swipe User2 again - User2 should log in
+    BadgeBox.Scan Badge (${User2_BADGE_INDEX})
+
+    If: JediOmni.Wait For Text (Sign Out,${WaitTime_SignIn_SignOut})
+    {
+        Pass (User2 logged in successfully.)
+    }
+    Fail:
+    {
+        Fail (Failed to log in User2.)
+        Stop Test Case
+    }
+}

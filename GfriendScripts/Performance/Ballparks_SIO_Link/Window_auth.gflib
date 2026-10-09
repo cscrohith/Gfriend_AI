@@ -1,0 +1,92 @@
+﻿// ++++++++++++++++++++  File Name  ++++++++++++++++++++
+// Window_auth.gflib
+//
+// ++++++++++++++++++++ Description ++++++++++++++++++++
+// To authenticate on device, handling SIO if necessary
+// ++++++++++++++++++++ Prerequisites ++++++++++++++++++++
+// On device Windows auth and/or non-whitelisted auth such as HPAC or Safecom must be installed.
+//
+// ++++++++++++++++++++ Test Scenario ++++++++++++++++++++
+// 
+//
+// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2020-10-22 Initial Version (copied from SIV-K's Window_auth.gfilib for Workpath and modified to Ballparks & WebApps)
+// V1.1 2021-08-11 Updated for GFriend version 2.45.1.0 and FW 25.2.0.2
+
+using JediOmni
+
+WinAuthLogin(${ID},${Pw})
+{//1.Winauthlogin start
+    If:JediOmni.Wait For Text (Sign In,10) 
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Sign In button not found!)
+    }
+    
+    While:JediOmni.Wait For Text (Sign In,1):2
+    {
+        JediOmni.Touch Text (Sign In)
+        Sleep (2)
+    }
+    JediOmni.Wait For Object (hpid-dropdown-agent,2)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    JediOmni.Wait For Object (hpid-dropdown-agent-hp_EmbeddedWindows_v1,2)
+    //JediOmni.Touch Text (Windows)
+    JediOmni.Touch ID (hpid-dropdown-agent-hp_EmbeddedWindows_v1)
+    JediOmni.Wait For Object (hpid-signin-textbox-UserNameTextBox,2)
+    JediOmni.Touch ID (hpid-signin-textbox-UserNameTextBox)
+    JediOmni.Input Text (${ID})
+    sleep(1)
+    JediOmni.Touch ID (hpid-signin-textbox-PasswordTextBox)
+    JediOmni.Input Text (${Pw})
+    If: JediOmni.Wait For Object (hpid-keyboard,0)
+    {
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        JediOmni.Wait For Object Gone (hpid-keyboard,2)
+    }
+    
+    If: JediOmni.Wait For Object (hpid-button-signin-ok,0)
+    {
+        JediOmni.Touch ID (hpid-button-signin-ok)
+    }
+}//1.Winauthlogin end
+
+
+LinkHPaccount(${ID},${Pw})
+{
+    If: JediOmni.Wait For Object (hpid-hpid-agree-statement-checkbox,30)
+    {
+        JediOmni.Touch ID (hpid-hpid-agree-statement-checkbox)
+        If: JediOmni.Wait For Object (hpid-hpid-link-button,10)
+        {
+            JediOmni.Touch ID (hpid-hpid-link-button)
+        }
+    }
+}
+
+
+UnlinkHPaccount()
+{
+    
+}
+
+
+WinAuthLogout
+{
+    If:JediOmni.Wait For Text (Sign Out,60)
+    {
+        Sleep (2)
+        JediOmni.Touch Text (Sign Out)
+    }
+    Fail:
+    {
+        JediOmni.Press Home Key
+        JediOmni.Reset
+        Sleep (5)
+        JediOmni.Touch Text (Sign Out)
+    }
+    
+    Sleep (3)
+}

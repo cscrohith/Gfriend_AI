@@ -1,0 +1,23 @@
+﻿// Serial numbers and IP addresses of devices to be used by scripts (RFO) that will handle multiple devices
+// Add serial numbers and IP addresses only to the variables to be used, leave other variables' values blank
+// or comment out the variable definitiion, to skip
+${Device_SN_1}=VNBDL5E027
+${Device_IP_1}=15.86.229.220
+${Device_SN_2}=MX3CM9D2S8
+${Device_IP_2}=15.86.231.133
+${Device_SN_3}=
+${Device_IP_3}=
+${Device_SN_4}=
+${Device_IP_4}=
+${Device_SN_5}=
+${Device_IP_5}=
+${Device_SN_6}=
+${Device_IP_6}=
+${Device_SN_7}=
+${Device_IP_7}=
+${Device_SN_8}=
+${Device_IP_8}=
+${Device_SN_9}=
+${Device_IP_9}=
+${Device_SN_10}=
+${Device_IP_10}=

@@ -1,0 +1,152 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Fax_Library.gflib
+
+TC_Fax_OriginalSide_1Sided
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_OriginalSide
+    Common_Fax_Library.Fax_OriginalSide_1Sided
+    Common_Fax_Library.Fax_OriginalSide_Teardown
+}
+
+TC_Fax_OriginalSide_2Sided
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_OriginalSide
+    Common_Fax_Library.Fax_OriginalSide_2Side
+    Common_Fax_Library.Fax_OriginalSide_Teardown
+}
+
+TC_Fax_OriginalSize_Letter_8dot5x11_in
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_OriginalSize
+    Common_Fax_Library.Fax_OriginalSize_Letter_8dot5x11_in
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_OriginalSize_Letter_MediaSize_8dot5x11
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_OriginalSize_Scroll
+    Common_Fax_Library.Fax_OriginalSize_Letter_MediaSize_8dot5x11_in
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_OriginalSize_Legal_8dot5x14_in
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_OriginalSize_Scroll
+    Common_Fax_Library.Fax_OriginalSize_Legal_8dot5x14_in
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_OriginalSize_A4_MediaSize_210x297mm
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_OriginalSize_Scroll
+    Common_Fax_Library.Fax_OriginalSize_A4_MediaSize_210x297mm
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_OriginalSize_Ledger_11x17in
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_OriginalSize_Scroll
+    Common_Fax_Library.Fax_OriginalSize_Ledger_11x17in
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_OriginalSize_A3_297x420mm
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_OriginalSize_Scroll
+    Common_Fax_Library.Fax_OriginalSize_A3_297x420mm
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_OriginalSize_A4_210x297mm
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_OriginalSize_Scroll
+    Common_Fax_Library.Fax_OriginalSize_A4_210x297mm
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_LighterDarker
+{   Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_LighterDarker
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_ContentType_Mixed
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_ContentType
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_ContentType_Photo
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_ContentType_Scroll
+    Common_Fax_Library.Fax_ContentType_Photo
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_ContentType_Text
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_ContentType_Scroll
+    Common_Fax_Library.Fax_ContentType_Text
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_Resolution_Fine_200x200dpi
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_Resolution
+    Common_Fax_Library.Fax_Resolution_Fine_200x200dpi
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_Resolution_Superfine_300X300dpi
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_Resolution_Scroll
+    Common_Fax_Library.Fax_Resolution_Superfine_300X300dpi
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_Resolution_Standard_200X100dpi
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_Resolution_Scroll
+    Common_Fax_Library.Fax_Resolution_Standard_200X100dpi
+    Common_Fax_Library.Fax_Teardown
+}
+
+TC_Fax_Notification_NotifyAfterJobFinishes
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_Notification
+    Common_Fax_Library.Fax_Notification_NotifyAfterJobFinishes
+    Common_Fax_Library.Fax_Notification_Teardown
+}
+
+TC_Fax_Notification_NotifyOnlyIfJobSuccessfull
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_Notification
+    Common_Fax_Library.Fax_Notification_NotifyOnlyIfJobSuccessfull
+    Common_Fax_Library.Fax_Notification_Teardown
+}
+
+TC_Fax_Notification_DoNotNotify
+{
+    Common_Fax_Library.Setup
+    Common_Fax_Library.Fax_Notification
+    Common_Fax_Library.Fax_Notification_DoNotNotify_Option
+    Common_Fax_Library.Fax_Notification_Teardown
+}

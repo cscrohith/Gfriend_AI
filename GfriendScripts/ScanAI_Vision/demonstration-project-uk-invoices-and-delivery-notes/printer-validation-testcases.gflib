@@ -1,0 +1,472 @@
+﻿using Vision
+using JediOmni
+using Info
+using Windows
+
+AzureVision(${AzureEndpoint},${SubscriptionKey})
+{
+    //${AzureEndpoint} is a variable from AzureVariables.gfvar file which has actual value of the Azure Endpoint , ${AzureEndpointEncryptedValue} stores the encrypted value of Azure Endpoint
+    Encrypt(${AzureEndpoint},${AzureEndpointEncryptedValue})
+    //${SubscriptionKey} is a variable from AzureVariables.gfvar file which has actual value of the Subscription Key , ${SubscriptionKeyEncryptedValue} stores the encrypted value of Subscription Key
+    Encrypt(${SubscriptionKey},${SubscriptionKeyEncryptedValue})
+    //Pass the encrypted values of Azure Endpoint and Subscription key in the Set OCR Method Keyword
+    //1.If the endpoint and subscriptionkey are encrypted in the Encrypted Variables form , then pass the 3rd parameter as "UI" 
+    //2.If the endpoint and subscriptionkey are encrypted using Encrypt Keyword , then pass the 3rd parameter as "ENCRYPT"
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (word)
+}
+
+Setup(${JediOmniFlatbedScanPrompt},${CancelButton},${CancelScanNotifictaion},${YesButton_CancelScanNotification},${StartNewJob},${ClearingSettingsMsg})
+{
+    If: JediOmni.Wait For Object (${JediOmniFlatbedScanPrompt},3)
+    {
+        JediOmni.Touch ID (${CancelButton})
+    }
+    
+    // If previous iteration has failed, screen may be stuck in middle of scan.
+    If: JediOmni.Wait For Object (${CancelScanNotifictaion},5) 
+    {
+        JediOmni.Touch ID (${YesButton_CancelScanNotification})
+        //DO STUFF HERE
+        While:!Vision.Is Text Exist (${StartNewJob}):20
+        {
+            Sleep(5)
+        }
+        If: Vision.Is Text Exist (${StartNewJob})
+        {
+            Vision.Click Text (${StartNewJob})
+        }
+    }
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    JediOmni.Wait For Text Gone (${ClearingSettingsMsg},5)
+}
+
+Open_HPScanAIEnhanced(${HPScanAIEnhanced},${ScanAIApplicationIcon})
+{
+    If: JediOmni.Check Screen Contains Full Text (${HPScanAIEnhanced})
+    {
+        JediOmni.Touch ID (${ScanAIApplicationIcon})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-app.png)
+        Fail (Failed to find application on home screen)
+        Stop Test Case
+    }
+}
+
+Select_WorkflowDProject(${DemoProjectPortalValidation},${ProjectUnderTest},${StartNewJobbutton},${DemoProjectUnderTest})
+{
+    // Check if screen with project list is loaded on screen or not.
+    // We do this by checking availability of first demo project from
+    // the list on the screen.
+    Sleep (10)
+    While:!Vision.Is Text Exist (${DemoProjectPortalValidation}):20
+    {
+        Sleep(5)
+    }
+    If:Vision.Is Text Exist (${ProjectUnderTest})
+    {
+        Vision.Click Text (${ProjectUnderTest})
+        Sleep (2)
+        Vision.Click Text (${StartNewJobbutton})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-should-hv-demo-prj.png)
+        Fail(Failed to find or click on workflow project: ${DemoProjectUnderTest})
+        Stop Test Case
+    }
+}
+
+Scan_DocMultipleTimes(${ScanButton},${Scanning},${DoneButton},${NextStepButton})
+{
+    Info.Start Time Check (STF_ScanJob)
+    Repeat:5
+    {
+        Info.Mark Start (STF_ScanJob,${R})
+        While:!JediOmni.Wait For Object (${ScanButton},2):10
+        {
+            Sleep(1)
+        }
+
+        If: JediOmni.Wait For Object (${ScanButton},2)
+        {
+            JediOmni.Capture Screen Shot (scan-completed-${R}.png)
+            JediOmni.Touch ID (${ScanButton})
+            While:Vision.Is Text Exist (${Scanning}): 20
+            {
+                //Waiting for printer to reach the screen
+            }
+        }
+        Info.Mark End (STF_ScanJob,${R})
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (scr-contains-scan-btn-${R}.png)
+            Fail (Failed to scan document)
+            Return With Fail (Failed to scan document: ${R})
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (scr-contains-scan-btn-${R}.png)
+            Fail (Error while trying to scan document)
+            Return With Error (Error while trying to scan document: ${R})
+        }
+    }
+    While:!JediOmni.Wait For Object (${DoneButton},2):10
+    {
+        Sleep(2)
+    }
+    If: JediOmni.Wait For Object (${DoneButton},2)
+    {
+        JediOmni.Touch ID (${DoneButton})
+        While:!Vision.Is Text Exist (${NextStepButton}):20
+        {
+            Sleep(3)
+        }
+        JediOmni.Capture Screen Shot (nxt-step-btn-scrn.png)
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-contains-done-btn.png)
+        Fail (Failed to click on Done button)
+        Return With Fail (Failed to click on Done button)
+        Stop Test Case
+    }
+}
+
+Click_NextStepButton(${NextStepButton},${ValidateButton})
+{
+    If:Vision.Is Text Exist (${NextStepButton})
+    {
+        Vision.Click Text (${NextStepButton})
+    }
+    Fail:
+    {
+        // Check if next screen is loaded. If it is, return with pass. If not, try again.
+        If:Vision.Is Text Exist (${ValidateButton})
+        {
+            Pass(Next Step Button has been clicked)
+        }
+        Fail:
+        {
+            // Second Attempt to press Next Step Button.
+            Sleep (10)
+            If:Vision.Is Text Exist (${NextStepButton})
+            {
+                Vision.Click Text (${NextStepButton})
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+                Fail (Failed to click Next Step Button)
+                Stop Test Case
+            }
+        }
+        JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+    }
+    Error:
+    {
+        // Check if next screen is loaded. If it is, return with pass. If not, try again.
+        Sleep (5)
+        If:Vision.Is Text Exist (${ValidateButton})
+        {
+            Pass(Next Step Button has been clicked)
+        }
+        Fail:
+        {
+            // Second Attempt to press Next Step Button.
+            Sleep (5)
+            If:Vision.Is Text Exist (${NextStepButton})
+            {
+                Vision.Click Text (${NextStepButton})
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+                Fail (Failed to click Next Step Button)
+                Stop Test Case
+            }
+        }
+        JediOmni.Capture Screen Shot (does-scr-contains-nxt-step-btn.png)
+    }
+}
+
+Perform_ValidationOfScannedDocuments(${DocumentTypeFeild},${DocumentTypeDeliveryNoteValue},${DeliveryDateField},${DeleveryNoteNumber},${DocumentTypeInvoiceValue},${InvoiceDate},${InvoiceNumber},${NetTotal},${TaxTotal},${GrossTotal})
+{
+    Repeat:6
+    {
+        If: NotEquals (${R},6)
+        {
+            Calculate And Assign (5+${R},${Rit})
+            Repeat:${Rit}
+            {
+                Windows.Send Special Key ([TAB])
+            }
+            Windows.Send Special Key ([ENTER])
+            //Document Type
+            Sleep (5)
+            If: Vision.Is Text Exist (${DocumentTypeFeild})
+            {
+                Vision.Click Text (${DocumentTypeFeild})
+                Sleep(1)
+                If: Vision.Is Text Exist (${DocumentTypeDeliveryNoteValue})
+                {
+                    Sleep (2)
+                    Vision.Click Text (${DocumentTypeDeliveryNoteValue})
+                }
+            }
+            JediOmni.Capture Screen Shot (scr-should-contain-6-fields.png)
+   
+            //Delivery Date
+            Sleep (2)
+            If: Vision.Is Text Exist (${DeliveryDateField})
+            {
+                Vision.Click Text (${DeliveryDateField})
+                Sleep (1)
+                Repeat:10
+                {
+                    Windows.Send Special Key ([BACKSPACE])
+                }
+                Sleep (3)
+                JediOmni.Input Text (12)
+                Sleep (1)
+                JediOmni.Input Text (03)
+                Sleep (1)
+                JediOmni.Input Text (2025)
+                Sleep (3)
+                Vision.Click Text (${DeliveryDateField})
+            }
+            
+            //Delivery Number
+            Sleep (2)
+            If: Vision.Is Text Exist (${DeleveryNoteNumber})
+            {
+                Vision.Click Text (${DeleveryNoteNumber})
+                Sleep (1)
+                Repeat:10
+                {
+                    Windows.Send Special Key ([BACKSPACE])
+                }
+                Sleep (3)
+                JediOmni.Input Text (1234)
+                Sleep (3)
+                Vision.Click Text (${DeleveryNoteNumber})
+            }
+        }
+        
+        If:  Equals (${R},6)
+        {
+            Calculate And Assign (5+${R},${Rit})
+            Repeat:${Rit}
+            {
+                Windows.Send Special Key ([TAB])
+            }
+            Windows.Send Special Key ([ENTER])
+            //Document Type
+            Sleep (5)
+            If: Vision.Is Text Exist (${DocumentTypeFeild})
+            {
+                Vision.Click Text (${DocumentTypeFeild})
+                Sleep(1)
+                If: Vision.Is Text Exist (${DocumentTypeInvoiceValue})
+                {
+                    Sleep (2)
+                    Vision.Click Text (${DocumentTypeInvoiceValue})
+                }
+            }
+            JediOmni.Capture Screen Shot (scr-should-contain-6-fields.png)
+   
+            //Invoice Date
+            Sleep (2)
+            If: Vision.Is Text Exist (${InvoiceDate})
+            {
+                Vision.Click Text (${InvoiceDate})
+                Sleep (1)
+                Repeat:10
+                {
+                    Windows.Send Special Key ([BACKSPACE])
+                }
+                Sleep (3)
+                JediOmni.Input Text (12)
+                Sleep (1)
+                JediOmni.Input Text (03)
+                Sleep (1)
+                JediOmni.Input Text (2025)
+                Sleep (3)
+                Vision.Click Text (${InvoiceDate})
+            }
+            
+            //Invoice Number
+            Sleep (2)
+            If: Vision.Is Text Exist (${InvoiceNumber})
+            {
+                Vision.Click Text (${InvoiceNumber})
+                Sleep (1)
+                Repeat:10
+                {
+                    Windows.Send Special Key ([BACKSPACE])
+                }
+                Sleep (3)
+                JediOmni.Input Text (1234)
+                Sleep (3)
+                Vision.Click Text (${InvoiceNumber})
+            }
+            
+            //Net Total
+            Sleep (2)
+            If: Vision.Is Text Exist (${NetTotal})
+            {
+                Vision.Click Text (${NetTotal})
+                Sleep (1)
+                Repeat:10
+                {
+                    Windows.Send Special Key ([BACKSPACE])
+                }
+                Sleep (3)
+                JediOmni.Input Text (1234)
+                Sleep (3)
+                Vision.Click Text (${NetTotal})
+            }
+    
+            //Tax Total
+            Sleep (2)
+            If: Vision.Is Text Exist (${TaxTotal})
+            {
+                Vision.Click Text (${TaxTotal})
+                Sleep (1)
+                Repeat:10
+                {
+                    Windows.Send Special Key ([BACKSPACE])
+                }
+                Sleep (3)
+                JediOmni.Input Text (1234)
+                Sleep (3)
+                Vision.Click Text (${TaxTotal})
+            }
+            
+            //Gross Total
+            Sleep (2)
+            If: Vision.Is Text Exist (${GrossTotal})
+            {
+                Vision.Click Text (${GrossTotal})
+                Sleep (1)
+                Repeat:10
+                {
+                    Windows.Send Special Key ([BACKSPACE])
+                }
+                Sleep (3)
+                JediOmni.Input Text (1234)
+                Sleep (3)
+                Vision.Click Text (${GrossTotal})
+            }
+        }
+    }  
+}
+  
+Click_Validate_Button(${ValidateButton},${FinishValidationButton})
+{
+    Sleep (5)
+    If:Vision.Is Text Exist (${ValidateButton})
+    {
+       Vision.Click Text (${ValidateButton}) 
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (validate-btn-scr.png)
+        Fail(Failed to find or click validate button)
+        Stop Test Case
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (validate-btn-scr.png)
+        Sleep (10)
+        If:Vision.Is Text Exist (${FinishValidationButton},15)
+        {
+            Pass (Validate Button Was Pressed Successfully)
+        }
+        Fail:
+        {
+            //Attemp again
+            Sleep (10)
+            If:Vision.Is Text Exist (${ValidateButton})
+            {
+                Vision.Click Text (${ValidateButton})  
+                Pass(Pressed Validate button in second attempt)
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (validate-btn-scr-fail-2.png)
+                Fail(Failed to Press Validate Button)
+                Stop Test Case
+            }
+            Error:
+            {
+                JediOmni.Capture Screen Shot (validate-btn-scr-err-2.png)
+                Error(Failed to Press Validate Button)
+                Stop Test Case
+            }
+        }
+    } 
+}
+
+Click_FinishValidation_Button(${FinishValidationButton},${DemoProjectPortalValidation})
+{
+    While:!Vision.Is Text Exist (${FinishValidationButton}):20
+    {
+        Sleep(5)
+    }
+    If:Vision.Is Text Exist (${FinishValidationButton})
+    {
+        JediOmni.Capture Screen Shot (scr-contains-finish-validation-btn.png)
+        Vision.Click Text (${FinishValidationButton})
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (scr-should-contain-finish-btn.png)
+        Fail (Failed to click Finish Validation)
+        Stop Test Case
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (scr-should-contain-finish-btn.png)
+        // If Finish Validation Button is not available, we attemp to click Finsih second time
+        // after checking some conditions.
+        If:Vision.Is Text Exist (${DemoProjectPortalValidation})
+        {
+            // Finish Validation button has been pressed.
+            Pass (Finish Validation button has been pressed)
+            Return With Pass (Finish Validation button has been pressed)
+        }
+        Fail:
+        {
+            //Finish validation button has not been pressed yet
+            Sleep (10)
+            If: Vision.Is Text Exist (${FinishValidationButton})
+            {
+                Vision.Click Text (${FinishValidationButton})
+                Pass (Finish Validation button has been pressed in 2nd attempt)
+                Return With Pass (Finish Validation button has been pressed in 2nd attempt)
+            }
+            Error:
+            {
+                JediOmni.Capture Screen Shot (finish-validation-press-atmpt-2.png)
+                Error (Couldn't press Finish Validation button in second attempt.)
+                Stop Test Case
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (finish-validation-press-atmpt-2.png)
+                Fail (Couldn't press Finish Validation button in second attempt.)
+                Stop Test Case
+            }   
+        }
+    }
+}
+
+Teardown
+{
+    JediOmni.Press Home Key
+}

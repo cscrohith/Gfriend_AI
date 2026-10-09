@@ -1,0 +1,11 @@
+﻿//For Badgebox,mention the variable (${BADGE_AUTH}) value as Y
+//BadgeIndex
+${STF_BadgeIndex} = 0
+
+//Azure account details
+//${STF_AzureEndpoint} = 
+//${STF_AzureKey} = 
+
+
+//Activity ID from the STB/STF
+${ActivityId} = 0

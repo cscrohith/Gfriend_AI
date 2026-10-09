@@ -1,0 +1,666 @@
+﻿///<File>WP_GoogleDrive_Library.gflib</File>
+///<Modified>2021-09-24</Modified>
+///<Description>library of common routines for use with the HP for Google Drive Workpath App</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+${AppSignIn_ScreenChange_Timeout}=90
+${Loading_Icon_Show_Timeout}=5
+${Loading_Icon_Gone_Timeout}=60
+${App_Splash_Gone_Timeout}=90
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+Using Android
+Using JediOmni
+
+///<Name>CheckForLoadingIcon</Name>
+///<Description>Check for the loading icon to appear then disappear</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes>This is called by multiple routines in this and other OneDrive libraries</Notes>
+CheckForLoadingIcon
+{
+    //    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/ll_dots,${Loading_Icon_Show_Timeout})
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/fl_dot_animation,${Loading_Icon_Show_Timeout})
+    {
+        //        Android.Wait For Object Gone (com.hp.print.horizontalconnector.googledrive:id/ll_dots,${Loading_Icon_Gone_Timeout})
+        Android.Wait For Object Gone (com.hp.print.horizontalconnector.googledrive:id/fl_dot_animation,${Loading_Icon_Gone_Timeout})
+    }
+}
+
+///<Name>CheckForErrorMessage</Name>
+///<Description>Check for loss of server connection message</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes>This is called by multiple routines in this and other OneDrive libraries</Notes>
+CheckForErrorMessage
+{
+    If: Android.Wait For Object (com.android.inputmethod.latin:id/keyboard_view,${Zero_Wait_Time})
+    {
+        Android.Hide Keyboard
+    }
+    
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/ll_dialog_main,${Zero_Wait_Time})
+    {
+        Set Variable (${Error_Text}, )
+        @Android.Get Text (com.hp.print.horizontalconnector.googledrive:id/tv_contents,${Error_Text})
+        
+        Android.Capture Screen Shot (CheckForErrorMessage_Fail.png)
+        // clear the popup message
+        //@Android.Touch Text (OK)
+        //@Android.Touch Text (DONE)
+        //@Android.Touch Text (Done)
+        @Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_left)
+
+        If: Contains Ignore Case (${Error_Text},Server access has been lost)
+        {
+            Return With Fail (Fail - Server access lost while in app!)
+        }
+        If: Contains Ignore Case (${Error_Text},Unable to retrieve data)
+        {
+            Return With Fail (Fail - Unable to retrieve data from cloud services while in app!)
+        }
+        If: Contains Ignore Case (${Error_Text},Unable to preview data)
+        {
+            Return With Fail (Fail - Unable to preview data from cloud services while in app!)
+        }
+        If: Contains Ignore Case (${Error_Text},App could not load)
+        {
+            Return With Fail (Fail - App could not load!)
+        }
+    }
+    Fail:
+    {
+        Return With Pass (Check for Server Loss complete!)
+    }
+}
+
+///<Name>HandleAppEula</Name>
+///<Description>Handle the EULA screen</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes>This is called by HandleAppOpening in this library</Notes>
+HandleAppEula
+{
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/bt_hp_privacy,${Zero_Wait_Time})
+    {
+        //Terms Information
+        //I have read and agree to the above documents.
+        Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/cb_agree)
+        //Tap Continue button.
+        If: Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_continue)
+        {
+            If: Android.Wait For Object Gone (com.hp.print.horizontalconnector.googledrive:id/bt_continue,${Wait_Time})
+            {
+                Return With Pass (HandleAppEula completed)
+            }
+            Fail:
+            {
+                Return With Fail (Fail handling the HP Privacy and EULA screen!)
+            }
+        }
+        Fail:
+        {
+            Return With Fail (Fail handling the HP Privacy and EULA screen!)
+        }
+    }
+}
+
+///<Name>EnterLoginUserID</Name>
+///<Description>Enter app the UserID</Description>
+///<Parameters>Login_UserID : app UserID</Parameters>
+///<Precondition></Precondition>
+///<Notes>This is called by AppLogin in this library</Notes>
+EnterLoginUserID(${Login_UserID})
+{
+    // Input ID
+//    If: Android.Wait For Object (Email,${Minimal_Wait_Time})
+//    {
+//    }
+//    Fail:
+//    {
+//        Return With Fail (Fail entering UserID in to Google Drive app!)
+//    }
+//    Error:
+//    {
+//        Return With Error (Error entering UserID in to Google Drive app!)
+//    }
+    
+    Android.Touch ID (Email)
+    Sleep (${Very_Short_Wait_Time})
+    If: Android.Input Text (Email,${Login_UserID})
+    {
+        Android.Hide Keyboard
+        Sleep (${Short_Wait_Time})
+    }
+    Fail:
+    {
+        Return With Fail (Fail entering UserID in to Google Drive app!)
+    }
+    Error:
+    {
+        Return With Error (Error entering UserID in to Google Drive app!)
+    }
+    
+    If: Android.Touch ID (next)
+    {
+        If: Android.Wait For Object Gone (Email,${AppSignIn_ScreenChange_Timeout})
+        {
+        }
+        Fail:
+        {
+            // UserID failed
+            Return With Fail (Fail entering UserID in to Google Drive app!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail entering UserID in to Google Drive app!)
+    }
+    Error:
+    {
+        Return With Error (Error entering UserID in to Google Drive app!)
+    }
+}
+
+///<Name>EnterLoginUserPW</Name>
+///<Description>Enter app the user's password</Description>
+///<Parameters>Login_PW : app user's password</Parameters>
+///<Precondition></Precondition>
+///<Notes>This is called by AppLogin in this library</Notes>
+EnterLoginUserPW(${Login_PW})
+{
+//    If: Android.Wait For Object (password,${Minimal_Wait_Time})
+//    {
+//    }
+//    Fail:
+//    {
+//        Return With Fail (Fail entering Password in to Google Drive app!)
+//    }
+//    Error:
+//    {
+//        Return With Error (Error entering Password in to Google Drive app!)
+//    }
+    
+    Android.Touch ID (password)
+    
+    If: Android.Input Text (password,${Login_PW})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail entering Password in to Google Drive app!)
+    }
+    Error:
+    {
+        Return With Error (Error entering Password in to Google Drive app!)
+    }
+    
+    // Tap Login button.
+    Android.Hide Keyboard
+    Sleep (${Short_Wait_Time})
+    
+    If: Android.Touch ID (submit)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail entering Password in to Google Drive app!)
+    }
+    Error:
+    {
+        Return With Error (Error entering Password in to Google Drive app!)
+    }
+    
+    If: Android.Wait For Object Gone (password,${AppSignIn_ScreenChange_Timeout})
+    {
+        Return With Pass (Enter Login User Password complete!)
+    }
+    Fail:
+    {
+        // Login failed
+        Return With Fail (Fail entering Password in to Google Drive app!)
+    }
+}
+
+///<Name>AppLogin</Name>
+///<Description>Log In to the app</Description>
+///<Parameters>ID : app UserID</Parameters>
+///<Parameters>Pw : app user's password</Parameters>
+///<Precondition></Precondition>
+///<Notes>This is called by HandleAppOpening in this library</Notes>
+AppLogin(${ID},${Pw})
+{
+    Android.Get Webview
+    
+    //wait for the main sign in screen
+    Android.Wait For Object (Email,${AppSignIn_ScreenChange_Timeout})
+    
+    // Input ID
+    If: WP_GoogleDrive_Library.EnterLoginUserID(${ID})
+    {
+    }
+    Fail:
+    {
+        Android.Return Webview
+        Return With Fail (Fail entering userID signing in to Google Drive app!)
+    }
+    Error:
+    {
+        Android.Return Webview
+        Return With Error (Error entering userID signing in to Google Drive app!)
+    }
+    
+    If: Android.Wait For Object (password,${AppSignIn_ScreenChange_Timeout})
+    {
+    }
+    Fail:
+    {
+        Android.Return Webview
+        Return With Fail (Fail entering password signing in to Google Drive app!)
+    }
+    Error:
+    {
+        Android.Return Webview
+        Return With Error (Error entering password signing in to Google Drive app!)
+    }
+    
+    If: WP_GoogleDrive_Library.EnterLoginUserPW(${Pw})
+    {
+        // check for GoogleDrive access page
+        Sleep (${Minimal_Wait_Time})
+        
+        If: Android.Wait For Object (submit_approve_access,${Wait_Time})
+        {
+            Android.Touch ID (submit_approve_access)
+            Android.Wait For Object Gone (submit_approve_access,${Wait_Time})
+        }
+        
+        Android.Return Webview
+        
+        Return With Pass (App Login complete!)
+    }
+    Fail:
+    {
+        Android.Return Webview
+        Return With Fail (Fail entering password signing in to Google Drive app!)
+    }
+    Error:
+    {
+        Android.Return Webview
+        Return With Error (Error entering password signing in to Google Drive app!)
+    }
+}
+
+///<Name>ClearGuide</Name>
+///<Description>Clear the app guide screen</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes>This is called by HandleAppOpening in this library</Notes>
+ClearGuide
+{
+    // clear the guide screen if shown
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/buttonClose,${Very_Short_Wait_Time})
+    {// Skip Guide
+        If: Android.Is Unchecked (com.hp.print.horizontalconnector.googledrive:id/checkBoxDoNotShowAgain)
+        {
+            Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/checkBoxDoNotShowAgain)
+        }
+        Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/buttonClose)
+        Android.Wait For Object Gone (com.hp.print.horizontalconnector.googledrive:id/buttonClose,${Short_Wait_Time})
+    }
+    Fail:
+    {
+        Return With Pass (ClearGuide complete!)
+    }
+}
+
+///<Name>HandleSaveCredentials</Name>
+///<Description>Handle the save credentials screen</Description>
+///<Parameters>SaveYN : Y to save the credentials</Parameters>
+///<Precondition></Precondition>
+///<Notes>This is called by HandleAppOpening in this library</Notes>
+HandleSaveCredentials(${SaveYN})
+{
+    // wait for the popup message
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/ll_dialog_main,${Zero_Wait_Time})
+    {
+        // check for the save credentials popup
+        If: Android.Check Screen Contains Partial Text (Do you want to save your)
+        {
+            // check the "Do not show again checkbox"
+            Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/checkBox)
+            
+            If: Equals(${SaveYN},Y)
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_right)
+            }
+            Fail:
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_left)
+            }
+            Android.Wait For Object Gone (com.hp.print.horizontalconnector.googledrive:id/ll_dialog_main,${Short_Wait_Time})
+            
+            // clear the popup message that the credentials were saved
+            If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/snackbar_action,${Very_Short_Wait_Time})
+            {
+                Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/snackbar_action)
+                Android.Wait For Object Gone (com.hp.print.horizontalconnector.googledrive:id/snackbar_action,${Short_Wait_Time})
+            }
+        }
+    }
+}
+
+/// <Name>HandleSplashScreen</Name>
+/// <Description>Handle the app splash screen if shown</Description>
+/// <Parameters></Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+HandleSplashScreen
+{
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/rl_splash_main,${Zero_Wait_Time})
+    {
+        If: Android.Wait For Object Gone (com.hp.print.horizontalconnector.googledrive:id/rl_splash_main,${App_Splash_Gone_Timeout})
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Fail waiting for app splash screen to clear!)
+        }
+    }
+}
+
+///<Name>HandleAppOpening</Name>
+///<Description>Handle the app opening</Description>
+///<Parameters>UserID : app UserID</Parameters>
+///<Parameters>UserPW : app user's password</Parameters>
+///<Parameters>SaveAccountYN : Y to save the credentials</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+HandleAppOpening(${UserID},${UserPW},${SaveAccountYN})
+{
+    // clear the keyboard if displayed
+    @Android.Hide Keyboard
+    
+    If: WP_GoogleDrive_Library.HandleSplashScreen
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail handling app splash screen!)
+    }
+    
+    // check for the app shown without the guide or save credentials showing
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/appbar,${Zero_Wait_Time})
+    {
+        Return With Pass (HandleAppOpening completed!)
+    }
+    
+    // check for EULA screen
+    If: WP_GoogleDrive_Library.HandleAppEula
+    {
+        WP_GoogleDrive_Library.CheckForLoadingIcon
+    }
+    Fail:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Return With Fail (Fail while handling the EULA!)
+    }
+    Error:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Error (Error while handling the EULA!)
+    }
+    
+    // leaving hp environment popup
+//    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/ll_dialog_main,${Short_Wait_Time})
+    If: Android.Wait For Object (android:id/content,${Short_Wait_Time})
+    {
+        Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/bt_dialog_left)
+    }
+    Fail:
+    {
+        Return With Pass (Login not necessary)
+    }
+    
+    // login if necessary
+    If: WP_GoogleDrive_Library.AppLogin(${UserID},${UserPW})
+    {
+        // login complete
+    }
+    Fail:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while signing in to the Google Drive app!)
+    }
+    Error:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Error (Error while signing in to the Google Drive app!)
+    }
+    
+    WP_GoogleDrive_Library.CheckForLoadingIcon
+    
+    // check for the app shown without the guide or save credentials showing
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/appbar,${Zero_Wait_Time})
+    {
+        Return With Pass (HandleAppOpening completed!)
+    }
+    
+    // handle the guide if shown
+    If: WP_GoogleDrive_Library.ClearGuide
+    {
+    }
+    Fail:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while clearing the app guide!)
+    }
+    Error:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Error (Error while clearing the app guide!)
+    }
+    
+    // handle the save credentials popup if shown
+    If: WP_GoogleDrive_Library.HandleSaveCredentials(${SaveAccountYN})
+    {
+    }
+    Fail:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while saving app credentials!)
+    }
+    Error:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Error (Error while saving app credentials!)
+    }
+    
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/appbar,${Zero_Wait_Time})
+    {
+        Return With Pass (HandleAppOpening completed!)
+    }
+    Fail:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail accessing the Google Drive app main screen!)
+    }
+    Error:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Error (Error accessing the Google Drive app main screen!)
+    }
+}
+
+///<Name>AppExit</Name>
+///<Description>Handle the save credentials screen</Description>
+///<Parameters>BackOut_YN : if Y then backout, else sign out</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+AppExit (${BackOut_YN})
+{
+    WP_GoogleDrive_Library.CheckForErrorMessage
+    
+    // ensure at the main folder
+    WP_GoogleDrive_Library.ReturnToMainFolder
+    
+    // initiate backout or signout as specified
+    If: Equals IgnoreCase (${BackOut_YN},Y)
+    {
+        // press the back icon unitl the exit app message appears
+        //        While:Android.Wait For Object Gone (com.hp.print.horizontalconnector.googledrive:id/ll_dialog_main,${Zero_Wait_Time}):10
+        While:Android.Check Screen Not Contains Partial Text (exit this app):10
+        {
+            Android.Press Back Key
+        }
+        Android.Wait For Text (Exit,${Wait_Time})
+        Android.Touch Text (Exit)
+        Sleep (${Short_Wait_Time})
+    }
+    Fail:
+    {
+        // signout
+        Android.Touch ID(com.hp.print.horizontalconnector.googledrive:id/menu_more_ac)
+        If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/action_sign_out,${Short_Wait_Time})
+        {
+            Android.Touch ID(com.hp.print.horizontalconnector.googledrive:id/action_sign_out)
+            Android.Wait For Text (Exit,${Wait_Time})
+            Android.Touch Text (Exit)
+            Sleep (${Short_Wait_Time})
+        }
+    }
+}
+
+///<Name>ReturnToMainFolder</Name>
+///<Description>Return to the app main folder</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+ReturnToMainFolder
+{
+    While:Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/iv_icon_back,${Minimal_Wait_Time}):10
+    {
+        Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/iv_icon_back)
+        WP_GoogleDrive_Library.CheckForLoadingIcon
+    }
+}
+
+///<Name>EnterSearch</Name>
+///<Description>Enter the search text</Description>
+///<Parameters>SearchText : text to search</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+EnterSearch(${SearchText})
+{
+    // initiate the search
+    If: Android.Touch ID (com.hp.print.horizontalconnector.googledrive:id/menu_search_ac)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting the search icon!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting the search icon!)
+    }
+    
+    Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/searchTextView,${Short_Wait_Time})
+    
+    Android.Input Text (com.hp.print.horizontalconnector.googledrive:id/searchTextView,${SearchText})
+    
+    Android.Hide Keyboard
+    
+    WP_GoogleDrive_Library.CheckForLoadingIcon
+    
+    // touch the found text, but not in the search textbox
+    If: Android.Touch Text With Index (${SearchText},${Very_Short_Wait_Time})
+    {
+        WP_GoogleDrive_Library.CheckForLoadingIcon
+    }
+    Fail:
+    {
+        Return With Fail (Fail while entering search text!)
+    }
+    Error:
+    {
+        Return With Error (Error while entering search text!)
+    }
+}
+
+///<Name>SearchFolder</Name>
+///<Description>Search for a folder and select it</Description>
+///<Parameters>FolderName : folder name</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SearchFolder(${FolderName})
+{
+    If: WP_GoogleDrive_Library.EnterSearch(${FolderName})
+    {
+    }
+    Fail:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while searching for a folder!)
+    }
+    Error:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Error (Error while searching for a folder!)
+    }
+    
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/fab,${Long_Wait})
+    {// success
+    }
+    Fail:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting searched folder!)
+    }
+    Error:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting searched folder!)
+    }
+}
+
+///<Name>SearchFile</Name>
+///<Description>Search for a file and select it</Description>
+///<Parameters>FileName : file name</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SearchFile(${FileName})
+{
+    If: WP_GoogleDrive_Library.EnterSearch(${FileName})
+    {
+    }
+    Fail:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while searching for a file!)
+    }
+    Error:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Error (Error while searching for a file!)
+    }
+    
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.googledrive:id/btn_print,120)
+    {
+    }
+    Fail:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting searched file!)
+    }
+    Error:
+    {
+        WP_GoogleDrive_Library.CheckForErrorMessage
+        Return With Error (Error while selecting searched file!)
+    }
+}

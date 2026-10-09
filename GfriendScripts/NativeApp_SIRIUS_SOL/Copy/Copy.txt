@@ -1,0 +1,20 @@
+﻿using Copy_Library.gflib
+Using Copy_Variable.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         SIRIUS_SOL_Copy_WorkFlow
+// Description:     Copy_Native_App_workFlow_For_SIRIUS_SOL_Products
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Copy for 1>2 sides
+{
+    Copy_Library.Copy(${Copy_Sides},${Copy_Tray})
+}

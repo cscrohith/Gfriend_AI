@@ -1,0 +1,40 @@
+﻿using OXPD_Common_Library.gflib
+using OXPD_Common_Variables.gfvar
+
+
+OXPD_Device Username Login 
+{
+   OXPD_Common_Library.OXPD_Device_Username_Login(${Device_Username},${Device_Password})
+}
+
+OXPD_Device_Pin_login
+{
+    OXPD_Common_Library.OXPD_Device_PIN_Login (${Device_PIN})
+}
+Send_Jobs
+{
+    OXPD_Common_Library.Send_Job(${Printer})
+}
+
+Pull_Print_Operation
+{
+    OXPD_Common_Library.Pull_Print_Operation
+}
+Device_Signout
+{
+    OXPD_Common_Library.Device_Signout
+}
+
+Tenant_Login
+{
+    OXPD_Common_Library.Portal_Login (${Site},${Username},${Password})
+}  
+Large_files
+{
+    OXPD_Common_Library.Large_File_Job (${Printer})
+}
+EWS_Login
+{
+    OXPD_Common_Library.EWS_Login(${EWS_Site},${EWS_Password})
+}
+

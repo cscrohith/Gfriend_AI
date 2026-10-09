@@ -1,0 +1,1771 @@
+﻿using Android
+using JediOmni
+using Info
+
+/////////////////////////////////////////////////
+// Routine:         CheckForServerLoss
+// Description:     check for loss of server connection message
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:   this is called by multiple rotines
+//
+// Version:
+/////////////////////////////////////////////////
+CheckForServerLoss
+{
+    If: Android.Check Screen Contains Partial Text (Server access has been lost)
+    {
+        // clear the message
+        Android.Capture Screen Shot (CheckForServerLoss_Fail.png)
+        @Android.Touch Text (OK)
+        @Android.Touch Text (DONE)
+        Fail (Fail - Server access lost while in app!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         CheckAndClearSaveDraftMessage
+// Description:     check for and clear the Safe Draft message
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+CheckAndClearSaveDraftMessage
+{
+    If: Android.Check Screen Contains Full Text (Save as Draft?)
+    {
+        // clear the message
+        Android.Touch Text (OK)
+    }
+}
+
+
+/////////////////////////////////////////////////
+// Routine:         HandleAppEula
+// Description:     handle the EULA screen
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+HandleAppEula
+{
+    //Terms Information
+    If: Android.Wait For Text (I have read and agree to the above documents.,5)
+    {// the Eula page is displayed, handle it
+        //I have read and agree to the above documents.
+        If: Android.Wait For Object (com.hp.print.emailplus:id/cb_agree,5)
+        {
+            Android.Touch ID (com.hp.print.emailplus:id/cb_agree)
+        }
+        //Tap Continue button.
+        If: Android.Wait For Object (com.hp.print.emailplus:id/bt_continue,5)
+        {
+            Android.Touch ID (com.hp.print.emailplus:id/bt_continue)
+            //Android.Wait For Object Gone (com.hp.print.emailplus:id/bt_continue,10)
+            Sleep (5)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail waiting for the EULA screen to display in Mail app!)
+    } 
+}
+
+/////////////////////////////////////////////////
+// Routine:         EnterLoginUserID
+// Description:     enter the userID
+//
+// Arguments:       ${Login_UserID} - UserID
+//
+// Pre-requisites:
+//
+// Notes:   this was modified to not use the Android WebView commands
+//              because those commands are slower and 
+//              sometimes miss typing characters
+//
+// Version:
+/////////////////////////////////////////////////
+EnterLoginUserID(${Login_UserID})
+{
+    //    If: Mail_Library.CheckForServerLoss
+    If: Mail_Library.CheckForServerLoss
+    {
+        // Input ID
+        //    If: Android.Wait For Web Object (//*[@class='placeholderContainer']/input[1],20)
+        If: Android.Wait For Object (i0116,20)
+        {
+            //        Android.Touch Web Object (//*[@class='placeholderContainer']/input[1])
+            Android.Touch ID (i0116)
+            //        If: Android.Set Text Web Object (//*[@class='placeholderContainer']/input[1],${Login_UserID})
+            If: Android.Input Text (i0116,${Login_UserID})
+            {
+                //Sleep(5)
+                Android.Touch ID (loginHeader)
+                If: Android.Touch Text With Index (Next,0)
+                {
+                    Sleep(10)
+                    //                If: Android.Is Web Text Exist (Next)
+                    If: Android.Check Screen Contains Full Text (Next)
+                    {// UserID failed
+                        Android.Capture Screen Shot (EnterLoginUserID_Fail.png)
+                        Fail (Fail entering UserID in to Mail app!)
+                    }
+                }
+                Fail:
+                {
+                    Fail (Fail entering UserID in to Mail app!)
+                }
+                Error:
+                {
+                    Error (Error entering UserID in to Mail app!)
+                }
+            }
+            Fail:
+            {
+                Fail (Fail entering UserID in to Mail app!)
+            }
+            Error:
+            {
+                Error (Error entering UserID in to Mail app!)
+            }
+        }
+        Fail:
+        {
+            Fail (Fail entering UserID in to Mail app!)
+        }
+        Error:
+        {
+            Error (Error entering UserID in to Mail app!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail handling the app opening!)
+    }
+    Error:
+    {
+        Error (Error while handling the app opening!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         EnterLoginUserPW
+// Description:     enter the user's password
+//
+// Arguments:       ${Login_PW} - Password
+//
+// Pre-requisites:
+//
+// Notes:   this was modified to not use the Android WebView commands
+//              because those commands are slower and 
+//              sometimes miss typing characters
+//
+// Version:
+/////////////////////////////////////////////////
+EnterLoginUserPW(${Login_PW})
+{
+    If: Mail_Library.CheckForServerLoss
+    {
+        //    If: Android.Wait For Web Object (//*[@class='placeholderContainer']/input[1],20)
+        If: Android.Wait For Object (i0118,20)
+        {
+            //        Android.Touch Web Object (//*[@class='placeholderContainer']/input[1])
+            Android.Touch ID (i0118)
+            //        If: Android.Set Text Web Object (//*[@class='placeholderContainer']/input[1],${Login_PW})
+            If: Android.Input Text (i0118,${Login_PW})
+            {
+                // Tap Login button.
+                Android.Touch ID (loginHeader)
+                If: Android.Touch Text With Index (Sign in,0)
+                {
+                    Sleep (10)
+                    //                If: Android.Is Web Text Exist (Enter password)
+                    If: Android.Wait For Text (Forgot password?,0)
+                    {// Login failed
+                        Android.Capture Screen Shot (EnterLoginUserPW_Fail.png)
+                        Fail (Fail entering Password in to Mail app!)
+                    }
+                }
+                Fail:
+                {
+                    Fail (Fail entering Password in to Mail app!)
+                }
+                Error:
+                {
+                    Error (Error entering Password in to Mail app!)
+                }
+            }
+            Fail:
+            {
+                Fail (Fail entering Password in to Mail app!)
+            }
+            Error:
+            {
+                Error (Error entering Password in to Mail app!)
+            }
+        }
+        Fail:
+        {
+            Fail (Fail entering Password in to Mail app!)
+        }
+        Error:
+        {
+            Error (Error entering Password in to Mail app!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail handling the app opening!)
+    }
+    Error:
+    {
+        Error (Error while handling the app opening!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         AppLogin
+// Description:     Log In to the app
+//
+// Arguments:       ${ID} - UserID
+//                  ${Pw} - Password
+//
+// Pre-requisites:
+//
+// Notes:   this was modified to not use the Android WebView commands
+//              because those commands are slower and 
+//              sometimes miss typing characters
+//
+// Version:
+/////////////////////////////////////////////////
+AppLogin(${ID},${Pw})
+{
+     If: Mail_Library.CheckForServerLoss
+    {
+        //Done popup
+        If: Android.Wait For Text (DONE,1)
+        {
+            Android.Touch Text(DONE)
+            
+            //Login by WebView
+            Android.Wait For Text Gone (Connecting to the authentication server,30)
+
+            //Sleep(10)
+
+    //        // Get Webview control.
+    //        If: Android.Get Webview (60)
+    //        {
+                // Input ID
+                If: Mail_Library.EnterLoginUserID(${ID})
+                {
+                    If: Mail_Library.EnterLoginUserPW(${Pw})
+                    {
+                        // check for Stay signed in page
+                        //If: Android.Is Web Text Exist (Stay signed in?)
+                        //                    If: Android.Wait For Text (Stay signed in?,0)
+                        If: Android.Check Screen Contains Partial Text (Stay Signed in)
+                        {
+                            Android.Touch Text With Index (No,0)
+                            Sleep (10)
+                        }
+                        // return Webview control
+                        //                    Android.Return Webview
+                    }
+                    Fail:
+                    {
+                        Fail (Fail entering password signing in to Mail app!)
+                    }
+                    Error:
+                    {
+                        Error (Error entering password signing in to Mail app!)
+                    }
+                }
+                Fail:
+                {
+                    Fail (Fail entering userID signing in to Mail app!)
+                }
+                Error:
+                {
+                    Error (Error entering userID signing in to Mail app!)
+                }
+    //        }
+    //        Fail:
+    //        {
+    //            Fail (Fail connecting to Webview in Mail app!)
+    //        }
+    //        Error:
+    //        {
+    //            Error (Error connecting to Webview in Mail app!)
+    //        }
+        }
+        Fail:
+        {
+            Fail (Fail waiting for the sign in screen in Mail app!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail handling the app opening!)
+    }
+    Error:
+    {
+        Error (Error while handling the app opening!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         ClearGuide
+// Description:     clear the guide overlay screen
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+ClearGuide
+{
+    // clear the guide screen if shown
+    If: Android.Wait For Object (com.hp.print.emailplus:id/buttonClose,2)
+    {// Skip Guide
+        Android.Touch ID (com.hp.print.emailplus:id/buttonClose)
+        //Sleep (10)
+        Android.Wait For Object Gone (com.hp.print.emailplus:id/buttonClose,5)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         HandleSaveCredentials
+// Description:     handle the save credentials screen
+//
+// Arguments:       ${SaveYN} - Y to save the credentials
+//
+// Pre-requisites:
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+HandleSaveCredentials(${SaveYN})
+{
+    If: Mail_Library.CheckForServerLoss
+    {
+        // check for the save credentials popup
+        If: Android.Wait For Object (com.hp.print.emailplus:id/ll_dialog_main,5)
+        {
+            If: Android.Check Screen Contains Partial Text (Do you want to save your)
+            {
+                If: Equals(${SaveYN},Y)
+                {
+                    Android.Touch Text (SAVE)
+                }
+                Fail:
+                {
+                    Android.Touch Text (NO THANKS)
+                }
+                If: Android.Wait For Object (com.hp.print.emailplus:id/snackbar_action,2)
+                {
+                    Android.Touch ID (com.hp.print.emailplus:id/snackbar_action)
+                }
+                Sleep (5)
+            }
+        }
+    }
+    Fail:
+    {
+        Fail (Fail handling the app opening!)
+    }
+    Error:
+    {
+        Error (Error while handling the app opening!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         HandleAppOpening
+// Description:     handle the app opening
+//
+// Arguments:       ${UserID} - UserID/Username
+//                  ${UserPW} - Password
+//
+// Pre-requisites:
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+HandleAppOpening(${UserID},${UserPW})
+{
+    Sleep (10)
+    
+    If: Mail_Library.CheckForServerLoss
+    {
+    }
+    Fail:
+    {
+        Fail (Fail handling the app opening!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error while handling the app opening!)
+        Stop Test Case
+    }
+    Sleep (0)
+    
+    // check for EULA screen
+    If: Android.Wait For Text (I have read and agree to the above documents.,0)
+    {
+        If: Mail_Library.HandleAppEula
+        {
+        }
+        Fail:
+        {
+            Fail (Fail handling the EULA screen!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error while handling the EULA screen!)
+            Stop Test Case
+        }
+    }
+    Sleep (0)
+    
+    // check for popup indicating need to sign in
+    If:Android.Wait For Text (DONE,10)
+    {
+        If: Mail_Library.AppLogin(${UserID},${UserPW})
+        {// login complete, wait for the app main page to display
+            If: Android.Wait For Object (com.hp.print.emailplus:id/tvTitle,15)
+            {// at main screen, done
+            }
+            Fail:
+            {
+                If: Android.Wait For Object (com.hp.print.emailplus:id/ll_dialog_main,5)
+                {// dialog displayed, done
+                }
+                Fail:
+                {
+                    Fail (Fail accessing the app main screen!)
+                }
+            }
+        }
+        Fail:
+        {
+            Fail (Fail while signin in to the Mail app!)
+        }
+        Error:
+        {
+            Error (Error while signin in to the Mail app!)
+        }
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         AppSignout
+// Description:     sign out of the app
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+AppSignout
+{
+    If: Mail_Library.CheckForServerLoss
+    {
+    }
+    Fail:
+    {
+        Fail (Fail handling the app opening!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error while handling the app opening!)
+        Stop Test Case
+    }
+    Sleep (0)
+    
+
+    Mail_Library.CheckAndClearSaveDraftMessage
+    
+    If: Android.Wait For Object (com.hp.print.emailplus:id/ivLogout,10)
+    {
+        Android.Touch ID(com.hp.print.emailplus:id/ivLogout)
+        Android.Wait For Text (Leaving the App,10)
+        Android.Touch Text (YES)
+        Sleep (5)
+    }
+    Fail:
+    {
+        Fail (Fail while signing out of Mail app!)
+    }
+    Error:
+    {
+        Error (Error while signing out of Mail app!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         AppBackout
+// Description:     back out of the ap
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+AppBackout
+{
+    If: Mail_Library.CheckForServerLoss
+    {
+    }
+    Fail:
+    {
+        Fail (Fail handling the app opening!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error while handling the app opening!)
+        Stop Test Case
+    }
+    Sleep (0)
+    
+
+    Mail_Library.CheckAndClearSaveDraftMessage
+    
+    If: Android.Wait For Object (com.hp.print.emailplus:id/ivLogout,10)
+    {
+        Android.Press Back Key
+        Android.Wait For Text (Leaving the App,10)
+        Android.Touch Text (YES)
+        Sleep (3)
+    }
+    Fail:
+    {
+        Fail (Fail while backing out of Mail app!)
+    }
+    Error:
+    {
+        Error (Error while backing out of Mail app!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         InitiateEmail
+// Description:     initiate an email
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+InitiateEmail
+{
+    If: Mail_Library.CheckForServerLoss
+    {
+        Sleep (1)
+        // press the New button
+        If: Android.Touch ID (com.hp.print.emailplus:id/tvNewEmail)
+        {
+            // wait for the to address text box
+            If: Android.Wait For Object (com.hp.print.emailplus:id/atvToAddresses,15)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail while initiating an email!)
+            }
+            Error:
+            {
+                Error (Error while initiating an email!)
+            }
+        }
+        Fail:
+        {
+            Fail (Fail while initiating an email!)
+        }
+        Error:
+        {
+            Error (Error while initiating an email!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail - Server access lost while initiating an email!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         InitiateReply
+// Description:     initiate an eamil reply
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+InitiateReply
+{
+    If: Mail_Library.CheckForServerLoss
+    {
+        Sleep (1)
+        // press the Attach and Replay button
+        If: Android.Touch ID (com.hp.print.emailplus:id/tvReply)
+        {
+            // wait for the to address text box
+            If: Android.Wait For Object (com.hp.print.emailplus:id/atvToAddresses,15)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail while initiating a reply!)
+            }
+            Error:
+            {
+                Error (Error while initiating a reply!)
+            }
+        }
+        Fail:
+        {
+            Fail (Fail while initiating a reply!)
+        }
+        Error:
+        {
+            Error (Error while initiating a reply!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail - Server access lost while initiating a reply!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         EnterEmailInfo
+// Description:     enter the necessary info for an email
+//
+// Arguments:       ${Destination} - detination address(s)
+//                  ${Subject} - subject text
+//                  ${Body} - body text
+//
+// Pre-requisites:
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+EnterEmailInfo(${Destination},${Subject},${Body})
+{
+    // enter the To if specified
+    If: Equals (${Destination},)
+    {// no destination specified, leave as-is
+    }
+    Fail:
+    {// enter the Destination
+        Android.Touch ID (com.hp.print.emailplus:id/atvToAddresses)
+        Android.Input Text (com.hp.print.emailplus:id/atvToAddresses,${Destination})
+        // click off to close the keyboard
+        Android.Touch ID (com.hp.print.emailplus:id/appbar)
+    }
+    
+    // Subject if specified
+    If: Equals (${Subject},)
+    {// no subject specified, leave as-is
+    }
+    Fail:
+    {// enter the Subject
+        Android.Touch ID (com.hp.print.emailplus:id/atvSubject)
+        Android.Input Text (com.hp.print.emailplus:id/atvSubject,${Subject})
+        // click off to close the keyboard
+        Android.Touch ID (com.hp.print.emailplus:id/appbar)
+    }
+    // Message Body if specified
+    If: Equals (${Body},)
+    {// no subject specified, leave as-is
+    }
+    Fail:
+    {// enter the Message Body
+        Android.Touch ID (editor)
+        If: Android.Get Text (editor,${PevBodyText})
+        {
+            Android.Input Text (editor,${Body}${PevBodyText})
+        }
+        Fail:
+        {
+            Android.Input Text (editor,${Body})
+        }
+        // click off to close the keyboard
+        Android.Touch ID (com.hp.print.emailplus:id/appbar)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         AddScanToEmail
+// Description:     add scan to the email
+//
+// Arguments:       ${ScanFilename} - name for file or scans
+//                  ${NumPages} - number of pages to scan
+//
+// Pre-requisites:
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+AddScanToEmail(${ScanFilename},${NumPages})
+{
+    // wait for the to filename text box
+    If: Android.Wait For Object (com.hp.print.emailplus:id/atvEditFileName,10)
+    {
+        // set the file name
+        Get Time Stamp (${Time})
+        Android.Input Text (com.hp.print.emailplus:id/atvEditFileName,${ScanFilename}_${Time})
+        
+        // click off to close the keyboard
+        Android.Touch ID (com.hp.print.emailplus:id/appbar)
+        
+        // initiate the scan
+        Android.Wait For Object (com.hp.print.emailplus:id/tvScanTab,5)
+        Android.Touch ID (com.hp.print.emailplus:id/tvScanTab)
+        Sleep (2)
+        
+        // wait for the image preview screen
+        If: JediOmni.Wait For Text (Scanning...,20)
+        {
+            JediOmni.Wait For Text Gone (Scanning...,60)
+            Sleep (10)
+        }
+        If: Equals (${NumPages},1)
+        {// 1 page, no action
+        }
+        Fail:
+        {// multiple pages
+            Repeat:${NumPages}
+            {
+                If: Equals (${NumPages},${R})
+                {// last scan already done, no action
+                }
+                Fail:
+                {// add a page
+                    JediOmni.Wait For Object (hpid-preview-button-add-pages,20)
+                    JediOmni.Touch ID (hpid-preview-button-add-pages)
+                    Sleep (5)
+                    JediOmni.Wait For Object (hpid-button-scan,20)
+                    JediOmni.Touch ID (hpid-button-scan)
+                    Sleep (10)
+                }
+            }
+        }
+        // all pages added, finish the scan
+        JediOmni.Touch ID (hpid-button-start)
+        While:!Android.Wait For Object (com.hp.print.emailplus:id/tvCreateFile,10):${NumPages}
+        {
+            Sleep(10)
+        }
+        Android.Touch ID (com.hp.print.emailplus:id/tvCreateFile)
+        Android.Wait For Object (com.hp.print.emailplus:id/tvSendEmail,10)
+    }
+    Fail:
+    {
+        Fail (Fail while sending email!)
+    }
+    Error:
+    {
+        Error (Error while sending email!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SendEmail
+// Description:     send the currently initiated email, or reply
+//
+// Arguments:       ${NumPages} - number of pages in scan 
+//                          (used to estimate processing time)
+//
+// Pre-requisites:
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SendEmail(${NumPages})
+{
+    // wait for the to address text box
+    If: Android.Wait For Object (com.hp.print.emailplus:id/tvSendEmail,10)
+    {
+        // send the email
+        Android.Touch ID (com.hp.print.emailplus:id/tvSendEmail)
+        
+        // wait for the confirm dialog
+        If: Android.Wait For Text (Confirm Sending,5)
+        {
+            Android.Touch Text (Yes)
+        }
+        Sleep (5)
+        
+        // wait for the email to finish sending
+        While:!Android.Wait For Object (com.hp.print.emailplus:id/tvNewEmail,10): ${NumPages}
+        {
+            Sleep(10)
+        }
+        If: Android.Wait For Object (com.hp.print.emailplus:id/tvNewEmail,10)
+        {// finished, no action
+        }
+        Fail:
+        {
+            Fail (Fail while sending email!)
+        }
+        Error:
+        {
+            Error (Error while sending email!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail while sending email!)
+    }
+    Error:
+    {
+        Error (Error while sending email!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         Refresh
+// Description:     refresh the current file/folder list
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+Refresh
+{
+  Android.Wait For Object (com.hp.print.emailplus:id/menu_more_ac,60)
+  Android.Touch ID (com.hp.print.emailplus:id/menu_refresh_ac)
+
+  Android.Wait For Object (com.hp.print.emailplus:id/tv_file_name,30)
+}
+
+/////////////////////////////////////////////////
+// Routine:         SearchForEmail
+// Description:     Search for email and and click on it
+//
+// Arguments:       ${SearchText} - test to search
+//
+// Pre-requisites:
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SearchForEmail(${SearchText})
+{
+    If: Android.Touch ID (com.hp.print.emailplus:id/atvSearch)
+    {
+        Sleep (2)
+
+        Android.Input Text (com.hp.print.emailplus:id/atvSearch,${SearchText})
+
+        Sleep (2)
+        
+        Android.Wait For Object (com.hp.print.emailplus:id/tvSearchResults,10)
+        
+        If: Android.Touch ID With Index (com.hp.print.emailplus:id/clMailItemLayout,1)
+        {
+            Sleep (2)
+            If: Android.Wait For Object (com.hp.print.emailplus:id/tvReply,10)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail selecting email for ${SearchText}!)
+            }
+            Error:
+            {
+                Error (Error while selecting email for ${SearchText}!)
+            }
+        }
+        Fail:
+        {
+            Fail (Fail searching for ${SearchText}!)
+        }
+        Error:
+        {
+            Error (Error while searching for ${SearchText}!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail selecting the Search box searching for ${SearchText}!)
+    }
+    Error:
+    {
+        Error (Error while selecting the Search box searching for ${SearchText}!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         OpenScanOptions
+// Description:     open the scan options screen
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+OpenScanOptions
+{
+    If: Android.Wait For Object (com.hp.print.emailplus:id/ivScanSetting,2)
+    {
+        Android.Touch ID (com.hp.print.emailplus:id/ivScanSetting)
+        If: Android.Wait For Text (Scan Options,10)
+        {// success
+        }
+        Fail:
+        {
+            Fail (Fail while opening scan options!)
+        }
+        Error:
+        {
+            Error (Error while opening scan options!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail while opening scan options!)
+    }
+    Error:
+    {
+        Error (Error while opening scan options!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         CloseScanOptions
+// Description:     close the scan options screen
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+CloseScanOptions
+{
+    If: Android.Touch ID (com.hp.print.emailplus:id/ivBack)
+    {
+        Sleep (2)
+    }
+    Fail:
+    {
+        Fail (Fail while closing scan options!)
+    }
+    Error:
+    {
+        Error (Error while closing scan options!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SelectScanOption
+// Description:     select the specified option from 
+//                      the scan options screen
+//
+// Arguments:       ${OptionText} - text of option
+//
+// Pre-requisites:
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SelectScanOption (${OptionText})
+{
+    If: Android.Wait For Object (com.hp.print.emailplus:id/lv_option_list,2)
+    {
+        // if the option is not displayed, then scroll down upto 2 pages
+        While: Android.Check Screen Not Contains Full Text (${OptionText}): 2
+        {
+            Android.Swipe (com.hp.print.emailplus:id/lv_option_list,v)
+        }
+        // if still not displayed then scroll up upto 4 pages
+        While: Android.Check Screen Not Contains Full Text (${OptionText}): 4
+        {
+            Android.Swipe (com.hp.print.emailplus:id/lv_option_list,^)
+        }
+        If: Android.Check Screen Contains Full Text (${OptionText})
+        {
+            Android.Touch Text (${OptionText})
+        }
+        Fail:
+        {
+            Fail (Fail while selecting ${OptionText} scan option!)
+        }
+        Error:
+        {
+            Error (Error while selecting ${OptionText} scan option!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail while selecting ${OptionText} scan option!)
+    }
+    Error:
+    {
+        Error (Error while selecting ${OptionText} scan option!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SetScanOption_FileType
+// Description:     set the File Type
+//
+// Arguments:       ${FileType} - type text
+//
+// Pre-requisites:
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SetScanOption_FileType (${FileType})
+{
+    If: Mail_Library.SelectScanOption (File Type and Resolution)
+    {
+        // check for type already selected
+        Android.Get Text (com.hp.print.emailplus:id/btn_file_type,${CurrentFileType})
+        If: Equals (${CurrentFileType},${FileType})
+        {// type already selected
+            Android.Touch ID (com.hp.print.emailplus:id/iv_more_image)
+            Sleep (1)
+        }
+        Fail:
+        {// type not already selected
+            Android.Touch ID (com.hp.print.emailplus:id/btn_file_type)
+            Sleep (2)
+            
+            // find the type in the list
+            If: Android.Check Screen Not Contains Full Text (${FileType})
+            {// type not shown, swipe up then down
+                Android.Swipe (com.hp.print.emailplus:id/rp_container,v)
+                Android.Swipe (com.hp.print.emailplus:id/rp_container,v)
+                Sleep (1)
+                If: Android.Check Screen Not Contains Full Text (${FileType})
+                {// type still not shown, swipe down
+                    Android.Swipe (com.hp.print.emailplus:id/rp_container,^)
+                    Android.Swipe (com.hp.print.emailplus:id/rp_container,^)
+                    Sleep (1)
+                }
+            }
+            
+            // click on the type
+            If: Android.Touch Text (${FileType})
+            {
+                Sleep (1)
+                Android.Touch ID (com.hp.print.emailplus:id/bt_done)
+                Sleep (3)
+            }
+            Fail:
+            {
+                Fail (Fail while selecting File Type scan option!)
+            }
+            Error:
+            {
+                Error (Error while selecting File Type scan option!)
+            }
+        }
+    }
+    Fail:
+    {
+        Fail (Fail while selecting File Type scan option!)
+    }
+    Error:
+    {
+        Error (Error while selecting File Type scan option!)
+    }
+}
+
+
+// the following are routines directly from HPPK that we do not use
+// and have not been modified
+
+//SelectScanOption_FileResolution(${Resolution})
+//{
+//  //Select Option value from FileResolution item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //    
+//  //2. scenario
+//  //    2.1. On the Scan options screen, Select the FileResolution item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//  //Select FileResolution item of scan option
+//  Android.Wait For Text (File Type and Resolution,30)
+//  Android.Touch Text (File Type and Resolution)
+//  Android.Get Text (com.hp.print.emailplus:id/btn_resolution,${CurrentResolution})
+//  If: Equals (${CurrentResolution},${Resolution})
+//  {
+//      Android.Touch ID (com.hp.print.emailplus:id/iv_more_image)
+//  }
+//  Fail:
+//  {
+//      Android.Touch ID (com.hp.print.emailplus:id/btn_resolution)
+//      Android.Wait For Text (${Resolution},2)
+//      Android.Touch Text (${Resolution})
+//      Sleep (2)
+//      Android.Touch Text (Done)
+//  }
+//  
+//}
+//
+//
+//
+//SelectScanOption_OriginalSides(${OriginalSides})
+//{
+//  //Select Option value from OriginalSides item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //    
+//  //2. scenario
+//  //    2.1. On the Scan options screen, Select the OriginalSides item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//  //Select OriginalSides item of scan option
+//  Android.Wait For Text (Original Sides,10)
+//  If: Android.Check Screen Contains Full Text (${OriginalSides})
+//  {
+//      Sleep (2)
+//  }
+//  Fail:
+//  {
+//      Android.Touch Text (Original Sides)
+//      Sleep (5)
+//      If: Android.Wait For Text (${OriginalSides},10)
+//      {
+//          Android.Touch Text (${OriginalSides})
+//      
+//          If: Android.Wait For Object (com.hp.print.emailplus:id/bt_done,10)
+//          {
+//              Android.Touch ID (com.hp.print.emailplus:id/bt_done)
+//          }
+//      }
+//  }
+//    
+//}
+//
+//
+//SelectScanOption_ColorBlack(${ColorBlack})
+//{
+//  //Select Option value from ColorBlack item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //   
+//  //2. scenario
+//  //    2.1. On the Scan options screen, Select the OriginalSides item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it. 
+//  
+//  //Select ColorBlack item of scan option
+//  Android.Wait For Text (Color/Black,10)
+//  If: Android.Check Screen Contains Full Text (${ColorBlack})
+//  {
+//      Sleep (2)
+//  }
+//  Fail:
+//  {
+//      Android.Touch Text (Color/Black)
+//      Sleep (5)
+//      If: Android.Wait For Text (${ColorBlack},2)
+//      {
+//          Android.Touch Text (${ColorBlack})
+//
+//      }
+//  }
+//    
+//}
+//
+//
+//
+//SelectScanOption_OriginalSize(${OriginalSize})
+//{
+//  //Select Option value from OriginalSize item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //    
+//  //2. scenario
+//  //    2.1. On the D Scan options screen, Select the OriginalSize item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//  //Select OriginalSize item of scan option
+//  Android.Wait For Text (Options,2)
+//  Android.Wait For Text (Original Size,2) 
+//  If: Android.Check Screen Contains Full Text (${OriginalSize})
+//  {
+//      Sleep (2)
+//  }
+//  Fail:
+//  {
+//      Android.Touch Text (Original Size)
+//      If: Android.Wait For Text (${OriginalSize},20)
+//      {
+//          Android.Touch Text(${OriginalSize})
+//      }
+//      Fail:
+//      {
+//          Android.Swipe Text with Index (Oficio\(8.5x13\),1,^)
+//          Android.Touch Text(${OriginalSize})
+//      }
+//  }
+//  
+//  If: Android.Wait For Text (${OriginalSize},20)
+//  {
+//      Android.Touch Text(${OriginalSize})
+//  }
+//
+//    Sleep (5)
+//  
+//}
+//
+//
+//
+//
+//SelectScanOption_ContentOrientation(${ContentOrientation})
+//{
+//  //Select Option value from ContentOrientation item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //    
+//  //2. scenario
+//  //    2.1. On the Default Scan options screen, Select the ContentOrientation item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//  //Select ContentOrientation item of scan option
+//  Android.Wait For Text (Options,2)
+//  Android.Wait For Text (Content Orientation,2) 
+//  Android.Touch Text (Content Orientation) 
+//  If: Android.Wait For Text (${ContentOrientation},2)
+//  {
+//      Android.Touch Text (${ContentOrientation})
+//  }
+// 
+//  Sleep (2)
+//    
+//}
+//
+//
+//
+//SelectScanOption_ImageAdjustment(${Sharpness},${Darkness},${Contrast},${BackgroundCleanup})
+//{
+//  //Select Option value from ImageAdjustment item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //    
+//  //2. scenario
+//  //    2.1. On the Scan options screen, Select the ImageAdjustment item.
+//  //    2.2. Select the value of the input variables.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  //    4.2. The variables value should be low, mid, high only. 
+//  //    4.3. Low =  Select leftmost end, mid =  Select the far right end, Mid = Select center
+//  
+//         //Select ImageAdjustment item of scan option
+//         Android.Wait For Text (Options,2)       
+//         While:Android.Check Screen Not Contains Full Text (Image Adjustment):1 
+//     {
+//        Android.Swipe (com.hp.print.emailplus:id/lv_Option_list,^)
+//     }
+//         Android.Wait For Text (Image Adjustment,2)
+//         Android.Touch Text (Image Adjustment)
+//         
+//         //Adjust Sharpness
+//         Android.Wait For Object (com.hp.print.emailplus:id/seek_sharpness,2)
+//         If: Equals (${Sharpness},Low)
+//          { 
+//             Android.Touch Position (59,33)
+//             Sleep (2)
+//          }
+//         If: Equals (${Sharpness},Mid)
+//          { 
+//              Android.Touch Position (78,33)
+//             Sleep (2)
+//          }
+//         If: Equals (${Sharpness},High)
+//          { 
+//              Android.Touch Position (93,33)
+//             Sleep (2)
+//          }
+//        
+//         //Adjust Darkness
+//         Android.Wait For Object (com.hp.print.emailplus:id/seek_darkness,2)
+//         If: Equals (${Darkness},Low)
+//          { 
+//              Android.Touch Position (59,48)
+//             Sleep (2)
+//          }
+//         If: Equals (${Darkness},Mid)
+//          { 
+//              Android.Touch Position (78,48)
+//             Sleep (2)
+//          }
+//         If: Equals (${Darkness},High)
+//          { 
+//              Android.Touch Position (93,48)
+//             Sleep (2)
+//          }
+//         
+//         //Adjust Contrast
+//         Android.Wait For Object (com.hp.print.emailplus:id/seek_contrast,2)
+//         If: Equals (${Contrast},Low)
+//          { 
+//              Android.Touch Position (59,63)
+//             Sleep (2)
+//          }
+//         If: Equals (${Contrast},Mid)
+//          { 
+//              Android.Touch Position (78,63)
+//             Sleep (2)
+//          }
+//         If: Equals (${Contrast},High)
+//          { 
+//              Android.Touch Position (93,63)
+//             Sleep (2)
+//          }
+//         
+//         //Adjust Background Cleanup
+//         Android.Swipe (com.hp.print.emailplus:id/ll_contrast_layout,^)
+//         Android.Wait For Object (com.hp.print.emailplus:id/seek_background_cleanup,2)
+//         If: Equals (${BackgroundCleanup},Low)
+//          { 
+//              Android.Touch Position (59,79)
+//             Sleep (2)
+//          }
+//         If: Equals (${BackgroundCleanup},Mid)
+//          { 
+//              Android.Touch Position (78,79)
+//             Sleep (2)
+//          }
+//         If: Equals (${BackgroundCleanup},High)
+//          { 
+//              Android.Touch Position (93,79)
+//             Sleep (2)
+//         }
+//         
+//         Android.Touch ID(com.hp.print.emailplus:id/bt_done)
+//         Sleep (2)
+//  
+//}
+//
+//     
+//
+//SelectScanOption_OptimizeTextPicture(${OptimizeText_Pricture})
+//{
+//  //Select Option value from OptimizeTextPicture item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //   
+//  //2. scenario
+//  //    2.1. On the Scan options screen, Select the OptimizeTextPicture item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//  //Select OptimizeTextPicture item of scan option
+//   While:Android.Check Screen Not Contains Full Text (Optimize Text/Picture):1 
+//     {
+//        Android.Swipe (com.hp.print.emailplus:id/lv_Option_list,^)
+//     }
+//    Android.Wait For Text (Optimize Text/Picture,2) 
+//    Android.Touch Text (Optimize Text/Picture) 
+//    If: Android.Wait For Text (${OptimizeText_Pricture},2)
+//     {
+//         Android.Touch Text (${OptimizeText_Pricture})
+//     }
+//    
+//    Sleep (2)
+//  
+//}
+//
+//
+//
+//SelectScanOption_CroppingOptions(${CroppingOptions})
+//{
+//  //Select Option value from CroppingOptions item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //    
+//  //2. scenario
+//  //    2.1. On the Default Scan options screen, Select the CroppingOptions item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//  //Select CroppingOptions item of scan option
+//  While:Android.Check Screen Not Contains Full Text (Optimize Text/Picture):1 
+//     {
+//        Android.Swipe (com.hp.print.emailplus:id/lv_Option_list,^)
+//     }
+//  
+//   Android.Wait For Text (Cropping Options,2)
+//   Android.Touch Text (Cropping Options)
+//   If: Android.Wait For Text (${CroppingOptions},2)
+//      {
+//         Android.Touch Text (${CroppingOptions})
+//         Sleep (1)
+//         }
+//   Android.Touch ID (com.hp.print.emailplus:id/bt_done)
+//   Sleep (2)
+//    
+//}
+//
+//
+//
+//SelectScanOption_BlankpageSuppression(${BlankPageSuppression})
+//{
+//    
+//  //Select Option value from BlankpageSuppression item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //   
+//  //2. scenario
+//  //    2.1. On the Scan options screen, Select the BlankpageSuppression item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//   While:Android.Check Screen Not Contains Full Text (Blank Page Suppression):1 
+//      {
+//        
+//         Android.Swipe (com.hp.print.emailplus:id/lv_Option_list,^)
+//      }
+//  
+//    Android.Wait For Text (Blank Page Suppression,2)
+//    Android.Touch Text (Blank Page Suppression)
+//    If: Android.Wait For Text (${BlankPageSuppression},2)
+//      {
+//         Android.Touch Text (${BlankPageSuppression})
+//         Sleep (1)
+//         }
+//   
+//    Sleep (2)
+//    
+//}
+//
+//
+//
+//SelectScanOption_MutifeedDetection(${MutifeedDetection})
+//{
+//  //Select Option value from MutIfeedDetection item of scan option
+//  //1. Precondition: 
+//  //    1.1. Start location:Scan screen> Tap option button > Scan options screen.
+//  //2. scenario
+//  //    2.1. On theScan options screen, Select the MutIfeedDetection item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+// 
+//    //Select MutIfeedDetection item of scan option
+//    
+//}
+//
+//
+//Select_Print_Option_NumberOfCopies(${value})
+//{
+//  //Select Option value from NumberofCopies item of Print option
+//  //1. Precondition: 
+//  //    1.1. Start location:Print sceen
+//  //    
+//  //2. scenario
+//  //    2.1. On the Print screen, Select the Copies item.
+//  //    2.2. Select the value of the input variable.
+//  //   
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //   4.1. If there is no related value in option item, skip it.
+//}
+//
+//Select_Print_Option_OutputSides(${OutputSides})
+//{
+//    //Select Option value from NumberofCopies item of Print option
+//  //1. Precondition: 
+//  //    1.1. Start location:Print sceen
+//  //    
+//  //2. scenario
+//  //    2.1. On the Print screen, Select the Copies item.
+//  //    2.2. Select the value of the input variable.
+//  //   
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //   4.1. If there is no related value in option item, skip it.
+//  Android.Wait For Object (com.hp.print.emailplus:id/lp_container,60)
+//      If: Android.Wait For Text (Output Sides,2)
+//         {
+//             Android.Touch Text (Output Sides)
+//             If: Android.Wait For Text (${OutputSides},2)
+//             {
+//                 Android.Touch Text (${OutputSides})
+//              }
+//             If: Android.Wait For Object (com.hp.print.emailplus:id/bt_done,10)
+//             {
+//                 Android.Touch ID (com.hp.print.emailplus:id/bt_done)
+//             }
+//             
+//             Sleep (2)
+//         }
+//
+//
+//}
+//
+//Select_Print_Option_ColorBlack(${ColorBlack})
+//{
+//  //Select Option value from ColorBlack item of Print option
+//  //1. Precondition: 
+//  //    1.1. Start location:Print sceen > Tap option button> Print options screen.
+//  //    
+//  //2. scenario
+//  //    2.1. On the Print options screen, Select the ColorBlack item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//      
+// }
+//
+// Select_Print_Option_PaperSelection_PaperSize(${PaperSize})
+//{
+//  //Select Option value from PaperSelection item of Print option
+//  //1. Precondition: 
+//  //    1.1. Start document and tap print
+//  //   
+//  //2. scenario
+//  //    2.1. On the Default Print options screen, Select the PaperSelection item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//  //Select PaperSelection item of Print option
+//  Android.Wait For Object (com.hp.print.emailplus:id/lp_container,20)
+//  Android.Wait For Text (Paper Selection,5)
+//
+//  If: Android.Check Screen Not Contains Partial Text (${PaperSize}) 
+//  {
+//      Android.Touch Text (Paper Selection)
+//      Android.Wait For Text (Paper Size,5)
+//      Android.Touch Text (Paper Size)
+//      If: Android.Check Screen Not Contains Full Text (${PaperSize})
+//      {
+//          Android.Swipe (^)
+//          Sleep (2) 
+//          If: Android.Wait For Text (${PaperSize},5)
+//          {
+//              Android.Touch Text (${PaperSize})
+//              Android.Touch ID (com.hp.print.emailplus:id/iv_more_image) 
+//              Sleep (5)
+//          }
+//          Fail:
+//          {
+//              Android.Swipe (v)
+//              Android.Wait For Text (${PaperSize},5)
+//              Android.Touch Text (${PaperSize})
+//              Android.Touch ID (com.hp.print.emailplus:id/iv_more_image) 
+//              Sleep (5)
+//          }
+//      }
+//      Fail:
+//      {
+//          Android.Wait For Text (${PaperSize},5)
+//          Android.Touch Text (${Paper Size})
+//          Android.Touch ID (com.hp.print.emailplus:id/iv_more_image) 
+//      }
+//      
+//   }
+//         Sleep (2)
+//    
+//}
+//
+//Select_Print_Option_PaperSelection_PaperType(${PaperType})
+//{
+//  //Select Option value from PaperSelection item of Print option
+//  //1. Precondition: 
+//  //    1.1. Start document and tap print
+//  //   
+//  //2. scenario
+//  //    2.1. On the Default Print options screen, Select the PaperSelection item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//         //Select PaperSelection item of Print option
+//         Android.Wait For Object (com.hp.print.emailplus:id/lp_container,20)
+//         Android.Wait For Text (Paper Selection,5)
+//         Android.Touch Text (Paper Selection)
+//         Android.Wait For Text (Paper Type,5)
+//         Android.Touch Text (Paper Type)
+//         While: Android.Check Screen Not Contains Full Text (${PaperType}):2
+//         {
+//             Android.Swipe (^)
+//             Sleep (2)  
+//         }  
+//         While: Android.Check Screen Not Contains Full Text (${PaperType}):2
+//         {
+//             Android.Swipe (v)
+//             Sleep (2)  
+//         }   
+//         If: Android.Wait For Text (${PaperType},5)
+//           {
+//             Android.Touch Text (${PaperType})
+//             Sleep (5)
+//            }
+//         Android.Touch ID (com.hp.print.emailplus:id/iv_more_image)
+//         Sleep (2)
+//        
+//    
+//}
+//  
+//Select_Print_Option_PaperSelection_PaperTray(${PaperTray})
+//{
+//  //Select Option value from PaperSelection item of Print option
+//  //1. Precondition: 
+//  //    1.1. Start document and tap print
+//  //   
+//  //2. scenario
+//  //    2.1. On the Default Print options screen, Select the PaperSelection item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//         //Select PaperSelection item of Print option
+//         Android.Wait For Object (com.hp.print.emailplus:id/lp_container,20)
+//         Android.Wait For Text (Paper Selection,5)
+//         Android.Touch Text (Paper Selection)
+//         Android.Wait For Text (Paper Tray,20)
+//         Android.Touch Text (Paper Tray)
+//         If: Android.Wait For Text (${PaperTray},5)
+//           {
+//             Android.Touch Text (${PaperTray})
+//             Sleep (5)
+//            }
+//         Android.Touch ID (com.hp.print.emailplus:id/iv_more_image)
+//         Sleep (2)
+//        
+//    
+//}
+//
+//Select_Print_Option_Collate(${Collate})
+//{
+//   //Select Option value from Collate item of Print option
+//  //1. Precondition: 
+//  //    1.1. Start location:Setting > Default Print options screen.
+//  //2. scenario
+//  //    2.1. On the Print options screen, Select the Collate item.
+//  //    2.2. Select the value of the input variable.
+//  //    2.3. Save the inputted value.
+//  //3. When completed:
+//  //    3.1. When option values are stored
+//  //4. Exception handling
+//  //    4.1. If there is no related value in option item, skip it.
+//  
+//    //Select Collate item of Print option  
+//    Android.Wait For Object (com.hp.print.emailplus:id/lp_container,20)
+//    Android.Wait For Text (Collate,2)
+//    Android.Touch Text (Collate)
+//    If: Android.Wait For Text (${Collate},2)
+//          {
+//          Android.Touch Text (${Collate})
+//             Sleep (1)
+//          }
+//     
+//}
+//

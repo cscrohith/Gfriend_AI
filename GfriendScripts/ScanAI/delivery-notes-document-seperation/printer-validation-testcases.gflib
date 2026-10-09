@@ -1,0 +1,215 @@
+﻿using Android
+using JediOmni
+using identifier-variables.gfvar
+
+Teardown
+{
+    JediOmni.Press Home Key
+}
+
+Setup
+{
+    JediOmni.Reset
+    JediOmni.Wait For Text Gone (${ClearingSettingsMsg},5)
+}
+
+Open_HPScanAIEnhanced
+{
+    If: JediOmni.Check Screen Contains Full Text (${HPScanAIEnhanced})
+    {
+        JediOmni.Touch ID (${ScanAIApplicationIcon})
+    }
+    Fail:
+    {
+        Return With Fail (App couldn't be found on the printer)
+    }
+}
+
+Select_WorkflowDProject
+{
+    While:Android.Check Screen Not Contains Partial Text (${DemoProjectUnderTest}):20 
+    {
+        JediOmni.Press Down Key
+    }
+    If: Android.Is Text Exists (${DemoProjectUnderTest})
+    {
+        Android.Touch XPath (${XPathProjectUnderTest})
+    }
+    Android.Touch XPath (${StartNewJobbutton})
+}
+
+Scan_DocMultipleTimes
+{
+    Repeat:${ScanCount}
+    {
+      JediOmni.Wait For Object (${ScanButton},10)
+      JediOmni.Touch ID (${ScanButton})
+      Android.Wait For Object Gone (${CancelScan},6)
+    }
+    JediOmni.Wait For Object (${DoneButton},10)
+    JediOmni.Touch ID (${DoneButton})
+}
+
+Wait_UploadDocumentsToAlumaPortal
+{
+   Android.Wait For XPath Gone (${CancelUpload},20) 
+}
+
+Click_NextStepButton
+{
+    Android.Wait For XPath (${NextStepButton},10)
+    Android.Touch XPath (${NextStepButton})
+}
+
+Perform_DocumentSeparation
+{
+    Android.Wait For XPath (${DocumentSeparationText},20)
+    
+    // Merge page on document-2 to page on document-1
+    Android.Touch XPath (${SourceDocument2})
+    Android.Touch XPath (${DestinationDocument1})
+    
+    // Merge page on document-4 to page on document-3
+    Android.Wait For XPath (${SourceDocument4},2)
+    Android.Touch XPath (${SourceDocument4})
+    Android.Wait For XPath (${DestinationDocment3},2)
+    Android.Touch XPath (${DestinationDocment3})
+    
+    // Merge two pages at document-3 to document-2
+    Android.Wait For XPath (${SourceDocument3},2)
+    Android.Touch XPath (${SourceDocument3})
+    Android.Wait For XPath (${DestinationDocument2},2)
+    Android.Touch XPath (${DestinationDocument2})
+    // Seperate pages that are already merged.
+    Android.Wait For XPath (${NewDocumentDestination},2)
+    Android.Touch XPath (${SeparationSourceDocument2})
+    Android.Wait For XPath (${NewDocumentDestination},2)
+    Android.Touch XPath (${NewDocumentDestination})
+    
+    // Click 'Save And Start Validation'
+    Android.Wait For XPath (${SaveAndStartValidtationButton},2)
+    Android.Touch XPath (${SaveAndStartValidtationButton})
+}
+
+Perform_ValidationOfScannedDocuments
+{ 
+    //ScanAI_Android_Library.ScanAI_Document_Validations
+    Repeat:${TotalValidationDocCount}
+    {
+        
+        Android.Wait For XPath (//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[${R}]/node[1] ,2)
+        Android.Touch XPath (//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/rvDocuments']/node[${R}]/node[1])
+     
+        // Click on Preview Document button
+        Android.Wait For XPath (${PreviewDocument1},2)
+        Android.Touch XPath (${PreviewDocument1})
+        Sleep (1)
+        
+        //Document Type
+        If: Android.Wait For XPath (${DocumentTypeFeild},15)
+        {
+            Android.Touch XPath (${DocumentTypeFeild})
+            Android.Touch XPath  (${DocumentTypeValue} )
+        }
+    
+        //Numero doc
+        If: Android.Wait For XPath (//node[@text='Numero doc.'],15)
+        {
+            Android.Touch XPath (//node[@text='Numero doc.']) 
+            Sleep (1)
+            Android.Touch XPath (//node[@resource-id='com.hp.pegasus.alumaworkflowapp.white:id/etValue']/node[1]) 
+  
+            //NumeroDoc
+            Android.Wait For XPath (${NumeroDocFeild},2)
+            Android.Touch XPath (${NumeroDocFeild})
+            Android.Input Text (abc)
+            Android.Touch XPath (//node[@index='20']) 
+        }
+    
+        //DataDocFeild
+        If: Android.Wait For XPath (//node[@text='Data doc.'],15)
+        {
+            Android.Touch XPath (//node[@text='Data doc.'])
+            Sleep (1)
+            Android.Wait For XPath (${DataDocFeild},2)
+            Android.Touch XPath (${DataDocFeild})
+            Android.Input Text (12/01/2025)
+            Android.Touch XPath (//node[@index='13']) 
+        }
+    
+        //Fornitore
+        If: Android.Wait For XPath (//node[@text='Fornitore'],15)
+        {
+            Android.Touch XPath (//node[@text='Fornitore'])
+            Sleep (1)
+            Android.Wait For XPath (${FornitoreFeild},2)
+            Android.Touch XPath (${FornitoreFeild})
+            Android.Input Text (qwerty)
+            Android.Touch XPath (//node[@index='20']) 
+        }
+    
+        //Codice fornitore
+        If: Android.Wait For XPath (//node[@text='Codice fornitore'],15)
+        {
+            Android.Touch XPath (//node[@text='Codice fornitore'])
+            Sleep(1)
+            Android.Wait For XPath (${CodiceFornitoreFeild},2)
+            Android.Touch XPath (${CodiceFornitoreFeild})
+            Android.Input Text (qwerty)
+            Android.Touch XPath (//node[@index='20']) 
+        }
+    
+        //Partita iva
+        If: Android.Wait For XPath (//node[@text='Partita iva'],15)
+        {
+            Android.Touch XPath (//node[@text='Partita iva'])
+            Sleep (1)
+            Android.Wait For XPath (${PartitaIvaFeild},2)
+            Android.Touch XPath (${PartitaIvaFeild})
+            Android.Wait For XPath (${PartitaIvaFeildValue},2)
+            Android.Input Text (qwerty)
+            Android.Touch XPath (//node[@index='20']) 
+        }
+    
+        // Click on close preview button
+        If: Android.Wait For XPath (${ClosePreviewButton},15)
+        {
+            Android.Touch XPath (${ClosePreviewButton})
+            Sleep (1)
+        }
+    }
+}
+
+Click_Validate_Button
+{ 
+    //ScanAI_Android_Library.ScanAI_Click_Validate
+    If: Android.Wait For XPath (${ValidateButton},15)
+    {
+        Android.Touch XPath (${ValidateButton})
+    }
+    Fail:
+    {
+        Return With Fail (Failed to click Validate button) 
+    }
+    Error:
+    {
+        Return With Fail (Validate button was not found)
+    }
+}
+
+Click_FinishValidation_Button
+{ 
+    //ScanAI_Android_Library.ScanAI_Click_FinishValidation
+    If: Android.Wait For XPath (${FinishValidationButton},15)
+    {
+        Android.Touch XPath (${FinishValidationButton})
+    }
+    Fail:
+    {
+        Return With Fail (Failed to click Finish Validation) 
+    }
+    Error:
+    {
+        Return With Fail (Finish Validation button was not found)
+    }
+}

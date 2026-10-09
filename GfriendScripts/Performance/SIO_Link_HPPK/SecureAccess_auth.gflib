@@ -1,0 +1,36 @@
+﻿// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2019-11-28 Initial Version
+
+using Android
+using JediOmni
+using Info
+
+
+Login(${id},${pw})
+{
+    If:JediOmni.Wait For Text (Sign In,30) 
+    {
+        JediOmni.Touch Text (Sign In) 
+        sleep(2)
+        JediOmni.Touch ID (hpid-dropdown-agent)     
+        sleep(3)
+        If: JediOmni.Wait For Object(hpid-dropdown-agent-oxp_6fd8a1b25aca4516b6c2d81eb963a24c_v1,30)
+        {                           
+            JediOmni.Touch ID (hpid-dropdown-agent-oxp_6fd8a1b25aca4516b6c2d81eb963a24c_v1)
+            If: Android.Wait For Object(com.hp.print.authagent.secureaccess:id/btnSignInIDPW, 30)
+            {
+                Android.Touch ID(com.hp.print.authagent.secureaccess:id/btnSignInIDPW)
+                If: Android.Wait For Object(com.hp.print.authagent.secureaccess:id/edtUsername,30)
+                {
+                    Android.Input Text(com.hp.print.authagent.secureaccess:id/edtUsername,${id})
+                    Sleep (2)
+                    Android.Input Text(com.hp.print.authagent.secureaccess:id/edtPassword,${pw})
+                    If: Android.Wait For Object(com.hp.print.authagent.secureaccess:id/btnSignIn,10)
+                    {
+                        Android.Touch ID (com.hp.print.authagent.secureaccess:id/btnSignIn)
+                    }
+                }
+            }
+        }
+    }
+}

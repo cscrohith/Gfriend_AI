@@ -1,0 +1,601 @@
+﻿/// <File>RFO_SetDevAnnounce_Devices.txt</File>
+/// <Modified>2021-05-27</Modified>
+/// <Description>Configure a device</Description>
+/// <Precondition>The Master Device is to be set as teh Target Device
+///   for this script so it's IP will be used to set as the 
+///   Announcement Server IP of the secondary devices</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${DeviceAnnouncement_Enable}=Y
+${DeviceAnnouncement_EnableMaxTime}=180
+
+// master device IP address
+${MasterDevice_IP_Address}=15.86.231.33
+${Device_AdminPW}=!QAZ2wsx
+
+// secondary device list varibles
+Using HPCC_DeviceList.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_EWS_Library.gflib
+Using ..\Device\Device_EWS_Library.gflib
+
+Using Web As EWS_Web
+//Using JediOmni
+
+/// <Name>ConfigureDevice</Name>
+/// <Description>Confgure the device as specified from EWS and/or directly</Description>
+/// <Notes></Notes>
+ConfigureDeviceAnnouncement
+{
+    //  add device 1
+    // check for device IP specified
+    If: Contains (${Device_IP_1},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_1},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 1 EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_1})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 1 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 1 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 1 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 1 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 1 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 1 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+    
+    //  add device 2
+    // check for device IP specified
+    If: Contains (${Device_IP_2},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_2},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 2 EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_2})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 2 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 2 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 2 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 2 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 2 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 2 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+
+    //  add device 3
+    // check for device IP specified
+    If: Contains (${Device_IP_3},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_3},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 3 EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_3})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 3 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 3 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 3 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 3 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 3 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 3 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+
+    //  add device 4
+    // check for device IP specified
+    If: Contains (${Device_IP_4},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_4},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 4 EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_4})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 4 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 4 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 4 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 4 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 4 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 4 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+
+    //  add device 5
+    // check for device IP specified
+    If: Contains (${Device_IP_5},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_5},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 5 EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_5})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 5 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 5 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 5 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 5 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 5 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 5 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+
+    //  add device 6
+    // check for device IP specified
+    If: Contains (${Device_IP_6},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_6},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 6 EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_6})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 6 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 6 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 6 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 6 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 6 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 6 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+
+    //  add device 7
+    // check for device IP specified
+    If: Contains (${Device_IP_7},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_7},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 7 EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_7})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 7 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 7 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 7 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 7 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 7 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 7 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+
+    //  add device 8
+    // check for device IP specified
+    If: Contains (${Device_IP_8},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_8},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 8EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_8})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 8 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 8 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 8 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 8 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 8 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 8 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+
+    //  add device 9
+    // check for device IP specified
+    If: Contains (${Device_IP_9},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_9},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 9 EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_9})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 9 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 9 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 9 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 9 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 9 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 9 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+
+    //  add device 10
+    // check for device IP specified
+    If: Contains (${Device_IP_10},${)
+    {
+        // device IP not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_IP_10},)
+        {
+            // device IP not specified, no action
+        }
+        Fail:
+        {
+            // oepn the device 10 EWS
+            If: Device_EWS_Library.OpenEWS (${Device_IP_10})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail accessing device 10 EWS!)
+            }
+            Error:
+            {
+                Error (Error accessing device 10 EWS!)
+            }
+            
+            // check admin password set, set if not set
+            If: Device_EWS_Library.SignInWithAdmin (${Device_AdminPW}, Y, Y)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 10 admin password!)
+            }
+            Error:
+            {
+                Error (Error setting device 10 admin password!)
+            }
+            
+            // configure device announcement agent
+            If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${MasterDevice_IP_Address},${DeviceAnnouncement_EnableMaxTime})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail setting device 10 announcement configuration!)
+            }
+            Error:
+            {
+                Error (Error setting device 10 announcement configuration!)
+            }
+            
+            Device_EWS_Library.CloseEWS
+        }
+    }
+}

@@ -1,0 +1,14 @@
+﻿// App variables
+${ButtonText} = HP for OneDrive \(Special Edition\)
+${ButtonID} = hpid-3ddad548-de39-4b7e-9cb9-ccbeee6c9f15-homescreen-button
+
+// App user and SIO varibles
+${AppUserID}=RDLLabBoise@outlook.com
+${AppPassword}=007L@z3r
+
+${SaveSIO_AppCredentials}=Y
+${VerifySIOConnectDuringAppOpen}=N
+
+// General variables
+${BackOutOfApp} = Y
+${DeviceSignOut} = Y

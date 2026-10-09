@@ -1,0 +1,49 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+
+
+Authentication
+{
+    Common_Library.CheckHomeScreen
+    Common_Library.AuthenticationEager(${UserName},${Password})
+}
+ScanToSharepointWorkFlow
+{
+    If: Dune.Wait For (#ScanFolderGUID,10)
+    {
+        Dune.Click (#ScanFolderGUID)
+        Dune.Wait For (#a3d696df-b7ff-4d3d-9969-5cd7f18c0c92,5)  
+        Dune.Click Id (#a3d696df-b7ff-4d3d-9969-5cd7f18c0c92 #launcherButton)
+        Sleep (2)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to click on Scan Application)
+        Stop Test Suite
+    }
+         
+    //CLICKING ON QUICKSET
+    If: Dune.Wait For (${STSQuickSetName},10)
+    {
+        Dune.Click Id (${STSQuickSetName})
+        Dune.Wait For (#fileNameTextField,5)
+        Dune.Click Id (#fileNameTextField)
+        Get Random Number (01,1000,${FileName})
+        Dune.Set Text (#fileNameTextField,${FileName})
+        If: Dune.Wait For (#enterKey1,2)
+        {
+            Dune.Click Id (#enterKey1)
+        }
+        Sleep (1)
+    }
+    Fail:
+    {
+        Return With Fail (Scan to USB app is not opened)
+    }
+}        
+Option_Check 
+{
+    Common_Library.Scan_Option_Validation_For_Camden_and_Busch
+}
+

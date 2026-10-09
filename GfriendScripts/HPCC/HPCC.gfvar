@@ -1,0 +1,39 @@
+﻿//Staging stack parameters
+${HPCC_url} = sdp-test.cloudprintsolutions.com
+${HPCC_User} = rdl.etl.boise+autopartner@gmail.com
+//${HPCC_User} = rdl.etl.boise+autopartner2@gmail.com
+${HPCC_Customer} = RDL_Boise_Ron
+//${HPCC_Customer} = RonCustomer1
+//${HPCC_Customer} = RDL_Boise_Auto1
+//${HPCC_Customer} = RDL_Boise_Auto2
+//${HPCC_Customer} = RDL_Boise_Auto_11
+//${HPCC_Customer} = RDL_Boise_Auto_Robust1
+//${HPCC_Customer} = RDL_Boise_Auto_Robust2
+//${HPCC_Customer} = App Install
+//${HPCC_Customer} = AutoEndToEnd
+//${HPCC_Customer} = RFO_AutoEndToEnd1
+//${HPCC_Customer} = RFO_AutoEndToEnd2
+
+//Production stock parameters
+//${HPCC_url} = www.hpcommandcenter.com
+//${HPCC_User} = rdl.etl.boise+autoprod@gmail.com
+//${HPCC_Customer} = RDL_Boise_Auto_Cust_1
+//${HPCC_Customer} = RDL_Boise_Auto_11
+//${HPCC_Customer} = RDL_Boise_Auto_Robust_1
+//${HPCC_Customer} = RDL_Boise_Auto_App_Install
+
+${HPCC_PassWord} = 007L@z3r
+
+// Specifying Default as the Browser uses Chrome in Headless Mode with no visible UI
+//${HPCC_Browser} = Default
+${HPCC_Browser} = Chrome
+//${HPCC_Browser} = FireFox
+//${HPCC_Browser} = Edge
+
+// task completion limit in minutes
+${HPCC_TaskCompleteLimit} = 30
+
+// new customer parameters
+${HPCC_CustomerReferenceID} = 
+${HPCC_CuatomerNotes} = 
+

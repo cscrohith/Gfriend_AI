@@ -1,0 +1,28 @@
+﻿//Username and Password parameters
+//${STF_UserName}= rdladmin
+//${STF_UserPassword}= rdl@123
+
+//For Badgebox,mention the variable (${BADGE_AUTH}) value as Y
+//For Credentials,mention the variable (${BADGE_AUTH}) value as N
+${BADGE_AUTH}= N
+
+//BadgeIndex
+//${STF_BadgeIndex}= 1
+
+// ${PRINT_RELEASE_ACTION} PrintAll     Select Print All option
+// ${PRINT_RELEASE_ACTION} PrintKeep    Select Print-Keep option
+// ${PRINT_RELEASE_ACTION} PrintDelete  Select Print-Delete option
+// ${PRINT_RELEASE_ACTION} Delete       Select Delete option
+${PRINT_RELEASE_ACTION}= PrintKeep
+//${PRINT_RELEASE_ACTION}= PrintAll
+//${PRINT_RELEASE_ACTION}= PrintDelete
+//${PRINT_RELEASE_ACTION}= Delete
+
+//Wait Timeouts
+${Short_Wait_Time}=5
+${Wait_Time}=15
+${Long_Wait_Time}=300
+//${STF_AzureEndpoint}=serverip:port(end point)
+//${STF_AzureKey}=
+
+

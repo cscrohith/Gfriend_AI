@@ -1,0 +1,1273 @@
+﻿/// <File>Scan_Library</File>
+/// <Modified>2021-07-16</Modified>
+/// <Description>Library of scan related routines for use with embedded apps</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Common_LIbrary.gflib
+Using ..\Common\Common_LIbrary.gflib
+
+Using JediOmni
+
+/// <Name>ScanPages</Name>
+/// <Description>Scan the specified # of page(s) with preview</Description>
+/// <Parameters>OptNumPagesionText : number of pages to scan</Parameters>
+/// <Precondition>a scan app is open and all options set</Precondition>
+/// <Notes></Notes>
+ScanPages (${NumPages})
+{
+    Repeat:${NumPages}
+    {
+        If: Equals (${R},1)
+        {
+            // first page press the preview start
+            JediOmni.Touch ID (hpid-preview-touch-to-start)
+        }
+        Fail:
+        {
+            // additional pages
+            JediOmni.Touch ID (hpid-preview-button-add-pages)
+        }
+        
+        // handle the Add Pages screen if shown
+        If: JediOmni.Wait For Object (hpid-prompt-add-pages,${Very_Short_Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-button-scan)
+            JediOmni.Wait For Object Gone (hpid-prompt-add-pages,${Short_Wait_Time})
+        }
+        
+        // wait for the scanning screen to show/disappear
+        If: JediOmni.Wait For Text (Scanning...,${Very_Short_Wait_Time})
+        {
+            JediOmni.Wait For Text Gone (Scanning...,${Long_Wait})
+        }
+        
+        // handle the original size screen if shown
+        If: JediOmni.Wait For Object (hpid-button-continue,${Very_Short_Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-button-continue)
+            JediOmni.Wait For Object Gone (hpid-button-continue,${Short_Wait_Time})
+        }
+
+        // wait for the scanning screen to show/disappear
+        If: JediOmni.Wait For Text (Scanning...,${Very_Short_Wait_Time})
+        {
+            JediOmni.Wait For Text Gone (Scanning...,${Long_Wait})
+        }
+        
+        // wait for the Add Page button to be available
+        JediOmni.Wait For Object (hpid-preview-button-add-pages,${Long_Wait})
+    }
+}
+
+/// <Name>OpenScanOptions</Name>
+/// <Description>Open the scan options screen</Description>
+/// <Parameters></Parameters>
+/// <Precondition>Already in the scan screen</Precondition>
+/// <Notes></Notes>
+OpenScanOptions
+{
+    // check for the options already open, if so return Pass
+    If: JediOmni.Wait For Object (#hpid-button-options-show-hide[aria-label="Hide Options"],${Zero_Wait_Time})
+    {
+        Return With Pass (OpenScanOptions complete!)
+    }
+    
+    // open the options screen
+    If: JediOmni.Touch (#hpid-button-options-show-hide[aria-label="Options"])
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OpenScanOptions_Fail.png)
+        Return With Fail (Fail while opening scan options!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OpenScanOptions_Error.png)
+        Return With Error (Error while opening scan options!)
+    }
+    
+    // wait for the button to show Hide Options text
+    If: JediOmni.Wait For Object (#hpid-button-options-show-hide[aria-label="Hide Options"],${Short_Wait_Time})
+    {
+        Return With Pass (OpenScanOptions complete!)
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (OpenScanOptions_Fail.png)
+        Return With Fail (Fail while opening scan options!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OpenScanOptions_Error.png)
+        Return With Error (Error while opening scan options!)
+    }
+}
+
+/// <Name>CloseScanOptions</Name>
+/// <Description>Close the scan options screen</Description>
+/// <Parameters></Parameters>
+/// <Precondition>Already in the scan options screen</Precondition>
+/// <Notes></Notes>
+CloseScanOptions
+{
+    // check for the options not open, if so return Pass
+    If: JediOmni.Wait For Object (#hpid-button-options-show-hide[aria-label="Options"],${Zero_Wait_Time})
+    {
+        Return With Pass (CloseScanOptions complete!)
+    }
+    
+    // open the options screen
+    If: JediOmni.Touch (#hpid-button-options-show-hide[aria-label="Hide Options"])
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (CloseScanOptions_Fail.png)
+        Return With Fail (Fail while closing scan options!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OCloseScanOptions_Error.png)
+        Return With Error (Error while closing scan options!)
+    }
+    
+    // wait for the button to show Hide Options text
+    If: JediOmni.Wait For Object (#hpid-button-options-show-hide[aria-label="Options"],${Short_Wait_Time})
+    {
+        Return With Pass (CloseScanOptions complete!)
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (CloseScanOptions_Fail.png)
+        Return With Fail (Fail while closing scan options!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (OCloseScanOptions_Error.png)
+        Return With Error (Error while closing scan options!)
+    }
+}
+
+/// <Name>SelectScanOption</Name>
+/// <Description>Select the specified option from the scan options screen</Description>
+/// <Parameters>OptionID : element ID of option</Parameters>
+/// <Parameters>OptionText : text of option</Parameters>
+/// <Precondition>Scan Options screen open</Precondition>
+/// <Notes>Called by multiple routines in this library</Notes>
+SelectScanOption (${OptionID},${OptionText})
+{
+    If: JediOmni.Wait For Object (div.hp-option-list.hp-show,${Zero_Wait_Time})
+    {
+        // press the option by element ID if specified, else by text
+        If: Equals (${OptionID},)
+        {
+            // press by text
+            JediOmni.Touch Text (${OptionText})
+        }
+        Fail:
+        {
+            JediOmni.Touch ID (${OptionID})
+        }
+
+        // check for specified option screen
+        If: JediOmni.Wait For Object (.hp-setting-view[aria-label^="${OptionText}"],${Very_Short_Wait_Time})
+        {
+            Return With Pass (Select Scan Option complete!)
+        }
+        Fail:
+        {
+            Return With Fail (Fail while selecting the specified scan option!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting specified scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting specified scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting specified scan option!)
+    }
+}
+
+/// <Name>SetScanOption_OriginalSides</Name>
+/// <Description>Set the Original Sides option</Description>
+/// <Parameters>OriginalSide : original sides option text</Parameters>
+/// <Parameters>FlipUp : Y = original sides Flip Up option checked for 2-sided</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_OriginalSides (${OriginalSide},${FlipUp_YN})
+{    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${OriginalSide})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Original Sides specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-sides,Sides)
+    {
+        // press the specified option
+        If: JediOmni.Touch (#hpid-original-sides-selection li[aria-label*="${OriginalSide}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+            
+            // set the Flip Up option for 2-sided
+            If: Equals IgnoreCase (${OriginalSide},2-sided)
+            {
+                If: Equals IgnoreCase (${FlipUp_YN},Y)
+                {
+                    If: JediOmni.Wait For Object (#hpid-original-sides-flippagesup-checkbox[aria-label*="Unselected"],${Zero_Wait_Time})
+                    {
+                        JediOmni.Touch (#hpid-original-sides-flippagesup-checkbox)
+                    }
+                }
+                Fail:
+                {
+                    If: JediOmni.Wait For Object (#hpid-original-sides-flippagesup-checkbox[aria-label*="Selected"],${Zero_Wait_Time})
+                    {
+                        JediOmni.Touch (#hpid-original-sides-flippagesup-checkbox)
+                    }
+                }
+            }
+            
+            // clear the option screen and return Pass
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-sides-screen,${Short_Wait_Time})
+            
+            // success
+            Return With Pass (Set Scan Option Original Sides complete!)
+        }
+        Fail:
+        {
+            // check for the Option screen still showing indicating failure
+            If: JediOmni.Wait For Object (#hpid-option-sides-screen,${Zero_Wait_Time})
+            {
+                // clear the option screen
+                @JediOmni.Touch (.hp-setting-view .hp-header > span)
+                JediOmni.Wait For Object Gone (#hpid-option-sides-screen,${Short_Wait_Time})
+            }
+            
+            Return With Fail (Fail while selecting Original Sides scan option!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Original Sides scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Original Sides scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Original Sides scan option!)
+    }
+}
+
+/// <Name>SetScanOption_OutputSides</Name>
+/// <Description>Set the Output Sides option</Description>
+/// <Parameters>OutputSide : Output sides option text</Parameters>
+/// <Parameters>FlipUp : Y = Output sides Flip Up option checked for 2-sided</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_OutputSides (${OutputSide},${FlipUp_YN})
+{    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${OutputSide})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Output Sides specified)
+    }
+    If: Equals (${OutputSide},)
+    {
+        Return With Pass (No Output Sides specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-sides,Sides)
+    {
+        // press the specified option
+        If: JediOmni.Touch (#hpid-output-sides-selection li[aria-label*="${OutputSide}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+            
+            // set the Flip Up option for 2-sided
+            If: Equals IgnoreCase (${OutputSide},2-sided)
+            {
+                If: Equals IgnoreCase (${FlipUp_YN},Y)
+                {
+                    If: JediOmni.Wait For Object (#hpid-output-sides-flippagesup-checkbox[aria-label*="Unselected"],${Zero_Wait_Time})
+                    {
+                        JediOmni.Touch (#hpid-output-sides-flippagesup-checkbox)
+                    }
+                }
+                Fail:
+                {
+                    If: JediOmni.Wait For Object (#hpid-output-sides-flippagesup-checkbox[aria-label*="Selected"],${Zero_Wait_Time})
+                    {
+                        JediOmni.Touch (#hpid-output-sides-flippagesup-checkbox)
+                    }
+                }
+            }
+            
+            // clear the option screen and return Pass
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-sides-screen,${Short_Wait_Time})
+            
+            // success
+            Return With Pass (Set Scan Option Output Sides complete!)
+        }
+        Fail:
+        {
+            // check for the Option screen still showing indicating failure
+            If: JediOmni.Wait For Object (#hpid-option-sides-screen,${Zero_Wait_Time})
+            {
+                // clear the option screen
+                @JediOmni.Touch (.hp-setting-view .hp-header > span)
+                JediOmni.Wait For Object Gone (#hpid-option-sides-screen,${Short_Wait_Time})
+            }
+            
+            Return With Fail (Fail while selecting Output Sides scan option!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Output Sides scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Output Sides scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Output Sides scan option!)
+    }
+}
+
+/// <Name>SetScanOption_ColorBlack</Name>
+/// <Description>Set the Color Black option</Description>
+/// <Parameters>Color_Black : color/black text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_ColorBlack (${Color_Black})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Color_Black}
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Color Black specified)
+    }
+    If: Equals (${Color_Black},)
+    {
+        Return With Pass (No Color Black specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-color-black,Color/Black)
+    {
+        // press the specified option
+        If: JediOmni.Touch (#hpid-option-color-black-screen li.hp-listitem[aria-label^="${Color_Black}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-option-color-black-screen,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-color-black-screen,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Color/Black scan option!)
+        }
+        Fail:
+        {
+            // success
+            Return With Pass (Set Scan Option Color/Black complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Color/Black scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Color/Black scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Color/Black scan option!)
+    }
+}
+
+SetScanOption_Watermark (${WaterMarkType},${WaterMarkText},${FirstPageOnly_YN})
+{
+    Return With Pass (SetScanOption_Watermark not implemented!)
+}
+
+SetScanOption_Stamp (${TopLeft},${TopCenter},${TopRight},${BottomLeft},${BottomCenter},${BottomRight})
+{
+    Return With Pass (SetScanOption_Stamp not implemented!)
+}
+
+/// <Name>SetScanOption_ScanMode</Name>
+/// <Description>Set the scan mode option.
+///   Valid Scan Mode options: Standard document; Book; 2-sided ID</Description>
+/// <Parameters>ScanMode : scan mode text</Parameters>
+/// <Parameters>PromptForPages_YN : For Standard document Y to prompt for pages, else no prompt
+///   For 2-sided ID Y to prompt for both sides</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_ScanMode (${ScanMode},${PromptForPages_YN})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${ScanMode})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No ScanMode specified)
+    }
+    If: Equals (${ScanMode},)
+    {
+        Return With Pass (No ScanMode specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-scan-mode,Scan Mode)
+    {
+        // uncheck the prompt for additional pages checkbox, if checked
+        If: JediOmni.Wait For Object (#hpid-prompt-add-page-checkbox[aria-label*="Selected"],${Zero_Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-prompt-add-page-checkbox)
+            Sleep (${Minimal_Wait_Time})
+        }
+        
+        // press the specified option
+        If: JediOmni.Touch (#hpid-option-scan-mode-screen li[aria-label^="${ScanMode}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+            
+            // set the prompt for pages option if necessary
+            If: JediOmni.Wait For Object (#hpid-prompt-add-page-checkbox,${Zero_Wait_Time})
+            {
+                If: Equals (${PromptForPages_YN},Y)
+                {
+                    If: JediOmni.Wait For Object (#hpid-prompt-add-page-checkbox[aria-label*="Unselected"],${Zero_Wait_Time})
+                    {
+                        JediOmni.Touch ID (hpid-prompt-add-page-checkbox)
+                    }
+                }
+                Fail:
+                {
+                    If: JediOmni.Wait For Object (#hpid-prompt-add-page-checkbox[aria-label*="Selected"],${Zero_Wait_Time})
+                    {
+                        JediOmni.Touch ID (hpid-prompt-add-page-checkbox)
+                    }
+                }
+            }
+            
+            // set the prompt for both sides option if necessary
+            If: JediOmni.Wait For Object (#hpid-prompt-to-scan-both-sides,${Zero_Wait_Time})
+            {
+                If: Equals (${PromptForPages_YN},Y)
+                {
+                    If: JediOmni.Wait For Object (#hpid-prompt-to-scan-both-sides[aria-label*="Unselected"],${Zero_Wait_Time})
+                    {
+                        JediOmni.Touch ID (hpid-prompt-to-scan-both-sides)
+                    }
+                }
+                Fail:
+                {
+                    If: JediOmni.Wait For Object (#hpid-prompt-to-scan-both-sides[aria-label*="Selected"],${Zero_Wait_Time})
+                    {
+                        JediOmni.Touch ID (hpid-prompt-to-scan-both-sides)
+                    }
+                }
+            }
+            
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-scan-mode-screen,${Short_Wait_Time})
+            
+            // success
+            Return With Pass (Set Scan Option Scan Mode complete!)
+        }
+        Fail:
+        {
+            Return With Fail (Fail while selecting Collate scan option!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Scan Mode scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Scan Mode scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Scan Mode scan option!)
+    }
+}
+
+SetScanOption_ReduceEnlarge (${ReduceEnlarge},${IncludeMargins_YN},${Percent})
+{
+    Return With Pass (SetScanOption_ReduceEnlarge not implemented!)
+}
+
+SetScanOption_ImageShift (${ImageShift_YN},${UseInches_YN},${FrontHorizontal},${FrontVertical},${BackHorizontal},${BackVertical})
+{
+    Return With Pass (SetScanOption_ImageShift not implemented!)
+}
+
+/// <Name>SetScanOption_OriginalSize</Name>
+/// <Description>Set the original size option.
+///   Valid Sizes: Any Size; Letter (8.5x11); Letter ▭ (8.5x11); Mixed Letter/Legal;
+///   Legal (8.5x14); Executive (7.25x10.5); Ledger (11x17); A3 (297x420 mm);
+///   A4 (210x297 mm); A4 ▭ (210x297 mm); A5 ▭ (148x210 mm); A5 ▯ (148x210 mm);
+///   B4 (257x364 mm); B5 (182x257 mm); B5 ▯ (182x257 mm);
+///   Mixed Letter/Ledger; Mixed A4/A3</Description>
+/// <Parameters>OriginalSize : original size text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_OriginalSize (${OriginalSize})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${OriginalSize})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No OriginalSize specified)
+    }
+    If: Equals (${OriginalSize},)
+    {
+        Return With Pass (No OriginalSize specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-original-size,Original Size)
+    {
+        If: JediOmni.Touch (#hpid-option-original-size-screen li.hp-listitem[aria-label*="${OriginalSize}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-option-original-size,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-original-size,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Original Size scan option!)
+        }
+        Fail:
+        {
+            // success
+            Return With Pass (Set Scan Option Original Size complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Original Size scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Original Size scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Original Size scan option!)
+    }
+}
+
+/// <Name>SelectPaperSelectionOption</Name>
+/// <Description>Select the Paper Selection screen, then 
+///   select the specified Paper Selection option</Description>
+/// <Parameters>PaperOptionID : element ID of option</Parameters>
+/// <Parameters>PaperOptionText : text of option</Parameters>
+/// <Precondition>Scan Options screen open</Precondition>
+/// <Notes>Called by multiple routines in this library</Notes>
+SelectPaperSelectionOption (${PaperOptionID},${PaperOptionText})
+{
+    // open the Paper Selection options screen
+    If: Scan_Library.SelectScanOption (hpid-option-paper-select,Paper Selection)
+    {
+        // select the specified paper option
+        If: JediOmni.Touch ID (${PaperOptionID})
+        {
+            // check for specified option screen
+            If: JediOmni.Wait For Object (.hp-setting-view[aria-label^="${PaperOptionText}"],${Zero_Wait_Time})
+            {
+                Return With Pass (SelectPaperSelectionOption complete!)
+            }
+            Fail:
+            {
+                Return With Fail (Fail while selecting the specified Paper Selection scan option!)
+            }
+            Error:
+            {
+                Return With Error (Error while selecting specified Paper Selection scan option!)
+            }
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Paper Selection scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Paper Selection scan option!)
+    }
+}
+
+/// <Name>SetScanOption_PaperSize</Name>
+/// <Description>Set the Paper Size option.
+///   Valid Sizes: Match original size; Letter (8.5x11); Letter ▭ (8.5x11);
+///   Legal (8.5x14); Executive (7.25x10.5); Ledger (11x17); A3 (297x420 mm);
+///   A4 (210x297 mm); A4 ▭ (210x297 mm); A5 ▭ (148x210 mm); A5 ▯ (148x210 mm);
+///   B4 (257x364 mm); B5 (182x257 mm)</Description>
+/// <Parameters>PaperSize : paper size text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_PaperSize (${PaperSize})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${PaperSize})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No PaperSize specified)
+    }
+    If: Equals (${PaperSize},)
+    {
+        Return With Pass (No PaperSize specified)
+    }
+    
+    If: Scan_Library.SelectPaperSelectionOption (hpid-media-size,Paper Size)
+    {
+        If: JediOmni.Touch (#hpid-media-size-details li.hp-listitem[aria-label*="${PaperSize}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-media-size-details,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (#hpid-media-size-details .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-media-size-details,${Short_Wait_Time})
+
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-paper-select-screen,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Paper Size scan option!)
+        }
+        Fail:
+        {
+            // success close the Paper Selection screen
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-paper-select-screen,${Short_Wait_Time})
+            
+            
+            Return With Pass (Set Scan Option Paper Size complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Paper Size scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Paper Selection scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Paper Selection scan option!)
+    }
+}
+
+/// <Name>SetScanOption_PaperType</Name>
+/// <Description>Set the paper type option.
+///   Sample of valid Types: Any Type;Plain; HP Matte 90g;
+///   HP Matte 105g; HP Soft Gloss 120g; HP Glossy 120g; HP Glossy 150g;
+///   Light 60-74g; Heavy 111-130g; Cardstock 176-220g; Color Transparency;
+///   Labels; Envelope; Preprinted; HP EcoFFICIENT</Description>
+/// <Parameters>PaperType : paper type text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_PaperType (${PaperType})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${PaperType})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No PaperType specified)
+    }
+    If: Equals (${PaperType},)
+    {
+        Return With Pass (No PaperType specified)
+    }
+    
+    If: Scan_Library.SelectPaperSelectionOption (hpid-media-type,Paper Type)
+    {
+        If: JediOmni.Touch (#hpid-media-type-details li.hp-listitem[aria-label*="${PaperType}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-media-type-details,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (#hpid-media-type-details .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-media-type-details,${Short_Wait_Time})
+
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-paper-select-screen,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Paper Type scan option!)
+        }
+        Fail:
+        {
+            // success close the Paper Selection screen
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-paper-select-screen,${Short_Wait_Time})
+            
+            
+            Return With Pass (Set Scan Option Paper Type complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Paper Type scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Paper Selection scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Paper Selection scan option!)
+    }
+}
+
+/// <Name>SetScanOption_PaperTray</Name>
+/// <Description>Set the paper tray option.
+///   Sample of valid Trays: Automatically select; Manual feed;
+///   Tray 1; Tray 2; Tray 3; Tray 4</Description>
+/// <Parameters>PaperTray : paper tray text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_PaperTray (${PaperTray})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${PaperTray})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No PaperTray specified)
+    }
+    If: Equals (${PaperTray},)
+    {
+        Return With Pass (No PaperTray specified)
+    }
+    
+    If: Scan_Library.SelectPaperSelectionOption (hpid-media-source,Paper Tray)
+    {
+        If: JediOmni.Touch (#hpid-media-source-details li.hp-listitem[aria-label*="${PaperTray}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-media-source-details,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (#hpid-media-source-details .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-media-source-details,${Short_Wait_Time})
+
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-paper-select-screen,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Paper Tray scan option!)
+        }
+        Fail:
+        {
+            // success close the Paper Selection screen
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-paper-select-screen,${Short_Wait_Time})
+            
+            
+            Return With Pass (Set Scan Option Paper Tray complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Paper Tray scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Paper Selection scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Paper Selection scan option!)
+    }
+}
+
+SetScanOption_Booklet (${Booklet_YN},${Borders_YN})
+{
+    Return With Pass (SetScanOption_Booklet not implemented!)
+}
+
+/// <Name>SetScanOption_Orientation</Name>
+/// <Description>Set the orientation option.
+///   Valid Orientations: Portrait; Landscape</Description>
+/// <Parameters>Orientation : orientation text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_Orientation (${Orientation})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Orientation})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Orientation specified)
+    }
+    If: Equals (${Orientation},)
+    {
+        Return With Pass (No Orientation specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-content-orientation,Content Orientation)
+    {
+        // press the specified option
+        If: JediOmni.Touch (#hpid-option-content-orientation-screen li.hp-listitem[aria-label^="${Orientation}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-option-content-orientation-screen,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-content-orientation-screen,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Orientation scan option!)
+        }
+        Fail:
+        {
+            // success
+            Return With Pass (Set Scan Option Orientation complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Orientation scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Orientation scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Orientation scan option!)
+    }
+}
+
+SetScanOption_PagePerSheet (${PagesPerSheet},${AddBorders_YN})
+{
+    Return With Pass (SetScanOption_PagePerSheet not implemented!)
+}
+
+SetScanOption_ImageAdjustment (${Sharpness},${Darkness},${Contrast},${BackgroundCleanup})
+{
+    Return With Pass (SetScanOption_ImageAdjustment not implemented!)
+}
+
+/// <Name>SetScanOption_OptimizeText_Picture</Name>
+/// <Description>Set the collate option.
+///   Valid Optimize options: Text; Mixed; Printed picture; Photograph</Description>
+/// <Parameters>OptimizeText_Picture : optimize text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_OptimizeText_Picture (${OptimizeText_Picture})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${OptimizeText_Picture})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No OptimizeText_Picture specified)
+    }
+    If: Equals (${OptimizeText_Picture},)
+    {
+        Return With Pass (No OptimizeText_Picture specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-optimize-text-picture,Optimize Text/Picture)
+    {
+        // press the specified option
+        If: JediOmni.Touch (#hpid-option-optimize-text-picture-screen li.hp-listitem[aria-label^="${OptimizeText_Picture}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-option-optimize-text-picture-screen,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-optimize-text-picture-screen,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Optimize Text/Picture scan option!)
+        }
+        Fail:
+        {
+            // success
+            Return With Pass (Set Scan Option Optimize Text/Picture complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Optimize Text/Picture scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Optimize Text/Picture scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Optimize Text/Picture scan option!)
+    }
+}
+
+SetScanOption_EraseEdges (${EraseEdges_YN},${UseInches_YN},${FrontApplyToAll_YN},${FrontTop},${FrontBottom},${FrontLeft},${FrontRight},${BackMirrorFront_YN},${BackTop},${BackBottom},${BackLeft},${BackRight})
+{
+    Return With Pass (SetScanOption_EraseEdges not implemented!)
+}
+
+/// <Name>SetScanOption_Collate</Name>
+/// <Description>Set the collate option.
+///   Valid Collate options: Collate on; Collate off</Description>
+/// <Parameters>Collate : collate text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_Collate (${Collate})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Collate})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Collate specified)
+    }
+    If: Equals (${Collate},)
+    {
+        Return With Pass (No Collate specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-collate,Collate)
+    {
+        // press the specified option
+        If: JediOmni.Touch (#hpid-option-collate-screen li.hp-listitem[aria-label^="${Collate}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-option-collate-screen,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-collate-screen,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Collate scan option!)
+        }
+        Fail:
+        {
+            // success
+            Return With Pass (Set Scan Option Collate complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Collate scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Collate scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Collate scan option!)
+    }
+}
+
+/// <Name>SetScanOption_BlankPageSuppression</Name>
+/// <Description>Set the blank page suppression option.
+///   Valid Suppression options: Off; Suppress Blank Pages</Description>
+/// <Parameters>BlankPageSuppression : suppression text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_BlankPageSuppression (${BlankPageSuppression})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${BlankPageSuppression})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No BlankPageSuppression specified)
+    }
+    If: Equals (${BlankPageSuppression},)
+    {
+        Return With Pass (No BlankPageSuppression specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-blank-page-suppression,Blank Page Suppression)
+    {
+        // press the specified option
+        If: JediOmni.Touch (#hpid-option-blank-page-suppression-screen li.hp-listitem[aria-label^="${BlankPageSuppression}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-option-blank-page-suppression-screen,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-blank-page-suppression-screen,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Blank Page Suppression scan option!)
+        }
+        Fail:
+        {
+            // success
+            Return With Pass (Set Scan Option Blank Page Suppression complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Blank Page Suppression scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Blank Page Suppression scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Blank Page Suppression scan option!)
+    }
+}
+
+/// <Name>SetScanOption_MuiliFeedDetection</Name>
+/// <Description>Set the multi-feed detection option.
+///   Valid mulit-feed options: On; Off</Description>
+/// <Parameters>Multi-feedDetection : suppression text</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_MuiliFeedDetection (${Multi-feedDetection})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Multi-feedDetection})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Multi-feedDetection specified)
+    }
+    If: Equals (${Multi-feedDetection},)
+    {
+        Return With Pass (No Multi-feedDetection specified)
+    }
+    
+    If: Scan_Library.SelectScanOption (hpid-option-multifeed-detection,Multi-feed Detection)
+    {
+        // press the specified option
+        If: JediOmni.Touch (#hpid-option-multifeed-detection-screen li.hp-listitem[aria-label^="${Multi-feedDetection}"])
+        {
+            Sleep (${Minimal_Wait_Time})
+        }
+            
+        // check for the Option screen still showing indicating failure
+        If: JediOmni.Wait For Object (#hpid-option-multifeed-detection-screen,${Zero_Wait_Time})
+        {
+            // clear the option screen and return fail
+            JediOmni.Touch (.hp-setting-view .hp-header > span)
+            JediOmni.Wait For Object Gone (#hpid-option-multifeed-detection-screen,${Short_Wait_Time})
+            
+            Return With Fail (Fail while selecting Multi-feed Detection scan option!)
+        }
+        Fail:
+        {
+            // success
+            Return With Pass (Set Scan Option Multi-feed Detection complete!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting Multi-feed Detection scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting Multi-feed Detection scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting Multi-feed Detection scan option!)
+    }
+}
+
+/// <Name>SetScanOption_FileType_Resolution</Name>
+/// <Description>Set the File Type, Resolution, and Quality/Size options</Description>
+/// <Parameters>FileType : file type text</Parameters>
+/// <Parameters>Resolution : resolution text</Parameters>
+/// <Parameters>Quality : quality/size text</Parameters>
+/// <Parameters>HighCompression_YN : Y to use high compression</Parameters>
+/// <Parameters>PdfEncryption_YN : Y to use encryption for PDF types</Parameters>
+/// <Parameters>EncryptionPassword : encryption password for PDF types if needed</Parameters>
+/// <Precondition>Scan Options screen already showing</Precondition>
+/// <Notes></Notes>
+SetScanOption_FileType_Resolution (${FileType},${Resolution},${Quality},${HighCompression_YN},${PdfEncryption_YN},${EncryptionPassword})
+{
+    // check for option specified
+//    If: Common_LIbrary.CheckVariableContainsValue (${OptimizeText_Picture})
+//    {
+//    }
+//    Fail:
+//    {
+//        Return With Pass (No OptimizeText_Picture specified)
+//    }
+//    If: Equals (${OptimizeText_Picture},)
+//    {
+//        Return With Pass (No OptimizeText_Picture specified)
+//    }
+//    
+//    If: Scan_Library.SelectScanOption (hpid-option-optimize-text-picture,Optimize Text/Picture)
+//    {
+//        // press the specified option
+//        If: JediOmni.Touch (#hpid-option-optimize-text-picture-screen li.hp-listitem[aria-label^="${OptimizeText_Picture}"])
+//        {
+//            Sleep (${Minimal_Wait_Time})
+//        }
+//            
+//        // check for the Option screen still showing indicating failure
+//        If: JediOmni.Wait For Object (#hpid-option-optimize-text-picture-screen,${Zero_Wait_Time})
+//        {
+//            // clear the option screen and return fail
+//            JediOmni.Touch (.hp-setting-view .hp-header > span)
+//            JediOmni.Wait For Object Gone (#hpid-option-optimize-text-picture-screen,${Short_Wait_Time})
+//            
+//            Return With Fail (Fail while selecting Optimize Text/Picture scan option!)
+//        }
+//        Fail:
+//        {
+//            // success
+//            Return With Pass (Set Scan Option Optimize Text/Picture complete!)
+//        }
+//        Error:
+//        {
+//            Return With Error (Error while selecting Optimize Text/Picture scan option!)
+//        }
+//    }
+//    Fail:
+//    {
+//        Return With Fail (Fail while selecting Optimize Text/Picture scan option!)
+//    }
+//    Error:
+//    {
+//        Return With Error (Error while selecting Optimize Text/Picture scan option!)
+//    }
+}
+
+/// <Name>SetFileName</Name>
+/// <Description>Set the file name</Description>
+/// <Parameters>ScanFilename : name of file(s) to save</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetFileName (${ScanFilename})
+{
+    Return With Pass (SetFileName not implemented!)
+//    // set the filename if needed
+//    If: Contains (${ScanFilename},${)
+//    {
+//        // filename is not specified so leave as default
+//        Return With Pass (Set File Name complete!)
+//    }
+//    If: Equals (${ScanFilename},)
+//    {
+//        // filename is not specified so leave as default
+//        Return With Pass (Set File Name complete!)
+//    }
+//
+//    If: JediOmni.Get Browser Engine
+//    {
+//    }
+//    Fail:
+//    {
+//        Return With Fail (Fail while initaiting scan job!)
+//    }
+//    Error:
+//    {
+//        Return With Error (Error while initaiting scan job!)
+//    }
+//    
+//    // enter the filename
+//    Get Time Stamp (${Time})
+//    JediOmni.Touch CSS (.file-name>input)
+//    // short delay to ensure the keyboard is available
+//    Sleep (${Minimal_Wait_Time})
+//    
+//    // check for need to clear the default file name
+//    JediOmni.Get Text (scanText,${ExistingFileName})
+//    If: Equals (${ExistingFileName},"")
+//    {
+//    }
+//    Fail:
+//    {
+//        // clear the filename texbox
+//        Repeat:25
+//        {
+//            JediOmni.Touch ID (hpid-keyboard-key-backspace)
+//        }
+//    }
+//    // enter the specified file name
+//    JediOmni.Input Text (${ScanFilename}_${Time})
+//    
+//    JediOmni.Touch ID (hpid-keyboard-key-done)
+//    Sleep (${Minimal_Wait_Time})
+//
+//    JediOmni.Return Browser Engine
+//    
+//    Return With Pass (Initiate Scan Job complete!)
+}

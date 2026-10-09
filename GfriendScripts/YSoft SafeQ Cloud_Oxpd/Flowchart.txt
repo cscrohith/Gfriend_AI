@@ -1,0 +1,92 @@
+digraph G {
+
+IsBadgeAuthIsY[label="Is Badge Auth ==Y?"]
+PressHomeKey[label="Press Home Key"]
+IsSigninIsTextVisible[label="Is SignIn Text Visible?"]
+CheckSignOutTextIsVisible[label="Check SignOut Text Visible?"]
+ClickSignout[label="Click SignOut"]
+IsSigOutTextIsVisible[label="Is SignOutTextVisible?"]
+IsSigOutTextIsVisible1[label="IsSignOutTextVisible?"]
+ClickSignout[label="Click Signout"]
+WaitForSignOutText[label="Wait For SigningOut Text"]
+ScanBadge1[label="Scan Badge Attempt #1"]
+IsSecurePrintAppIsVisible[label="Is SecurePrintApp Visible in Home screen?"]
+FailureMessage[label="Failure Msg"]
+FailMessage1[label="Fail:unable to click secure print, as it's already in PrintScreen"]
+IsUserLoginScreenVisible[label="IsUserLoginScreenVisible?"]
+ClickSecurePrintApp[label="Click Secure Print App"]
+IsDocumentNameIsAvailableInPrintScreen[label="IsDocumentNameAvailableInPrintScreen?"]
+ScanBadge2[label="Scan Badge Attempt #2"]
+PassMsg1[label="Badge scanned for first time"]
+PassMsg2[label="Badge scanned for second time"]
+ClickSecurePrintApp[label="Click Secure Print App"]
+CheckIsPrintAllY[label="Check PrintAll==Y?"]
+ClickAllDocument[label="Click 'All Document'"]
+WaitForSingleDocument[label="Wait For 'SingleDocument'"]
+ClickSingleDocument[label="Click 'SingleDocument'"]
+ClickPrint[label="Click Print"]
+WaitForActiveJob[label="Wait For 'Active Job'"]
+WaitForActiveJobGone[label="Wait For 'Active Job Gone'"]
+PassMsg3[label="PassMsg: Print Job Submitted Successfully"]
+PassMsg[label="Badge SignedIn Successfully"]
+
+
+Start -> IsBadgeAuthIsY;
+IsBadgeAuthIsY -> PressHomeKey [label="TRUE"];
+IsBadgeAuthIsY-> LazyAuth [label="FALSE"];
+LazyAuth -> SignOut;
+PressHomeKey -> IsSigninIsTextVisible;
+
+IsSigninIsTextVisible  -> Reset [label="TRUE"];
+IsSigninIsTextVisible -> CheckSignOutTextIsVisible [label="FALSE"];
+CheckSignOutTextIsVisible -> ClickSignout [label="TRUE"];
+CheckSignOutTextIsVisible -> Reset [label="FALSE"];
+ClickSignout -> WaitForSignOutText;
+WaitForSignOutText -> Reset;
+Reset -> ScanBadge1;
+
+ScanBadge1 -> PassMsg1[label="TRUE"];
+ScanBadge1 -> FailureMessage[label="FALSE"];
+PassMsg1 ->IsSigOutTextIsVisible;
+IsSigOutTextIsVisible -> PassMsg [label="TRUE"];
+IsSigOutTextIsVisible -> GetBrowserEngine [label="FALSE"];
+PassMsg -> IsSecurePrintAppIsVisible;
+GetBrowserEngine -> IsUserLoginScreenVisible;
+
+IsUserLoginScreenVisible -> ScanBadge2 [label="TRUE"];
+IsUserLoginScreenVisible -> IsSecurePrintAppIsVisible [label="FALSE"];
+ScanBadge2 -> PassMsg2;
+PassMsg2 -> ReturnBrowserEngine;
+ReturnBrowserEngine -> IsSigOutTextIsVisible1;
+IsSigOutTextIsVisible1 -> IsSecurePrintAppIsVisible [label="TRUE"];
+IsSigOutTextIsVisible1 -> FailureMessage [label="FALSE"];
+IsSecurePrintAppIsVisible -> ClickSecurePrintApp [label="TRUE"];
+IsSecurePrintAppIsVisible -> FailMessage1 [label="FALSE"];
+ClickSecurePrintApp -> GetBrowserEngine1;
+FailMessage1 -> GetBrowserEngine1;
+GetBrowserEngine1 ->IsDocumentNameIsAvailableInPrintScreen;
+
+IsDocumentNameIsAvailableInPrintScreen -> CheckIsPrintAllY [label="TRUE"];
+IsDocumentNameIsAvailableInPrintScreen -> FailureMessage [label="FALSE"];
+CheckIsPrintAllY -> ClickAllDocument [label="TRUE"];
+CheckIsPrintAllY -> WaitForSingleDocument [label="FALSE"];
+ClickAllDocument -> ClickPrint;
+ClickPrint -> ReturnBrowserEngine1;
+ReturnBrowserEngine1->WaitForActiveJob;
+WaitForSingleDocument -> ClickSingleDocument [label="TRUE"];
+WaitForSingleDocument -> ReturnBrowserEngine2[label="FALSE"];
+ReturnBrowserEngine2 -> FailureMessage;
+ClickSingleDocument -> ClickPrint;
+WaitForActiveJob -> WaitForActiveJobGone [label="TRUE"];
+WaitForActiveJob -> FailureMessage [label="FALSE"];
+WaitForActiveJobGone ->  PassMsg3[label="TRUE"];
+WaitForActiveJobGone -> FailureMessage [label="FALSE"];
+FailureMessage -> SignOut;
+PassMsg3 -> SignOut;
+SignOut -> Stop;
+
+IsBadgeAuthIsY,IsSigninIsTextVisible,CheckSignOutTextIsVisible,ScanBadge1, IsSigOutTextIsVisible,IsSigOutTextIsVisible1,IsUserLoginScreenVisible,IsSecurePrintAppIsVisible,ScanBadge2,IsDocumentNameIsAvailableInPrintScreen,CheckIsPrintAllY,WaitForSingleDocument,WaitForActiveJob,WaitForActiveJobGone [shape=diamond]; 
+PressHomeKey,ClickSignout,Reset,ScanBadge2,GetBrowserEngine,GetBrowserEngine1,ReturnBrowserEngine,ReturnBrowserEngine1,ReturnBrowserEngine2,ClickSecurePrintApp,ClickAllDocument,ClickPrint,ClickSingleDocument [shape=parallelogram];
+LazyAuth,WaitForSignOutText,FailureMessage,FailMessage1,PassMsg,PassMsg1,PassMsg2,PassMsg3,SignOut [shape=rectangle];
+
+}

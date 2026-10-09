@@ -1,0 +1,92 @@
+digraph G {
+
+  PressHomeKey[label="Press Home Key"]
+  ClickOK[label="Click OK"]
+  IsSignInerrormsgavailable[label="Is SignIn error msg visible?"]
+  IsSignInTextavaialable[label="Is Sign In Text visible?"]
+  IsSignOutTextavailable[label="Is Sign Out Text visible?"]
+  ClickSignOut[label="Click Sign Out"]
+  WaitforSigningOutText[label="Wait for Signing Out Text"]
+  ClickReset[label="Click Reset"]
+  IsBadgeAuthIsY[label="Is Badge_Auth==Y?"]
+  ScanBadge1[label="Scan Badge Attempt #1"]
+  Failuremsg[label="Failure msg"]
+  IsSignOutTextVisible[label="Is Sign Out text visible?"]
+  IsSecurePrintandScanVisible[label="Is Secure Print & Scan app visible"]
+  Failmsg[label="Fail msg"]
+  ClickSecurePrintandScan[label="Click Secure Print & Scan app"]
+  IsLoginScreenvisible[label="Is Login Screen visible?"]
+  ScanBadge2[label="Scan Badge Attempt #2"]
+  IsAuthenticationErrorScreenvisible[label="Is Authentication Error screen visible?"]
+  IsPrintHomeScreenVisible[label="Is Print Home Screen visible?"]
+  PrintAllisY[label="Print_All==Y?"]
+  PrintAllTextVisisble[label="Is Print All text visisble?"]
+  ClickPrintAll[label="Click PrintAll"]
+  ClickMyPrintJobs[label="Click My Print Jobs"]
+  MyPrintJobsHeaderVisible[label="Is My Print Jobs Header Visible?"]
+  IsFirstJobvisible[label="Is First Job visible?"]
+  SelectJob[label="Select Job"]
+  GettextoftheJob[label="Get the name of the Job"]
+  ClickPrint[label="Click Print"]
+  IsSuccessmsgvisible[label="Is Success msg visible?"]
+  IsFolderEmptyTextVisible[label="Is Folder is Empty text visible?"]
+  PrintJobTextExists[label="Is Printed Job still exists?"]
+  Success[label="Success!"]
+  SignOut[label="Sign Out"]
+  
+   
+  Start -> PressHomeKey; 
+  PressHomeKey -> IsSignInerrormsgavailable ;
+  IsSignInerrormsgavailable -> ClickOK [label="TRUE"];
+  IsSignInerrormsgavailable -> IsSignInTextavaialable [label="FALSE"];
+  ClickOK -> IsSignInTextavaialable;
+  IsSignInTextavaialable -> ClickReset [label="TRUE"];
+  IsSignInTextavaialable -> IsSignOutTextavailable [label="FALSE"];
+  IsSignOutTextavailable -> ClickSignOut [label="TRUE"];
+  IsSignOutTextavailable -> ClickReset [label="FALSE"];
+  ClickSignOut -> WaitforSigningOutText;
+  WaitforSigningOutText -> ClickReset; 
+  ClickReset -> IsBadgeAuthIsY;
+  IsBadgeAuthIsY -> ScanBadge1 [label="TRUE"];
+  IsBadgeAuthIsY -> Failuremsg [label="FALSE"];
+  ScanBadge1 -> IsSignOutTextVisible ;
+  IsSignOutTextVisible -> IsSecurePrintandScanVisible [label="TRUE"];
+  IsSignOutTextVisible -> Failmsg [label="FALSE"];
+  Failmsg -> IsSecurePrintandScanVisible ;
+  IsSecurePrintandScanVisible -> ClickSecurePrintandScan [label="TRUE"];
+  IsSecurePrintandScanVisible -> Failuremsg [label="FALSE"];
+  ClickSecurePrintandScan -> IsLoginScreenvisible ;
+  IsLoginScreenvisible -> ScanBadge2 [label="TRUE"];
+  IsLoginScreenvisible -> IsAuthenticationErrorScreenvisible [label="FALSE"];
+  ScanBadge2 -> IsAuthenticationErrorScreenvisible [label="TRUE"];
+  ScanBadge2 -> Failuremsg [label="FALSE"];
+  IsAuthenticationErrorScreenvisible -> Failuremsg [label="TRUE"];
+  IsAuthenticationErrorScreenvisible -> IsPrintHomeScreenVisible [label="FALSE"];
+  IsPrintHomeScreenVisible -> PrintAllisY [label="TRUE"];
+  IsPrintHomeScreenVisible -> Failuremsg [label="FALSE"];
+  PrintAllisY -> PrintAllTextVisisble [label="TRUE"];
+  PrintAllisY -> ClickMyPrintJobs [label="FALSE"];
+  PrintAllTextVisisble -> ClickPrintAll [label="TRUE"];
+  PrintAllTextVisisble -> Failuremsg [label="FALSE"];
+  ClickPrintAll -> IsSuccessmsgvisible ;
+  IsSuccessmsgvisible -> Failuremsg [label="FALSE"];
+  ClickMyPrintJobs -> MyPrintJobsHeaderVisible ;
+  MyPrintJobsHeaderVisible -> IsFirstJobvisible [label="TRUE"];
+  MyPrintJobsHeaderVisible -> Failuremsg [label="FALSE"];
+  IsFirstJobvisible -> SelectJob [label="TRUE"];
+  SelectJob -> GettextoftheJob;
+  GettextoftheJob -> ClickPrint;
+  ClickPrint -> IsSuccessmsgvisible;
+  IsFirstJobvisible -> Failuremsg [label="FALSE"];
+  IsSuccessmsgvisible -> IsFolderEmptyTextVisible [label="TRUE"]; 
+  IsFolderEmptyTextVisible -> Success [label="TRUE"];
+  IsFolderEmptyTextVisible -> PrintJobTextExists [label="FALSE"];
+  PrintJobTextExists -> Failuremsg[label="TRUE"];
+  PrintJobTextExists -> Success[label="FALSE"];
+  {Success,Failuremsg} -> SignOut ;
+  SignOut -> Stop ;
+  
+  PressHomeKey, ClickOK, ClickSignOut, ClickReset, ScanBadge1, ClickSecurePrintandScan, ClickPrintAll, ClickMyPrintJobs, SelectJob, ClickPrint [shape=parallelogram];
+  IsSignInerrormsgavailable, IsSignInTextavaialable, IsSignOutTextavailable, ScanBadge2, IsBadgeAuthIsY, IsSignOutTextVisible, IsSecurePrintandScanVisible, IsLoginScreenvisible, IsAuthenticationErrorScreenvisible, IsPrintHomeScreenVisible, PrintAllisY, PrintAllTextVisisble, PrintAllTextVisisble, MyPrintJobsHeaderVisible, IsFirstJobvisible, IsSuccessmsgvisible, IsFolderEmptyTextVisible, PrintJobTextExists [shape=diamond];
+  WaitforSigningOutText, Failmsg, Success, Failuremsg, GettextoftheJob, SignOut [shape=rectangle];
+}

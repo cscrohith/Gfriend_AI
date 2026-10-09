@@ -1,0 +1,25 @@
+﻿//To Print all the jobs, provide the variable (${PRINT_ALL}) value as Y
+//To Print one job, provide the variable (${PRINT_ALL}) value as N
+${PRINT_ALL} = N
+
+//For LAZY Authentication, provide the variable (${LAZY_AUTH}) value as Y
+//For EAGER Authentication, provide the variable (${LAZY_AUTH}) value as N
+${LAZY_AUTH} = N
+
+//For SHORT ID Authentication, provide the variable (${SHORT_ID}) value as Y
+${SHORT_ID} = N
+
+//For BADGE Authentication, provide the variable (${BADGE_AUTH}) value as Y
+${BADGE_AUTH} = Y
+
+//And provide desired value to ${BADGE_INDEX}
+${BADGE_INDEX} = 0
+
+//Username\Password parameters
+${STF_UserName} = U1112
+${STF_UserPassword} = Hp123456789!
+
+
+//Short ID Parameter
+${SHORT_ID_CODE} = 1111
+

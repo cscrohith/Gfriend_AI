@@ -1,0 +1,27 @@
+﻿using JediOmni
+Using VasionPrintTC.gflib
+Using VasionPrint.gfvar
+
+Authentication
+{
+   VasionPrintTC.Authentication(${USERNAME},${PASSWORD},${BADGE_AUTH},${BADGE_INDEX})
+}
+
+VasionPrint_Flow
+{
+   //To Print the jobs
+   If: Equals IgnoreCase (${PRINT},Y)
+   {
+       VasionPrintTC.VasionPrint_PullPrint(${PRINT_ALL})
+   }
+   //To Delete the jobs
+   Fail:
+   {
+       VasionPrintTC.VasionPrint_Delete(${PRINT_ALL})
+   }
+}
+
+Teardown
+{ 
+   VasionPrintTC.VasionPrint_Teardown()
+} 

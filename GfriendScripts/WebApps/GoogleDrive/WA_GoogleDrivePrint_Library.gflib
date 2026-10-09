@@ -1,0 +1,833 @@
+﻿/// <File>WA_GoogleDrivePrint_Library.gflib</File>
+/// <Modified>2021-09-02</Modified>
+/// <Description>Library of print routines for use with the 
+///   HP for DropGoogle Drive Web App</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Common_LIbrary.gflib
+Using ..\..\Common\Common_LIbrary.gflib
+
+Using Oxpd
+Using JediOmni
+
+/// <Name>SelectPrintOption</Name>
+/// <Description>Select the specified option from the Print options screen</Description>
+/// <Parameters>OptionText : text of option</Parameters>
+/// <Precondition></Precondition>
+/// <Notes>Called by multiple routines</Notes>
+SelectPrintOption (${OptionText})
+{
+    If: Oxpd.Wait For Css (div#PrintOptions,${Minimal_Wait_Time})
+    {
+        Oxpd.Touch Text (${OptionText})
+        // short delay to ensure the option screen displays
+        Sleep (${Minimal_Wait_Time})
+        // if still not displayed then swipe up to 3 pages
+        While:Oxpd.Wait For Css (div#PrintOptions,${Minimal_Wait_Time}):3
+        {
+            JediOmni.Drag (50,80,50,20)
+            @Oxpd.Touch Text (${OptionText})
+            // short delay for possible screen change
+            Sleep (${Minimal_Wait_Time})
+        }
+        
+        If: Oxpd.Wait For Css (div#PrintOptions,${Minimal_Wait_Time})
+        {
+            JediOmni.Capture Screen Shot (SelectPrintOption_Fail.png)
+            Return With Fail (The specified Print option is not available!)
+        }
+        Fail:
+        {
+            Return With Pass (Select Print Option complete!)
+        }
+        
+//        // check for in specified option screen
+//        If: Oxpd.Wait For Text (${OptionText},${Minimal_Wait_Time})
+//        {
+//            Return With Pass (Select Print Option complete!)
+//        }
+//        Fail:
+//        {
+//            JediOmni.Capture Screen Shot (SelectPrintOption_Fail.png)
+//            Return With Fail (Fail while selecting the specified Print option!)
+//        }
+//        Error:
+//        {
+//            JediOmni.Capture Screen Shot (SelectPrintOption_Error.png)
+//            Return With Error (Error while selecting specified Print option!)
+//        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SelectPrintOption_Fail.png)
+        Return With Fail (Fail while selecting specified Print option!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SelectPrintOption_Error.png)
+        Return With Error (Error while selecting specified Print option!)
+    }
+}
+
+/// <Name>SetPrintOption_Copies</Name>
+/// <Description>Set the number of copies print option</Description>
+/// <Parameters>Num_Copies : number of copies to print</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetPrintOption_Copies(${Num_Copies})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Num_Copies})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Num_Copies specified)
+    }
+    
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_Copies_Fail.png)
+        Return With Fail (Fail while setting Number of Copies print option!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_Copies_Error.png)
+        Return With Error (Error while setting Number of Copies print option!)
+    }
+    
+    // select the number of copies textbox
+    Oxpd.Wait For Xpath (//*[@class="common-action"]//descendant::input,${Short_Wait_Time})
+    If: Oxpd.Touch XPath (//*[@class="common-action"]//descendant::input)
+    {
+        JediOmni.Wait For Object (hpid-keyboard,${Short_Wait_Time})
+        
+        // clear the current value
+        If: JediOmni.Touch ID (hpid-keyboard-key-right)
+        {
+        }
+        Error:
+        {
+            // in case the above move right command closed the keyboard
+            Oxpd.Touch XPath (//*[@class="common-action"]//descendant::input)
+        }
+        JediOmni.Touch ID (hpid-keyboard-key-backspace)
+        
+        // set the specified option
+        Oxpd.Input Text (${Num_Copies})
+
+        // close the keyboard
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        Sleep (${Minimal_Wait_Time})
+
+        Oxpd.Return Browser Engine
+        Return With Pass (Set Print Option Copies complete!)
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_Copies_Fail.png)
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail while setting Number of Copies print option!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_Copies_Error.png)
+        Oxpd.Return Browser Engine
+        Return With Error (Error while setting Number of Copies print option!)
+    }
+}
+
+/// <Name>SetPrintOption_OutputSides</Name>
+/// <Description>Set the output sides option</Description>
+/// <Parameters>OutputSides : output sides</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetPrintOption_OutputSides(${OutputSides})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${OutputSides})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No OutputSides specified)
+    }
+
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_OutputSides_Fail.png)
+        Return With Fail (Fail while selecting Output Sides print option!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_OutputSides_Error.png)
+        Return With Error (Error while selecting Output Sides print option!)
+    }
+    
+    // select the option
+    If: WA_GoogleDrivePrint_Library.SelectPrintOption (Output sides)
+    {
+        // set the specified option
+        If: Oxpd.Touch Text (${OutputSides})
+        {
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Print Option Output Sides '${OutputSides}' complete!)
+        }
+        Fail:
+        {
+            // press the Done button to close the option view
+            JediOmni.Capture Screen Shot (SetPrintOption_OutputSides_Fail.png)
+            @Oxpd.Touch Css (.back)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Fail (Fail while setting Output Sides print option '${OutputSides}'!)
+        }
+        Error:
+        {
+            // press the Done button to close the option view
+            JediOmni.Capture Screen Shot (SetPrintOption_OutputSides_Error.png)
+            @Oxpd.Touch Css (.back)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Error (Error while setting Output Sides print option '${OutputSides}'!)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_OutputSides_Fail.png)
+        // this indicates that the Output Sides option was not found
+        Oxpd.Return Browser Engine
+        Return With Pass (Print Option Output Sides not available!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_OutputSides_Error.png)
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Output Sides print option!)
+    }
+}
+
+/// <Name>SetPrintOption_ColorBlack</Name>
+/// <Description>Set the color/black option</Description>
+/// <Parameters>Color_Black : color/black text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetPrintOption_ColorBlack(${Color_Black})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Color_Black})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Color_Black specified)
+    }
+
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_ColorBlack_Fail.png)
+        Return With Fail (Fail while selecting Color/Black print option!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_ColorBlack_Error.png)
+        Return With Error (Error while selecting Color/Black print option!)
+    }
+    
+    // select the option
+    If: WA_GoogleDrivePrint_Library.SelectPrintOption (Color/Black)
+    {
+        If: Oxpd.Touch Text (${Color_Black})
+        {
+            Sleep (${Minimal_Wait_Time})
+            
+            // succuss, close and return to the Options screen
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#Options,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Print Option Color/Black '${Color_Black}' complete!)
+        }
+        Fail:
+        {
+            // check for fail due to Color specified,
+            If: Equals (${Color_Black},Color)
+            {
+                // assume mono device and ignore fail
+                @Oxpd.Touch Css (.back)
+                Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+                
+                Oxpd.Return Browser Engine
+                Return With Pass (Set Print Option Color/Black '${Color_Black}' complete!)
+            }
+            Fail:
+            {
+                JediOmni.Capture Screen Shot (SetPrintOption_ColorBlack_Fail.png)
+                @Oxpd.Touch Css (.back)
+                Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+                
+                Oxpd.Return Browser Engine
+                Return With Fail (Fail while selecting Color/Black print option '${Color_Black}'!)
+            }
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_ColorBlack_Error.png)
+            @Oxpd.Touch Css (.back)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Error (Error while selecting Color/Black print option '${Color_Black}'!)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_ColorBlack_Fail.png)
+        // this indicates that the Color/Black option was not found
+        Oxpd.Return Browser Engine
+        Return With Pass (Print Option Color/Black not available!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_ColorBlack_Error.png)
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Color/Black print option!)
+    }
+}
+
+/// <Name>SetPrintOption_PaperSelection_PaperSize</Name>
+/// <Description>Set the paper size option</Description>
+/// <Parameters>PaperSize : paper size text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetPrintOption_PaperSelection_PaperSize(${PaperSize})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${PaperSize})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No PaperSize specified)
+    }
+
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperSize_Fail.png)
+        Return With Fail (Fail while selecting PaperSize print option!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperSize_Error.png)
+        Return With Error (Error while selecting PaperSize print option!)
+    }
+    
+    If: WA_GoogleDrivePrint_Library.SelectPrintOption (Paper Selection)
+    {
+        // click on the option
+        Oxpd.Wait For Text (Paper Size,${Very_Short_Wait_Time})
+        Oxpd.Touch Text (Paper Size)
+        Oxpd.Wait For Css (#PaperSize,${Short_Wait_Time})
+        Sleep (${Minimal_Wait_Time})
+        
+        // find the size in the list
+        // attempt to click on the specified option
+        // and then check to see if it
+        // has been set to the active (selected) item
+        If: Oxpd.Touch Text (${PaperSize})
+        {
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperSize_Fail.png)
+            // failure backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while selecting Paper Size scan option '${PaperSize}'!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperSize_Error.png)
+            // error backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Error (Error while selecting Paper Size scan option '${PaperSize}'!)
+        }
+        
+        // verify the specified item is selelcted
+        If: Oxpd.Wait For Xpath (//li[contains\(@class\,"selected"\)]/descendant::div[contains\(text\(\)\,"${PaperSize}"\)],${Minimal_Wait_Time})
+        {
+            // succuss, close and return to the Options screen
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Scan Option Paper Size '${PaperSize}' complete!)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperSize_Fail.png)
+            // failure backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while selecting Paper Size scan option '${PaperSize}'!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperSize_Error.png)
+            // error backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Error (Error while selecting Paper Size scan option '${PaperSize}'!)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperSize_Fail.png)
+        // this indicates that the Paper Size option was not found
+        Oxpd.Return Browser Engine
+        Return With Pass (Print Option Paper Size not available!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperSize_Error.png)
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Paper Size print option!)
+    }
+}
+
+/// <Name>SetPrintOption_PaperSelection_PaperType</Name>
+/// <Description>Set the paper type option</Description>
+/// <Parameters>PaperType : paper type text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetPrintOption_PaperSelection_PaperType(${PaperType})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${PaperType})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No PaperType specified)
+    }
+    
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperType_Fail.png)
+        Return With Fail (Fail while selecting PaperType print option!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperType_Error.png)
+        Return With Error (Error while selecting PaperType print option!)
+    }
+    
+    If: WA_GoogleDrivePrint_Library.SelectPrintOption (Paper Selection)
+    {
+        // click on the option
+        Oxpd.Wait For Text (Paper Type,${Very_Short_Wait_Time})
+        Oxpd.Touch Text (Paper Type)
+        Oxpd.Wait For Css (#PaperType,${Short_Wait_Time})
+        Sleep (${Minimal_Wait_Time})
+        
+        // find the size in the list
+        // attempt to click on the specified option
+        // and then check to see if it
+        // has been set to the active (selected) item
+        If: Oxpd.Touch Text (${PaperType})
+        {
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperType_Fail.png)
+            // failure backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while selecting Paper Type scan option '${PaperType}'!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperType_Error.png)
+            // error backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Error (Error while selecting Paper Type scan option '${PaperType}'!)
+        }
+        
+        // verify the specified item is selelcted
+        If: Oxpd.Wait For Xpath (//li[contains\(@class\,"active-list"\)]/descendant::div[text\(\)="${PaperType}"],${Minimal_Wait_Time})
+        {
+            // succuss, close and return to the Options screen
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Scan Option PaperType '${PaperType}' complete!)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperType_Fail.png)
+            // failure backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while selecting Paper Type scan option '${PaperType}'!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperType_Error.png)
+            // error backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Error (Error while selecting Paper Type scan option '${PaperType}'!)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperType_Fail.png)
+        // this indicates that the Paper Type option was not found
+        Oxpd.Return Browser Engine
+        Return With Pass (Print Option Paper Type not available!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperType_Error.png)
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Paper Type print option!)
+    }
+}
+
+/// <Name>SetPrintOption_PaperSelection_PaperTray</Name>
+/// <Description>Set the tray option</Description>
+/// <Parameters>PaperTray : tray text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetPrintOption_PaperSelection_PaperTray(${PaperTray})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${PaperTray})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No PaperTray specified)
+    }
+    
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperTray_Fail.png)
+        Return With Fail (Fail while selecting PaperTray print option!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperTray_Error.png)
+        Return With Error (Error while selecting PaperTray print option!)
+    }
+    
+    If: WA_GoogleDrivePrint_Library.SelectPrintOption (Paper Selection)
+    {
+        // click on the option
+        Oxpd.Wait For Text (Paper Tray,${Very_Short_Wait_Time})
+        Oxpd.Touch Text (Paper Tray)
+        Oxpd.Wait For Css (#PaperTray,${Short_Wait_Time})
+        
+        If: Oxpd.Touch Text (${PaperTray})
+        {
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperTray_Fail.png)
+            // failure backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while selecting Paper Tray scan option '${PaperTray}'!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperTray_Error.png)
+            // error backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Error (Error while selecting Paper Tray scan option '${PaperTray}'!)
+        }
+        
+        // verify the specified item is selelcted
+        If: Oxpd.Wait For Xpath (//li[contains\(@class\,"active-list"\)]/descendant::div[text\(\)="${PaperTray}"],${Minimal_Wait_Time})
+        {
+            // succuss, close and return to the Options screen
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Scan Option PaperTray '${PaperTray}' complete!)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperTray_Fail.png)
+            // failure backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while selecting Paper Tray scan option '${PaperTray}'!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperTray_Error.png)
+            // error backout and return to the Options screen
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PaperSelectionHeader,${Short_Wait_Time})
+            @Oxpd.Touch Css (.back)
+            @Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Error (Error while selecting Paper Tray scan option '${PaperTray}'!)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperTray_Fail.png)
+        // this indicates that the Paper Tray option was not found
+        Oxpd.Return Browser Engine
+        Return With Pass (Print Option Paper Tray not available!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_PaperTray_Error.png)
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Paper Tray print option!)
+    }
+}
+
+/// <Name>SetPrintOption_PaperSelection_Collate</Name>
+/// <Description>Set the collate option</Description>
+/// <Parameters>Collate : collate option text</Parameters>
+/// <Precondition></Precondition>
+/// <Notes></Notes>
+SetPrintOption_PaperSelection_Collate(${Collate})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Collate})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Collate specified)
+    }
+
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_Collate_Fail.png)
+        Return With Fail (Fail while selecting Collate print option!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_Collate_Error.png)
+        Return With Error (Error while selecting Collate print option!)
+    }
+    
+    // select the option
+    If: WA_GoogleDrivePrint_Library.SelectPrintOption (Collate)
+    {
+        // set the specified option
+        If: Oxpd.Touch Text (${Collate})
+        {
+            Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Print Option Collate '${Collate}' complete!)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_Collate_Fail.png)
+            // press the Done button to close the option view
+            @Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Fail (Fail while setting Collate print option '${Collate}'!)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_Collate_Error.png)
+            // press the Done button to close the option view
+            @Oxpd.Touch ID (Done)
+            Oxpd.Wait For Css (div#PrintOptions,${Short_Wait_Time})
+            
+            Oxpd.Return Browser Engine
+            Error (Error while setting Collate print option '${Collate}'!)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_Collate_Fail.png)
+        // this indicates that the Collate was not found
+        Oxpd.Return Browser Engine
+        Return With Pass (Print Option Collate not available!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (SetPrintOption_PaperSelection_Collate_Error.png)
+        Oxpd.Return Browser Engine
+        Return With Error (Error while selecting Collate print option!)
+    }
+}
+
+/// <Name>Perform_PrintJob</Name>
+/// <Description>Print the currently selected document</Description>
+/// <Parameters>PrintJobCompleteTimeout : timeout (seconds) for job to complete successfully</Parameters>
+/// <Precondition>File selected in print screen</Precondition>
+/// <Notes></Notes>
+Perform_PrintJob(${PrintJobCompleteTimeout})
+{
+    If: Oxpd.Get Browser Engine
+    {
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (Perform_PrintJob_Fail.png)
+        Return With Fail (Fail while performing print job!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (Perform_PrintJob_Error.png)
+        Return With Error (Error while performing print job!)
+    }
+
+    // ensure in print options screen
+    If: Oxpd.Wait For Css (#PrintOptions.role,${Long_Wait})
+    {
+        Oxpd.Touch ID (StartPrint)
+        
+        // wait for the print popup to display
+        Oxpd.Wait For XPath (//div[@id="print"][@style="display: block;"],${Long_Wait})
+  
+        // wait for the print popup to disappear
+        // to verify that the job is complete or successful
+        //        If: Oxpd.Wait For Xpath (//*[@id="storage-description" or contains\(text\(\)\,"Job is complete"\)],${PrintJobCompleteTimeout})
+        
+        If: Oxpd.Wait For Xpath (//*[@id="print"]/descendant::*[contains\(translate\(text\(\)\, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\, "abcdefghijklmnopqrstuvwxyz"\)\, "complete"\) or contains\(translate\(text\(\)\, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\, "abcdefghijklmnopqrstuvwxyz"\)\, "success"\)], ${PrintJobCompleteTimeout})
+        {
+            //        If: Oxpd.Wait For Xpath (//*[contains\(text\(\)\,"Job is complete"\)],${Minimal_Wait_Time})
+            
+            If: Oxpd.Wait For Xpath (//*[@id="print"]/descendant::*[contains\(translate\(text\(\)\, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\, "abcdefghijklmnopqrstuvwxyz"\)\, "complete"\) or contains\(translate\(text\(\)\, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\, "abcdefghijklmnopqrstuvwxyz"\)\, "success"\)], ${Minimal_Wait_Time})
+            {
+                Oxpd.Touch Id (scan-cancel-button)
+            }
+            Sleep (${Short_Wait_Time})
+            Oxpd.Return Browser Engine
+            Return With Pass (Set Print Option Perform Print Job complete!)
+        }
+        Fail:
+        {
+            JediOmni.Capture Screen Shot (Perform_PrintJob_Fail.png)
+            //job did not complete, attempt to close the print popup then return fail
+            @Oxpd.Touch ID (Print-cancel-button)
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail print document within the speicfied timeout)
+        }
+        Error:
+        {
+            JediOmni.Capture Screen Shot (Perform_PrintJob_Error.png)
+            //job did not complete, attempt to close the print popup then return fail
+            @Oxpd.Touch ID (Print-cancel-button)
+            Oxpd.Return Browser Engine
+            Return With Error (Error print document within the speicfied timeout)
+        }
+    }
+    Fail:
+    {
+        JediOmni.Capture Screen Shot (Perform_PrintJob_Fail.png)
+        Oxpd.Return Browser Engine
+        Return With Fail (Fail - print screen not displayed!)
+    }
+    Error:
+    {
+        JediOmni.Capture Screen Shot (Perform_PrintJob_Error.png)
+        Oxpd.Return Browser Engine
+        Return With Error (Error  - print screen not displayed!)
+    }
+}

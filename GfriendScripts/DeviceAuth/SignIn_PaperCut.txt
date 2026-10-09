@@ -1,0 +1,37 @@
+﻿/// <File>SignIn_PaperCut.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Sign in on a device with PaperCut authentication</Description>
+/// <Precondition>SignIn_PaperCut.gfvar contains the needed authentication variables.
+///   If this script is run from STF/STB the variables with names beginning
+///   with STF_ can be commented to use the values from the STF/STB virtual 
+///   worker user</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using SignIn_PaperCut.gfvar
+
+Using DeviceAuth.gflib
+
+Using JediOmni
+Using Oxpd
+
+/// <Name>SignIn_PaperCut</Name>
+/// <Description>Sign in to device with PaperCut authentication</Description>
+/// <Notes>SignIn_PaperCut.gfvar contains the needed User variables.
+///   If this script is run from STF/STB the variables with names beginning
+///   with STF_ can be commented to use the values from the STF/STB virtual worker user.
+///   This routine handles SIO as needed, including linking to an HPID account</Notes>
+SignIn_PaperCut
+{
+    If: DeviceAuth.Sign_In_PaperCut (${STF_UserName},${UserCode},${STF_UserPassword},${Auth_TryUserID_First_YN})
+    {// complete the sign in process
+        DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+    }
+    Fail:
+    {
+        Fail (Failed signing in with PaperCut authentication!)
+    }
+    Error:
+    {
+        Error (Error signing in with PaperCut authentication!)
+    }
+}

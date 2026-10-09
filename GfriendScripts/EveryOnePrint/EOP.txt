@@ -1,0 +1,37 @@
+﻿using JediOmni
+using EOP_AUTH.gflib
+using Info
+using EOP_Variables.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         EOP_FLOW
+// Description:     EOP Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+EOP_FLOW
+{
+    JediOmni.Enable Paperless Mode
+    If: EOP_AUTH.EOP_PullPrint(${PRINT_ALL},${STF_UserName},${STF_UserPassword},${LAZY_AUTH},${SHORT_ID},${SHORT_ID_CODE})
+    { 
+        //Continue  
+    }
+    
+    Fail:
+    {
+        Return With Fail (Failed while Performing pull print operation!)
+    }
+    Error:
+    {
+        Return With Error (Error while Performing pull print operation!)
+    }
+    EOP_AUTH.SignOut
+}
+

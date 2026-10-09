@@ -1,0 +1,339 @@
+﻿/// <File>HPCC_VerifyInitialSyncDevices.txt</File>
+/// <Modified>2021-05-03</Modified>
+/// <Description>Verify the initial sync of up to 10 devices in a customer
+///   from HP Command Center (HPCC)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC_DeviceList.gfvar
+Using HPCC.gfvar
+Using HPCC_Sync_Device.gfvar
+
+Using HPCC_Library.gflib
+
+/// <Name>VerifyInitialSyncDevices</Name>
+/// <Description>Verify the initial sync of up to 10 devices in a customer
+///   from HP Command Center (HPCC)</Description>
+/// <Notes></Notes>
+VerifyInitialSyncDevices
+{
+    // Sign in
+    If: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In Failed!)
+        Stop Test Case
+    }
+    
+    //  search device 1
+    // check for device Serial No specified
+    If: Contains (${Device_SN_1},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_1},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_1},${MaxDeviceSynchTime})
+            {
+                Pass (Device 1 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 1!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 1!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    //  search device 2
+    // check for device Serial No specified
+    If: Contains (${Device_SN_2},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_2},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_2},${MaxDeviceSynchTime})
+            {
+                Pass (Device 2 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 2!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 2!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    //  search device 3
+    // check for device Serial No specified
+    If: Contains (${Device_SN_3},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_3},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_3},${MaxDeviceSynchTime})
+            {
+                Pass (Device 3 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 3!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 3!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    //  search device 4
+    // check for device Serial No specified
+    If: Contains (${Device_SN_4},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_4},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_4},${MaxDeviceSynchTime})
+            {
+                Pass (Device 4 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 4!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 4!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    //  search device 5
+    // check for device Serial No specified
+    If: Contains (${Device_SN_5},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_5},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_5},${MaxDeviceSynchTime})
+            {
+                Pass (Device 5 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 5!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 5!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    //  search device 6
+    // check for device Serial No specified
+    If: Contains (${Device_SN_6},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_6},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_6},${MaxDeviceSynchTime})
+            {
+                Pass (Device 6 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 6!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 6!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    //  search device 7
+    // check for device Serial No specified
+    If: Contains (${Device_SN_7},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_7},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_7},${MaxDeviceSynchTime})
+            {
+                Pass (Device 7 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 7!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 7!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    //  search device 8
+    // check for device Serial No specified
+    If: Contains (${Device_SN_8},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_8},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_8},${MaxDeviceSynchTime})
+            {
+                Pass (Device 8 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 8!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 8!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    //  search device 9
+    // check for device Serial No specified
+    If: Contains (${Device_SN_9},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_9},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_9},${MaxDeviceSynchTime})
+            {
+                Pass (Device 9 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 9!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 9!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    //  search device 10
+    // check for device Serial No specified
+    If: Contains (${Device_SN_10},${)
+    {
+        // device Serial No not specified, no action
+    }
+    Fail:
+    {
+        If: Equals (${Device_SN_10},)
+        {
+            // device Serial No not specified, no action
+        }
+        Fail:
+        {
+            If: HPCC_Library.VerifyDeviceSynced(${HPCC_Customer},${Device_SN_10},${MaxDeviceSynchTime})
+            {
+                Pass (Device 10 initial synch verified!)
+            }
+            Fail:
+            {
+                Fail (Fail occured verifying initial synch for device 10!)
+            }
+            Error:
+            {
+                Error (Error occured verifying initial synch for device 10!)
+            }
+        }
+    }
+    Sleep (${Short_Wait_Time})
+    
+    HPCC_Library.SignOut()
+    
+    Web.Close
+}

@@ -1,0 +1,7 @@
+﻿//To Print all the jobs, provide the variable (${PRINT_ALL}) value as Y
+//To Print one job, provide the variable (${PRINT_ALL}) value as N
+${PRINT_ALL} = N
+
+//Provide The variable ${BADGE_INDEX} with the Configured Card Slot.
+${BADGE_INDEX} = 0
+

@@ -1,0 +1,16 @@
+﻿Using ePRINTit.gflib
+Using ePRINTit.gfvar
+
+
+ePRINTit Web
+{
+    ePRINTit.ePrintit Web(${Username},${Password},${Documentpath})
+}
+ePRINTit Device
+{
+    ePRINTit.ePrintit device(${Username},${Password},${txtname})
+}
+ePRINTitDelete Web
+{
+    ePRINTit.ePrintitDelete Web(${Username},${Password},${txtname})
+}

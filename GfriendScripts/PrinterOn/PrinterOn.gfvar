@@ -1,0 +1,19 @@
+﻿//Open Print Page Link
+${PrinterOnLink} = https://146.205.2.149/cps
+
+//Credentials 
+${Username} = administrator
+${Password} = Act@123
+
+//Printer Name
+${PrinterName} = Busch
+
+//Print file Path 
+${Filepath} = C:\Users\KSManjun\Documents\Captura
+
+//Print file name
+${Filename} = 4738370.jpg
+
+
+
+

@@ -1,0 +1,223 @@
+﻿using Web
+
+OpenAlumaWebApplication(${AlumaPortalUrl})
+{
+    Web.Open Chrome with Arguments (${AlumaPortalUrl},20,)
+}
+
+LoginToAlumaWebApplication(${EmailTextFeild},${UserEmail},${PasswordTextFeild},${UserPassword},${SignInWithEmailButton})
+{
+    //Input email Id in login page
+    If: Web.Wait For Object (${EmailTextFeild},20)
+    {
+        Web.Click Object (${EmailTextFeild})
+        Web.Append Text (${EmailTextFeild},${UserEmail})
+    }
+    Fail: 
+    {
+        Web.Capture Screenshot (failed-input-email)
+        Fail (Couldn't load the email ID field on the login page)
+        Stop Test Case
+    }
+    
+    //Input password in login page
+    if: Web.Wait For Object (${PasswordTextFeild},5)
+    {
+        Web.Click Object (${PasswordTextFeild})
+        Web.Append Text (${PasswordTextFeild},${UserPassword})
+    }
+    Fail: 
+    {
+        Web.Capture Screenshot (failed-input-pwd)
+        Fail (Failed to load the Password field on the login page)
+        Stop Test Case
+    }
+    
+    //Click on login button
+    if: Web.Wait For Object (${SignInWithEmailButton},5)
+    {
+        Web.Click Object (${SignInWithEmailButton})
+    }
+    Fail: 
+    {
+        Web.Capture Screenshot (failed-clicking-login)
+        Fail (Failed to load the Sign IN  button on the login page)
+        Stop Test Case
+    }
+    Sleep(5)
+}
+
+OpenValidationPage(${ValidationButton})
+{
+    If: Web.Wait For Object (${ValidationButton},5)
+    {
+        Web.Click Object (${ValidationButton})
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (failed-opening-validation-pg)
+        Return With Fail (Failed to click Validate button) 
+    }
+    Error:
+    {
+        Web.Capture Screenshot (failed-opening-validation-pg)
+        Return With Fail (Validate button was not found)
+    }
+    Sleep(1)
+    Web.Select Tab (2)
+    //Give some time to tab for loading
+    Sleep(10)
+}
+   
+SelectDemoProjectForValidation
+{
+    While:!Web.Wait For Text (demo-1,5):2
+    {
+        Sleep(10)
+    }
+    If: Web.Wait For Text (demo-1,1)
+    {
+        Web.Click Text (demo-1)
+        //Give some time for page to load
+        Sleep(10)
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (failed-opening-demo-proj)
+        Fail (Demo project was not available)
+        Stop Test Case
+    }
+}
+
+PerformDocumentSeperation_AlumaPortal(${Document3},${MoveArrowAtDocument3},${Document4},${MoveArrowAtDocument4},${Document3Page1},${SeparateDocument3And4})
+{
+    //Select document-3 and club it with document-2
+    While:!Web.Wait For Object (${Document3},1):5 
+    {
+        Sleep(2)
+    }
+    If:Web.Wait For Object (${Document3},1)
+    {
+       Web.Click Object (${Document3}) 
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (failed-selecting-doc3)
+        Fail (Failed to select document-3)
+    }
+    
+    While:!Web.Wait For Object (${MoveArrowAtDocument3},1):5
+    {
+        Sleep(2)
+    }
+    If:Web.Wait For Object (${MoveArrowAtDocument3},1)
+    {
+        Web.Click Object (${MoveArrowAtDocument3})
+        Sleep(3)
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (failed-moving-doc3-to-doc2)
+        Fail (Failed to click on MoveArrow button to merge document-3 to document-2)
+    }
+    
+    //Select document-4 and club it with document-3
+    Web.ScrollDownToParicularObject(${Document4})
+    While:!Web.Wait For Object (${Document4},1):5 
+    {
+        Sleep(2)
+    }
+    If:Web.Wait For Object (${Document4},1)
+    {
+        Web.Click Object (${Document4})
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (failed-selecting-doc4)
+        Fail (Failed to select document-4)
+    }
+    
+    While:!Web.Wait For Object (${MoveArrowAtDocument4},1):10
+    {
+        Sleep(5)
+    }
+    If: Web.Wait For Object (${MoveArrowAtDocument4},1)
+    {
+        Web.Click Object (${MoveArrowAtDocument4})
+        Sleep(5)
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (failed-moving-doc4-to-doc3)
+        Fail (Failed to click on MoveArrow button to merge document-4 to document-3)
+    }
+    
+    //Separate document-4 from document-3
+    While:!Web.Wait For Object (${Document3Page1},1):5 
+    {
+        Sleep(2)
+    }
+    If:Web.Wait For Object (${Document3Page1},1)
+    {
+        Web.Click Object (${Document3Page1})
+        Sleep(1)
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (failed-slct-page-1-of-doc-3)
+        Fail (Failed to select page-1 of document3)
+    }
+    
+    While:!Web.Wait For Object (${SeparateDocument3And4},1):5 
+    {
+        Sleep(2)
+    }
+    If:Web.Wait For Object (${SeparateDocument3And4},1)
+    {
+        Web.Click Object (${SeparateDocument3And4})
+        Sleep(5)
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (failed-seperating-doc3-and-doc4)
+        Fail (Failed to seperate doc-4 from doc-3)
+    } 
+}
+
+PerformDocumentFeildsValidation_AlumaPortal(${Document0},${MoveToNextDocument},${FeildViewButton},${InputTextFeild_Fornitore},${InputValue},${InputTextFeild_PartitaIva})
+{
+    //Select initial document
+    Web.Click Object (${Document0})
+    Sleep(1)
+    
+    //Go to document-2 page-0
+    Web.Click Object (${MoveToNextDocument})
+    Web.Click Object (${FeildViewButton})
+    
+    Repeat:4
+    {
+        Web.Click Object (${InputTextFeild_Fornitore})
+        Web.Set Text (${InputTextFeild_Fornitore},${InputValue})
+        Web.Click Object (${InputTextFeild_PartitaIva})
+        Web.Set Text (${InputTextFeild_PartitaIva},${InputValue})
+        Web.Capture Screenshot (after-feild-input-validation)
+        Web.Click Object (${MoveToNextDocument})
+        // Give some time to next fields to load.
+        Sleep(2) 
+    }
+}
+
+CompleteReview(${ThumbnailViewButton},${ReviewCompleteButton},${SubmitAndOpenNextTaskDropdown},${SubmitAndReturnToTaskList})
+{
+    Web.Click Object (${ThumbnailViewButton})
+    Sleep(1)
+    Web.Click Object(${ReviewCompleteButton})
+    Sleep(1)
+    Web.Click Object (${SubmitAndOpenNextTaskDropdown})
+    Sleep(1)
+    Web.Click Object (${SubmitAndReturnToTaskList})
+    
+    //Wait for validation task to disappear from list
+    Sleep(15)
+    Web.Capture Screenshot (after-completing-validation)
+}

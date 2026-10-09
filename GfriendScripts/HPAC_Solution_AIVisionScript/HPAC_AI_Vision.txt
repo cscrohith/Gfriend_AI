@@ -1,0 +1,22 @@
+﻿using HPAC_AI_Vision.gflib
+using HPAC_Variables_AI_Vision.gfvar
+
+Setup_AIVision
+{
+    HPAC_AI_Vision.Setup_AIVision
+}
+
+Authentication
+{
+    HPAC_AI_Vision.HPAC_Authentication_AI_Vision(${STF_UserName},${STF_UserPassword},${BADGE_AUTH},${STF_BadgeIndex})
+}
+
+Execute_Job_Flow
+{
+    HPAC_AI_Vision.HPAC_Print_AI_Vision(${PRINT_RELEASE_ACTION})    
+}
+
+Teardown
+{
+    HPAC_AI_Vision.ClearAuth_AIVision
+}

@@ -1,0 +1,44 @@
+﻿/// <File>HPCC_SignIn_SignOut.txt</File>
+/// <Modified>2021-11-11</Modified>
+/// <Description>Sign in then sign out to HP Command Center (HPCC)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// specify the timeout for waiting for the HPCC main page to 
+// display after entering password and clicking Sign In button
+${SignInTimeout} = 120
+
+// specify the timeout from the HPCC main page to display to
+// signing out
+${SignOutTimeout} = 120
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC.gfvar
+
+Using HPCC_Library.gflib
+
+/// <Name>SignIn_SignOut</Name>
+/// <Description>Sign in then sign out to HP Command Center (HPCC)</Description>
+/// <Notes></Notes>
+SignIn_SignOut
+{
+    //Signin
+    IF: HPCC_Library.SignIn_SpecifyTimeout (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser},${SignInTimeout})
+    {
+        Sleep (${SignOutTimeout})
+        HPCC_Library.SignOut()
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In Failed!)
+    }
+    Error:
+    {
+        Error (Error while signing in to HPCC!)
+    }
+    Web.Close
+}

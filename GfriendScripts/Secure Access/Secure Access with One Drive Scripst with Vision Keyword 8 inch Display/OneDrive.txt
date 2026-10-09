@@ -1,0 +1,105 @@
+﻿using JediOmni
+using Vision
+using BadgeBox
+using Files.gfvar
+using One_Drive.gflib
+  
+Setup_AzureVision
+{
+    One_Drive.AzureVisionSetup(${STF_AzureEndpoint},${STF_AzureKey})
+}
+
+ClearAuth
+{
+    If: One_Drive.ClearAuth(${SignIn_Or_SignOut_ID})
+    {
+        Pass (ClearAuth) 
+    }
+}
+
+SecureAccessBadgeBox_SignIn
+{
+    JediOmni.Press Home Key
+    Sleep (2)
+        
+    JediOmni.Reset
+    Sleep (2)
+        
+    If: BadgeBox.Scan Badge (0)
+    {
+        Pass(Successful Login)
+    }
+    Fail:
+    {
+        Return With Fail (Failed Login)
+    }
+    Sleep (10)
+        
+    JediOmni.Press Tab Key
+    JediOmni.Input Text (123456)
+    Sleep (3)
+    Vision.Click Text (OK)
+    Sleep (30)
+    If: Vision.Is Text Exist (HP for OneDrive)
+    {
+        Pass (One Drive APP insatlled)
+    }
+    Fail:
+    {
+        Fail (One Drive App not insatlled)
+    }
+} 
+   
+One_Drive_SignIn
+{
+    If: One_Drive.One_Drive_SignIn(${Email},${EmailPasswordPart1},${EmailPasswordPart2})
+    {
+        Pass (One Drive Sign In Successful) 
+    }
+    Fail:
+    {
+        Fail (One Drive Sign In Failed)
+        One_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+        Stop Test Suite 
+    }
+}  
+
+One_Drive_Print
+{
+    If: One_Drive.One_Drive_Print(${Doc_Name},${File_Name})
+    {
+        Pass (Print Doc Successful) 
+    }
+    Fail:
+    {
+        Fail (fail to print Doc) 
+        One_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+        Stop Test Suite
+    }
+} 
+
+One_Drive_SignOut
+{
+    If: One_Drive.One_Drive_SignOut
+    {
+        Pass (Sign Out Successful) 
+    }
+    Fail:
+    {
+        Fail (Fail to Sign Out) 
+        One_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+        Stop Test Suite
+    }
+} 
+   
+SignOut
+{
+    If: One_Drive.SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+    {
+        Pass (Sign Out Successful)
+    }  
+    Fail:
+    {
+        Fail (Fail to Sign Out)
+    }
+}

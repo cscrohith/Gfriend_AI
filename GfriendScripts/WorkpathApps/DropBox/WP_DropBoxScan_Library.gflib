@@ -1,0 +1,602 @@
+﻿///<File>WP_DropboxScan_Library.gflib</File>
+///<Modified>2021-09-24</Modified>
+///<Description>library of scan routines for use with the HP for Dropbox Workpath App</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Common_LIbrary.gflib
+Using ..\..\Common\Common_LIbrary.gflib
+
+Using WP_Dropbox_Library.gflib
+
+Using Android
+Using JediOmni
+
+///<Name>OpenScanOptions</Name>
+///<Description>Open the scan options screen</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+OpenScanOptions
+{
+    // open the options screen
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/bt_hide_options,${Short_Wait_Time})
+    {
+        Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_hide_options)
+        // wait for the button to show Hide Options text
+        Android.Wait For Text (Hide Options,${Short_Wait_Time})
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while opening scan job options!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while opening scan job options!)
+    }
+}
+
+///<Name>CloseScanOptions</Name>
+///<Description>Close the scan options screen</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+CloseScanOptions
+{
+    // close the optinos screen
+    If: Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_hide_options)
+    {
+        // wait for the File Name textbox to display
+        Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/editTextDescription,${Short_Wait_Time})
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while closing scan options!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while closing scan options!)
+    }
+}
+
+///<Name>SelectScanOption</Name>
+///<Description>Select the specified option from the scan options screen</Description>
+///<Parameters>OptionText : text of option</Parameters>
+///<Precondition></Precondition>
+///<Notes>Called by multiple routines in this library</Notes>
+SelectScanOption(${OptionText})
+{
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/lv_option_list,${Very_Short_Wait_Time})
+    {
+        // if the option is not displayed, then swipe down up to 2 pages
+        While:!Android.Wait For Text (${OptionText},${Zero_Wait_Time}):2
+        {
+            Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/lv_option_list,v)
+        }
+        // if still not displayed then swipe up to 4 pages
+        While:!Android.Wait For Text (${OptionText},${Zero_Wait_Time}):4
+        {
+            Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/lv_option_list,^)
+        }
+        If: Android.Touch Text (${OptionText})
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Fail while selecting ${OptionText} scan option!)
+        }
+        Error:
+        {
+            Return With Error (Error while selecting ${OptionText} scan option!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while selecting ${OptionText} scan option!)
+    }
+    Error:
+    {
+        Return With Error (Error while selecting ${OptionText} scan option!)
+    }
+}
+
+///<Name>SetScanOption_FileType</Name>
+///<Description>Set the File Type</Description>
+///<Parameters>FileType : type text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetScanOption_FileType(${FileType})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${FileType})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No FileType specified!)
+    }
+    
+    If: WP_DropboxScan_Library.SelectScanOption (File Type and Resolution)
+    {
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting File Type scan option!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while selecting File Type scan option!)
+    }
+
+    // check for type already selected
+    Android.Get Text (com.hp.print.horizontalconnector.dropbox:id/btn_file_type,${CurrentFileType})
+    If: Equals (${CurrentFileType},${FileType})
+    {// type already selected
+        Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_done)
+        Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/bt_done,${Short_Wait_Time})
+        
+        Return With Pass (SetScanOption_FileType complete!)
+    }
+    
+    // type not already selected
+    Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/btn_file_type)
+    Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/lv_option_sub_list,${Short_Wait_Time})
+    
+    // find the type in the list
+    While:!Android.Wait For Text (${FileType},${Zero_Wait_Time}):2
+    {
+        Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/lv_option_sub_list,v)
+    }
+    While:!Android.Wait For Text (${FileType},${Zero_Wait_Time}):4
+    {
+        Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/lv_option_sub_list,^)
+    }
+    
+    // click on the type
+    //    If: Android.Touch Text (${FileType})
+    If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.dropbox:id/tv_title' and @text='${FileType}'])
+    {
+        Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/lv_option_sub_list,${Short_Wait_Time})
+        Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_done)
+        Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/bt_done,${Short_Wait_Time})
+        
+        Return With Pass (SetScanOption_FileType complete!)
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting File Type scan option!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while selecting File Type scan option!)
+    }
+}
+
+///<Name>SetScanOption_Resolution</Name>
+///<Description>Set the resolution option</Description>
+///<Parameters>Resolution : resolution text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetScanOption_Resolution(${Resolution})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Resolution})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Resolution specified)
+    }
+    
+    If: WP_DropboxScan_Library.SelectScanOption (File Type and Resolution)
+    {
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Resolution scan option!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Resolution scan option!)
+    }
+    
+    // check for type already selected
+    Android.Get Text (com.hp.print.horizontalconnector.dropbox:id/btn_resolution,${CurrentResolution})
+    If: Equals (${CurrentResolution},${Resolution})
+    {// type already selected
+        Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_done)
+        Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/bt_done,${Short_Wait_Time})
+        
+        Return With Pass (SetScanOption_Resolution completed!)
+    }
+    Fail:
+    {// type not already selected
+        Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/btn_resolution)
+        Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/lv_option_sub_list,${Short_Wait_Time})
+        
+        // find the type in the list
+        While:!Android.Wait For Text (${Resolution},${Zero_Wait_Time}):1
+        {
+            Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/lv_option_sub_list,v)
+        }
+        While:!Android.Wait For Text (${Resolution},${Zero_Wait_Time}):2
+        {
+            Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/lv_option_sub_list,^)
+        }
+        
+        // click on the type
+        //        If: Android.Touch Text (${Resolution})
+        If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.dropbox:id/tv_title' and @text='${Resolution}'])
+        {
+            Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/lv_option_sub_list,${Short_Wait_Time})
+            Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_done)
+            Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/bt_done,${Short_Wait_Time})
+        
+            Return With Pass (SetScanOption_Resolution completed!)
+        }
+        Fail:
+        {
+            WP_Dropbox_Library.CheckForErrorMessage
+            Return With Fail (Fail while selecting Resolution scan option!)
+        }
+        Error:
+        {
+            WP_Dropbox_Library.CheckForErrorMessage
+            Return With Error (Error while selecting Resolution scan option!)
+        }
+    }
+}
+
+///<Name>SetScanOption_ColorBlack</Name>
+///<Description>Set the Color Black option</Description>
+///<Parameters>Color_Black : color/black text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetScanOption_ColorBlack(${Color_Black})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Color_Black})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Color Black specified)
+    }
+    
+    If: WP_DropboxScan_Library.SelectScanOption (Color/Black)
+    {
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Color/Black scan option!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Color/Black scan option!)
+    }
+
+    // click on the option
+    //    If: Android.Touch Text (${Color_Black})
+    If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.dropbox:id/tv_title' and @text='${Color_Black}'])
+    {
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Color/Black scan option!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Color/Black scan option!)
+    }
+    
+    Sleep (${Minimal_Wait_Time})
+    If: Android.Check Screen Not Contains Partial Text (The following conditions)
+    {
+        Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/sfl_option_main,${Short_Wait_Time})
+        Return With Pass (SetScanOption_ColorBlack completed!)
+    }
+    Fail:
+    {// the specified option caused a conflict
+        Android.Touch Text (OK)
+        Return With Fail (Fail - the specified Color/Black scan option is not allowed!)
+    }
+}
+
+///<Name>SetScanOption_OriginalSize</Name>
+///<Description>Set the original size option</Description>
+///<Parameters>OriginalSize : original size text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetScanOption_OriginalSize(${OriginalSize})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${OriginalSize})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No OriginalSize specified)
+    }
+    
+    If: WP_DropboxScan_Library.SelectScanOption (Original Size)
+    {
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Original Size scan option!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Original Size scan option!)
+    }
+    
+    While:Android.Check Screen Not Contains Full Text (${OriginalSize}):3
+    {
+        //Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/rp_container,^)
+        Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/rl_content_pane,^)
+    }
+    // if still not displayed then scroll up upto 4 pages
+    While: Android.Check Screen Not Contains Full Text (${OriginalSize}): 4
+    {
+        //Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/rp_container,v)
+        Android.Swipe (com.hp.print.horizontalconnector.dropbox:id/rl_content_pane,v)
+    }
+    
+    // click on the type
+    //    If: Android.Touch Text (${OriginalSize})
+    If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.dropbox:id/tv_title' and @text='${OriginalSize}'])
+    {
+        Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/sfl_option_main,${Short_Wait_Time})
+        
+        Return With Pass (SetScanOption_OriginalSize completed!)
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Original Size scan option!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Original Size scan option!)
+    }
+}
+
+///<Name>SetScanOption_Orientation</Name>
+///<Description>Set the orientation option</Description>
+///<Parameters>Orientation : orientation text</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetScanOption_Orientation(${Orientation})
+{
+    // check for option specified
+    If: Common_LIbrary.CheckVariableContainsValue (${Orientation})
+    {
+    }
+    Fail:
+    {
+        Return With Pass (No Orientation specified)
+    }
+    
+    If: WP_DropboxScan_Library.SelectScanOption (Content Orientation)
+    {
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Orientation scan option!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Orientation scan option!)
+    }
+    
+    // click on the option
+    //    If: Android.Touch Text (${Orientation})
+    If: Android.Touch XPath (//*[@resource-id='com.hp.print.horizontalconnector.dropbox:id/tv_title' and @text='${Orientation}'])
+    {
+        Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/sfl_option_main,${Short_Wait_Time})
+        
+        Return With Pass (SetScanOption_Orientation completed!)
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Fail (Fail while selecting Orientation scan option!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        Return With Error (Error while selecting Orientation scan option!)
+    }
+}
+
+///<Name>InitiateScanJob</Name>
+///<Description>Initiate a scan job</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+InitiateScanJob
+{
+    // press the Scan button
+    If: Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/fab)
+    {
+        If: Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/editTextDescription,${Wait_Time})
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Fail while initiating scan job!)
+        }
+        Error:
+        {
+            Return With Error (Error while initiating scan job!)
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail while initiating scan job!)
+    }
+    Error:
+    {
+        Return With Error (Error while initiating scan job!)
+    }
+}
+
+///<Name>SetFileName</Name>
+///<Description>Set the file name</Description>
+///<Parameters>ScanFilename : name of file(s) to save</Parameters>
+///<Precondition>Scan job has been initiated</Precondition>
+///<Notes></Notes>
+SetFileName(${ScanFilename})
+{
+    // set the filename if needed
+    If: Common_LIbrary.CheckVariableContainsValue (${ScanFilename})
+    {
+    }
+    Fail:
+    {
+        // filename is not specified so leave as default
+        Return With Pass (Set File Name complete - left as default!)
+    }
+    
+    //    Get Time Stamp (${Time})
+
+    // set the filename
+    //    If: Android.Input Text (com.hp.print.horizontalconnector.dropbox:id/editTextDescription,${ScanFilename}_${Time})
+    If: Android.Input Text (com.hp.print.horizontalconnector.dropbox:id/editTextDescription,${ScanFilename})
+    {
+        Android.Hide Keyboard
+    }
+    Fail:
+    {
+        Return With Fail (Fail while initiating scan job!)
+    }
+    Error:
+    {
+        Return With Error (Error while initiating scan job!)
+    }
+}
+
+///<Name>ScanAndCompleteJob</Name>
+///<Description>Scan page(s) and complete the scan job</Description>
+///<Parameters>OptNumPagesionText : number of pages to scan</Parameters>
+///<Parameters>JobCompleteTimeout : number of seconds to wait for completion</Parameters>
+///<Precondition>Scan job has been initiated</Precondition>
+///<Notes></Notes>
+ScanAndCompleteJob(${NumPages}, ${JobCompleteTimeout})
+{
+    // if > 1 page then complete with preview
+    If: Equals (${NumPages},${Minimal_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        // start the scan by pressing the preview frame
+        Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/no_preview)
+
+        // wait for the scanning screen to show/disappear
+        If: JediOmni.Wait For Text (Scanning...,${Wait_Time})
+        {
+            JediOmni.Wait For Text Gone (Scanning...,${Long_Wait})
+        }
+        
+        // clear the Add Pages screen if it appears
+        If: JediOmni.Wait For Object (hpid-prompt-add-pages,${Wait_Time})
+        {
+            JediOmni.Touch ID (hpid-button-done)
+        }
+        
+        // wait for the image preview screen
+        If: JediOmni.Wait For Object (hpid-oxp-preview-dialog,${Wait_Time})
+        {
+            // at this point 1 page has been scanned into the preview
+            // handle additional pages if necessary
+            Repeat:${NumPages}
+            {
+                If: Equals (${NumPages},${R})
+                {// last scan already done, no action
+                }
+                Fail:
+                {// add a page
+                    JediOmni.Wait For Object Gone (#hpid-preview-button-add-pages.hp-disabled,${Long_Wait})
+                    Sleep (${Minimal_Wait_Time})
+                    JediOmni.Touch ID (hpid-preview-button-add-pages)
+                    JediOmni.Wait For Object (hpid-button-scan,${Long_Wait})
+                    JediOmni.Touch ID (hpid-button-scan)
+                }
+            }
+        
+            // all pages added, finish the scan
+            JediOmni.Wait For Object Gone (#hpid-button-start.hp-disabled,${Long_Wait})
+            Sleep (${Very_Short_Wait_Time})
+            JediOmni.Touch ID (hpid-button-start)
+            
+            Android.Wait For Text (Image processing...,${Wait_Time})
+            Android.Wait For Text Gone (Image processing...,${Very_Long_Wait})
+        }
+        Fail:
+        {
+            Oxpd.Return Browser Engine
+            Return With Fail (Fail while accessing scan job preview!)
+        }
+        Error:
+        {
+            Oxpd.Return Browser Engine
+            Return With Error (Error while accessing scan job preview!)
+        }
+    }
+    
+    Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_send)
+    
+    // if 1 page then wait for scanning message to disappear
+    If: Equals (${NumPages},${Minimal_Wait_Time})
+    {
+        If: Android.Wait For Text (Scanning...,${Long_Wait})
+        {
+            Android.Wait For Text Gone (Scanning...,${Long_Wait})
+        }
+    }
+    
+    //    If: Android.Wait For Object Gone (com.hp.print.horizontalconnector.dropbox:id/ll_dialog_main,${JobCompleteTimeout})
+    If: Android.Wait For Object (com.hp.print.horizontalconnector.dropbox:id/toolbar,${JobCompleteTimeout})
+    {
+        WP_Dropbox_Library.CheckForLoadingIcon
+    }
+    Fail:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        @Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_dialog_left)
+        Return With Fail (Fail while completing scan job!)
+    }
+    Error:
+    {
+        WP_Dropbox_Library.CheckForErrorMessage
+        @Android.Touch ID (com.hp.print.horizontalconnector.dropbox:id/bt_dialog_left)
+        Return With Error (Error while completing scan job!)
+    }
+}

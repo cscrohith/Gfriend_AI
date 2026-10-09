@@ -1,0 +1,39 @@
+﻿using Performance_testing_for_Print_OXPD.gflib
+using ..\..\OXPD_Common\OXPD_Common_Library.gflib
+using ..\..\OXPD_Common\OXPD_Common_Variables.gfvar
+using ..\Functional_OXPD.gflib
+using ..\Functional_OXPD.gfvar
+
+T1985577798_Performance testing for Print - Citrine
+{
+    Performance_testing_for_Print_OXPD.T1985577798_Performance_testing_for_Print_BootTime(${Device_IP},${Device_name},${Device_Serial_No},${Site},${Username},${Password})
+}
+
+///<Description> Performance Testing Sign In AND Sign Out</Description>
+///<Precondition>All three operations cannot be executed together, as the tenant supports only two authentication methods: PIN + Card or UsernamePassword + Card.</Precondition>
+
+T1985577798_Authentication_Timings_Code_&_BadgeBox_Card
+{
+    Performance_testing_for_Print_OXPD.T1985577798_Authentication Timings_Device_PIN_Login_Logout(${Device_PIN})
+    Sleep (2)
+    Performance_testing_for_Print_OXPD.T1985577798_Authentication Timings_BadgeBox_SignIn_SignOut(${BADGE_INDEX},${WaitTime})
+}
+
+///<Description> Performance Testing Sign In AND Sign Out</Description>
+///<Precondition>All three operations cannot be executed together, as the tenant supports only two authentication methods: PIN + Card or UsernamePassword + Card.</Precondition>
+T1985577798_Authentication_Timings_UserName_Password_&_BadgeBox_Card
+{
+    Performance_testing_for_Print_OXPD.T1985577798_Authentication Timings_UserName_Password
+    Sleep (2)
+    Performance_testing_for_Print_OXPD.T1985577798_Authentication Timings_BadgeBox_SignIn_SignOut(${BADGE_INDEX},${WaitTime})
+}
+
+T1985577798_Wake Cases
+{
+    Performance_testing_for_Print_OXPD.T1985577798_Wake_Cases_BeforeAndAfterInstallation_App(${Device_IP},${Device_name},${Device_Serial_No},${Site},${Username},${Password})
+}
+
+T1985577798_Wake from Card Swipe 
+{
+   Performance_testing_for_Print_OXPD.T1985577798_WakeUpDevice_from_Card_Swipe(${BADGE_INDEX})
+}

@@ -1,0 +1,31 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+using ..\Common\Common_Print_Library.gflib
+
+Authentication
+{
+   Common_Library.CheckHomeScreen
+   Common_Library.AuthenticationEager(${UserName},${Password})
+}
+
+TC_PrintFromUSB_WorkFlow
+{
+    Common_Print_Library.PrintFromUSB_WorkFlow
+}
+
+TC_PrintFromUSB_SelectFile
+{
+    Common_Print_Library.PrintFromUSB_SelectFile
+}
+
+TC_PrintFromUSB_ExecuteJob
+{
+    Common_Print_Library.PrintFromUSB_ExecuteJob
+   
+}
+
+TC_PrintFromUSB_BackToHomeScreen
+{
+    Common_Print_Library.PrintFromUSB_BackToHomeScreen
+}

@@ -1,0 +1,20 @@
+﻿//Profile Name Selection in Device
+${Profile_NAME} = MyFiles 
+
+//File Name for Scanned Document
+${STF_ScanFileName} = MFS  
+
+//Upland Instance URL
+${UPLAND_INSTANCE} = https://hpcapture.com 
+
+//User Name
+${STF_USER_NAME} = gunda.nagarjuna@hp.com
+                   
+//Password
+${STF_PASSWORD} = Act@12345
+
+//FileBound Instance URL
+${FILEBOUND_INSTANCE} = https://HPAPAC1.hpworkflow.com
+
+//FileBound Project
+${FILEBOUND_PROJECT} = AP Invoice

@@ -1,0 +1,77 @@
+﻿using Sirius
+
+/////////////////////////////////////////////////
+// Routine:         SIRIUS_SOL_Copy_WorkFlow
+// Description:     Copy_Native_App_workFlow_For_SIRIUS_SOL_Products
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Copy(${Copy_Sides},${Copy_Tray})
+{
+    //Press Home Button
+    Sirius.Press Home Key
+    
+    //Press on copy
+    Sirius.Press (group.group.copy)
+    
+    //Press on Document
+    Sirius.Wait For Widget (copy_doc,10)
+    Sirius.Press (command.copy_doc)
+    
+    //Click On 2-Sided Copying
+    Sirius.Wait For ScreenId (flow_copy::st_copy_scroll,30)
+    Sirius.Press (item1)
+    
+    //Check for supported sides
+    If: Sirius.Wait For Widget By Contains Value (${Copy_Sides},20)
+    {
+        Return With Fail (Device Does not support${Copy_Sides})
+    }
+    
+    //Select 1 to 2 sided
+    Sirius.Wait For ScreenId (flow_copy::st_copy_two_sided,30)
+    Sirius.Press By Contains Value (${Copy_Sides})
+    
+    //Press On Tray Selection
+    Sirius.Wait For ScreenId (flow_copy::st_copy_scroll,30)
+    Sirius.Press (item3)
+   
+    //Paper Size and Type
+    If: Sirius.Wait For ScreenId (flow_copy::st_copy_ensure_paper_loaded,30)
+    {
+        Sirius.Press (fb_done)
+    }
+    
+    //Select Tray 
+    If: Sirius.Wait For ScreenId (flow_copy::st_copy_tray_paper,30)
+    {
+        Sirius.Press By Contains Value (${Copy_Tray})
+        //Press Okay
+        Sirius.Wait For ScreenId (flow_copy::st_copy_ensure_paper_loaded,30)
+        Sirius.Press (fb_done)
+    }
+       
+    //Press On Copy Start
+    Sirius.Wait For Widget (copy_start,10)
+    Sirius.Press (fb_copy_start)
+    
+    //Press On Cancel
+    If: Sirius.Wait For ScreenId (ui_fl_copy_status::state_copy_page_change_prompt,60)
+    {
+         Sirius.Press (fb_cancel)
+    }
+    
+    //Press Home Button
+    Repeat:3
+    {
+        Sirius.Press Home Key
+    }
+    
+}

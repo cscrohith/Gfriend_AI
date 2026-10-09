@@ -1,0 +1,173 @@
+﻿Using Web
+
+/////////////////////////////////////////////////
+// Routine:         SignIn
+// Description:     sign in to the Printer On user's site
+//
+// Arguments:       ${ID} - UserID
+//                  ${PW} - Password
+//                  ${url} - HPCC url
+//                  ${BRW} - browser to use
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SignIn(${ID}, ${PW}, ${url}, ${BRW})
+{// sign into the DeviceHealth site with the account using the specified browser
+    // open the specified browser to the DeviceHealth url
+    IF: Equals (${BRW},Default)
+    {
+        Web.Open (https://${url})
+    }
+    IF: Equals (${BRW},Chrome)
+    {
+        Web.Open with Chrome (https://${url})
+    }
+    IF: Equals (${BRW},FireFox)
+    {
+        Web.Open with FireFox (https://${url})
+    }
+    IF: Equals (${BRW},Edge)
+    {
+        Web.Open with Edge (https://${url})
+    }
+
+    // check for the initial page then select Print
+    If: Web.Wait For Object (//button [@class="btn btn-large btn-primary"],30)
+    {
+        Sleep (5)
+        Web.Click Object (//button [@class="btn btn-large btn-primary"])
+    }
+    Fail:
+    {
+        Return With Fail (Failed to access the web site!)
+    }
+    
+    // sign in
+    If: Web.Wait For Object(//*[@id="LoginButton"],15)
+    {
+        Sleep (1)
+        Web.Click Object(//*[@id="email"])
+        Web.Set Text(//*[@id="email"],${ID})
+
+        Web.Click Object(//*[@id="password"])
+        Web.Set Text(//*[@id="password"],${PW})
+        
+        Web.Click Object(//*[@id="LoginButton"])
+    }
+    Fail:
+    {
+        Return With Fail (Failed to access the Login page!)
+    }
+   
+    // check that reached the Choose a Printer page
+    If: Web.Wait For Text (Choose a Printer,15)
+    {
+    }
+    Fail:
+    {
+        Fail (DeviceHealth SignIn Failed to reach the portal page!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out of the Printer On user account
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SignOut
+{// sign out of the Device Health site
+    If: Web.Click Object (//button [@class="btn btn-primary dropdown-toggle navbar-btn"])
+    {
+        If: Web.Click Text (Log Out)
+        {
+            If: Web.Wait For Object(//*[@id="LoginButton"],15)
+            {
+            }
+            Fail:
+            {
+                Fail (Fail Loggin out of PrinterOn!)
+            }
+        }
+        Fail:
+        {
+            Fail (Fail clicking on the Log Out button in PrinterOn!)
+        }
+    }
+    Fail:
+    {
+        Fail (Fail clicking on the username button in PrinterOn!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SelectPrinter
+// Description:     selecte the printer in the Printer On user account
+//
+// Arguments:       ${Printer_Name} - name of the printer
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SelectPrinter(${Printer_Name})
+{
+    // check that reached the Choose a Printer page
+    If: Web.Wait For Text (${Printer_Name},15)
+    {
+        // check for not at Step 2 (printer auto selected)
+        If: Web.Wait For Text Disappear (Selected Printer:,1)
+        {
+            Web.Clear Text (${Printer_Name})
+            // check for making it to Step 2
+            If: Web.Wait For Text (Selected Printer:,1)
+            {
+            }
+            Fail:
+            {
+                Fail (Failed selecting the printer ${Printer_Name}!)
+            }
+        }
+        Fail:
+        {
+            // step 1 skipped, printer auto selected
+        }
+    }
+    Fail:
+    {
+        Fail (Failed selecting the printer ${Printer_Name}!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SelectDocument
+// Description:     select a document to print
+//
+// Arguments:       ${DocName} - document name
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SelectDocument(${DocName})
+{
+    // click the button to upload the document
+    If: Web.Click Object (//input [@class="fileUpload"])
+    {
+        //        Web.
+    }
+}

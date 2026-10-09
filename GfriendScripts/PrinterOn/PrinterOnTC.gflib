@@ -1,0 +1,111 @@
+﻿using Web
+using Windows
+
+PrinterOn_Print(${PrinterOnLink},${PrinterName},${Filepath},${Filename},${Username},${Password})
+{
+   If: Web.Open with Chrome (${PrinterOnLink},50)
+   {
+       //Click on Print
+       Web.Wait For Object (//button[@class='btn btn-large btn-primary'],15)
+       Web.Click Object (//button[@class='btn btn-large btn-primary'])
+       
+       //Enter the Username 
+       // Web.Wait For Object (//*[@id="principal"],15)
+       //Web.Set Text (//*[@id="principal"],${Username})
+       
+       //Enter Password
+       //Web.Wait For Object (//*[@id="credentials"],15)
+       //Web.Set Text (//*[@id="credentials"],${Password})
+ 
+       //Click On Login
+       //Web.Wait For Object (//button[@type='submit'],20)
+       //Web.Click Object (//button[@type='submit'])
+            
+       //Click On Printer
+       Web.Wait For Text (${PrinterName},15)
+       Web.Click Text (${PrinterName})
+       
+       //Click on Browse
+       Web.Wait For Object (//div[@onclick='clearInputFile()'],15)
+       Web.Click Object (//div[@onclick='clearInputFile()'])
+       
+       Sleep (5)
+       
+       //Select File
+       Windows.Wait For ID (41477,10)
+       Windows.Click ID With Mouse (41477)
+       
+       //Select Path
+       Windows.Send Special Key ([BACKSPACE])
+       Windows.Set Text (41477,${Filepath})       
+       Windows.Send Special Key ([ENTER])
+       Windows.Wait For Name (${Filename},10) 
+       Windows.Click Name (${Filename})  
+       Windows.Send Special Key ([ENTER])
+       
+       //Click on continue
+       Web.Wait For Object (//input[@type='submit'],15)
+       Web.Click Object (//input[@type='submit'])
+       
+       Sleep (5)
+       
+       //Click on continue
+       Web.Wait For Object (//input[@type='submit'],15)
+       Web.Click Object (//input[@type='submit'])
+       
+       //Click on continue if Popup appears 
+       If:Web.Wait For Object (//input[@type='submit'],15)
+       {
+          Web.Click Object (//input[@type='submit'])
+       }
+       
+       //Select Frame
+       Web.Select Frame (/html/body/div[2]/div/div/div[2]/iframe)
+        
+       While:Web.Wait For Text (Submitting Job,20):30 
+       {
+           Sleep (10)
+       }
+ 
+       //Click Approve to submit job 
+       If: Web.Wait For Object (//div[@style='float: right;']//a[@class='btn btn-default'],10)
+       {
+           Web.Click Object (//div[@style='float: right;']//a[@class='btn btn-default'])   
+       }
+       
+       If: Web.Wait For Text (Processing Aborted,20)
+       {
+           Web.Get Text (/html/body/div[1],${ErrorMessage})
+           Return With Fail (${ErrorMessage})
+           Web.Capture Screenshot (Processing Aborted Error)
+           Stop Test Case
+       }
+       
+       While:Web.Wait For Text (Processing Job,15):30
+       {
+           Sleep (10)
+       }
+       
+       If: Web.Wait For Object (//span[@class='glyphicons x3 green glyphicons-ok'],15)
+       {
+           Return With Pass (Print Job Completed)
+           Web.Capture Screenshot (Print Job Completed)
+       } 
+       
+       Fail:
+       {
+           Return With Fail (Processing Aborted)
+           Web.Capture Screenshot (Print Job Aborted)
+       }
+
+   } 
+   Fail:
+   {
+       Return With Fail (Failed To Open Chrome Browser)
+   }
+   Error:
+   {
+       Return With Error (Error While Open Chrome Browser)
+   }
+      
+}

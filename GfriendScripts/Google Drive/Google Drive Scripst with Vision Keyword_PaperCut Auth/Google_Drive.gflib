@@ -1,0 +1,237 @@
+﻿using JediOmni
+using Vision
+using Files.gfvar
+
+AzureVision(${AzureEndpoint},${SubscriptionKey})
+{
+    Encrypt(${AzureEndpoint},${AzureEndpointEncryptedValue})
+    Encrypt(${SubscriptionKey},${SubscriptionKeyEncryptedValue})
+    Vision.Set OCR Method(${AzureEndpointEncryptedValue},${SubscriptionKeyEncryptedValue},ENCRYPT)
+    Vision.Set Target (JediOmni)
+    Vision.Set Text Grouping (block)
+}
+
+ClearAuth(${SignIn_Or_SignOut_ID})
+{
+    If: Vision.Is Text Exist (Sign In)
+    {
+        Pass (ClearAuth) 
+    }
+    Fail:Vision.Is Text Exist (Sign Out)
+    {
+        JediOmni.Press Home Key
+        Sleep (2)
+        JediOmni.Touch ID (${SignIn_Or_SignOut_ID})
+        Sleep (10)
+    }
+}
+
+PaperCut_SignIn(${User_Name},${Password})
+{
+    Vision.Click Text (Sign In)
+    Sleep (3)
+    Vision.Is Text Exist (Log in)
+    Sleep (3)
+    JediOmni.Press Tab Key
+    Sleep (2)
+    JediOmni.Press Tab Key
+    
+    Sleep (20)
+    JediOmni.Input Text (${User_Name})
+    Sleep (3)
+    JediOmni.Press Tab Key
+    Sleep (2)
+    JediOmni.Input Text (${Password})
+    Sleep (3)
+    Vision.Click Text with index (Log in,2)
+    Sleep (5)
+    
+    If: Vision.Is Text Exist (HP for Google Drive)
+    {
+        Pass (Google Drive APP insatlled)
+    }
+    Fail:
+    {
+        Fail (Google Drive App not insatlled)
+    }
+}
+
+Google_Drive_SignIn(${Email},${Email_Password})
+{
+    Vision.Click Text (HP for Google Drive)
+    Sleep (15)
+    
+    If:Vision.Is Text Exist (View) 
+    {
+        While:JediOmni.Press Tab Key:3 {
+            Sleep (2)  
+        }
+        JediOmni.Press Enter Key
+        Sleep (5)
+        While:JediOmni.Press Tab Key:2 {
+            Sleep (3)  
+        }
+        JediOmni.Press Enter Key 
+    }
+    
+    Sleep (10)
+    Vision.Click Text (Sign in with Google)
+    
+    Sleep (15)
+   
+    Vision.Click Text (Email or phone)
+    Sleep (2)
+    JediOmni.Input Text (${Email})
+    Sleep(3)
+    //To hide keyword for 8 inch display
+    Vision.Click XY Location (950,740,5,5) 
+    If:Vision.Is Text Exist (Next)
+    {
+        Vision.Click Text (Next)
+        Sleep (5)
+    }
+    Fail:
+    {
+        //To hide keyword for 10 inch display
+        Vision.Click XY Location (90,770,10,10) 
+        Vision.Click Text (Next)
+        Sleep (10)
+    }
+    Vision.Click Text (Enter your password)
+    Sleep (5)
+    JediOmni.Input Text (${Email_Password})
+    Sleep(3)
+    
+    //To hide keyword for 8 inch display
+    Vision.Click XY Location (95,740,5,5) 
+    Sleep (1)
+    If:Vision.Is Text Exist (Next)
+    {
+        Vision.Click Text (Next)
+        Sleep (5)
+    }
+    Fail:
+    {
+        //To hide keyword for 10 inch display
+        Vision.Click XY Location (90,770,10,10) 
+        Vision.Click Text (Next)
+        Sleep (10)
+    }
+    Sleep (33)
+        
+    While:JediOmni.Press Tab Key:4 
+    {
+        Sleep(1)
+    }
+    
+    JediOmni.Press Enter Key
+    Sleep (30)
+    If:Vision.Is Text Exist (Close)
+    {
+        Vision.Click Text (Close)
+    } 
+    Sleep (5)
+    If:Vision.Is Text Exist (No Thanks)
+    {
+        Sleep (3)
+        Vision.Click Text (No Thanks)
+    }
+    Vision.Is Text Exist (SCAN)
+}
+
+Google_Drive_Print(${File_Name})
+{
+    Vision.Is Text Exist (${File_Name})
+    Vision.Click Text (${File_Name})
+    Vision.Is Text Exist (Print)
+    Sleep (3)
+    // Click on print botton 10 inch display
+    If: Vision.Click XY Location (1250,739,50,20)
+    {
+        Sleep (10)
+        If: Vision.Is Text Exist (OK)
+        {
+            Vision.Click Text (OK)
+            Sleep (3)            
+        }                
+    }
+    If: Vision.Is Text Exist (SCAN)
+    {
+        //If not Clicked on print botton then it will verfiy scan for agin for 8 inch   
+    }
+    Fail:
+    {
+        // Click on print botton 8 inch display
+        Vision.Click XY Location (940,673,60,27)
+        Sleep (10)
+        If: Vision.Is Text Exist (OK)
+        {
+            Vision.Click Text (OK)
+            Sleep (3)
+        } 
+        If: Vision.Is Text Exist (SCAN)
+        {
+            //If not Clicked on print botton then it will verfiy scan for agin for 8 inch   
+        }
+        Fail:
+        {
+            Fail (Failed to print)
+        }
+    }
+}
+
+Google_Drive_SignOut
+{
+    //Click Sign Out icon for 10 inch
+    If: Vision.Click XY Location (1247,67,6,26)
+    {
+        //clicked on Sign out icon
+    }
+    Sleep (3)
+    If: Vision.Is Text Exist (Sign Out)    
+    {
+        //Clicked sign out successfully 
+        Vision.Click Text (Sign Out)
+        Sleep (3)
+        Pass (Google Drive sign out successful for 10 inch display)
+    }
+    Fail:
+    {
+        //Click Sign Out icon for 8 inch
+        Vision.Click XY Location (989,64,6,20) 
+        Sleep (3)
+        If: Vision.Is Text Exist (Sign Out)    
+        {
+            //Clicked sign out successfully
+            Vision.Click Text (Sign Out)
+            Pass (Google Drive sign out successful for 8 inch display)  
+        }
+        Fail:
+        {
+            Fail (Google Drive sign out failed)
+        }
+        Sleep (3)
+    } 
+    //Click on exit with help of tab botton
+    While:JediOmni.Press Tab Key:3
+    {
+        Sleep(2)
+    }
+    JediOmni.Press Enter Key
+    Sleep (3)
+}
+
+SignOut(${SignIn_Or_SignOut_ID},${Reset_Button_ID})
+{    
+    If:JediOmni.Wait For Object (${SignIn_Or_SignOut_ID},50)
+    {
+        JediOmni.Touch ID (${SignIn_Or_SignOut_ID})
+    }
+    Fail:Vision.Is Text Exist (Sign Out)
+    {
+        JediOmni.Press Home Key
+        Sleep (2)
+        JediOmni.Touch ID (${SignIn_Or_SignOut_ID})
+    }
+    JediOmni.Wait For Object (${Reset_Button_ID},10)
+}

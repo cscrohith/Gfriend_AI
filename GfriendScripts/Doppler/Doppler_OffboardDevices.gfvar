@@ -1,0 +1,32 @@
+﻿//${DeviceListFile}=\\rdlfs.etl.boi.rd.hpicorp.net\public\Mphasis\RonP\Doppler\BulkOffboarding\Test2.xlsx
+${SheetName}=MFPs
+${TableName}=Devices
+${Column_AssetID}=AssetID
+${Column_IP}=Address1
+${Column_SerialNo}=SerialNumber
+${Column_HPCCUnassigned}=HPCC_Unassigned
+${Column_HPCCRemoved}=HPCC_Removed
+${Column_WebServicesDisabled}=WebServiceDisabled
+
+${DUT_AdminPW}=!QAZ2wsx
+
+
+//HPCC Staging
+//${HPCC_url} = sdp-test.cloudprintsolutions.com
+//${HPCC_User} = rdl.etl.boise+autopartner@gmail.com
+
+//HPCC Production
+${HPCC_url}=www.hpcommandcenter.com
+//${HPCC_User}=rdl.etl.boise+autoprod@gmail.com
+${HPCC_User}=rdl.etl.boise+lucas0718@gmail.com
+
+${HPCC_PassWord}=007L@z3r
+
+//${HPCC_Customer}=RDL_Boise_Ron
+${HPCC_Customer}=Lucas_test
+
+// Specifying Default as the Browser uses Chrome in Headless Mode with no visible UI
+//${HPCC_Browser} = Default
+${HPCC_Browser} = Chrome
+//${HPCC_Browser} = FireFox
+//${HPCC_Browser} = Edge

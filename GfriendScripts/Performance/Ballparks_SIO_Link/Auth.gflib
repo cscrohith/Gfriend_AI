@@ -1,0 +1,243 @@
+﻿// ++++++++++++++++++++  File Name  ++++++++++++++++++++
+// Auth.gflib
+//
+// ++++++++++++++++++++ Description ++++++++++++++++++++
+// To authenticate on device, handling SIO if necessary
+// ++++++++++++++++++++ Prerequisites ++++++++++++++++++++
+// On device Windows auth and/or non-whitelisted auth such as HPAC or Safecom must be installed.
+//
+// ++++++++++++++++++++ Test Scenario ++++++++++++++++++++
+// 
+//
+// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2021-08-11 Copied from Windows_auth.gflib and  2fa.gflib. 
+//                  Updated for GFriend version 2.45.1.0 and FW 25.2.0.
+//                  Updated to better handle authentication for Windows, HPAC and SafeCom
+
+using JediOmni
+using Oxpd
+
+WinAuthLogin(${ID},${Pw})
+{//1.Winauthlogin start
+    If:JediOmni.Wait For Text (Sign In,10) 
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Sign In button not found!)
+    }
+    
+    While:JediOmni.Wait For Text (Sign In,1):2
+    {
+        JediOmni.Touch Text (Sign In)
+        Sleep (2)
+    }
+    JediOmni.Wait For Object (hpid-dropdown-agent,2)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    JediOmni.Wait For Object (hpid-dropdown-agent-hp_EmbeddedWindows_v1,2)
+    //JediOmni.Touch Text (Windows)
+    JediOmni.Touch ID (hpid-dropdown-agent-hp_EmbeddedWindows_v1)
+    JediOmni.Wait For Object (hpid-signin-textbox-UserNameTextBox,2)
+    JediOmni.Touch ID (hpid-signin-textbox-UserNameTextBox)
+    JediOmni.Input Text (${ID})
+    sleep(1)
+    JediOmni.Touch ID (hpid-signin-textbox-PasswordTextBox)
+    JediOmni.Input Text (${Pw})
+    If: JediOmni.Wait For Object (hpid-keyboard,0)
+    {
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        JediOmni.Wait For Object Gone (hpid-keyboard,2)
+    }
+    
+    If: JediOmni.Wait For Object (hpid-button-signin-ok,0)
+    {
+        JediOmni.Touch ID (hpid-button-signin-ok)
+    }
+}//1.Winauthlogin end
+
+login_hpac_new(${id})
+{
+    // Authentication with HP AC auth
+    If:JediOmni.Wait For Text (Sign In,10) 
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Sign In button not found!)
+    }
+    
+    While:JediOmni.Wait For Text (Sign In,1):2
+    {
+        JediOmni.Touch Text (Sign In)
+        Sleep (2)
+    }
+    JediOmni.Wait For Object (hpid-dropdown-agent,2)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    JediOmni.Wait For Text (IRM Auth,2)
+    If: JediOmni.Touch Text (IRM Auth)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (IRM Authentication not found!)
+    }
+    
+    Oxpd.Get Browser Engine
+    
+    // initialize variables needed for eleements to press later
+    Set Variable (${Code_Element},)
+    Set Variable (${OK_Button_Element},)
+    
+    // request code screen
+    If: Oxpd.Wait For CSS (#authentication_screen-request-code:not\([style*="display: none;"]\),1)
+    {
+        // set variables for the user code and OK button elements
+        Set Variable (${Code_Element},authentication_screen-request-code_userCode)
+        Set Variable (${OK_Button_Element},authentication_screen-request-code_accept)
+    }
+    
+    // require code screen
+    If: Oxpd.Wait For CSS (#authentication_screen-require-code:not\([style*="display: none;"]\),1)
+    {
+        // set variables for the user code and OK button elements
+        Set Variable (${Code_Element},authentication_screen-require-code_userCode)
+        Set Variable (${OK_Button_Element},authentication_screen-require-code_accept)
+    }
+    
+    // check for valid HPAC auth type
+    If: Equals (${Code_Element},)
+    {
+        Oxpd.Return Browser Engine
+        Return With Fail (Incorrect HPAC auth configuration - Code not available!)
+    }
+    
+    // enter user code
+    Oxpd.Touch Id (${Code_Element})
+    Oxpd.Input Text (${id})
+
+    If: JediOmni.Wait For Object (hpid-keyboard,0)
+    {
+        JediOmni.Touch ID (hpid-keyboard-key-done)
+        JediOmni.Wait For Object Gone (hpid-keyboard,2)
+    }
+    
+    Oxpd.Touch Id (${OK_Button_Element})
+
+    Oxpd.Return Browser Engine
+    
+    Sleep(2)
+}
+
+login_safecom_new(${id},${UserName},${Pw})
+{
+    // Authentication with SafeCom auth
+    If:JediOmni.Wait For Text (Sign In,10) 
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Sign In button not found!)
+    }
+    
+    While:JediOmni.Wait For Text (Sign In,1):2
+    {
+        JediOmni.Touch Text (Sign In)
+        Sleep (2)
+    }
+    JediOmni.Wait For Object (hpid-dropdown-agent,2)
+    JediOmni.Touch ID (hpid-dropdown-agent)
+    JediOmni.Wait For Text (KOFAX,2)
+    If: JediOmni.Touch Text (KOFAX)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (KOFAX Authentication not found!)
+    }
+    
+    Oxpd.Get Browser Engine
+    
+    // check for Code or User/Password
+    If: Oxpd.Wait For Id (aVXNlcklE,1)
+    {
+        // code, enter code
+        Oxpd.Touch Id (aVXNlcklE)
+        Oxpd.Input Text (${id})
+        If: JediOmni.Wait For Object (hpid-keyboard,0)
+        {
+            JediOmni.Touch ID (hpid-keyboard-key-done)
+            JediOmni.Wait For Object Gone (hpid-keyboard,2)
+        }
+        
+        Oxpd.Touch Id (btnLogin)
+        Oxpd.Return Browser Engine
+        Sleep(2)
+    }
+    Fail:
+    {
+        // this should be username/password
+        If: Oxpd.Touch Id (aVXNlcm5hbWU)
+        {
+            Oxpd.Input Text (${UserName})
+            If: JediOmni.Wait For Object (hpid-keyboard,0)
+            {
+                JediOmni.Touch ID (hpid-keyboard-key-done)
+                JediOmni.Wait For Object Gone (hpid-keyboard,2)
+            }
+            Oxpd.Touch Id (aUGFzc3dvcmQ)
+            Oxpd.Input Text (${Pw})
+            If: JediOmni.Wait For Object (hpid-keyboard,0)
+            {
+                JediOmni.Touch ID (hpid-keyboard-key-done)
+                JediOmni.Wait For Object Gone (hpid-keyboard,2)
+            }
+            
+            Oxpd.Touch Id (btnLogin)
+            Oxpd.Return Browser Engine
+            Sleep(2)
+        }
+        Fail:
+        {
+            Oxpd.Return Browser Engine
+            Return With Fail (Incorrect SafeCom auth configuration - Code or username/password not available!)
+        }
+    }
+}
+
+
+LinkHPaccount(${ID},${Pw})
+{
+    If: JediOmni.Wait For Object (hpid-hpid-agree-statement-checkbox,30)
+    {
+        JediOmni.Touch ID (hpid-hpid-agree-statement-checkbox)
+        If: JediOmni.Wait For Object (hpid-hpid-link-button,10)
+        {
+            JediOmni.Touch ID (hpid-hpid-link-button)
+        }
+    }
+}
+
+
+UnlinkHPaccount()
+{
+    
+}
+
+
+WinAuthLogout
+{
+    If:JediOmni.Wait For Text (Sign Out,60)
+    {
+        Sleep (2)
+        JediOmni.Touch Text (Sign Out)
+    }
+    Fail:
+    {
+        JediOmni.Press Home Key
+        JediOmni.Reset
+        Sleep (5)
+        JediOmni.Touch Text (Sign Out)
+    }
+    
+    Sleep (3)
+}

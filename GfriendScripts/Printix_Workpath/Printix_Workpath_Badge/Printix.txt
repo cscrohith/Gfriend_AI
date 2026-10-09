@@ -1,0 +1,23 @@
+﻿using JediOmni
+Using PrintixTC.gflib
+Using Printix.gfvar
+
+/////////////////////////////////////////////////
+// Routine:         Printix_FLOW
+// Description:     Printix Flow
+//
+// Arguments:      
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+Printix_FLOW
+{
+    JediOmni.Enable Paperless Mode
+    PrintixTC.Printix_PullPrint(${PRINT_ALL},${BADGE_INDEX})
+    PrintixTC.SignOut
+}

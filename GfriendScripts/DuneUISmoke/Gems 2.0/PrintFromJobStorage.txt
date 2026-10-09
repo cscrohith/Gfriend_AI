@@ -1,0 +1,38 @@
+﻿using Dune
+using ..\Common\Common_Variables.gfvar
+using ..\Common\Common_Library.gflib
+using ..\Common\Common_Print_Library.gflib
+
+Authentication
+{
+   Common_Library.CheckHomeScreen
+   Common_Library.AuthenticationEager(${UserName},${Password})
+}
+TC_PrintFromJobStorage_WorkFlow
+{
+    Common_Print_Library.PrintFromJobStorage_WorkFlow     
+}
+TC_PrintFromJobStorage_SelectsTheSpecifiedFolder
+{   
+    Common_Print_Library.PrintFromJobStorage_SelectsTheSpecifiedFolder
+}
+TC_PrintFromJobStorage_SelectFile
+{
+    Common_Print_Library.PrintFromJobStorage_SelectFile
+}
+TC_PrintFromJobStorage_ExpandButtonForNumberOfCopies
+{
+    Common_Print_Library.PrintFromJobStorage_ExpandButtonForNumberOfCopies
+}
+TC_PrintFromJobStorage_NumberOfCopies
+{
+    Common_Print_Library.PrintFromJobStorage_NumberOfCopies
+}
+TC_PrintFromJobStorage_ExecuteJob
+{
+    Common_Print_Library.PrintFromJobStorage_ExecuteJob
+}  
+TC_PrintFromJobStorage_BackToHomeScreen
+{
+    Common_Print_Library.PrintFromJobStorage_BackToHomeScreen
+}

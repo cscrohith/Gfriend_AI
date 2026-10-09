@@ -1,0 +1,54 @@
+﻿///<File>DevHealth_DisableSebServices.txt</File>
+///<Modified>2020-04-22</Modified>
+///<Description>Disable Web Services from EWS</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+Using DevHealth_DisableWebServices.gfvar
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_EWS_Library.gflib
+Using ..\Device\Device_EWS_Library.gflib
+
+Using JediOmni
+Using Web As EWS_Web
+
+/// <Name>DisableWebService</Name>
+/// <Description>Disable Web Services from EWS</Description>
+/// <Notes></Notes>
+DisableWebService
+{
+    // oepn the device EWS
+    If: Device_EWS_Library.OpenEWS (${DUT_Address})
+    {
+        // sign in
+        If: Device_EWS_Library.SignInWithAdmin (${DUT_AdminPW},${CheckBlankPassword},${SetPasswordWhenBlank})
+        {
+            // disable web services
+            If: Device_EWS_Library.DisableWebServices
+            {
+                // clear the proxy
+                If: Device_EWS_Library.ClearProxy
+                {
+                }
+                Fail:
+                {
+                    Fail (Set device proxy failed!)
+                }
+            }
+            Fail:
+            {
+                Fail (Disabling Web Services failed!)
+            }
+        }
+        Fail:
+        {
+            Fail (Signing In with admin password failed!)
+        }
+    }
+    Fail:
+    {
+        Fail (Access device ${Device_IP} EWS failed!)
+    }
+}

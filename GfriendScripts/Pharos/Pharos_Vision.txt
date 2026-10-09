@@ -1,0 +1,41 @@
+﻿using JediOmni
+using Vision
+using Pharos_Vision_Auth.gflib
+using Pharos_Vision_Variables.gfvar
+using Info
+
+Setup_VisionAI
+{
+    Pharos_Vision_AUTH.SetupVisionAI(${STF_AzureEndpoint},${SOLUTION_NAME})
+}
+
+Authentication
+{
+    Pharos_Vision_AUTH.Authentication(${STF_UserName},${STF_UserPassword},${BADGE_AUTH},${STF_BadgeIndex})
+}
+
+Pharos_FLOW
+{
+    JediOmni.Enable Paperless Mode()
+
+    If: Pharos_Vision_Auth.Pharos_Vision_DeletePrintSelectAll(${PRINT},${SELECT_ALL})
+    { 
+        //Continue  
+    }
+    Fail:
+    {
+        Return With Fail (Failed while Performing Secure print operation!)
+    }
+    Error:
+    {
+        Return With Error (Error while Performing Secure print operation!)
+    } 
+}
+
+TearDown
+{
+    Pharos_Vision_Auth.SignOut(${STF_UserName})
+}
+
+
+

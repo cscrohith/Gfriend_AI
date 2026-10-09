@@ -1,0 +1,30 @@
+﻿/// <File>SetPaperlessMode.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Enable or disable Paperless Mode on a device</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${Enable_PaperlessMode}=Y
+
+Using Device_Library.gflib
+
+Using JediOmni
+
+/// <Name>SetPaperlessMode</Name>
+/// <Description>Enable or disable Paperless Mode on a device</Description>
+/// <Notes></Notes>
+SetPaperlessMode
+{
+    // enable/disable Paperless Mode as specified
+    If: Device_Library.SetPaperlessMode(${Enable_PaperlessMode})
+    {
+    }
+    Fail:
+    {
+        Fail (Fail setting Paperless Mode!)
+    }
+    Error:
+    {
+        Error (Error setting Paperless Mode!)
+    }
+}

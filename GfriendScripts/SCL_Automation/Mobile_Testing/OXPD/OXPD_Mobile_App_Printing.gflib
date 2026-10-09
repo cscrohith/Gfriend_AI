@@ -1,0 +1,80 @@
+﻿using Android
+using Web
+
+T1984767219_Validate_Cloud_Mobile_App_Printing_behavior_in_SafeQ(${Site},${Username},${Password},${Package_name},${Platformtool_Path},${Print_Queue_Name},${Document_Name})
+{
+   Android.Verify And Install Application (${Package_name},${Platformtool_Path})
+   If: Android.Wait For XPath (//node[@resource-id='android:id/content']/node[1]/node[1]/node[1]/node[1]/node[1]/node[1]/node[2]/node[1]/node[1]/node[1]/node[3],10)
+   {
+       Android.Touch XPath (//node[@resource-id='android:id/content']/node[1]/node[1]/node[1]/node[1]/node[1]/node[1]/node[2]/node[1]/node[1]/node[1]/node[3])
+       Android.Input Text (Domain text field,${Site})
+       Sleep (10)
+       Android.Touch XPath (//node[@resource-id='Sign In button'])
+   }
+   If: Android.Wait For XPath (//node[@resource-id='Upload Job'],5)
+   {
+       OXPD_Mobile_App_Printing.Upload_job(${Job_Name},${Print_Queue_Name},${Document_Name})
+   }
+   Fail:
+   {
+       Android.Get Webview
+        If:Android.Wait For Web Object (//input[@type='text'][1],10) 
+         {
+           Android.Touch Web Object (//input[@type='text'][1])
+           Android.Set Text Web Object (//input[@type='text'][1],${Username})
+           Sleep (3)
+           Android.Touch XPath (//node[@resource-id='loginSubmit'])
+         }
+        Fail:
+           {
+              Fail (Chrome browser unable to SafeQ site)
+              Stop Test Case 
+           }
+        If:Android.Wait For Web Object (//input[@type='password'],10) 
+        {
+           Android.Touch Web Object (//input[@type='password'])
+           Android.Set Text Web Object (//input[@type='password'],${Password}) 
+           Sleep (10) 
+           Android.Touch XPath (//node[@resource-id='loginSubmit'])
+           
+           Sleep (5)
+           If: Android.Wait For XPath (//node[@resource-id='Upload Job'],15)
+           {
+               OXPD_Mobile_App_Printing.Upload_job(${Job_Name},${Print_Queue_Name},${Document_Name})
+           }
+        }
+       Android.Return Webview
+   }  
+}
+
+
+Upload_job(${Job_Name},${Print_Queue_Name},${Document_Name})
+ {
+    Android.Touch ID (Upload Job) 
+    Android.Wait For XPath (//node[@text='Documents'],10)
+    Android.Touch XPath (//node[@text='Documents'])
+    If: Android.Check Screen Contains Partial Text (${Document_Name})
+    {
+        Android.Get Text With XPath (//node[@text='${Document_Name}'],${Job_Name})
+        Android.Swipe XPath (//node[@text='${Document_Name}'],v)
+    } 
+    Fail:
+    {
+        Fail (The document is not displayed on the screen. Please upload the document and repeat the test case. Also, don't forget to uninstall the SafeQ mobile application before rerunning the test.)
+        Stop Test Case
+    }
+    Android.Wait For XPath (//node[@class='android.widget.ScrollView']/node[3]/node[1]/node[2],10)
+    Android.Touch XPath (//node[@class='android.widget.ScrollView']/node[3]/node[1]/node[2])
+    Android.Touch Text (${Print_Queue_Name})
+    Sleep (3)
+    Android.Touch XPath (//node[@resource-id='android:id/content']/node[1]/node[1]/node[1]/node[1]/node[3])
+    Android.Wait For Object (Upload Job,50)
+    If: Android.Wait For Text (${Job_Name},50)
+    {
+        Pass (Job is waiting in the queue)
+    }
+    Fail:
+    {
+        Fail (Job is not in the queue, So the testcase is failed)
+    }
+ }

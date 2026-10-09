@@ -1,0 +1,37 @@
+﻿//Credentials 
+${USERNAME} = rdladmin
+${PASSWORD} = rdl@123
+
+//To Print all the jobs, mention the variable (${PRINT_ALL}) value as Y
+//To Print one job, mention the variable (${PRINT_ALL}) value as N
+${PRINT_ALL} = Y
+
+//For Badgebox,mention the variable (${BADGE_AUTH}) value as Y
+//For Credentials,mention the variable (${BADGE_AUTH}) value as N
+${BADGE_AUTH} = N
+
+//BadgeIndex
+${BADGE_INDEX} = 1
+
+//To Print job,mention the variable (${PRINT}) value as Y
+//To Delete job,mention the variable (${PRINT}) value as N
+${PRINT} = N
+
+//Azure account details
+${AzureEndpoint}=https://services.azure.com/
+${SubscriptionKey}=AbxvxnehJsgVCHoJD4
+
+//this variable is used to get the Print job id from the STB 
+${ActivityId} = 0
+
+//X and Y coordinates for print button from 'Page 1 of' text
+${XValueForPrintButton} = -167
+${YValueForPrintButton} = 0
+
+//X and Y coordinates for delete button from 'Page 1 of' text
+${XValueForDeleteButton} = 214
+${YValueForDeleteButton} = 0
+
+//X and Y coordinates for select all job from 'Title' text
+${XValueForSelectAll} = -44
+${YValueForSelectAll} = 0

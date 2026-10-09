@@ -1,0 +1,267 @@
+﻿//using Web
+
+/////////////////////////////////////////////////
+// Routine:         SignIn
+// Description:     sign in to HP Roam cloud account
+//
+// Arguments:       ${ID} - UserID
+//                  ${PW} - Password
+//                  ${url} - HPCC url
+//                  ${BRW} - browser to use
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SignIn(${ID}, ${PW}, ${url}, ${BRW})
+{
+    // open the specified browser to the Roam Account url
+    IF: Equals (${BRW},Default)
+    {
+        If: Web.Open (https://${url})
+        {
+        }
+        Fail:
+        {
+            Fail (Failed opening the browser!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error opening the browser!)
+            Stop Test Suite
+        }
+    }
+    Sleep (0)
+    IF: Equals (${BRW},Chrome)
+    {
+        If: Web.Open with Chrome (https://${url})
+        {
+        }
+        Fail:
+        {
+            Fail (Failed opening the browser!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error opening the browser!)
+            Stop Test Suite
+        }
+    }
+    Sleep (0)
+    IF: Equals (${BRW},FireFox)
+    {
+        If: Web.Open with FireFox (https://${url})
+        {
+        }
+        Fail:
+        {
+            Fail (Failed opening the browser!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error opening the browser!)
+            Stop Test Suite
+        }
+    }
+    Sleep (0)
+    IF: Equals (${BRW},Edge)
+    {
+        If: Web.Open with Edge (https://${url})
+        {
+        }
+        Fail:
+        {
+            Fail (Failed opening the browser!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error opening the browser!)
+            Stop Test Suite
+        }
+    }
+    Sleep (0)
+
+    // access the HPID sign in page
+    If: Web.Wait For Object(//button[@id='hpid-login'],30)
+    {
+        Sleep (1)
+        Web.Click Object(//button[@id='hpid-login'])
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (SignIn_Fail.png)
+        Fail (Failed opening the browser!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Web.Capture Screenshot (SignIn_Fail.png)
+        Error (Error opening the browser!)
+        Stop Test Case
+    }
+    Sleep (0)
+    
+    // sign in
+    If: Web.Wait For Object(//input[@id='username'],30)
+    {
+        Sleep (1)
+        Web.Click Object(//input[@id='username'])
+        Web.Set Text(//input[@id='username'],${ID})
+        Web.Click Object(//button)
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (SignIn_Fail.png)
+        Fail (Failed accessing the HPID Sign In page!)
+        Stop Test Case
+    }
+    Sleep (0)
+   
+    If: Web.Wait For Object(//div[@id='passwordContainer'],30)
+    {
+        Web.Click Object(//input[@id='password'])
+        Web.Set Text(//input[@id='password'],${PW})
+        Web.Click Object(//button)
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (SignIn_Fail.png)
+        Fail (Roam Account SignIn Failed to reach HPID Password page!)
+        Stop Test Case
+    }
+    Sleep (0)
+
+    // check that reached the Roam account page
+    If: Web.Wait For Object (//span[@class='roam-title'],30)
+    {
+        //        Sleep (2)
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (SignIn_Fail.png)
+        Fail (Roam Account SignIn Failed to reach the Roam user account page!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out of the HP Roam cloud account
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+SignOut
+{
+    If: Web.Wait For Object (//div[@id='drop-down-menu-button'],30)
+    {
+        Web.Click Object (//div[@id='drop-down-menu-button'])
+    
+        If: Web.Wait For Object (//a[@id='logout-link'],5)
+        {
+            Web.Click Object (//a[@id='logout-link'])
+        }
+        Fail:
+        {
+            Web.Capture Screenshot (SignIn_Fail.png)
+            Fail (Roam Account SignOut Failed to find the logout link!)
+        }
+        Sleep (1)
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (SignIn_Fail.png)
+        Fail (Roam Account SignOut Failed to find the dropdown menu!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         AccessJobQueue
+// Description:     go to the job queue
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+AccessJobQueue
+{
+    Sleep (1)
+    If: Web.Click Text (Jobs)
+    {
+        HpRoam_Web.WaitForJobList
+    }
+    Fail:
+    {
+        Web.Capture Screenshot (DeletePrintJob.png)
+        Fail (Failed to find the Jobs link!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         DeletePrintJob
+// Description:     delete the top print job in the list
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+DeletePrintJob
+{
+    // check for jobs existing in list
+    //Web.Click Object (//div[@id='jobs-table'])
+    If: Web.Wait For Object Disappear (//div[@id='jobs-table']/table//descendant::tr[@class='no-jobs-row'],0)
+    {
+        If: Web.Wait For Object (//div[@id='jobs-table']/table/tbody/tr[1]/td[8]/div/a,1)
+        {// at least 1 job exists
+            //click on the options of the first job
+            Web.Click Object (//div[@id='jobs-table']/table/tbody/tr[1]/td[8]/div/a)
+            Web.Click Text (Delete job)
+            Sleep (1)
+            
+            HpRoam_Web.WaitForJobList
+        }
+    }
+    Fail:
+    {
+//        Fail (No jobs found!)
+        Stop Test Case
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         WaitForJobList
+// Description:     wait for the job list to refresh
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+WaitForJobList
+{ 
+    If: Web.Wait For Object (//div[@class='text-center loading-icon'],1)
+    {
+        Web.Wait For Object Disappear (//div[@class='text-center loading-icon'],20)
+    }
+}

@@ -1,0 +1,166 @@
+﻿/// <File>LinkDebugBridge_Disable.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Disable the Link Debug Bridge (LDB) on a device for Workpath apps automation</Description>
+/// <Precondition>Device admin password is set</Precondition>
+/// <Author>Ron Pridmore</Author>
+
+// Settings button
+${Setting_Button_ID}=hpid-settings-homescreen-button
+${Setting_Button_Text}=Settings
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using JediOmni
+Using Device_Library.gflib
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using DeviceAuth.gflib
+Using ..\DeviceAuth\DeviceAuth.gflib
+
+/// <Name>DisableLDB</Name>
+/// <Description>Disable the Link Debug Bridge (LDB) on a device</Description>
+/// <Notes></Notes>
+DisableLDB
+{
+    // make sure at Home screen, signed out
+    If: DeviceAuth.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Fail (Failed to find Home Screen Reset or Sign Out!)
+        Stop Test Case
+    }
+    
+    // open the Settings app
+    If: Device_Library.LaunchApp(${Setting_Button_ID},${Setting_Button_Text})
+    {
+    }
+    Fail:
+    {
+        Fail (Opening the Settings app failed!)
+        Stop Test Case
+    }
+    
+    // check for the Settings screen displayed
+    If: JediOmni.Wait For Object (hpid-settings-app-screen,${Short_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        Fail (The Settings app did not open!)
+        Stop Test Case
+    }
+    
+    // check for the Developer Options
+    While:!JediOmni.Wait For Object (hpid-tree-node-listitem-developeroptions,${Zero_Wait_Time}):3
+    {
+        JediOmni.Drag (25,80,25,30)
+    }
+    
+    If: JediOmni.Touch ID (hpid-tree-node-listitem-developeroptions)
+    {
+    }
+    Fail:
+    {
+        Fail (Fail clicking the Developer Options!)
+        Stop Test Case
+    }
+    
+    // ckeck for the Link Debug Bridge option
+    While:!JediOmni.Wait For Object (hpid-tree-node-listitem-linkdebugbridge,${Zero_Wait_Time}):3
+    {
+        JediOmni.Drag (25,80,25,30)
+    }
+
+    If: JediOmni.Touch ID (hpid-tree-node-listitem-linkdebugbridge)
+    {
+    }
+    Fail:
+    {
+        Fail (Fail clicking the Link Debug Bridge option!)
+        Stop Test Case
+    }
+    
+    // sign in with admin if required
+    If: DeviceAuth.AdminSignIn (${DUT_AdminPW})
+    {
+    }
+    Fail:
+    {
+        DeviceAuth.ClearAuth
+        Fail (Failed to sign in as Admin on device!)
+        Stop Test Case
+    }
+    
+    // check for the LDB screen
+    If: JediOmni.Wait For Object (hpid-link-debug-bridge-setting,${Short_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        DeviceAuth.ClearAuth
+        Fail (Failed to access the Link Debug Bridge screen!)
+        Stop Test Case
+    }
+    
+    // check for the Enable button
+    While:!JediOmni.Wait For Object (hpid-link-debug-bridge-enable-disable-button,${Zero_Wait_Time}):3
+    {
+        JediOmni.Drag (25,80,25,30)
+    }
+    If: JediOmni.Wait For Object (hpid-link-debug-bridge-enable-disable-button,${Zero_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        DeviceAuth.ClearAuth
+        Fail (Failed to find the Enable button!)
+        Stop Test Case
+    }
+    
+    // check for already enabled
+    JediOmni.Get Text (hpid-link-debug-bridge-enable-disable-button,${EnableDisableButtonText})
+    If: Equals IgnoreCase (${EnableDisableButtonText},enable)
+    {
+        // disable
+        DeviceAuth.ClearAuth
+        Pass (Link Debug Bridge not enabled!)
+        Stop Test Case
+    }
+    Fail:
+    {
+        // already disabled
+    }
+    
+    // enable
+    If: JediOmni.Touch ID (hpid-link-debug-bridge-enable-disable-button)
+    {
+        Sleep (${Long_Wait})
+    }
+    Fail:
+    {
+        DeviceAuth.ClearAuth
+        Fail (Failed to Enabling Link Debug Bridge!)
+        Stop Test Case
+    }
+    
+    // wait for the device to reboot
+    JediOmni.Wait Until Boot
+    
+    // try to recconnect to the device
+    While:!JediOmni.Re Connect:4
+    {
+        Sleep (${Very_Long_Wait})
+    }
+    
+    JediOmni.Wait For Object (hpid-control-signin,1${Long_Wait})
+    
+    Sleep (${Long_Wait})
+    
+    Pass (DisableLDB complete!)
+}

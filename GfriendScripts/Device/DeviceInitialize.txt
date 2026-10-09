@@ -1,0 +1,140 @@
+﻿/// <File>DeviceInitialize.txt</File>
+/// <Modified>2021-04-21</Modified>
+/// <Description>Initialize a device using EWS</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using DeviceInitialize.gfvar
+
+Using Device_EWS_Library.gflib
+
+Using Web As EWS_Web
+
+/// <Name>InitializeDevice</Name>
+/// <Description>Initialize the device, from EWS</Description>
+/// <Notes></Notes>
+InitializeDevice
+{
+    // oepn the device EWS
+    If: Device_EWS_Library.OpenEWS (${DUT_Address})
+    {
+        // check admin password set, set if not set
+    }
+    Fail:
+    {
+        Fail (Fail accessing device ${DUT_Address} EWS!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error accessing device ${DUT_Address} EWS!)
+        Stop Test Case
+    }
+    
+    If: Device_EWS_Library.SetAdminPassword (${DUT_AdminPW})
+    {
+    }
+    Fail:
+    {
+        Fail (Fail setting device admin password!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error setting device admin password!)
+        Stop Test Case
+    }
+
+    // set the proxy if needed
+    If: Equals IgnoreCase (${Enable_WebServices},Y)
+    {
+        If: Device_EWS_Library.SetProxy (${Device_ProxyServer}, ${Device_ProxyPort}, ${Device_ProxyExceptionsList} )
+        {
+            If: Device_EWS_Library.EnableWebServices
+            {
+            }
+            Fail:
+            {
+                Fail (Fail enabling Web Services!)
+            }
+            Error:
+            {
+                Error (Error enabling Web Services!)
+            }
+        }
+        Fail:
+        {
+            Fail (Fail setting device proxy!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error setting device proxy!)
+            Stop Test Case
+        }
+    }
+    
+    // set the date/time if specified
+    If: Equals IgnoreCase (${Set_DateTime},Y)
+    {
+        If: Device_EWS_Library.SetDateTimeSettings(${DateTime_TimeZone},${DateTime_AdjustDaylightSavings},${DateTime_DateFormat},${DateTime_TimeFormat},${DateTime_SynchToTimeServer},${DateTime_TimeServerAddress},${DateTime_TimeServerPort},${DateTime_TimeServerPeriod})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting Date Time settings!)
+        }
+        Error:
+        {
+            Error (Error setting Date Time settings!)
+        }
+    }
+    
+    // configure Windows Auth
+    If: Equals IgnoreCase (${Configure_WindowsAuth},Y)
+    {
+        If: Device_EWS_Library.ConfigureWindowsAuth(${Enable_WindowsAuth},${WindowsAuth_Domain},${WindowsAuth_Use_SSL_YN},${WindowsAuth_Name_Match_Attrribute},${WindowsAuth_Email_Attribut},${WindowsAuth_User_Name_Attribute})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting device admin password!)
+        }
+        Error:
+        {
+            Error (Error setting device admin password!)
+        }
+    }
+    
+    // configure Default Sign In Method
+    If: Equals IgnoreCase (${Set_DefaultSignIn},Y)
+    {
+        If: Device_EWS_Library.SetDefaultSignInMethod(${SignIn_Default})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting device admin password!)
+        }
+        Error:
+        {
+            Error (Error setting device admin password!)
+        }
+    }
+    
+    // configure Scan to Email
+    If: Equals IgnoreCase (${Configure_ScanToEmail},Y)
+    {
+        If: Device_EWS_Library.ConfigureEmail(${ScanToEmail_Enable},${ScanToEmail_SmptServer},${ScanToEmail_FromAddressSource},${ScanToEmail_FromAddress},${ScanToEmail_Subject},${ScanToEmail_Message},${ScanToEmail_FileName},${ScanToEmail_FileType},${ScanToEmail_Color},${DefaultResolution})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting scan to email configuration!)
+        }
+        Error:
+        {
+            Error (Error setting scan to email configuration!)
+        }
+    }
+}

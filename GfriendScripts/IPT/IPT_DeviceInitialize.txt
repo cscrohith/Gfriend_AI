@@ -1,0 +1,74 @@
+﻿/// <File>IPT_DeviceInitialize.txt</File>
+/// <Modified>2021-04-22</Modified>
+/// <Description>Initialize a device from EWS for IPT tests</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using IPT_DeviceInitialize.gfvar
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_EWS_Library.gflib
+Using ..\Device\Device_EWS_Library.gflib
+
+Using Web As EWS_Web
+
+/// <Name>InitializeDevice</Name>
+/// <Description>Initialize a device from EWS for IPT tests</Description>
+/// <Notes></Notes>
+InitializeDevice
+{
+    // oepn the device EWS
+    If: Device_EWS_Library.OpenEWS (${DUT_Address})
+    {
+        // check admin password set, set if not set
+    }
+    Fail:
+    {
+        Fail (Access device ${DUT_Address} EWS failed!)
+        Stop Test Suite
+    }
+    
+    If: Device_EWS_Library.SetAdminPassword (${DUT_AdminPW})
+    {
+    }
+    Fail:
+    {
+        Fail (Set device admin password failed!)
+        Stop Test Suite
+    }
+
+    // set the proxy if needed
+    If: Equals IgnoreCase (${Enable_WebServices},Y)
+    {
+        If: Device_EWS_Library.SetProxy (${Device_ProxyServer}, ${Device_ProxyPort}, ${Device_ProxyExceptionsList} )
+        {
+            If: Device_EWS_Library.EnableWebServices
+            {
+            }
+            Fail:
+            {
+                Fail (Enabling Web Services failed!)
+                Stop Test Suite
+            }
+        }
+        Fail:
+        {
+            Fail (Set device proxy failed!)
+            Stop Test Suite
+        }
+    }
+    
+    // set the date/time if specified
+    If: Equals IgnoreCase (${Set_DateTime},Y)
+    {
+        If: Device_EWS_Library.SetDateTimeSettings(${DateTime_TimeZone},${DateTime_AdjustDaylightSavings},${DateTime_DateFormat},${DateTime_TimeFormat},${DateTime_SynchToTimeServer},${DateTime_TimeServerAddress},${DateTime_TimeServerPort},${DateTime_TimeServerPeriod})
+        {
+        }
+        Fail:
+        {
+            Fail (Setting Date Time settings failed!)
+            Stop Test Suite
+        }
+    }
+}

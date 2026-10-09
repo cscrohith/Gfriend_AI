@@ -1,0 +1,360 @@
+﻿///<File>Device_Library.gflib</File>
+///<Modified>2021-12-02</Modified>
+///<Description>Library of common device routines</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+${Proxy_Apply_Timeout}=90
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using JediOmni
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using DeviceAuth.gflib
+Using ..\DeviceAuth\DeviceAuth.gflib
+
+///<Name>LaunchApp</Name>
+///<Description>Launch the specified app by the button ID or text</Description>
+///<Parameters>AppButtonID : ID of the button</Parameters>
+///<Parameters>AppButtonText : text of the button</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+LaunchApp(${AppButtonID},${AppButtonText})
+{
+    // check for at home screen
+    If: JediOmni.Wait For Object (hpid-homescreen-logo-icon,0)
+    {
+    }
+    Fail:
+    {
+        // not at home screen, try to get there
+        Repeat:2
+        {
+            JediOmni.Press Home Key
+            Sleep (${Minimal_Wait_Time})
+        }
+    }
+
+    // re-check for at home screen
+    If: JediOmni.Wait For Object (hpid-homescreen-logo-icon,10)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail accessing the Home screen for LaunchApp!)
+    }
+    
+    // loop through each page of the home screen
+    // looking for the app button/text
+    Set Variable (${LoopCont},Y)
+    While:Equals (${LoopCont},Y):15
+    {
+        // move to the next home screen page
+        If: JediOmni.Touch (div.hp-smart-grid-page-indicator:nth-of-type\(${R}\))
+        {
+            If: JediOmni.Touch ID (${AppButtonID})
+            {
+                Set Variable (${LoopCont},N)
+            }
+            Fail:
+            {
+                If: JediOmni.Touch Text (${AppButtonText})
+                {
+                    Set Variable (${LoopCont},N)
+                }
+            }
+        }
+        Fail:
+        {
+            Set Variable (${LoopCont},N)
+        }
+    }
+    
+    // verify app opened
+    If: JediOmni.Wait For Object Gone (hpid-homescreen-logo-icon,${Short_Wait_Time})
+    {
+        Return With Pass (LaunchApp completed!)
+    }
+    Fail:
+    {
+        Return With Fail (LaunchApp failed!)
+    }
+}
+
+///<Name>PutDeviceInSleep</Name>
+///<Description>Set the device into sleep mode from the control panel</Description>
+///<Parameters></Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+PutDeviceInSleep
+{
+    // ensure the Information page element is visible
+    If: JediOmni.Wait For Object Gone (hpid-button-device-information,${Minimal_Wait_Time}=1
+${Very_Short_Wait_Time})
+    {
+        JediOmni.Press Home Key
+    }
+    If: JediOmni.Wait For Object (hpid-button-device-information,${Short_Wait_Time})
+    {
+        JediOmni.Touch ID (hpid-button-device-information)
+        // click the Sleep Mode element
+        JediOmni.Wait For Object (hpid-info-pages-sleep-mode-list-item,${Short_Wait_Time})
+        JediOmni.Touch ID (hpid-info-pages-sleep-mode-list-item)
+        // click the Sleep Now button
+        JediOmni.Wait For Object (hpid-sleep-button,${Very_Short_Wait_Time})
+        JediOmni.Touch ID (hpid-sleep-button)
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Failed to find the Information page link!)
+    }
+}
+
+///<Name>RebootDevice</Name>
+///<Description>Reboot the device, optionally wait for the device to return to Ready</Description>
+///<Parameters>WaitForBootComplete : Y to wait for return to Ready</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+RebootDevice (${WaitForBootComplete})
+{
+    If: JediOmni.Reboot
+    {
+        If: Equals (${WaitForBootComplete},Y)
+        {
+            If: JediOmni.Wait Until Boot
+            {
+            }
+            Fail:
+            {
+                Fail (Failed waiting for device to complete booting after reboot!)
+            }
+            Error:
+            {
+                Error (Error while waiting for device to complete booting after reboot!)
+            }
+        }
+    }
+    Fail:
+    {
+        Fail (Failed rebooting the device!)
+    }
+    Error:
+    {
+        Error (Error while rebooting the device!)
+    }
+}
+
+///<Name>SetPaperlessMode</Name>
+///<Description>Set Paperless Mode On or Off</Description>
+///<Parameters>Enable_YN : Y to set On, otherwise set Off</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetPaperlessMode(${Enable_YN})
+{
+    // set the proxy if needed
+    If: Equals IgnoreCase (${Enable_YN},Y)
+    {
+        If: JediOmni.Enable Paperless Mode
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Fail enabling Paperless Mode!)
+        }
+        Error:
+        {
+            Return With Error (Error enabling Paperless Mode!)
+        }
+    }
+    Fail:
+    {
+        If: JediOmni.Disable Paperless Mode
+        {
+        }
+        Fail:
+        {
+            Return With Fail (Fail disabling Paperless Mode!)
+        }
+        Error:
+        {
+            Return With Error (Error disabling Paperless Mode!)
+        }
+        
+    }
+    
+    // verify
+    Sleep (5)
+    If: JediOmni.Wait For Text (Reset,${Zero_Wait_Time})
+    {
+    }
+    Fail:
+    {
+        JediOmni.Press Home Key
+        JediOmni.Wait For Text (Reset,${Wait_Time})
+    }
+    
+    If: JediOmni.Wait For Text (Paperless Mode,${Zero_Wait_Time})
+    {
+        If: Equals IgnoreCase (${Enable_YN},Y)
+        {
+            Return With Pass (SetPaperlessMode Completed!)
+        }
+        Fail:
+        {
+            Return With Fail (Fail disabling Paperless Mode!)
+        }
+    }
+    Fail:
+    {
+        If: Equals IgnoreCase (${Enable_YN},Y)
+        {
+            Return With Fail (Fail enabling Paperless Mode!)
+        }
+        Fail:
+        {
+            Return With Pass (SetPaperlessMode Completed!)
+        }
+    }
+}
+
+///<Name>SetProxy</Name>
+///<Description>Set the Proxy Server setting in the Proxy Settings screen</Description>
+///<Parameters>Proxy_Server : Proxy server address</Parameters>
+///<Parameters>Proxy_Port : Proxy server port number</Parameters>
+///<Parameters>Proxy_ExceptionsList : Proxy exceptions list</Parameters>
+///<Precondition></Precondition>
+///<Notes></Notes>
+SetProxy(${Proxy_Server},${Proxy_Port},${Proxy_ExceptionsList})
+{
+    
+    // set the web proxy
+    If: JediOmni.Touch ID (hpid-proxy-settings-button)
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while pressing the Web Proxy Setup button!)
+    }
+    Error:
+    {
+        Return With Error (Error while pressing the Web Proxy Setup button!)
+    }
+    
+    // sign in with admin if required
+    If: DeviceAuth.AdminSignIn (${DUT_AdminPW})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail while signing in as Admin on device to set proxy!)
+    }
+    Error:
+    {
+        Return With Error (Error while signing in as Admin on device to set proxy!)
+    }
+    
+    // ensure at the proxy setting screen
+    If: JediOmni.Wait For Object (hpid-hpCommandCenter-proxy-settings-configuration-view,${Wait_Time})
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Fail reaching the Web Proxy Settings screen!)
+    }
+    Error:
+    {
+        Return With Error (Error reaching the Web Proxy Settings screen!)
+    }
+    
+    // enter the proxy server
+    JediOmni.Touch ID (hpid-proxy-server-address-textbox)
+    //    JediOmni.Input Text (hpid-proxy-server-address-textbox,${Proxy_Server})
+    JediOmni.Input Text (${Proxy_Server})
+    Sleep (1)
+    If: JediOmni.Wait For Object (hpid-keyboard,${Zero_Wait_Time})
+    {
+        @JediOmni.Touch ID (hpid-keyboard-key-done)
+        Sleep (1)
+    }
+    
+    // scroll to the port textbox and enter
+    While:!JediOmni.Wait For Object (hpid-proxy-server-port-textbox,${Zero_Wait_Time}): 3
+    {
+        JediOmni.Drag (50,80,50,20)
+    }
+    JediOmni.Touch ID (hpid-proxy-server-port-textbox)
+    //    JediOmni.Input Text (hpid-proxy-server-port-textbox,${Proxy_Port})
+    JediOmni.Input Text (${Proxy_Port})
+    Sleep (1)
+    // close the keyboard if showing
+    If: JediOmni.Wait For Object (hpid-keypad,${Zero_Wait_Time})
+    {
+        @JediOmni.Touch ID (hpid-keypad-key-close)
+        Sleep (1)
+    }
+    If: JediOmni.Wait For Object (hpid-keyboard,${Zero_Wait_Time})
+    {
+        @JediOmni.Touch ID (hpid-keyboard-key-done)
+        Sleep (1)
+    }
+    
+    // scroll to the exceptions textbox and enter
+    While:!JediOmni.Wait For Object (hpid-proxy-server-exceptions-list-textbox,${Zero_Wait_Time}): 5
+    {
+        JediOmni.Drag (50,80,50,20)
+    }
+    JediOmni.Touch ID (hpid-proxy-server-exceptions-list-textbox)
+    //    JediOmni.Input Text (hpid-proxy-server-exceptions-list-textbox,${Proxy_ExceptionsList})
+    JediOmni.Input Text (${Proxy_ExceptionsList})
+    Sleep (1)
+    If: JediOmni.Wait For Object (hpid-keyboard,${Zero_Wait_Time})
+    {
+        @JediOmni.Touch ID (hpid-keyboard-key-done)
+        Sleep (1)
+    }
+    
+    // apply the settings
+    JediOmni.Wait For Object (hpid-proxy-config-apply-button,${Wait_Time})
+    If: JediOmni.Touch ID (hpid-proxy-config-apply-button)
+    {
+        // wait for the Applying message
+        If: JediOmni.Wait For Text (Applying,${Wait_Time})
+        {
+            JediOmni.Wait For Text Gone (Applying,${Proxy_Apply_Timeout})
+        }
+    }
+    Fail:
+    {
+        Return With Fail (Fail setting the Web Proxy!)
+    }
+    Error:
+    {
+        Return With Error (Error setting the Web Proxy!)
+    }
+
+    // short delay to ensure the proxy setting has completed
+    // needed due to the proxy setting screen showing again 
+    // for a short period then disappearing
+    Sleep (5)
+    
+    // verfify settings worked
+    If: JediOmni.Wait For Object (hpid-proxy-config-apply-button,${Zero_Wait_Time})
+    {
+        Return With Fail (Fail setting the Web Proxy!)
+    }
+    If: JediOmni.Wait For Object (hpid-proxy-configuration-error-popup,${Zero_Wait_Time})
+    {
+        Return With Fail (Fail setting the Web Proxy!)
+    }
+    Fail:
+    {
+        Return With Pass (SetProxy completed!)
+    }
+}
+

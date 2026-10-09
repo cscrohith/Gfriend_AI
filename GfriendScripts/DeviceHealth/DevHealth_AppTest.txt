@@ -1,0 +1,50 @@
+﻿///<File>DevHealth_AppTest.txt</File>
+///<Modified>2020-04-22</Modified>
+///<Description>Open and run the Device Health App</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+Using DevHealth_AppTest.gfvar
+
+// name of performance timing file
+${PerformanceFileName} = AppTest
+
+Using DevHealth_Device_Library.gflib
+Using Device_Library.gflib
+
+Using JediOmni
+Using Oxpd
+Using Info
+
+/// <Name>DevHealthAppTest</Name>
+/// <Description>Open and run the Device Health App</Description>
+/// <Notes></Notes>
+DevHealthAppTest
+{
+    Info.Start Time Check(${PerformanceFileName})
+    // open the System Healh Apps
+    If: Device_Library.LaunchApp(${DevHealth_AppButtonID},${DevHealth_AppButtonTest})
+    {
+        If: DevHealth_Device_Library.LaunchSystemHealthApps (${Device_ProxyServer}, ${Device_ProxyPort}, ${Device_ProxyExceptionsList}, ${WebSerivceRegistrationTimeout}, ${SysHealthAppLoadTimeout}, ${PerformanceFileName})
+        {
+            // open the Device Health app
+            If: DevHealth_Device_Library.LaunchDevHealthApp (${SysHealthAppLoadTimeout}, ${DevHealth_FlowLoopMax}, ${PerformanceFileName})
+            {
+            }
+            Fail:
+            {
+                Fail (Device Health app flow failed!)
+            }
+        }
+        Fail:
+        {
+            Fail (Failed launching the System Health Apps!)
+        }
+    }
+    Fail:
+    {
+        Fail (Failed opening the System Health Apps!)
+    }
+    
+    @DevHealth_Device_Library.CloseDevHealthApp
+}

@@ -1,0 +1,72 @@
+﻿/// <File>HPCC_VerifyDevicesDiscovered.txt</File>
+/// <Modified>2021-08-10</Modified>
+/// <Description>Verify that secondary devices were discovered after a master 
+///   device discovery has been initiated in HP Command Center (HPCC)</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+${MasterDevice_ID}=VNBDL5E027
+
+${DiscoveredDeviceCountExptected}=
+${DiscoverMaxTime}=18
+${DiscoverTime_Set}=
+${DiscoveryTimeLabel}=
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using HPCC.gfvar
+
+Using HPCC_Library.gflib
+
+/// <Name>VerifyDevicesDiscovered</Name>
+/// <Description>Verify that secondary devices were discovered after a master 
+///   device discovery has been initiated in HP Command Center (HPCC)</Description>
+/// <Notes></Notes>
+VerifyDevicesDiscovered
+{
+    // Sign in
+    If: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In Failed!)
+        Stop Test Case
+    }
+    
+    // Access the customer Device Discovery page
+    If: HPCC_Library.GotoCustomerDeviceDiscovery (${HPCC_Customer})
+    {
+        Sleep (${Short_Wait_Time})
+        
+        // verify device were discovered
+        If: HPCC_Library.VerifySecondaryDevicesDiscovered (${MasterDevice_ID},${DiscoveredDeviceCountExptected},${DiscoverMaxTime},${DiscoverTime_Set},${DiscoveryTimeLabel})
+        {
+            Pass (Devices discovered! '${KEYWORD_OUTPUT}')
+        }
+        Fail:
+        {
+            Fail (Fail verifying devices discovered! '${KEYWORD_OUTPUT}')
+        }
+        Error:
+        {
+            Error (Error verifying devices discovered! '${KEYWORD_OUTPUT}')
+        }
+    }
+    Fail:
+    {
+        Fail (Fail accessing the customer Device Discovery page!)
+    }
+    Error:
+    {
+        Error (Error accessing the customer Device Discovery page!)
+    }
+    
+    HPCC_Library.SignOut()
+    
+    Web.Close
+}

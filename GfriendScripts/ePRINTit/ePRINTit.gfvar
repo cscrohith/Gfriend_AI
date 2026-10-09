@@ -1,0 +1,8 @@
+﻿
+//For Valid Credentials
+${Username}= harish
+${Password}= rdl@123
+
+//File path to be printed 
+${Documentpath}= C:\Users\rdladmin\Documents\SampleDocument.txt
+${txtname}= SampleDocument.txt

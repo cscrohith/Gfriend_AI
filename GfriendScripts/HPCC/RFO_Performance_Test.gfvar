@@ -1,0 +1,48 @@
+﻿// RFO Performance test variables
+
+// Serial number of the Master device, need because some RFO features in HPCC do not show Asset Number
+// and GFriend does not currently provide the serial number of a connected device
+${RFO_MasterDevice_SerialNo}=VNBDL5E027
+
+// number of secondary devices expected
+${RFO_ExpectedSecondaryDeviceCount}=255
+
+// maximum number of discover attempts to get to the expected number of devices
+${RFO_MaximumDiscoverAttempts}=3
+
+// maximum time (10 second intervals) for device discovery, i.e. set to 6 for 60 seconds
+${RFO_MaxDiscoverTime}=18
+
+// discovered device onboarding variables
+${RFO_Onboard_All_Devices}=ALL_DEVICES
+//${RFO_Onboard_All_Devices}=CNB1KCB077
+
+// maximum time in minutes for device onboarding, 780 = 13 hours; 360 = 6 hours
+//${RFO_MaxOnboardTime}=780
+${RFO_MaxOnboardTime}=360
+//${RFO_MaxOnboardTime}=15
+
+// maximum number of onboard attempts to get all devices onboarded
+${RFO_MaximumOnboardAttempts}=5
+
+
+// timing performance marker variables
+${RFO_Performance_TimeSet}=RFO_Performance_Timings
+${RFO_Performance_DiscoveryTime}=DiscoveryTime
+${RFO_Performance_OnboardTime}=OnboardTime
+
+
+// discovery multicast options
+${Discover_Method_Multicast_YN}=Y
+${Discover_Multicast_Period}=Once a day
+${Discover_Multicast_Hour}=08
+${Discover_Multicast_Minute}=00
+${Discover_Multicast_AM_PM}=AM
+
+// discovery device announcement options
+${Discover_Method_DeviceAnnounce_YN}=N
+${Discover_DeviceAnnounce_TrustedAuth_YN}=N
+${Discover_DeviceAnnounce_SecondaryListeners_YN}=N
+
+// configure options for discovery
+${ConfigureOption_AddAllDevices_YN}=N

@@ -1,0 +1,38 @@
+﻿/// <File>IPT_DeviceConfigure.txt</File>
+/// <Modified>2021-04-27</Modified>
+/// <Description>Confgure the device as specified from EWS and/or directly</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using IPT_DeviceConfigure.gfvar
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\Device\Device_Library.gflib
+
+Using JediOmni
+
+/// <Name>ConfigureDevice</Name>
+/// <Description>Confgure the device as specified from EWS and/or directly</Description>
+/// <Notes></Notes>
+ConfigureDevice
+{
+    // enable Paperless Mode if specified
+    If: Equals IgnoreCase (${Enable_PaperlessMode},Y)
+    {
+        If: Device_Library.SetPaperlessMode(Y)
+        {
+        }
+        Fail:
+        {
+            Fail (Fail enabling Paperless Mode!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error enabling Paperless Mode!)
+            Stop Test Suite
+        }
+    }
+}

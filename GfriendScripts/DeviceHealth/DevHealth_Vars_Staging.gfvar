@@ -1,0 +1,18 @@
+﻿//Staging
+${DevHealth_url} = win-u05f2q674ui.corp.hpicloud.net/healthcheck/
+${DevHealth_User} = rdl.etl.boise+dhsupport@gmail.com
+
+${DevHealth_PassWord} = 007L@z3r
+
+${DevHealth_LogInTimeOut} = 30
+
+${EventLogRefreshMaxCount} = 30
+
+// Specifying Default as the Browser uses Chrome in Headless Mode with no visible UI
+//${DevHealth_Browser} = Default
+${DevHealth_Browser} = Chrome
+//${DevHealth_Browser} = FireFox
+//${DevHealth_Browser} = Edge
+
+
+

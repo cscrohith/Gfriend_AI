@@ -1,0 +1,113 @@
+﻿///<File>DevHealth_EventLogRefreshReliability.txt</File>
+///<Modified>2020-04-22</Modified>
+///<Description>Sign in to the Device Health portal site, search for the specified device
+///   then repeatedly refresh the device logs</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\Common\StandardTimeouts.gfvar
+
+Using DevHealth_EventLogRefreshReliability.gfvar
+
+// name of performance timing file
+${PerformanceFileName} = PortalEventLogRefreashReliability
+
+Using DevHealth_Web_Library.gflib
+
+Using Web
+Using Info
+
+// <Name>DevHealth_SignIn</Name>
+/// <Description>Sign in to the Device Health portal site then search for the specified device</Description>
+/// <Notes></Notes>
+DevHealth_SignIn
+{
+    Info.Start Time Check(${PerformanceFileName})
+
+    // Signin
+    Info.Mark Start(${PerformanceFileName},SignIn)
+    IF: DevHealth_Web_Library.SignIn (${DevHealth_User},${DevHealth_PassWord},${DevHealth_url},${DevHealth_Browser},${DevHealth_LogInTimeOut})
+    {
+        Info.Mark End(${PerformanceFileName},SignIn)
+        Sleep(${Wait_Time})
+        
+        Info.Mark Start(${PerformanceFileName},SearchForDevice)
+        IF: DevHealth_Web_Library.SearchForDevice(${DevHealth_SN})
+        {
+            Info.Mark End(${PerformanceFileName},SearchForDevice)
+            Sleep (${Wait_Time})
+        }
+        Fail:
+        {
+            Fail (Device Health device search Failed!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Device Health device search Errored!)
+            Stop Test Suite
+        }
+    }
+    Fail:
+    {
+        Fail (Device Health Sign In Failed!)
+        Stop Test Suite
+    }
+    Error:
+    {
+        Error (Device Health Sign In Errored!)
+        Stop Test Suite
+    }
+    Sleep (${Zero_Wait_Time})
+}
+
+/// <Name>DevHealth_LogRefresh</Name>
+/// <Description>Refresh the event logs from the device</Description>
+/// <Notes></Notes>
+DevHealth_LogRefresh
+{
+    Repeat:${RefreshRepititions}
+    {
+        Info.Mark Start(${PerformanceFileName},RefreshEventLogs_${R})
+        If: DevHealth_Web_Library.RefreshEventLogs(${EventLogRefreshMaxCount})
+        {
+            Info.Mark End(${PerformanceFileName},RefreshEventLogs_${R})
+        }
+        Fail:
+        {
+            Fail (Device Health event log refresh Failed!)
+        }
+        Error:
+        {
+            Error (Device Health event log refresh Errored!)
+        }
+        Sleep (${RefreshIterationDelay})
+    }
+}
+
+/// <Name>DevHealth_SignOut</Name>
+/// <Description>Sign out of the portal and close the browser</Description>
+/// <Notes></Notes>
+DevHealth_SignOut
+{
+    Info.Mark Start(${PerformanceFileName},SignOut)
+    IF: DevHealth_Web_Library.SignOut
+    {
+        Info.Mark End(${PerformanceFileName},SignOut)
+        Sleep (${Very_Short_Wait_Time})
+    }
+    Fail:
+    {
+        Fail (Device Health sign out Failed!)
+    }
+    Error:
+    {
+        Error (Device Health sign out Errored!)
+    }
+    
+    Web.Close
+    Sleep (${Very_Short_Wait_Time})
+}

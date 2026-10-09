@@ -1,0 +1,316 @@
+﻿// ++++++++++++++++++++  File Name  ++++++++++++++++++++
+// Sio_nfr.gfilib
+//
+// ++++++++++++++++++++ Description ++++++++++++++++++++
+// To measure SIO related performance items
+// - Cloud SIO 1st, 2nd launching performance
+// - Device SIO 1st, 2nd launching performance
+// To measure print and scan performance all across JA Link apps
+// ++++++++++++++++++++ Restriction ++++++++++++++++++++
+// Tested account
+// - windows account must be configured. Following account is used.
+//   . u00001 / 1qaz2wsx
+// - With window account, either device SIO or cloud SIO must be configured
+// ++++++++++++++++++++ Revision History ++++++++++++++++++++
+// V1.0 2020-10-22 Initial Version (copied from SIV-K's Sio_nfr.gfilib for Workpath and modified to Ballparks & WebApps)
+// V1.1 2021-08-11 Updated for GFriend version 2.45.1.0 and FW 25.2.0.2 on Prduction HPCC
+//                    removed check for the "Leaving HP Environment" popup - no longer shown when credentials saved in web apps
+
+using link_variable.gfvar
+//using 2fa.gflib
+using Auth.gflib
+
+using Oxpd
+using JediOmni
+using Info
+
+
+
+CloudSIO1stLaunching(${csv_filename},${app_object_id})
+{
+    // validate the auth_method
+    Set Variable (${ValidAuthMethod},N)
+    If: Equals IgnoreCase (${auth_method},windows)
+    {
+        Set Variable (${ValidAuthMethod},Y)
+    }
+    If: Equals IgnoreCase (${auth_method},hpac)
+    {
+        Set Variable (${ValidAuthMethod},Y)
+    }
+    If: Equals IgnoreCase (${auth_method},safecom)
+    {
+        Set Variable (${ValidAuthMethod},Y)
+    }
+    
+    If: Equals (${ValidAuthMethod},N)
+    {
+        Return With Fail (Invalid auth_method specified!)
+    }
+
+    If: JediOmni.Wait For Text (Sign Out,3)
+    {
+        JediOmni.Touch Text (Sign Out)
+        JediOmni.Wait For Text (Sign In,20)
+    }
+    
+    Info.Start Time Check(${csv_filename})
+    
+    Repeat:${iteration}
+    {
+        //Reset Device
+        JediOmni.Press Home Key
+        JediOmni.Reset
+        //        Set Variable (${ContinueToApp},Y)
+        
+        // login
+        If: Equals (${auth_method},windows)
+        {
+            Auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+        }
+        
+        If: Equals (${auth_method},hpac)
+        {
+           Auth.login_hpac_new(${2fa_id})
+        }
+       
+        If: Equals (${auth_method},safecom)
+        {
+            Auth.login_safecom_new(${2fa_id},${windows_id},${windows_pw})
+        }
+        
+        // wait for the cloud connection
+        @JediOmni.Wait For Text (Connecting to,10)
+        @JediOmni.Wait For Text Gone (Connecting to,30)
+
+        // check for the conection to cloud failed
+        If: JediOmni.Check Screen Not Contains Partial Text (Failed to Connect)
+        {
+            Sleep (5)
+        
+            If: JediOmni.Touch ID (${app_object_id})
+            {
+                Info.Mark Start(${csv_filename},launching_${R})
+                
+                Sleep (2)
+                Oxpd.Get Browser Engine
+                
+                // check for the app to completely show
+                If: Oxpd.Wait For Css (.back,60)
+                {
+                    // success, mark the end and close the app
+                    Info.Mark End(${csv_filename},launching_${R})
+                    
+                    JediOmni.Press Home Key
+                }
+                Fail:
+                {
+                    // failed to open in time, mark the end and return to home
+                    Info.Mark End(${csv_filename},launching_${R})
+                    
+                    JediOmni.Press Home Key
+                }
+                Oxpd.Return Browser Engine
+            }
+        }
+        
+        If: JediOmni.Wait For Text (Sign Out,30)
+        {
+            JediOmni.Touch Text (Sign Out)
+            JediOmni.Wait For Text (Sign In,20)
+        }
+    }
+    
+    Info.Draw Time Graph(${csv_filename})
+}
+
+CloudSIO2ndLaunching(${csv_filename},${app_object_id})
+{
+    // validate the auth_method
+    Set Variable (${ValidAuthMethod},N)
+    If: Equals IgnoreCase (${auth_method},windows)
+    {
+        Set Variable (${ValidAuthMethod},Y)
+    }
+    If: Equals IgnoreCase (${auth_method},hpac)
+    {
+        Set Variable (${ValidAuthMethod},Y)
+    }
+    If: Equals IgnoreCase (${auth_method},safecom)
+    {
+        Set Variable (${ValidAuthMethod},Y)
+    }
+    
+    If: Equals (${ValidAuthMethod},N)
+    {
+        Return With Fail (Invalid auth_method specified!)
+    }
+
+    If: JediOmni.Wait For Text (Sign Out,3)
+    {
+        JediOmni.Touch Text (Sign Out)
+        JediOmni.Wait For Text (Sign In,20)
+    }
+    //Reset Device
+    JediOmni.Press Home Key
+    JediOmni.Reset
+    
+    // login
+    If: Equals (${auth_method},windows)
+    {
+        Auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+    }
+    
+    If: Equals (${auth_method},hpac)
+    {
+       Auth.login_hpac_new(${2fa_id})
+    }
+   
+    If: Equals (${auth_method},safecom)
+    {
+        Auth.login_safecom_new(${2fa_id},${windows_id},${windows_pw})
+    }
+    
+    // wait for the cloud connection
+    @JediOmni.Wait For Text (Connecting to,10)
+    @JediOmni.Wait For Text Gone (Connecting to,30)
+
+    // check for the conection to cloud failed
+    If: JediOmni.Wait For Text (Failed to Connect,0)
+    {// failed to connect message seen
+        Return With Fail (Auth cloud connection failed!)
+    }
+    
+    Info.Start Time Check(${csv_filename})
+
+    // enter the app the first time
+    If:JediOmni.Wait For Object (${app_object_id},10)
+    {
+        JediOmni.Touch ID (${app_object_id})
+        
+        Sleep (2)
+        Oxpd.Get Browser Engine
+        
+        // check for the app to completely show
+        If: Oxpd.Wait For Css (.back,60)
+        {
+            JediOmni.Press Home Key
+        }
+        Fail:
+        {
+            JediOmni.Press Home Key
+        }
+        Oxpd.Return Browser Engine
+    }
+    
+    Sleep (10)
+    
+    // enter the app the second time for the number of iterations
+    // without signing out the device user
+    Repeat:${iteration}
+    {
+        If:JediOmni.Touch ID (${app_object_id})
+        {
+            Info.Mark Start(${csv_filename},launching_${R})
+            
+            Sleep (2)
+            Oxpd.Get Browser Engine
+            
+            // check for the app to completely show
+            //If: Oxpd.Wait For Text (${launching_done_text},60)
+            If: Oxpd.Wait For Css (.back,60)
+            {
+                // success, mark the end and close the app
+                Info.Mark End(${csv_filename},launching_${R})
+                
+                JediOmni.Press Home Key
+            }
+            Fail:
+            {
+                // failed to open in time, mark the end and return to home
+                Info.Mark End(${csv_filename},launching_${R})
+                
+                JediOmni.Press Home Key
+            }
+            Oxpd.Return Browser Engine
+        }
+       
+        Sleep (10)
+    }
+        
+    If: JediOmni.Wait For Text (Sign Out,30)
+    {
+        JediOmni.Touch Text (Sign Out)
+        JediOmni.Wait For Text (Sign In,20)
+    }
+    
+    Info.Draw Time Graph(${csv_filename})
+}
+
+HPID_2ndLinking(${csv_filename},${option})
+{
+    // validate the auth_method
+    Set Variable (${ValidAuthMethod},N)
+    If: Equals IgnoreCase (${option},windows)
+    {
+        Set Variable (${ValidAuthMethod},Y)
+    }
+    If: Equals IgnoreCase (${option},hpac)
+    {
+        Set Variable (${ValidAuthMethod},Y)
+    }
+    If: Equals IgnoreCase (${option},safecom)
+    {
+        Set Variable (${ValidAuthMethod},Y)
+    }
+    
+    If: Equals (${ValidAuthMethod},N)
+    {
+        Return With Fail (Invalid auth_method specified!)
+    }
+    
+    Info.Start Time Check(${csv_filename})
+    Repeat:${iteration}
+    {
+        //Reset Device
+        JediOmni.Press Home Key
+        JediOmni.Reset
+        
+        If:JediOmni.Wait For Text (Sign In,15) 
+        {// 1. If Start
+        // login
+        If: Equals (${option},windows)
+        {
+            Auth.WinAuthLogin(${windows_id},${windows_pw}) //Login by Window auth account.
+        }
+        
+        If: Equals (${option},hpac)
+        {
+           Auth.login_hpac_new(${2fa_id})
+        }
+       
+        If: Equals (${option},safecom)
+        {
+            Auth.login_safecom_new(${2fa_id},${windows_id},${windows_pw})
+        }
+            
+            If: JediOmni.Wait For Text (Connecting to the HP Cloud,60)
+            {
+                Info.Mark Start(${csv_filename},linking_${R})
+                JediOmni.Wait For Text Gone (Connecting to the HP Cloud,30)
+                Info.Mark End(${csv_filename},linking_${R})
+            }
+            
+            // ensure the Oxpd browser is released for those auth types using Oxpd. 
+            // this is here so that the command does not impact the timing
+            @Oxpd.Return Browser Engine
+        }
+       
+        If: JediOmni.Wait For Text (Sign Out,3)
+        {
+            JediOmni.Touch Text (Sign Out)
+            JediOmni.Wait For Text (Sign In,20)
+        }
+    }
+    Info.Draw Time Graph(${csv_filename})
+}

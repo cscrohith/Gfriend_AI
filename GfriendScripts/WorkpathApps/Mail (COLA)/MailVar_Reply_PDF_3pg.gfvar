@@ -1,0 +1,7 @@
+﻿${Reply_Search} = SET
+${Reply_Destination} = 
+${Reply_Subject} = 
+${Reply_Body} = This is a test of the new Email app Attach and Reply
+${Reply_ScanFilename} = EmailAppReplyScan
+${Reply_ScanFileType} = PDF
+${Reply_NumPages} = 3

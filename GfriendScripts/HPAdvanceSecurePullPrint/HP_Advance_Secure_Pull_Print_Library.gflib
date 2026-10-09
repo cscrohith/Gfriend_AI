@@ -1,0 +1,435 @@
+﻿using JediOmni
+using Oxpd
+using HP_Advance_Secure_Pull_Print_Variables.gfvar
+using Info
+
+/////////////////////////////////////////////////
+//Routine:         ClearAuth
+//Description:     make sure at Home screen, signed out and reset
+//
+//Arguments: 
+//      
+//Pre-requisites: 
+// 
+//Notes:
+//
+//Version:
+/////////////////////////////////////////////////
+      
+ClearAuth
+{
+    JediOmni.Press Home Key
+    If: JediOmni.Wait For Text (Sign In,${Short_Wait_Time})
+    {
+        // all good, no action needed
+    }
+    Fail:
+    {
+        If: JediOmni.Touch Text (Sign Out)
+        {
+            JediOmni.Wait For Text Gone (Signing out,${Wait_Time})
+        }
+        Fail:
+        {
+            Return With Fail (Failed clicking Sign Out!)
+        }
+    }
+    JediOmni.Reset
+}
+
+/////////////////////////////////////////////////
+// Routine:         GenerateUserCode
+// Description:     GenerateUserCode for Pin Authentication
+//
+// Arguments:      (${STF_UserName}) - UserName
+//                 (${UserCode}) - Pin
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+GenerateUserCode(${STF_UserName})
+{
+    If: Equals IgnoreCase (${STF_UserName},jawa)
+   {
+        Set Variable (${UserCode},111111)
+   }
+
+    Fail:
+    {
+        Set Variable (${UserCode},${STF_UserName})
+        Replace (${UserCode},u,)
+        Replace (${UserCode},U,)
+    }
+
+}
+
+/////////////////////////////////////////////////
+// Routine:         HPAdvancePinLogin
+// Description:     Sign in HP Advance with Pin Authentication
+//
+// Arguments:      (${UserCode}) - Pin
+//                 (${LAZY_AUTH}) - Lazy Authentication
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+
+HPAdvancePinLogin(${UserCode},${LAZY_AUTH})
+{
+    
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials)
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_DeviceButtonPress)
+    If:HP_Advance_Secure_Pull_Print_Library.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    {
+        JediOmni.Touch Text (HP AC Secure Pull Print)
+        //Mark start is not mandatory for AppButtonPress,Hence included only Mark End
+         Info.Mark End (STF_AppButtonPress,1)
+    }
+    Fail:
+    {
+        // press the Sign In button
+        JediOmni.Touch ID (hpid-control-signin)
+        //Mark start is not mandatory for DeviceButtonPress,Hence included only Mark End
+         Info.Mark End (STF_DeviceButtonPress,11)
+    }
+    Info.Mark Start (STF_Authentication,2)
+    Oxpd.Get Browser Engine (${Short_Wait_Time})
+    
+    If: Oxpd.Wait For Id (authentication_screen-request-code-or-credentials_userCode,${Wait_Time})
+    {
+        Info.Mark Start (STF_EnterCredentials,3)
+         Oxpd.Touch Id (authentication_screen-request-code-or-credentials_userCode)
+         Oxpd.Input Text (${UserCode})
+            
+         // Keyboard OK
+         Jediomni.Touch Text (OK)
+         
+         If: Oxpd.Wait For Id (authentication_screen-request-code-or-credentials_accept,${Short_Wait_Time})
+            {
+                //Footer OK
+                Oxpd.Touch Id (authentication_screen-require-credentials_accept)
+            }
+         
+    }
+     Info.Mark End (STF_EnterCredentials,3)
+     Info.Mark End (STF_Authentication,2)
+    Fail:
+    {
+        Return With Fail (Failed to load authentication text field!)
+    }
+     Info.Draw Time Graph (STF_Authentication)
+    Info.Draw Time Graph (STF_EnterCredentials)
+    Info.Draw Time Graph (STF_AppButtonPress)
+    Info.Draw Time Graph (STF_DeviceButtonPress)
+    
+    
+}
+
+
+/////////////////////////////////////////////////
+// Routine:         HPAdvanceUserNamePasswordLogin
+// Description:     Sign in HP Advance with Username\Password Authentication
+//
+// Arguments:      (${STF_UserName}) - Username
+//                 (${STF_UserPassword}) - Password
+//                 (${LAZY_AUTH}) - Lazy Authentication
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+
+HPAdvanceUserNamePasswordLogin(${STF_UserName},${STF_UserPassword},${LAZY_AUTH})
+{
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_Authentication)
+    Info.Start Time Check (STF_EnterCredentials) 
+    Info.Start Time Check (STF_AppShown)
+    Info.Start Time Check (STF_DeviceButtonPress)  
+    If:HP_Advance_Secure_Pull_Print_Library.ClearAuth
+    {
+    }
+    Fail:
+    {
+        Return With Fail (Failed clearing any existing authentication!)
+    }
+    Error:
+    {
+        Return With Error (Error clearing any existing authentication!)
+    }
+
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+    {
+         JediOmni.Touch Text (HP AC Secure Pull Print)
+         //Mark start is not mandatory for AppButtonPress,Hence included only Mark End
+         Info.Mark End (STF_AppButtonPress,1)
+    }
+    Fail:
+    {
+         // press the Sign In button
+         JediOmni.Touch ID (hpid-control-signin)
+         //Mark start is not mandatory for DeviceButtonPress,Hence included only Mark End
+         Info.Mark End (STF_DeviceButtonPress,11)
+         
+    }
+    
+    Oxpd.Get Browser Engine (${Short_Wait_Time})
+    Info.Mark Start (STF_Authentication,2)
+    
+    If: Oxpd.Wait For Id (authentication_screen-request-code-or-credentials_action,${Wait_Time})
+    {
+        Oxpd.Touch Id (authentication_screen-request-code-or-credentials_action)
+        
+        If:Oxpd.Wait For Id(authentication_screen-require-credentials_userUsername,${Wait_Time})
+        {
+            Info.Mark Start (STF_EnterCredentials,3)   
+            Oxpd.Touch Id (authentication_screen-require-credentials_userUsername)
+            Oxpd.Input Text (${STF_UserName})
+            JediOmni.Touch Text (OK)
+            Oxpd.Touch Id (authentication_screen-require-credentials_userPassword)
+            Oxpd.Input Text (${STF_UserPassword})
+                
+            // Keyboard OK
+            JediOmni.Touch Text (OK)
+            Info.Mark End (STF_EnterCredentials,3)
+            //Footer OK
+            Oxpd.Touch Id (authentication_screen-require-credentials_accept)
+            
+            
+        }
+        
+        Info.Mark End (STF_Authentication,2)
+     }
+     Fail:
+     {
+          Return With Fail (Failed to load authentication text field!)
+     }
+    
+    Info.Draw Time Graph  (STF_AppButtonPress)
+    Info.Draw Time Graph (STF_Authentication)
+    Info.Draw Time Graph (STF_EnterCredentials) 
+    Info.Draw Time Graph (STF_AppShown)
+    Info.Draw Time Graph (STF_DeviceButtonPress)
+      
+}
+
+/////////////////////////////////////////////////
+// Routine:         HPAdvanceSecurePullPrint
+// Description:     HP Advance Secure Pull Print Job
+//
+// Arguments:       ${PRINT_RELEASE_ACTION}- Print options
+//                  ${LAZY_AUTH}- Lazy Authentication
+//                   
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+HPAdvanceSecurePullPrint(${PRINT_RELEASE_ACTION},${LAZY_AUTH})
+{
+    Info.Start Time Check (STF_AppButtonPress)
+    Info.Start Time Check (STF_PrintAll)
+    Info.Start Time Check (STF_PrintKeep)
+    Info.Start Time Check (STF_Delete)
+    Info.Start Time Check (STF_PrintDelete)
+    Info.Start Time Check (STF_PullingJobFromServer)
+    Info.Start Time Check (STF_ProcessingJob)
+    Info.Start Time Check (STF_AppShown)
+    If: Equals IgnoreCase (${LAZY_AUTH},N)
+    {
+     
+     If: JediOmni.Wait For Text (HP AC Secure Pull Print,${Wait_Time})    
+     {
+         
+         JediOmni.Touch Text (HP AC Secure Pull Print)
+         //Mark start is not mandatory for AppButtonPress, Hence included only Mark End
+         Info.Mark End (STF_AppButtonPress,1)
+         If: Oxpd.Wait For Xpath Gone (hpid-oxpd-spinner,${Longest_Wait})
+          {
+            Info.Mark End (STF_AppShown,4)
+          }
+     }
+     Fail:
+     {
+          Return With Fail (Failed to load PullPrint button!)
+     }
+    
+    }
+    If: Equals IgnoreCase (${LAZY_AUTH},Y)
+      {
+        Oxpd.Wait For Xpath Gone (hpid-oxpd-spinner,${Longest_Wait})
+        Info.Mark End (STF_AppShown,4)
+      }
+    
+    
+    If: Oxpd.Wait For Css (.hp-listitem,${Wait_Time})
+    {
+        //To Print all the Documents
+        If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Print all)
+        {
+          Info.Mark Start (STF_PrintAll,5)   
+          Oxpd.Touch Id (b_prAll)
+          Info.Mark End (STF_PrintAll,5)
+        } 
+        
+        //To Print Only 1 Document
+        Fail:
+        {
+           Oxpd.Touch Css (.hp-listitem)
+           If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Print-Keep)
+           {
+               Info.Mark Start (STF_PrintKeep,6)
+               Oxpd.Touch Id(b_prKp)//Print keep
+               Info.Mark End (STF_PrintKeep,6)
+           }
+           If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Print-Delete)
+           {
+               Info.Mark Start (STF_PrintDelete,7)
+               Oxpd.Touch Id (b_pr)//Print delete
+               Info.Mark End (STF_PrintDelete,7)
+           }
+           If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Delete)
+           {
+               Info.Mark Start (STF_Delete,8)
+               Oxpd.Touch Id (b_delRef)//delete
+               Info.Mark End (STF_Delete,8)
+           }
+        }
+        If: Equals IgnoreCase (${PRINT_RELEASE_ACTION},Delete)
+        { 
+            Return With Pass(Deleted Job successfully)
+        }
+        Fail:
+        {
+            If: JediOmni.Wait For Active Job (${Wait_Time})
+            {
+                Info.Mark Start (STF_PullingJobFromServer,9)
+                //Continue
+                 Info.Mark End (STF_PullingJobFromServer,9)
+            }
+            Fail:
+            {
+                Return With Fail(Failed to initiate print jobs within ${Wait_Time} seconds!!)
+            }
+    
+            If: JediOmni.Wait For Active Job Gone (${Longest_Wait})
+            {
+                Info.Mark Start (STF_ProcessingJob,10)
+                Return With Pass (Print Job Completed Successfully) 
+                Info.Mark End (STF_ProcessingJob,10)
+            }
+            Fail:
+            {
+                Return With Fail (Failed to print jobs within ${Longest_Wait} seconds!!)
+            }
+        }
+    }
+    
+    Fail:
+    {
+        Return With Fail (No Jobs found to Pull!!) 
+    }
+    
+    Error:
+    {
+        Return With Error (Error while selecting print Job!!)
+    } 
+    
+    Info.Draw Time Graph (STF_AppButtonPress)
+    Info.Draw Time Graph (STF_PrintAll)
+    Info.Draw Time Graph (STF_PrintKeep)
+    Info.Draw Time Graph (STF_Delete)
+    Info.Draw Time Graph (STF_PrintDelete)
+    Info.Draw Time Graph (STF_PullingJobFromServer)
+    Info.Draw Time Graph (STF_ProcessingJob)
+    Info.Draw Time Graph (STF_AppShown)
+}
+
+/////////////////////////////////////////////////
+// Routine:         ExitApp
+// Description:     Exit the HPAdvanceSecurePullPrint app on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+ExitApp
+{
+    If:Oxpd.Wait For Text (Exit,${Wait_Time})
+    {
+        Oxpd.Touch Text (Exit)
+    }
+    Fail:
+    {
+        Return With Fail (Unable to find Exit button!)
+    }
+}
+
+/////////////////////////////////////////////////
+// Routine:         SignOut
+// Description:     sign out on the device
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+
+SignOut
+{
+    Info.Start Time Check (STF_DeviceSignOut)
+    // make sure at Home screen, signed out and reset 
+    JediOmni.Press Home Key
+    Info.Mark Start (STF_DeviceSignOut,11)
+    If: JediOmni.Wait For Text (Sign Out,${Wait_Time})
+    {
+        JediOmni.Touch Text (Sign Out)
+    }
+    Fail:
+    {
+        Return With Fail (Failed to find Home Screen Sign Out!)
+    }
+    Info.Mark End (STF_DeviceSignOut,11)
+    Info.Draw Time Graph (STF_DeviceSignOut)
+}
+
+
+
+
+
+
+

@@ -1,0 +1,24 @@
+﻿using printer-validation-testcases.gflib
+using identifier-variables.gfvar
+
+SetupAzureVision
+{
+    printer-validation-testcases.AzureVision(${AzureEndpoint},${SubscriptionKey})
+}
+
+UKInvoices&DeliveryNotes                                                       
+{
+    printer-validation-testcases.Setup(${JediOmniFlatbedScanPrompt},${CancelButton},${CancelScanNotifictaion},${YesButton_CancelScanNotification},${StartNewJob},${ClearingSettingsMsg})
+    printer-validation-testcases.Open_HPScanAIEnhanced(${HPScanAIEnhanced},${ScanAIApplicationIcon})
+    printer-validation-testcases.Select_WorkflowDProject(${DemoProjectPortalValidation},${ProjectUnderTest},${StartNewJobbutton},${DemoProjectUnderTest})
+    printer-validation-testcases.Scan_DocMultipleTimes(${ScanButton},${Scanning},${DoneButton},${NextStepButton})
+    printer-validation-testcases.Click_NextStepButton(${NextStepButton},${ValidateButton})
+    printer-validation-testcases.Perform_ValidationOfScannedDocuments(${DocumentTypeFeild},${DocumentTypeDeliveryNoteValue},${DeliveryDateField},${DeleveryNoteNumber},${DocumentTypeInvoiceValue},${InvoiceDate},${InvoiceNumber},${NetTotal},${TaxTotal},${GrossTotal})
+    printer-validation-testcases.Click_Validate_Button(${ValidateButton},${FinishValidationButton})
+    printer-validation-testcases.Click_FinishValidation_Button(${FinishValidationButton},${DemoProjectPortalValidation})    
+}
+
+Teardown
+{
+    printer-validation-testcases.Teardown
+}

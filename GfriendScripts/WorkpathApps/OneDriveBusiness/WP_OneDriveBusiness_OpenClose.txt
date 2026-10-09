@@ -1,0 +1,202 @@
+﻿///<File>WP_OneDriveBusiness_OpenClose.txt</File>
+///<Modified>2021-04-21</Modified>
+///<Description>Open the HP for OneDrive workpath app, then close it after a short wait.
+///Optionally authenticate on the device. Handle SIO as necessary.</Description>
+///<Precondition></Precondition>
+///<Author>Ron Pridmore</Author>
+
+// these variable file references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using StandardTimeouts.gfvar
+Using ..\..\Common\StandardTimeouts.gfvar
+
+Using WP_OneDriveBusiness.gfvar
+Using WP_OneDriveBusinessAuth.gfvar
+
+// these library references need to be changed to not point to other folders
+// when used in the STF GFriend plugin
+//Using Device_Library.gflib
+Using ..\..\Device\Device_Library.gflib
+//Using DeviceAuth.gflib
+Using ..\..\DeviceAuth\DeviceAuth.gflib
+
+Using WP_OneDriveBusiness_Library.gflib
+
+Using JediOmni
+
+///<Name>OpenApp</Name>
+///<Description>Authenticate on device, if specified, and open the OneDrive app</Description>
+///<Notes>WP_OneDriveBusinessAuth.gfvar contains the needed authentication and User variables. 
+///WP_OneDriveBusiness.gfvar contains needed app variables.
+///If this script is run from STF/STB the variables with names beginning
+///with STF_ can be commented to use the values from the STF/STB virtual worker user.
+///This routing handles SIO 2FA as needed</Notes>
+OpenApp
+{
+    // get the user code/PIN to use
+    DeviceAuth.GenerateUserCode (${STF_UserName})
+    
+    // authenticate if specified
+    If: Equals IgnoreCase (${AuthenticationType},Windows)
+    {
+        // sign in with Windows
+        If: DeviceAuth.SignIn_Windows (${STF_UserName},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Windows authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Windows authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},HPAC)
+    {
+        // sign in with HPAC
+        If: DeviceAuth.Sign_In_HPAC (${UserCode},${STF_UserName},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with HPAC authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},SafeCom)
+    {
+        // sign in with SafeCom
+        If: DeviceAuth.SignIn_SafeCom (${STF_UserName},${UserCode},${STF_UserPassword},${STF_Domain})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with SafeCom authentication!)
+            Stop Test Suite
+        }
+    }
+    If: Equals IgnoreCase (${AuthenticationType},Papercut)
+    {
+        // sign in with Papercut
+        If: DeviceAuth.Sign_In_PaperCut (${STF_UserName},${UserCode},${STF_UserPassword},${Auth_TryUserID_First_YN})
+        {// complete the sign in process
+            DeviceAuth.CheckSignInCompletion(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        }
+        Fail:
+        {
+            Fail (Failed signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error signing in with Papercut authentication!)
+            Stop Test Suite
+        }
+    }
+    // if got to here either authentication was successful
+    // or not authentication type specified
+    
+    // open the app
+    If: Device_Library.LaunchApp(${ButtonID},${ButtonText})
+    {
+        Sleep (${Very_Short_Wait_Time})
+        // check for and handle SIO 2 factor auth PIN
+        If: DeviceAuth.Check_HPID_SIO(${HPID_UserID},${HPID_Password},${HPID_PIN})
+        {
+            // handle the app opening (EULA, Sign In and Guide screen)
+            If: WP_OneDriveBusiness_Library.HandleAppOpening(${AppUserID},${AppPassword},${SaveSIO_AppCredentials})
+            {
+            }
+            Fail:
+            {
+                Fail (Fail while handling the opening of OneDrive Business app!)
+            }
+            Error:
+            {
+                Error (Error occurred while handling the opening of OneDrive Business app!)
+            }
+        }
+        Fail:
+        {
+            // clear out of the app
+            //Sleep (${Minimal_Wait_Time})
+            //JediOmni.Press Home Key
+            Fail (Launch OneDrive Business app failed!)
+            //Stop Test Suite
+        }
+        Error:
+        {
+            Error (Error occurred while launching OneDrive Business app!)
+            //Stop Test Suite
+        }
+    }
+    Fail:
+    {
+        Fail (Launch OneDrive Business app failed!)
+        //Stop Test Suite
+    }
+    Error:
+    {
+        Error (Error occurred while launching OneDrive Business app!)
+        //Stop Test Suite
+    }
+
+    Sleep (${Long_Wait})
+}
+
+///<Name>ExitAppSignOut</Name>
+///<Description>Exit the OneDrive app and sign out</Description>
+///<Notes>WP_OneDriveBusiness.gfvar contains needed app exit variables.</Notes>
+ExitAppSignOut
+{
+    // exit the app
+    If: WP_OneDriveBusiness_Library.AppExit (${BackOutOfApp})
+    {
+    }
+    Fail:
+    {
+        Fail (OneDrive Business app exit failed!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (OneDrive Business app exit errored!)
+        Stop Test Case
+    }
+    
+    // sign out on the device if specified
+    If: Equals IgnoreCase(${DeviceSignOut},Y)
+    {
+        If: DeviceAuth.SignOut
+        {
+        }
+        Fail:
+        {
+            Fail (Fail while signing out!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error while signing out!)
+            Stop Test Case
+        }
+    }
+    
+    Pass (Exit App complete!)
+}

@@ -1,0 +1,153 @@
+﻿/// <File>DeviceConfigure.txt</File>
+/// <Modified>2021-05-25</Modified>
+/// <Description>Configure a device</Description>
+/// <Precondition></Precondition>
+/// <Author>Ron Pridmore</Author>
+
+Using DeviceConfigure.gfvar
+
+Using Device_Library.gflib
+Using Device_EWS_Library.gflib
+
+Using Web As EWS_Web
+Using JediOmni
+
+/// <Name>ConfigureDevice</Name>
+/// <Description>Confgure the device as specified from EWS and/or directly</Description>
+/// <Notes></Notes>
+ConfigureEWS
+{
+    // oepn the device EWS
+    If: Device_EWS_Library.OpenEWS (${DUT_Address})
+    {
+    }
+    Fail:
+    {
+        Fail (Fail accessing device ${DUT_Address} EWS!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error accessing device ${DUT_Address} EWS!)
+        Stop Test Case
+    }
+    
+    // check admin password set, set if not set
+    If: Device_EWS_Library.SignInWithAdmin (${DUT_AdminPW}, Y, Y)
+    {
+    }
+    Fail:
+    {
+        Fail (Fail setting device admin password!)
+        Stop Test Case
+    }
+    Error:
+    {
+        Error (Error setting device admin password!)
+        Stop Test Case
+    }
+    
+    // set the date/time if specified
+    If: Equals IgnoreCase (${Set_DateTime},Y)
+    {
+        If: Device_EWS_Library.SetDateTimeSettings(${DateTime_TimeZone},${DateTime_AdjustDaylightSavings},${DateTime_DateFormat},${DateTime_TimeFormat},${DateTime_SynchToTimeServer},${DateTime_TimeServerAddress},${DateTime_TimeServerPort},${DateTime_TimeServerPeriod})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting Date Time settings!)
+        }
+        Error:
+        {
+            Error (Error setting Date Time settings!)
+        }
+    }
+    
+    // configure Windows Auth
+    If: Equals IgnoreCase (${Configure_WindowsAuth},Y)
+    {
+        If: Device_EWS_Library.ConfigureWindowsAuth(${Enable_WindowsAuth},${WindowsAuth_Domain},${WindowsAuth_Use_SSL_YN},${WindowsAuth_Name_Match_Attrribute},${WindowsAuth_Email_Attribut},${WindowsAuth_User_Name_Attribute})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting Windows Auth!)
+        }
+        Error:
+        {
+            Error (Error setting Windows Auth!)
+        }
+    }
+    
+    // configure Default Sign In Method
+    If: Equals IgnoreCase (${Set_DefaultSignIn},Y)
+    {
+        If: Device_EWS_Library.SetDefaultSignInMethod(${SignIn_Default})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting default sign in method!)
+        }
+        Error:
+        {
+            Error (Error setting default sign in method!)
+        }
+    }
+    
+    // configure Scan to Email
+    If: Equals IgnoreCase (${Configure_ScanToEmail},Y)
+    {
+        If: Device_EWS_Library.ConfigureEmail(${ScanToEmail_Enable},${ScanToEmail_SmptServer},${ScanToEmail_FromAddressSource},${ScanToEmail_FromAddress},${ScanToEmail_Subject},${ScanToEmail_Message},${ScanToEmail_FileName},${ScanToEmail_FileType},${ScanToEmail_Color},${DefaultResolution})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting scan to email configuration!)
+        }
+        Error:
+        {
+            Error (Error setting scan to email configuration!)
+        }
+    }
+    
+    // configure device announcement agent
+    If: Equals IgnoreCase (${Configure_DeviceAnnouncement},Y)
+    {
+        If: Device_EWS_Library.ConfigureDeviceAnnouncement(${DeviceAnnouncement_Enable},${DeviceAnnouncement_ServerIP},${DeviceAnnouncement_EnableMaxTime})
+        {
+        }
+        Fail:
+        {
+            Fail (Fail setting device announcement configuration!)
+        }
+        Error:
+        {
+            Error (Error setting device announcement configuration!)
+        }
+    }
+}
+
+/// <Name>ConfigurePaperlessMode</Name>
+/// <Description>Enable/disable Paperless mode on a device</Description>
+/// <Notes></Notes>
+ConfigurePaperlessMode
+{
+    // enable Paperless Mode if specified
+    If: Equals IgnoreCase (${Enable_PaperlessMode},Y)
+    {
+        If: Device_Library.SetPaperlessMode(Y)
+        {
+        }
+        Fail:
+        {
+            Fail (Fail enabling Paperless Mode!)
+            Stop Test Case
+        }
+        Error:
+        {
+            Error (Error enabling Paperless Mode!)
+            Stop Test Case
+        }
+    }
+}

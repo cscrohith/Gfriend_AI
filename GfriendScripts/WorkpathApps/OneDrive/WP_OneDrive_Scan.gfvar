@@ -1,0 +1,16 @@
+﻿//scan options
+${Scan_Filename}=OneDriveScan_1pg
+${Scan_Folder}=Platform-Scans
+${Scan_Pages}=1
+
+// this is the scan complete timeout in seconds
+${Scan_JobCompleteTimeout}=300
+
+${Scan_Repetitions}=1
+
+${Scan_SkipOptions}=Y
+${Scan_FileType}=JPEG
+${Scan_Resolution}=300 dpi
+${Scan_Color}=Color
+${Scan_OriginalSize}=Letter \(8.5x11\)
+${Scan_ContentOrientation}=Portrait

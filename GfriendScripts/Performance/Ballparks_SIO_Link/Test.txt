@@ -1,0 +1,23 @@
+﻿using Window_auth.gflib
+using link_variable.gfvar
+using Sio_nfr.gflib
+using 2fa.gflib
+
+Test
+{
+    Repeat:1
+    {
+        2fa.login_hpac_new(${2fa_id})
+    }
+}
+
+HPID_2ndLinkingPerformanceForWindowsAuth
+{
+    Sio_nfr.HPID_2ndLinking(hpid2ndlinking_windows,windows)
+}
+
+CloudSIO_App_Launching
+{
+    Sio_nfr.CloudSIO1stLaunching(Box1stCloudSIOPerformance,${ID_Google})
+    Sio_nfr.CloudSIO2ndLaunching(Box2ndCloudSIOPerformance,${ID_Google})
+}

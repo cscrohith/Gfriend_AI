@@ -1,0 +1,130 @@
+﻿Using Doppler_OffboardDevices.gfvar
+
+//DataSet C:\Temp\Test3.xlsx as DeviceList
+DataSet C:\Temp\All_Available_Doppler_Devices_As_Of_07_23.xlsx as DeviceList
+
+Using Device_EWS_Library.gflib
+Using HPCC_Library.gflib
+
+Using Web
+Using Web As EWS_Web
+
+/////////////////////////////////////////////////
+// Routine:         OffboardDevices
+// Description:     loop through the devices in the specified DataSet
+//                      Excel file, off-board them from HPCC
+//                      then disabled Web Services from EWS
+//
+// Arguments:       
+//
+// Pre-requisites:  
+//
+// Notes:
+//
+// Version:
+/////////////////////////////////////////////////
+OffboardDevices
+{ 
+    // open HPCC_Library
+    IF: HPCC_Library.SignIn (${HPCC_User},${HPCC_PassWord},${HPCC_url},${HPCC_Browser})
+    {
+        Sleep(2)
+    }
+    Fail:
+    {
+        Fail (HPCC Sign In for device removal Failed!)
+        Stop Test Suite
+    }
+    
+    // Unassign all devices from the account
+        
+    // loop through the list of devices
+    For Each Row:DeviceList.${SheetName}.${TableName}
+    {
+//Wait For User Confirm (IP: ${Address1}  - Asset: ${AssetId}  - SN: ${SerialNumber})
+        // unassign the device
+        If: HPCC_Library.UnassignDevice(${SerialNumber})
+        {
+            Write To Data Set (HPCC_Unassigned,Success)
+            Sleep(2)
+        }
+        Fail:
+        {
+            Write To Data Set (HPCC_Unassigned,Failed)
+            Fail (HPCC Device unassigning Failed!)
+        }
+        Error:
+        {
+            Write To Data Set (HPCC_Unassigned,Errored)
+            Error (Error occured during HPCC Device unassigning!)
+        }
+    
+        //Delete the device from unassigned devices
+        If: HPCC_Library.RemoveDevice(${SerialNumber})
+        {
+            Write To Data Set (HPCC_Removed,Success)
+            Sleep(2)
+        }
+        Fail:
+        {
+            Write To Data Set (HPCC_Removed,Failed)
+            Fail (HPCC Device removal Failed!)
+        }
+        Error:
+        {
+            Write To Data Set (HPCC_Removed,Errored)
+            Error (Error occured during HPCC Device removal!)
+        }
+        
+//Wait For User Confirm (Before EWS - IP: ${Address1}  - Asset: ${AssetId}  - SN: ${SerialNumber})
+        //disable web services in EWS
+        If: Device_EWS_Library.OpenEWS (${Address1})
+        {
+            If: Device_EWS_Library.SignInWithAdmin (${DUT_AdminPW}, Y, N)
+            {
+                If: Device_EWS_Library.DisableWebServices
+                {
+                    Write To Data Set (WebServiceDisabled,Success)
+                    Pass (Web Services Disable Success!)
+                }
+                Fail:
+                {
+                    Write To Data Set (WebServiceDisabled,Failed)
+                    Fail (Disable Web Services Failed!)
+                }
+                Error:
+                {
+                    Write To Data Set (WebServiceDisabled,Errored)
+                    Error (Disable Web Services Errored!)
+                }
+            }
+            Fail:
+            {
+                Write To Data Set (WebServiceDisabled,Fail - Unable to sign in to EWS)
+                Fail (Sign in to EWS Failed!)
+            }
+            Error:
+            {
+                Write To Data Set (WebServiceDisabled,Error - Unable to sign in to EWS)
+                Error (Sign in to EWS Errored!)
+            }
+        }
+        Fail:
+        {
+            Write To Data Set (WebServiceDisabled,Fail - Unable to open EWS)
+            Fail (Opening EWS Failed!)
+        }
+        Error:
+        {
+            Write To Data Set (WebServiceDisabled,Error - Unable to open EWS)
+            Error (Opening EWS Errored!)
+        }
+        @Device_EWS_Library.CloseEWS
+    }
+    
+    Sleep(2)
+
+    HPCC_Library.SignOut()
+    
+    Web.Close
+}
