@@ -37,6 +37,7 @@ from .regex_library import RegexLibrary
 from .rest_library import RestLibrary
 from .spreadsheet_library import SpreadSheetLibrary
 from .xml_library import XmlLibrary
+from .windows_library import WindowsLibrary
 
 _VARIABLE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
 
@@ -205,6 +206,8 @@ class Executor:
                         output_folder=self.output_folder,
                     ),
                 )
+            elif library.casefold() == "windows":
+                self.register_library("Windows", WindowsLibrary(self.variables))
             elif library.casefold() == "rest":
                 self.register_library("Rest", RestLibrary(self.variables))
 
@@ -334,6 +337,13 @@ class Executor:
             variable_arguments = {0}
         elif library_name in {"lp", "lpr"} and keyword_name == "getlpcommand":
             variable_arguments = {0}
+        elif library_name == "windows":
+            variable_arguments = {
+                "getenvironmentvariable": {1},
+                "getenviornmentvariable": {1},
+                "gettext": {1},
+                "gettextwithwpath": {1},
+            }.get(keyword_name, set())
         elif library_name == "spreadsheet":
             variable_arguments = {
                 "totalrowcount": {0},

@@ -9,12 +9,16 @@ description = "Python runtime for GFriend test scripts"
 requires-python = ">=3.11"
 dependencies = ["openpyxl>=3.1"]
 
+[project.optional-dependencies]
+windows = ["pywinauto>=0.6.9; platform_system == 'Windows'"]
+
 [project.scripts]
 gfriend-python = "gfriend_python.cli:main"
 gfriend-web = "gfriend_python.web:main"
 gfriend-run-spec = "gfriend_python.run_spec:main"
 gfriend-legacy-report = "gfriend_python.legacy_report:main"
 gfriend-summary-report = "gfriend_python.summary_report:main"
+gfriend-update = "gfriend_python.updater:main"
 
 [tool.setuptools]
 packages = ["gfriend_python"]

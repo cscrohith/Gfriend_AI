@@ -28,6 +28,7 @@ python -m gfriend_python.run_spec path\to\run-spec.xml --var UserName=alice
 python -m gfriend_python.legacy_report path\to\legacy-output.xml
 python -m gfriend_python.summary_report path\to\report-folder
 python -m gfriend_python path\to\script.txt --legacy-xml-report output\output.xml
+python -m gfriend_python.updater https://example.com/release.zip <sha256> path\to\releases
 ```
 
 The command exits with status `0` when selected cases pass, `1` when execution
@@ -127,6 +128,16 @@ adapter, executing a remote block reports an error.
   using the legacy GFriend report schema for consumption by existing report
   tooling; per-step timestamps and hierarchical control-block timing are absent
   from the Python result model and therefore remain empty/not represented
+- `using Windows` exposes local process launch, environment-variable lookup,
+  application selection, automation-ID text access, click, wait, and close
+  keywords through UI Automation; install `gfriend-python-runtime[windows]` on
+  Windows for the optional `pywinauto` driver. UI keywords are unavailable on
+  non-Windows platforms unless a compatible backend is injected.
+- `gfriend-update URL SHA256 install-folder` downloads a ZIP over HTTPS, verifies
+  the caller-supplied digest, rejects unsafe archive paths and links, then
+  installs to a new checksum-versioned directory without replacing existing
+  releases. This is a safe installer primitive, not yet a full replacement for
+  the legacy authenticated release service or self-updating Windows UI.
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value

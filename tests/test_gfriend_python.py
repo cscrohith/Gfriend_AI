@@ -2,6 +2,9 @@ import csv
 import threading
 import tempfile
 import unittest
+import hashlib
+import io
+import zipfile
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -24,6 +27,7 @@ from gfriend_python.report import (
     write_legacy_html_report,
 )
 from gfriend_python.summary_report import render_summary_report, write_summary_report
+from gfriend_python.updater import install_release
 
 
 class RunSpecTests(unittest.TestCase):
@@ -122,6 +126,174 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_updater_verifies_and_atomically_installs_release_archive(self) -> None:
+        archive_buffer = io.BytesIO()
+        with zipfile.ZipFile(archive_buffer, "w") as archive:
+            archive.writestr("gfriend/README.txt", "verified release")
+            archive.writestr("gfriend/bin/runner.py", "print('ready')")
+        archive_bytes = archive_buffer.getvalue()
+        checksum = hashlib.sha256(archive_bytes).hexdigest()
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self) -> None:
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(archive_bytes)))
+                self.end_headers()
+                self.wfile.write(archive_bytes)
+
+            def log_message(self, format: str, *args: object) -> None:
+                pass
+
+        server = HTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                installed = install_release(
+                    f"http://127.0.0.1:{server.server_port}/release.zip",
+                    checksum,
+                    directory,
+                )
+                self.assertEqual(installed.name, checksum[:16])
+                self.assertEqual(
+                    (installed / "gfriend" / "README.txt").read_text(),
+                    "verified release",
+                )
+                with self.assertRaises(FileExistsError):
+                    install_release(
+                        f"http://127.0.0.1:{server.server_port}/release.zip",
+                        checksum,
+                        directory,
+                    )
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_updater_rejects_bad_checksum_insecure_url_and_zip_traversal(self) -> None:
+        def serve(payload: bytes) -> tuple[HTTPServer, threading.Thread]:
+            class Handler(BaseHTTPRequestHandler):
+                def do_GET(self) -> None:
+                    self.send_response(200)
+                    self.send_header("Content-Length", str(len(payload)))
+                    self.end_headers()
+                    self.wfile.write(payload)
+
+                def log_message(self, format: str, *args: object) -> None:
+                    pass
+
+            server = HTTPServer(("127.0.0.1", 0), Handler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            return server, thread
+
+        archive_buffer = io.BytesIO()
+        with zipfile.ZipFile(archive_buffer, "w") as archive:
+            archive.writestr("../outside.txt", "unsafe")
+        payload = archive_buffer.getvalue()
+        server, thread = serve(payload)
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                url = f"http://127.0.0.1:{server.server_port}/release.zip"
+                with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
+                    install_release(url, "0" * 64, directory)
+                self.assertEqual(list(Path(directory).iterdir()), [])
+                checksum = hashlib.sha256(payload).hexdigest()
+                with self.assertRaisesRegex(ValueError, "Unsafe archive path"):
+                    install_release(url, checksum, directory)
+                self.assertEqual(list(Path(directory).iterdir()), [])
+                with self.assertRaisesRegex(ValueError, "HTTPS"):
+                    install_release("http://example.com/release.zip", checksum, directory)
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_windows_library_uses_accessibility_backend_for_ui_keywords(self) -> None:
+        class FakeControl:
+            def __init__(self) -> None:
+                self.text = ""
+                self.clicked = False
+
+            def window_text(self) -> str:
+                return "Sample text"
+
+            def click_input(self) -> None:
+                self.clicked = True
+
+            def set_edit_text(self, text: str) -> None:
+                self.text = text
+
+        class FakeBackend:
+            has_window = True
+
+            def __init__(self) -> None:
+                self.control = FakeControl()
+                self.selected: tuple[str, float] | None = None
+
+            def select(self, title: str, timeout: float) -> None:
+                self.selected = (title, timeout)
+
+            def find(self, automation_id: str, timeout: float) -> FakeControl:
+                if automation_id != "field-id":
+                    raise LookupError(f"Unknown control {automation_id}")
+                return self.control
+
+            def close(self) -> None:
+                return None
+
+        backend = FakeBackend()
+        from gfriend_python.windows_library import WindowsLibrary
+
+        script = parse_script(
+            "using Windows\n"
+            "Case\n"
+            "{\n"
+            "  Windows.SetTimeoutScale(2)\n"
+            "  Windows.SelectApplication(Sample Window, 3)\n"
+            "  Windows.WaitForId(field-id, 2)\n"
+            "  Windows.GetText(field-id, ${text})\n"
+            "  Windows.SetText(field-id, new value)\n"
+            "  Windows.ClickId(field-id)\n"
+            "  Windows.CloseApplication()\n"
+            "}\n"
+        )
+        class FakeWindowsExecutor(Executor):
+            def _register_script_libraries(self, suite) -> None:
+                super()._register_script_libraries(suite)
+                self.register_library(
+                    "Windows",
+                    WindowsLibrary(self.variables, backend_factory=lambda: backend),
+                )
+
+        executor = FakeWindowsExecutor()
+
+        result = executor.run(script)
+
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(backend.selected, ("Sample Window", 6))
+        self.assertEqual(executor.variables["${text}"], "Sample text")
+        self.assertEqual(backend.control.text, "new value")
+        self.assertTrue(backend.control.clicked)
+
+    def test_windows_library_reports_missing_optional_driver_and_unknown_environment(self) -> None:
+        from gfriend_python.windows_library import WindowsLibrary
+
+        unavailable = WindowsLibrary({}, backend_factory=lambda: (_ for _ in ()).throw(
+            RuntimeError("UI driver unavailable")
+        ))
+        result = unavailable.select_application("Sample")
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertIn("UI driver unavailable", result.output)
+
+        environment = WindowsLibrary({})
+        result = environment.get_environment_variable(
+            "GFRIEND_TEST_MISSING_ENVIRONMENT_VARIABLE",
+            "${value}",
+        )
+        self.assertEqual(result.status, Status.FAIL)
+        self.assertIn("is not defined", result.output)
+
     def test_execution_can_export_legacy_xml_consumed_by_summary_and_html_reports(self) -> None:
         result = Executor().run(
             parse_script(
