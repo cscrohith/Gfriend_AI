@@ -4,6 +4,7 @@ import tempfile
 import unittest
 import hashlib
 import io
+import socket
 import zipfile
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import xml.etree.ElementTree as ET
@@ -102,7 +103,7 @@ class RunSpecTests(unittest.TestCase):
             self.assertEqual(ET.parse(xml_report).getroot().findtext("Result"), "PASS")
             self.assertEqual(stdout.getvalue(), "")
 
-    def test_run_spec_rejects_unsupported_device_configuration(self) -> None:
+    def test_run_spec_rejects_default_device_without_matching_configuration(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "suite.txt").write_text("Case\n{\n}\n", encoding="utf-8")
@@ -113,7 +114,74 @@ class RunSpecTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            with self.assertRaisesRegex(ValueError, "device.*not supported"):
+            with self.assertRaisesRegex(ValueError, "does not match"):
+                run_spec(spec)
+
+    def test_run_spec_selects_device_and_sends_fleet_text_to_configured_address(self) -> None:
+        received = bytearray()
+        listener = socket.socket()
+        listener.bind(("127.0.0.1", 0))
+        listener.listen(1)
+        listener.settimeout(4)
+        port = listener.getsockname()[1]
+
+        def receive() -> None:
+            with listener:
+                connection, _ = listener.accept()
+                with connection:
+                    while True:
+                        chunk = connection.recv(4096)
+                        if not chunk:
+                            return
+                        received.extend(chunk)
+
+        thread = threading.Thread(target=receive, daemon=True)
+        thread.start()
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "suite.txt").write_text(
+                    "using Fleet\n"
+                    "Case\n"
+                    "{\n"
+                    f"  Fleet.SendText(print payload, {port})\n"
+                    "}\n",
+                    encoding="utf-8",
+                )
+                spec = root / "run.xml"
+                spec.write_text(
+                    "<TestRuns><TestSuite><TestSuitePath>suite.txt</TestSuitePath>"
+                    "<DefaultDevice>local-printer</DefaultDevice>"
+                    "<DeviceUnderTest><DeviceId>local-printer</DeviceId>"
+                    "<DeviceAddress>127.0.0.1</DeviceAddress><Port>9100</Port>"
+                    "<DeviceType>Printer</DeviceType>"
+                    "<AdditionalCapabilites><Capability><Key>Model</Key>"
+                    "<Value>Test Device</Value></Capability></AdditionalCapabilites>"
+                    "</DeviceUnderTest></TestSuite></TestRuns>",
+                    encoding="utf-8",
+                )
+
+                result = run_spec(spec)
+
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(bytes(received), b"print payload")
+        finally:
+            listener.close()
+            thread.join(timeout=5)
+
+    def test_run_spec_requires_default_for_multiple_devices(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "suite.txt").write_text("Case\n{\n}\n", encoding="utf-8")
+            spec = root / "run.xml"
+            spec.write_text(
+                "<TestRuns><TestSuite><TestSuitePath>suite.txt</TestSuitePath>"
+                "<DeviceUnderTest><DeviceId>one</DeviceId></DeviceUnderTest>"
+                "<DeviceUnderTest><DeviceId>two</DeviceId></DeviceUnderTest>"
+                "</TestSuite></TestRuns>",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "must specify DefaultDevice"):
                 run_spec(spec)
 
 

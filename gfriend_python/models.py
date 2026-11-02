@@ -119,6 +119,17 @@ class TestSuite:
 
 
 @dataclass(slots=True)
+class DeviceUnderTest:
+    device_id: str = ""
+    device_address: str = ""
+    port: int = 0
+    admin_id: str = ""
+    admin_password: str = ""
+    device_type: str = ""
+    additional_capabilities: dict[str, str] = field(default_factory=dict)
+
+
+@dataclass(slots=True)
 class StepResult:
     keyword: str
     line_number: int

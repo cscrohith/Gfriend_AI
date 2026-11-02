@@ -37,8 +37,9 @@ reports a failure or error, and `2` for invalid input or file errors.
 The run-spec command reads the legacy `TestRuns` XML shape, including suite
 selection, repeat counts, and output paths, and aggregates the repeated suite
 results into one report. Relative suite and output paths resolve from the
-run-spec file. Device configuration fields are rejected until Python device
-libraries are available.
+run-spec file. A run spec can select a configured `DeviceUnderTest` with
+`DefaultDevice`; currently, the `Fleet` raw-print library consumes that
+configuration.
 
 ## Open the web execution workspace
 
@@ -119,6 +120,8 @@ adapter, executing a remote block reports an error.
   validation remains enabled and cannot be disabled
 - `using LP` builds a shell-quoted CUPS `lp` command from a selected file,
   printer, copy count, and options; it returns the command without executing it
+- `using Fleet` sends UTF-8 text or file bytes to the selected run-spec device
+  over its explicitly configured address and raw-printer port (9100 by default)
 - `gfriend-legacy-report output.xml` converts a legacy GFriend XML execution
   report to standalone HTML, preserving nested results and available remote
   block output; the installed command also accepts `--output path.html`

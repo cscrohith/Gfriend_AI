@@ -13,6 +13,7 @@ from typing import Any
 
 from .models import (
     ConditionalBlock,
+    DeviceUnderTest,
     ExecutionResult,
     ForEachRowBlock,
     ForBlock,
@@ -106,6 +107,7 @@ class Executor:
         variables: dict[str, str] | None = None,
         sleep: Callable[[float], None] = time.sleep,
         output_folder: str | Path | None = None,
+        device: DeviceUnderTest | None = None,
         user_interaction: Callable[[str, bool], KeywordResult] | None = None,
         remote_runner: Callable[[str, list[Runnable], dict[str, str]], KeywordResult] | None = None,
     ) -> None:
@@ -114,6 +116,7 @@ class Executor:
         self._libraries: dict[str, object] = {}
         self._sleep = sleep
         self._user_interaction = user_interaction
+        self.device = device
         self._remote_runner = remote_runner
         self._suite: TestSuite | None = None
         self.output_folder = Path(output_folder).resolve() if output_folder else Path.cwd()
@@ -208,6 +211,16 @@ class Executor:
                 )
             elif library.casefold() == "windows":
                 self.register_library("Windows", WindowsLibrary(self.variables))
+            elif library.casefold() == "fleet":
+                from .fleet_library import FleetLibrary
+
+                self.register_library(
+                    "Fleet",
+                    FleetLibrary(
+                        self.device,
+                        script_folder=suite.script_folder,
+                    ),
+                )
             elif library.casefold() == "rest":
                 self.register_library("Rest", RestLibrary(self.variables))
 

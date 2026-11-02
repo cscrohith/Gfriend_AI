@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .executor import Executor
-from .models import ExecutionResult, Status, TestCaseResult
+from .models import DeviceUnderTest, ExecutionResult, Status, TestCaseResult
 from .parser import ParseError, parse_file
 from .report import write_html_report, write_xml_report
 
@@ -27,6 +27,39 @@ def _child_text(element: ET.Element, name: str) -> str | None:
     if not values:
         return None
     return (values[0].text or "").strip()
+
+
+def _parse_device(element: ET.Element, index: int) -> DeviceUnderTest:
+    def value(name: str) -> str:
+        return _child_text(element, name) or ""
+
+    try:
+        port = int(value("Port") or "0")
+    except ValueError as error:
+        raise ValueError(f"DeviceUnderTest #{index} Port must be an integer") from error
+    if not 0 <= port <= 65535:
+        raise ValueError(f"DeviceUnderTest #{index} Port must be between 0 and 65535")
+    capabilities: dict[str, str] = {}
+    capability_containers = [
+        child for child in element if _local_name(child.tag) == "AdditionalCapabilites"
+    ]
+    for container in capability_containers:
+        for capability in container.iter():
+            if _local_name(capability.tag) != "Capability":
+                continue
+            key = _child_text(capability, "Key")
+            capability_value = _child_text(capability, "Value")
+            if key:
+                capabilities[key] = capability_value or ""
+    return DeviceUnderTest(
+        device_id=value("DeviceId"),
+        device_address=value("DeviceAddress"),
+        port=port,
+        admin_id=value("AdminId"),
+        admin_password=value("AdminPassword"),
+        device_type=value("DeviceType"),
+        additional_capabilities=capabilities,
+    )
 
 
 def _repeat_count(element: ET.Element, field: str) -> int:
@@ -79,14 +112,40 @@ def run_spec(
         else spec_file.parent / "GFriendOutput"
     )
 
-    suite_specs: list[tuple[Path, int, Path | None, list[str] | None]] = []
+    suite_specs: list[
+        tuple[Path, int, Path | None, list[str] | None, DeviceUnderTest | None]
+    ] = []
     for index, node in enumerate(suite_nodes, start=1):
         suite_path_text = _child_text(node, "TestSuitePath")
         if not suite_path_text:
             raise ValueError(f"TestSuite #{index} is missing TestSuitePath")
-        if _children(node, "DeviceUnderTest") or _child_text(node, "DefaultDevice"):
+        devices = [
+            _parse_device(device_node, device_index)
+            for device_index, device_node in enumerate(
+                _children(node, "DeviceUnderTest"),
+                start=1,
+            )
+        ]
+        default_device = _child_text(node, "DefaultDevice")
+        selected_device: DeviceUnderTest | None = None
+        if default_device:
+            selected_device = next(
+                (
+                    device
+                    for device in devices
+                    if device.device_id.casefold() == default_device.casefold()
+                ),
+                None,
+            )
+            if selected_device is None:
+                raise ValueError(
+                    f"TestSuite #{index} DefaultDevice '{default_device}' does not match a configured DeviceUnderTest"
+                )
+        elif len(devices) == 1:
+            selected_device = devices[0]
+        elif len(devices) > 1:
             raise ValueError(
-                f"TestSuite #{index} configures a device, which is not supported by the Python runtime"
+                f"TestSuite #{index} has multiple devices and must specify DefaultDevice"
             )
         suite_path = _resolve_path(spec_file.parent, suite_path_text)
         suite_output_text = _child_text(node, "OutputPath")
@@ -106,6 +165,7 @@ def run_spec(
                 _repeat_count(node, f"TestSuite #{index}"),
                 suite_output,
                 selected_cases or None,
+                selected_device,
             )
         )
 
@@ -113,7 +173,7 @@ def run_spec(
     start_clock = time.monotonic()
     results: list[TestCaseResult] = []
     for root_iteration in range(1, root_repeat + 1):
-        for suite_path, suite_repeat, suite_output, selected_cases in suite_specs:
+        for suite_path, suite_repeat, suite_output, selected_cases, selected_device in suite_specs:
             for suite_iteration in range(1, suite_repeat + 1):
                 output_path = suite_output
                 if output_path is None:
@@ -123,7 +183,10 @@ def run_spec(
                     )
                 output_path.mkdir(parents=True, exist_ok=True)
                 suite = parse_file(suite_path, execution_variables)
-                result = Executor(output_folder=output_path).run(
+                result = Executor(
+                    output_folder=output_path,
+                    device=selected_device,
+                ).run(
                     suite,
                     set(selected_cases) if selected_cases is not None else None,
                 )
