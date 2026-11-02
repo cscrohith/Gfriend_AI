@@ -83,7 +83,7 @@ def _logical_lines(source: str) -> list[tuple[int, str]]:
         else:
             pending = f"{pending} {stripped}"
 
-        for character in stripped:
+        for character_index, character in enumerate(stripped):
             if escaped:
                 escaped = False
                 continue
@@ -94,7 +94,8 @@ def _logical_lines(source: str) -> list[tuple[int, str]]:
                 if character == quote:
                     quote = None
             elif character in ("'", '"'):
-                quote = character
+                if character_index + 1 >= len(stripped) or stripped[character_index + 1] != ",":
+                    quote = character
             elif character == "(":
                 parenthesis_depth += 1
             elif character == ")":
@@ -147,7 +148,7 @@ def _read_arguments(source: str, line_number: int) -> list[str]:
     escaped = False
     nested = 0
 
-    for character in source:
+    for index, character in enumerate(source):
         if escaped:
             current.append(character)
             escaped = False
@@ -162,8 +163,11 @@ def _read_arguments(source: str, line_number: int) -> list[str]:
                 quote = None
             continue
         if character in ("'", '"'):
-            quote = character
-            current.append(character)
+            if not current and index + 1 < len(source) and source[index + 1] == ",":
+                current.append(character)
+            else:
+                quote = character
+                current.append(character)
         elif character == "(":
             nested += 1
             current.append(character)

@@ -43,6 +43,14 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(statement.arguments, ["hello, world", "${User}"])
         self.assertEqual(statement.line_number, 5)
 
+    def test_parses_a_literal_quote_argument(self) -> None:
+        suite = parse_script(
+            'Case\n{\n'
+            '  Replace(${Value},",)\n'
+            '}\n'
+        )
+        self.assertEqual(suite.test_cases[0].steps[0].arguments, ["${Value}", '"', ""])
+
     def test_parses_repeat_and_conditional_blocks(self) -> None:
         suite = parse_script(
             'Flow\n{\n'
