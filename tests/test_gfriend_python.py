@@ -113,6 +113,62 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_json_library_loads_selects_and_updates_json_values(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'using Json as J\n'
+                '${Document}=\n'
+                'Case\n{\n'
+                '  J.Load Json({"customer":{"name":"Ada"}})\n'
+                '  J.Get Value(${Name},$.customer.name)\n'
+                '  J.Load Json([{"id":7}])\n'
+                '  J.Get Value(${Item},$[0].id)\n'
+                '  J.Add Json Element(${Document},enabled,true)\n'
+                '  Pass(${Name}/${Item}/${Document})\n'
+                '}\n'
+            )
+        )
+
+        self.assertEqual(
+            result.status,
+            Status.PASS,
+            [(step.keyword, step.status, step.output) for step in result.test_cases[0].steps],
+        )
+        self.assertEqual(result.test_cases[0].steps[1].output, "Ada")
+        self.assertEqual(result.test_cases[0].steps[3].output, "7")
+        self.assertIn('"enabled": true', result.test_cases[0].steps[4].output)
+        self.assertIn("Ada/7/", result.test_cases[0].steps[5].output)
+
+    def test_json_library_reports_load_path_and_target_errors(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'using Json\n'
+                '${Target}=not-json\n'
+                'Case\n{\n'
+                '  Json.Get Value(${Value},$.name)\n'
+                '  Json.Load Json("scalar")\n'
+                '  Json.Get Value(${Value},$.name)\n'
+                '  Json.Load Json({"name":"Ada"})\n'
+                '  Json.Get Value(${Value},$.missing)\n'
+                '  Json.Add Json Element(${Target},name,Ada)\n'
+                '}\n'
+            )
+        )
+
+        self.assertEqual(result.status, Status.ERROR)
+        outputs = [step.output for step in result.test_cases[0].steps]
+        self.assertEqual(
+            outputs,
+            [
+                "Json is not loaded. Use Load Json keyword before using Get Value.",
+                "Json parsing error.",
+                "Json is not loaded. Use Load Json keyword before using Get Value.",
+                "",
+                "Can not find item with given json path ($.missing) in json string.",
+                "Target variable is not a JSON formatted string: not-json",
+            ],
+        )
+
     def test_regex_library_matches_and_stores_selected_values(self) -> None:
         result = Executor().run(
             parse_script(

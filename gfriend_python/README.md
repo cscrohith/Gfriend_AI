@@ -97,6 +97,8 @@ adapter, executing a remote block reports an error.
   script-relative static variables
 - `using Regex` provides `Set Pattern`, `Is Match`, `Get Match`, and
   `Get Match Count` keywords with state scoped to the current script run
+- `using Json` provides `Load Json`, `Get Value`, and `Add Json Element`;
+  value lookup supports root, object-property, and array-index JSON paths
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value

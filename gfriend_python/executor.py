@@ -29,6 +29,7 @@ from .models import (
     WhileBlock,
 )
 from .parser import ParseError, _parse_statement, parse_file
+from .json_library import JsonLibrary
 from .regex_library import RegexLibrary
 
 _VARIABLE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
@@ -167,6 +168,8 @@ class Executor:
                 self.register_library(alias, _ScriptLibrary(self, library))
             elif library.casefold() == "regex":
                 self.register_library("Regex", RegexLibrary(self.variables))
+            elif library.casefold() == "json":
+                self.register_library("Json", JsonLibrary(self.variables))
 
     def _set_variables(self, variables: dict[str, str]) -> None:
         for key, value in variables.items():
@@ -282,6 +285,11 @@ class Executor:
                 variable_arguments = {2} if len(statement.arguments) == 3 else {1}
             elif keyword_name == "getmatchcount":
                 variable_arguments = {1}
+        elif library_name == "json":
+            if keyword_name == "getvalue":
+                variable_arguments = {0}
+            elif keyword_name == "addjsonelement":
+                variable_arguments = {0}
         resource_names = {
             alias.casefold(): path for alias, path in (self._suite.resources.items() if self._suite else [])
         }
