@@ -367,6 +367,68 @@ class ExecutorTests(unittest.TestCase):
             self.assertEqual(result.status, Status.PASS)
             self.assertEqual(result.test_cases[0].steps[0].output, "Hello World")
 
+    def test_gflib_custom_keyword_uses_its_own_library_declarations(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Greetings.gflib").write_text(
+                'using Sample\n'
+                '${Greeting}=Hello\n'
+                'Say(${person})\n{\n'
+                '  Sample.Add To Output(${Greeting} ${person})\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            script = root / "suite.txt"
+            script.write_text(
+                'using Greetings.gflib\n'
+                'Case\n{\n'
+                '  Greetings.Say(World)\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            executor = Executor()
+            executor.register_library("Sample", KeywordLibrary())
+            result = executor.run(parse_file(script))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(result.test_cases[0].steps[0].output, "Hello World")
+
+    def test_custom_keyword_return_forces_status_and_stops_body(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Actions.gflib").write_text(
+                'Do Work()\n{\n'
+                '  Fail(intermediate failure)\n'
+                '  Return With Pass(done)\n'
+                '  Fail(should not execute)\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            script = root / "suite.txt"
+            script.write_text(
+                'using Actions.gflib\n'
+                'Case\n{\n'
+                '  Actions.Do Work()\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(script))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(len(result.test_cases[0].steps), 1)
+            self.assertEqual(result.test_cases[0].steps[0].status, Status.PASS)
+
+    def test_string_builtins_and_contains(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'Case\n{\n'
+                '  ConvertToUpperCase(hello,${Upper})\n'
+                '  Contains Ignore Case(${Upper},ell)\n'
+                '  Pass(${Upper})\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(result.test_cases[0].steps[-1].output, "HELLO")
+
     def test_foreachrow_reads_excel_table(self) -> None:
         from openpyxl import Workbook
         from openpyxl.worksheet.table import Table
@@ -397,6 +459,63 @@ class ExecutorTests(unittest.TestCase):
             self.assertEqual(
                 [step.output for step in result.test_cases[0].steps],
                 ["Ada-Admin", "Lin-User"],
+            )
+
+    def test_write_to_dataset_updates_excel_table_rows(self) -> None:
+        from openpyxl import Workbook, load_workbook
+        from openpyxl.worksheet.table import Table
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "data.xlsx"
+            workbook = Workbook()
+            worksheet = workbook.active
+            worksheet.title = "Data"
+            worksheet.append(["Name", "Result"])
+            worksheet.append(["Ada", ""])
+            worksheet.append(["Lin", ""])
+            worksheet.add_table(Table(displayName="Accounts", ref="A1:B3"))
+            workbook.save(path)
+            suite_path = root / "suite.txt"
+            suite_path.write_text(
+                'dataset "data.xlsx" as Users\n'
+                'Case\n{\n'
+                '  ForEachRow: Users.Data.Accounts\n  {\n'
+                '    Write To Data Set (Result,${Name} passed)\n'
+                '  }\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(suite_path))
+            self.assertEqual(result.status, Status.PASS)
+            saved = load_workbook(path, data_only=True)
+            try:
+                sheet = saved["Data"]
+                self.assertEqual(sheet["B2"].value, "Ada passed")
+                self.assertEqual(sheet["B3"].value, "Lin passed")
+            finally:
+                saved.close()
+
+    def test_write_to_dataset_updates_selected_csv_row(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "data.csv"
+            path.write_text("ID,Role,Result\n1,Admin,\n2,User,\n3,Admin,\n", encoding="utf-8")
+            suite_path = root / "suite.txt"
+            suite_path.write_text(
+                'dataset "data.csv" as Users\n'
+                'Case\n{\n'
+                '  ForSelectedRow: Users.Data.Table.Role=Admin\n  {\n'
+                '    Write To Data Set (Result,${ID} done)\n'
+                '  }\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(suite_path))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(
+                path.read_text(encoding="utf-8"),
+                "ID,Role,Result\n1,Admin,1 done\n2,User,\n3,Admin,3 done\n",
             )
 
 

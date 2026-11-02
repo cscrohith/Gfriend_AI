@@ -61,7 +61,11 @@ class _ScriptLibrary:
             if len(arguments) != len(parameters):
                 raise ValueError(f"Custom keyword '{name}' expects {len(parameters)} argument(s); got {len(arguments)}")
             previous = self._executor.variables.copy()
+            previous_suite = self._executor._suite
             try:
+                self._executor._suite = self._suite
+                self._executor._register_script_libraries(self._suite)
+                self._executor.variables.update(self._suite.variables)
                 for parameter, value in zip(parameters, arguments):
                     self._executor.variables[parameter] = value
                 nested_results: list[StepResult] = []
@@ -70,9 +74,13 @@ class _ScriptLibrary:
                     (step.output for step in reversed(nested_results) if step.output),
                     "",
                 )
+                if self._executor._flow == "custom-return":
+                    status = self._executor._custom_return_status
+                    self._executor._flow = ""
                 return KeywordResult(status, output)
             finally:
                 self._executor.variables = previous
+                self._executor._suite = previous_suite
 
         return invoke
 
@@ -94,6 +102,8 @@ class Executor:
         self._suite: TestSuite | None = None
         self.output_folder = Path(output_folder).resolve() if output_folder else Path.cwd()
         self._flow = ""
+        self._custom_return_status = Status.PASS
+        self._active_dataset_row: tuple[Path, str, str, int, dict[str, str]] | None = None
         if variables:
             self._set_variables(variables)
 
@@ -116,9 +126,7 @@ class Executor:
         self.variables["${KEYWORD_RESULT}"] = Status.PASS.value
         for alias, path in suite.resources.items():
             self.variables[f"${{{alias}}}"] = path
-        for alias, library in suite.libraries.items():
-            if library.casefold().endswith(".gflib") and Path(library).is_file():
-                self.register_library(alias, _ScriptLibrary(self, library))
+        self._register_script_libraries(suite)
 
         results: list[TestCaseResult] = []
         selected = {name.casefold() for name in test_cases} if test_cases is not None else None
@@ -135,6 +143,11 @@ class Executor:
 
         suite_status = self._aggregate(result.status for result in results)
         return ExecutionResult(suite.name, suite_status, results)
+
+    def _register_script_libraries(self, suite: TestSuite) -> None:
+        for alias, library in suite.libraries.items():
+            if library.casefold().endswith(".gflib") and Path(library).is_file():
+                self.register_library(alias, _ScriptLibrary(self, library))
 
     def _set_variables(self, variables: dict[str, str]) -> None:
         for key, value in variables.items():
@@ -182,7 +195,7 @@ class Executor:
                 if item.always_pass:
                     block_status = Status.PASS
                 status = self._aggregate((status, block_status))
-            if self._flow in {"case", "suite", "break", "continue"}:
+            if self._flow in {"case", "suite", "break", "continue", "custom-return"}:
                 break
         return status
 
@@ -281,6 +294,16 @@ class Executor:
         if normalized in {"continue", "continueloop"}:
             self._flow = "continue"
             return KeywordResult(Status.PASS)
+        if normalized in {"returnwithfail", "returnwithpass", "returnwitherror"}:
+            self._require_arguments(keyword, arguments, 1)
+            status = {
+                "returnwithfail": Status.FAIL,
+                "returnwithpass": Status.PASS,
+                "returnwitherror": Status.ERROR,
+            }[normalized]
+            self._flow = "custom-return"
+            self._custom_return_status = status
+            return KeywordResult(status, arguments[0])
         if normalized in {"reassignvaluetovariable", "setvariable"}:
             self._require_arguments(keyword, arguments, 2)
             self.variables[arguments[0]] = arguments[1]
@@ -294,6 +317,26 @@ class Executor:
             if arguments[0].casefold() == arguments[1].casefold():
                 return KeywordResult(Status.PASS)
             return KeywordResult(Status.FAIL, f"{arguments[0]!r} does not equal {arguments[1]!r} ignoring case")
+        if normalized in {"contains", "containsignorecase"}:
+            self._require_arguments(keyword, arguments, 2)
+            left, right = (value.replace(r"\n", "\n") for value in arguments)
+            found = right.casefold() in left.casefold() if normalized == "containsignorecase" else right in left
+            return KeywordResult(
+                Status.PASS if found else Status.FAIL,
+                "" if found else f"{right!r} was not found",
+            )
+        if normalized in {"converttouppercase", "converttolowercase"}:
+            self._require_arguments(keyword, arguments, 2)
+            converted = (
+                arguments[0].upper()
+                if normalized == "converttouppercase"
+                else arguments[0].lower()
+            )
+            self.variables[arguments[1]] = converted
+            return KeywordResult(Status.PASS, f"{arguments[1]} = {converted}")
+        if normalized == "writetodataset":
+            self._require_arguments(keyword, arguments, 2)
+            return self._write_to_dataset(arguments[0], arguments[1])
         if normalized == "fileexist":
             self._require_arguments(keyword, arguments, 1)
             return KeywordResult(Status.PASS if self._resolve_path(arguments[0]).is_file() else Status.FAIL)
@@ -340,6 +383,105 @@ class Executor:
             nested_result = self._run_statement(nested_statement)
             return KeywordResult(nested_result.status, nested_result.output)
         raise LookupError(f"Built-in keyword '{keyword}' is not implemented")
+
+    def _write_to_dataset(self, column_name: str, value: str) -> KeywordResult:
+        if self._active_dataset_row is None:
+            return KeywordResult(
+                Status.ERROR,
+                "Write To Data Set must run inside ForEachRow or ForSelectedRow.",
+            )
+        path, sheet, table_name, row_number, headers = self._active_dataset_row
+        matching_header = next(
+            (header for header in headers if header.casefold() == column_name.strip().casefold()),
+            None,
+        )
+        if matching_header is None:
+            return KeywordResult(
+                Status.ERROR,
+                f"Column '{column_name}' was not found. Available columns: {', '.join(headers)}",
+            )
+
+        try:
+            if path.suffix.casefold() == ".csv":
+                with path.open("r", encoding="utf-8-sig", newline="") as stream:
+                    reader = csv.DictReader(stream)
+                    fieldnames = reader.fieldnames
+                    if fieldnames is None:
+                        raise ValueError(f"Dataset '{path.name}' has no header row")
+                    rows = list(reader)
+                data_index = row_number - 2
+                if data_index < 0 or data_index >= len(rows):
+                    raise ValueError(f"Dataset row {row_number} is outside '{path.name}'")
+                original_header = next(
+                    (header for header in fieldnames if re.sub(r"\s+", "", header).casefold() == matching_header.casefold()),
+                    None,
+                )
+                if original_header is None:
+                    raise ValueError(f"Column '{column_name}' is not present in '{path.name}'")
+                rows[data_index][original_header] = value
+                with path.open("w", encoding="utf-8", newline="") as stream:
+                    writer = csv.DictWriter(stream, fieldnames=fieldnames)
+                    writer.writeheader()
+                    writer.writerows(rows)
+                return KeywordResult(Status.PASS)
+
+            from openpyxl import load_workbook
+            from openpyxl.utils.cell import range_boundaries
+
+            workbook = load_workbook(path)
+            try:
+                worksheet = workbook[sheet]
+                if table_name not in worksheet.tables:
+                    raise KeyError(f"Table '{table_name}' was not found in worksheet '{sheet}'")
+                min_col, min_row, max_col, max_row = range_boundaries(worksheet.tables[table_name].ref)
+                if row_number <= min_row or row_number > max_row:
+                    raise ValueError(f"Dataset row {row_number} is outside table '{table_name}'")
+                header_columns = {
+                    re.sub(r"\s+", "", str(worksheet.cell(min_row, column).value or "")).casefold(): column
+                    for column in range(min_col, max_col + 1)
+                }
+                column_number = header_columns.get(matching_header.casefold())
+                if column_number is None:
+                    raise ValueError(f"Column '{column_name}' was not found in table '{table_name}'")
+                worksheet.cell(row_number, column_number).value = value
+                workbook.save(path)
+            finally:
+                workbook.close()
+        except (OSError, ValueError, ImportError, KeyError) as error:
+            return KeywordResult(Status.ERROR, f"Could not write dataset value: {error}")
+        return KeywordResult(Status.PASS)
+
+    def _dataset_row_context(
+        self,
+        dataset: str,
+        sheet: str,
+        table: str,
+        data_index: int,
+        row: dict[str, str],
+    ) -> tuple[Path, str, str, int, dict[str, str]]:
+        if self._suite is None:
+            raise RuntimeError("No test suite is active")
+        dataset_path = next(
+            Path(path)
+            for name, path in self._suite.datasets.items()
+            if name.casefold() == dataset.casefold()
+        )
+        if dataset_path.suffix.casefold() == ".csv":
+            row_number = data_index + 2
+        else:
+            from openpyxl import load_workbook
+            from openpyxl.utils.cell import range_boundaries
+
+            workbook = load_workbook(dataset_path, read_only=False, data_only=True)
+            try:
+                worksheet = workbook[sheet]
+                if table not in worksheet.tables:
+                    raise KeyError(f"Table '{table}' was not found in worksheet '{sheet}'")
+                _, min_row, _, _ = range_boundaries(worksheet.tables[table].ref)
+                row_number = min_row + data_index + 1
+            finally:
+                workbook.close()
+        return dataset_path, sheet, table, row_number, row
 
     def _resolve_path(self, value: str, *, for_output: bool = False) -> Path:
         path = Path(value)
@@ -421,7 +563,7 @@ class Executor:
         for iteration in range(1, count + 1):
             self.variables["${R}"] = str(iteration)
             status = self._aggregate((status, self._run_items(block.body, results)))
-            if self._flow in {"case", "suite"}:
+            if self._flow in {"case", "suite", "custom-return"}:
                 break
             if self._flow == "break":
                 self._flow = ""
@@ -441,7 +583,7 @@ class Executor:
             self.variables["${ITEM}"] = self._expand(value)
             self.variables["${R}"] = str(index + 1)
             status = self._aggregate((status, self._run_items(block.body, results)))
-            if self._flow in {"case", "suite"}:
+            if self._flow in {"case", "suite", "custom-return"}:
                 break
             if self._flow == "break":
                 self._flow = ""
@@ -472,7 +614,7 @@ class Executor:
             if (condition.status is Status.PASS) != block.while_pass:
                 break
             status = self._aggregate((status, self._run_items(block.body, results)))
-            if self._flow in {"case", "suite"}:
+            if self._flow in {"case", "suite", "custom-return"}:
                 break
             if self._flow == "break":
                 self._flow = ""
@@ -492,8 +634,20 @@ class Executor:
             for header, value in row.items():
                 self.variables[f"${{{header}}}"] = value
             self.variables["${R}"] = str(index)
-            status = self._aggregate((status, self._run_items(block.body, results)))
-            if self._flow in {"case", "suite"}:
+            previous_context = self._active_dataset_row
+            try:
+                self._active_dataset_row = self._dataset_row_context(
+                    block.dataset, block.sheet, block.table, index - 1, row
+                )
+                status = self._aggregate((status, self._run_items(block.body, results)))
+            except (OSError, ValueError, ImportError, KeyError, RuntimeError) as error:
+                results.append(
+                    StepResult("ForEachRow", block.line_number, Status.ERROR, str(error))
+                )
+                return Status.ERROR
+            finally:
+                self._active_dataset_row = previous_context
+            if self._flow in {"case", "suite", "custom-return"}:
                 break
             if self._flow == "break":
                 self._flow = ""
@@ -509,16 +663,26 @@ class Executor:
             return Status.ERROR
 
         status = Status.PASS
-        row_number = 0
-        for row in rows:
+        for index, row in enumerate(rows):
             if not self._matches_filters(row, block.filters):
                 continue
-            row_number += 1
             for header, value in row.items():
                 self.variables[f"${{{header}}}"] = value
-            self.variables["${R}"] = str(row_number)
-            status = self._aggregate((status, self._run_items(block.body, results)))
-            if self._flow in {"case", "suite"}:
+            self.variables["${R}"] = str(index + 1)
+            previous_context = self._active_dataset_row
+            try:
+                self._active_dataset_row = self._dataset_row_context(
+                    block.dataset, block.sheet, block.table, index, row
+                )
+                status = self._aggregate((status, self._run_items(block.body, results)))
+            except (OSError, ValueError, ImportError, KeyError, RuntimeError) as error:
+                results.append(
+                    StepResult("ForSelectedRow", block.line_number, Status.ERROR, str(error))
+                )
+                return Status.ERROR
+            finally:
+                self._active_dataset_row = previous_context
+            if self._flow in {"case", "suite", "custom-return"}:
                 break
             if self._flow == "break":
                 self._flow = ""
