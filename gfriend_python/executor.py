@@ -594,16 +594,22 @@ class Executor:
                 return KeywordResult(Status.PASS)
 
             from openpyxl import load_workbook
-            from openpyxl.utils.cell import range_boundaries
 
             workbook = load_workbook(path)
             try:
                 worksheet = workbook[sheet]
-                if table_name not in worksheet.tables:
-                    raise KeyError(f"Table '{table_name}' was not found in worksheet '{sheet}'")
-                min_col, min_row, max_col, max_row = range_boundaries(worksheet.tables[table_name].ref)
-                if row_number <= min_row or row_number > max_row:
-                    raise ValueError(f"Dataset row {row_number} is outside table '{table_name}'")
+                if table_name:
+                    from openpyxl.utils.cell import range_boundaries
+
+                    if table_name not in worksheet.tables:
+                        raise KeyError(f"Table '{table_name}' was not found in worksheet '{sheet}'")
+                    min_col, min_row, max_col, max_row = range_boundaries(worksheet.tables[table_name].ref)
+                    if row_number <= min_row or row_number > max_row:
+                        raise ValueError(f"Dataset row {row_number} is outside table '{table_name}'")
+                else:
+                    min_col, max_col, min_row = 1, worksheet.max_column, 1
+                    if row_number <= min_row or row_number > worksheet.max_row:
+                        raise ValueError(f"Dataset row {row_number} is outside worksheet '{sheet}'")
                 header_columns = {
                     re.sub(r"\s+", "", str(worksheet.cell(min_row, column).value or "")).casefold(): column
                     for column in range(min_col, max_col + 1)
@@ -626,6 +632,8 @@ class Executor:
         table: str,
         data_index: int,
         row: dict[str, str],
+        *,
+        spreadsheet: bool = False,
     ) -> tuple[Path, str, str, int, dict[str, str]]:
         if self._suite is None:
             raise RuntimeError("No test suite is active")
@@ -634,7 +642,16 @@ class Executor:
             for name, path in self._suite.datasets.items()
             if name.casefold() == dataset.casefold()
         )
-        if dataset_path.suffix.casefold() == ".csv":
+        if spreadsheet:
+            from openpyxl import load_workbook
+
+            workbook = load_workbook(dataset_path, read_only=True, data_only=True)
+            try:
+                worksheet = workbook[sheet]
+                row_number = data_index + 2
+            finally:
+                workbook.close()
+        elif dataset_path.suffix.casefold() == ".csv":
             row_number = data_index + 2
         else:
             from openpyxl import load_workbook
@@ -828,7 +845,9 @@ class Executor:
         return status
 
     def _run_each_row(self, block: ForEachRowBlock, results: list[StepResult]) -> Status:
-        rows, error = self._get_dataset_rows(block.dataset, block.sheet, block.table, block.line_number)
+        rows, error = self._get_dataset_rows(
+            block.dataset, block.sheet, block.table, block.line_number, spreadsheet=block.spreadsheet
+        )
         if error is not None:
             results.append(error)
             return Status.ERROR
@@ -841,7 +860,12 @@ class Executor:
             previous_context = self._active_dataset_row
             try:
                 self._active_dataset_row = self._dataset_row_context(
-                    block.dataset, block.sheet, block.table, index - 1, row
+                    block.dataset,
+                    block.sheet,
+                    "" if block.spreadsheet else block.table,
+                    index - 1,
+                    row,
+                    spreadsheet=block.spreadsheet,
                 )
                 status = self._aggregate((status, self._run_items(block.body, results)))
             except (OSError, ValueError, ImportError, KeyError, RuntimeError) as error:
@@ -901,6 +925,8 @@ class Executor:
         sheet: str,
         table: str,
         line_number: int,
+        *,
+        spreadsheet: bool = False,
     ) -> tuple[list[dict[str, str]], StepResult | None]:
         if self._suite is None or dataset.casefold() not in {
             name.casefold() for name in self._suite.datasets
@@ -918,7 +944,7 @@ class Executor:
             if name.casefold() == dataset.casefold()
         )
         try:
-            return self._load_rows(Path(dataset_path), sheet, table), None
+            return self._load_rows(Path(dataset_path), sheet, table, spreadsheet=spreadsheet), None
         except (OSError, ValueError, ImportError, KeyError) as error:
             return [], StepResult(
                 keyword="ForEachRow",
@@ -961,10 +987,18 @@ class Executor:
         return True
 
     @staticmethod
-    def _load_rows(path: Path, sheet_name: str, table_name: str) -> list[dict[str, str]]:
+    def _load_rows(
+        path: Path,
+        sheet_name: str,
+        table_name: str,
+        *,
+        spreadsheet: bool = False,
+    ) -> list[dict[str, str]]:
         if not path.is_file():
             raise FileNotFoundError(f"Dataset file does not exist: {path}")
         if path.suffix.casefold() == ".csv":
+            if spreadsheet:
+                raise ValueError("SpreadsheetForEachRow requires an Excel dataset")
             with path.open("r", encoding="utf-8-sig", newline="") as stream:
                 return [
                     {
@@ -988,9 +1022,12 @@ class Executor:
             if sheet_name not in workbook.sheetnames:
                 raise KeyError(f"Worksheet '{sheet_name}' was not found in '{path.name}'")
             worksheet = workbook[sheet_name]
-            if table_name not in worksheet.tables:
-                raise KeyError(f"Table '{table_name}' was not found on worksheet '{sheet_name}'")
-            min_col, min_row, max_col, max_row = range_boundaries(worksheet.tables[table_name].ref)
+            if spreadsheet:
+                min_col, max_col, min_row, max_row = 1, worksheet.max_column, 1, worksheet.max_row
+            else:
+                if table_name not in worksheet.tables:
+                    raise KeyError(f"Table '{table_name}' was not found on worksheet '{sheet_name}'")
+                min_col, min_row, max_col, max_row = range_boundaries(worksheet.tables[table_name].ref)
             headers = [
                 re.sub(r"\s+", "", str(worksheet.cell(min_row, column).value or "").strip())
                 for column in range(min_col, max_col + 1)

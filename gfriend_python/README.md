@@ -5,14 +5,13 @@ GFriend runtime. It parses test cases, static and execution variables, `using`
 declarations, keyword statements, `Repeat`, `For`, and `While` blocks, and
 `If`/`Fail`/`Error` branches. It executes built-in keywords and registered
 Python keyword libraries, reads `.gfvar` files and Excel named tables for
-`ForEachRow`, and emits JSON and standalone HTML execution reports.
+`ForEachRow` and whole-worksheet loops, and emits JSON and standalone HTML
+execution reports.
 
 The .NET solution remains in the repository as the behavioral reference while
-the migration proceeds. Device drivers, remote execution, spreadsheet write-back
-formats beyond the supported dataset-table operations, advanced spreadsheet
-loops, the legacy XML/session report format, desktop UI, and the remaining
-GFriend keyword libraries are not yet ported; scripts using those features
-require later migration phases.
+the migration proceeds. Device drivers, remote execution, the legacy XML/session
+report format, desktop UI, and the remaining GFriend keyword libraries are not
+yet ported; scripts using those features require later migration phases.
 
 ## Run a script
 
@@ -58,7 +57,9 @@ print(result.to_dict())
 - `Repeat: 10s { ... }` for time-based repetition; `For: a, b { ... }` with `${ITEM}`
 - `While: Keyword(...): max_iterations { ... }` (default maximum: 50)
 - `dataset data.xlsx as Data` with `ForEachRow: Data.Sheet.Table { ... }`
-  for Excel named tables (and CSV rows) using `openpyxl`
+  for Excel named tables (and CSV rows), or
+  `SpreadSheetForEachRow: Data.Sheet.Name { ... }` for all worksheet rows,
+  using `openpyxl`
 - `For Selected Row: Data.Sheet.Table.Column>=value` with comparison and
   comma-separated equality filters
 - `resource path as Name`, resolved relative to the script and available as

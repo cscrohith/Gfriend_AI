@@ -606,6 +606,46 @@ class ExecutorTests(unittest.TestCase):
                 ["Ada-Admin", "Lin-User"],
             )
 
+    def test_spreadsheet_foreachrow_reads_and_writes_worksheet_rows(self) -> None:
+        from openpyxl import Workbook, load_workbook
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data_path = root / "data.xlsx"
+            workbook = Workbook()
+            worksheet = workbook.active
+            worksheet.title = "Data"
+            worksheet.append(["Name", "Role"])
+            worksheet.append(["Ada", "Admin"])
+            worksheet.append(["Lin", "User"])
+            workbook.save(data_path)
+
+            script_path = root / "suite.txt"
+            script_path.write_text(
+                'dataset "data.xlsx" as Users\n'
+                'Case\n{\n'
+                '  SpreadSheetForEachRow: Users.Data.Rows\n  {\n'
+                '    If: Equals(${Role}, Admin)\n    {\n'
+                '      Write To Data Set(Role,Privileged)\n'
+                '    }\n'
+                '    Pass(${Name}-${Role})\n'
+                '  }\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(script_path))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(
+                [step.output for step in result.test_cases[0].steps if step.keyword.endswith(".Pass")],
+                ["Ada-Admin", "Lin-User"],
+            )
+            updated = load_workbook(data_path, data_only=True)
+            try:
+                self.assertEqual(updated["Data"]["B2"].value, "Privileged")
+                self.assertEqual(updated["Data"]["B3"].value, "User")
+            finally:
+                updated.close()
+
     def test_write_to_dataset_updates_excel_table_rows(self) -> None:
         from openpyxl import Workbook, load_workbook
         from openpyxl.worksheet.table import Table

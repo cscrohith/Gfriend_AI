@@ -58,6 +58,7 @@ class ForEachRowBlock:
     body: list[Runnable]
     line_number: int = 0
     always_pass: bool = False
+    spreadsheet: bool = False
 
 
 @dataclass(slots=True)

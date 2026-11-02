@@ -233,6 +233,7 @@ def _parse_body(
                         nested_body,
                         line_number,
                         bool(ignore_result),
+                        normalized_kind == "spreadsheetforeachrow",
                     )
                 )
                 continue
