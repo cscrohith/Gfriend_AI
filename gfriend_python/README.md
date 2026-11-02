@@ -106,6 +106,10 @@ adapter, executing a remote block reports an error.
   and `Draw Time Graph` timing; charts are written as SVG files
 - `using LogInfo` records checkpoint start/end times with loop results and
   creates SVG elapsed-time and result-distribution charts
+- `using SpreadSheet` supports creating/selecting workbooks and worksheets,
+  appending rows and columns, writing/formatting cells, validating status
+  columns, reading cells and ranges, and basic numeric/date-difference formulas
+  for `.xlsx`, `.xlsm`, and CSV data where applicable
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value

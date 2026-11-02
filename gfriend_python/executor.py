@@ -33,6 +33,7 @@ from .json_library import JsonLibrary
 from .info_library import InfoLibrary
 from .log_info_library import LogInfoLibrary
 from .regex_library import RegexLibrary
+from .spreadsheet_library import SpreadSheetLibrary
 from .xml_library import XmlLibrary
 
 _VARIABLE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
@@ -191,6 +192,15 @@ class Executor:
                     "LogInfo",
                     LogInfoLibrary(self.variables, self.output_folder),
                 )
+            elif library.casefold() == "spreadsheet":
+                self.register_library(
+                    "SpreadSheet",
+                    SpreadSheetLibrary(
+                        self.variables,
+                        script_folder=suite.script_folder,
+                        output_folder=self.output_folder,
+                    ),
+                )
 
     def _set_variables(self, variables: dict[str, str]) -> None:
         for key, value in variables.items():
@@ -316,6 +326,20 @@ class Executor:
             "getinnertext",
         }:
             variable_arguments = {0}
+        elif library_name == "spreadsheet":
+            variable_arguments = {
+                "totalrowcount": {0},
+                "totalcolumncount": {0},
+                "readcellvalue": {2},
+                "readcellvaluebyindex": {2},
+                "readlastcolumn": {0},
+                "readlastrow": {0},
+                "readvaluesbycolumnnames": {0},
+                "readvaluesbyrownames": {0},
+                "readrowdata": {0},
+                "readcolumndata": {0},
+                "calculateformulafromcells": {5},
+            }.get(keyword_name, set())
         resource_names = {
             alias.casefold(): path for alias, path in (self._suite.resources.items() if self._suite else [])
         }

@@ -114,6 +114,69 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_spreadsheet_library_creates_writes_reads_and_calculates(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "spreadsheet.txt"
+            script.write_text(
+                "using SpreadSheet\n"
+                "Case\n"
+                "{\n"
+                "  SpreadSheet.CreateNewSpreadSheetWithPath(data.xlsx)\n"
+                "  SpreadSheet.AddRowHeader(Name, Status, Score)\n"
+                "  SpreadSheet.AddRowData(alice, success, 8)\n"
+                "  SpreadSheet.AddRowData(bob, failed, 5)\n"
+                '  SpreadSheet.FormatExcelCell(2, 1, "fontstyle:bold;fontcolor:blue;backgroundcolor:yellow;border:1")\n'
+                "  SpreadSheet.TotalRowCount(${rows})\n"
+                "  SpreadSheet.TotalColumnCount(${columns})\n"
+                "  SpreadSheet.ReadCellValueByIndex(2, 1, ${name})\n"
+                "  SpreadSheet.CalculateFormulaFromCells(2, 3, 3, 3, add, ${sum}, 4, 3)\n"
+                "  SpreadSheet.ReadCellValueByIndex(4, 3, ${calculated})\n"
+                "  SpreadSheet.ValidateStatusFromSpreadsheet(Status, Name, success)\n"
+                "}\n",
+                encoding="utf-8",
+            )
+
+            executor = Executor(output_folder=root)
+            result = executor.run(parse_file(str(script)))
+
+            self.assertEqual(result.status, Status.FAIL)
+            self.assertEqual(executor.variables["${rows}"], "3")
+            self.assertEqual(executor.variables["${columns}"], "3")
+            self.assertEqual(executor.variables["${name}"], "alice")
+            self.assertEqual(executor.variables["${sum}"], "13.0")
+            self.assertEqual(executor.variables["${calculated}"], "13")
+            self.assertTrue((root / "data.xlsx").is_file())
+            self.assertIn("bob (failed)", result.test_cases[0].steps[-1].output)
+            from openpyxl import load_workbook
+
+            workbook = load_workbook(root / "data.xlsx")
+            try:
+                self.assertTrue(workbook.active["A2"].font.bold)
+                self.assertEqual(workbook.active["A2"].font.color.rgb, "FF0000FF")
+                self.assertEqual(workbook.active["A2"].fill.fgColor.rgb, "FFFFFF00")
+            finally:
+                workbook.close()
+
+    def test_spreadsheet_library_resolves_sheet_and_reports_invalid_cells(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "spreadsheet.txt"
+            script.write_text(
+                "using SpreadSheet\n"
+                "Case\n"
+                "{\n"
+                "  SpreadSheet.CreateNewSpreadSheetWithPath(data.xlsx)\n"
+                "  SpreadSheet.SetWorksheet(Missing)\n"
+                "}\n",
+                encoding="utf-8",
+            )
+
+            result = Executor(output_folder=root).run(parse_file(str(script)))
+
+            self.assertEqual(result.status, Status.ERROR)
+            self.assertIn("Worksheet 'Missing' not found", result.test_cases[0].steps[-1].output)
+
     def test_info_library_records_timing_and_writes_svg_chart(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             result = Executor(output_folder=directory).run(
