@@ -197,13 +197,16 @@ def _parse_body(
                 body.append(ForBlock(values, nested_body, bool(ignore_result)))
                 continue
             if normalized_kind == "while":
-                parts = value.split(":")
-                condition_text = parts[0].strip()
+                condition_text = value.strip()
+                max_iterations = "50"
+                if ":" in condition_text:
+                    candidate_condition, candidate_limit = condition_text.rsplit(":", 1)
+                    candidate_limit = candidate_limit.strip()
+                    if re.fullmatch(r"\d+|\$\{[A-Za-z0-9_-]+\}", candidate_limit):
+                        condition_text = candidate_condition.strip()
+                        max_iterations = candidate_limit
                 if not condition_text:
                     raise ParseError(f"While condition is missing on line {line_number}")
-                max_iterations = parts[1].strip() if len(parts) > 1 else "50"
-                if len(parts) > 2:
-                    raise ParseError(f"Invalid While declaration on line {line_number}")
                 while_pass = not condition_text.startswith("!")
                 if not while_pass:
                     condition_text = condition_text[1:].strip()

@@ -128,6 +128,23 @@ class ParserTests(unittest.TestCase):
             ["first", "second, item", "loop"],
         )
 
+    def test_while_condition_accepts_colons_and_variable_limit(self) -> None:
+        result = Executor(variables={"Limit": "2"}).run(
+            parse_script(
+                'Loop\n{\n'
+                '  While: Equals(http://device:8080, http://device:8080): ${Limit}\n'
+                '  {\n'
+                '    Pass(loop)\n'
+                '  }\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(
+            len([step for step in result.test_cases[0].steps if step.keyword.endswith(".Pass")]),
+            2,
+        )
+
     def test_reports_malformed_script_with_line_number(self) -> None:
         with self.assertRaisesRegex(ParseError, "line 3"):
             parse_script("Case\n{\n  Pass(ok\n}\n")
