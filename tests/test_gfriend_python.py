@@ -59,6 +59,32 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(result.status, Status.PASS)
         self.assertEqual(len(result.test_cases[0].steps), 4)
 
+    def test_parses_keyword_invocation_as_implicit_conditional_block(self) -> None:
+        class ConditionLibrary:
+            def condition(self, value: str) -> bool:
+                return value == "ready"
+
+        suite = parse_script(
+            'using Condition\n'
+            'Case\n{\n'
+            '  Condition.Condition(ready)\n'
+            '  {\n'
+            '    Pass(ready branch)\n'
+            '  }\n'
+            '  Condition.Condition(not-ready) {\n'
+            '    Fail(unselected)\n'
+            '  }\n'
+            '}\n'
+        )
+        executor = Executor()
+        executor.register_library("Condition", ConditionLibrary())
+        result = executor.run(suite)
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(
+            [(step.status, step.output) for step in result.test_cases[0].steps],
+            [(Status.PASS, ""), (Status.PASS, "ready branch"), (Status.FAIL, "")],
+        )
+
     def test_parses_for_and_while_blocks(self) -> None:
         suite = parse_script(
             'Loops\n{\n'

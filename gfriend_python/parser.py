@@ -286,7 +286,24 @@ def _parse_body(
         if text == "{":
             raise ParseError(f"Unexpected '{{' on line {line_number}")
         if text.endswith("{"):
-            raise ParseError(f"Unsupported block declaration on line {line_number}: {text}")
+            condition_text = text[:-1].strip()
+            nested_body, index = _parse_body(lines, index + 1, case_name=case_name)
+            body.append(
+                ConditionalBlock(
+                    _parse_statement(condition_text, line_number),
+                    {Status.PASS: nested_body},
+                )
+            )
+            continue
+        if index + 1 < len(lines) and lines[index + 1][1] == "{":
+            nested_body, index = _parse_body(lines, index + 2, case_name=case_name)
+            body.append(
+                ConditionalBlock(
+                    _parse_statement(text, line_number),
+                    {Status.PASS: nested_body},
+                )
+            )
+            continue
 
         body.append(_parse_statement(text, line_number))
         index += 1
