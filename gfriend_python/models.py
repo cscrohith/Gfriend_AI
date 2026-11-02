@@ -34,6 +34,32 @@ class RepeatBlock:
 
 
 @dataclass(slots=True)
+class ForBlock:
+    values: list[str]
+    body: list[Runnable]
+    always_pass: bool = False
+
+
+@dataclass(slots=True)
+class WhileBlock:
+    condition: Statement
+    body: list[Runnable]
+    max_iterations: str = "50"
+    while_pass: bool = True
+    always_pass: bool = False
+
+
+@dataclass(slots=True)
+class ForEachRowBlock:
+    dataset: str
+    sheet: str
+    table: str
+    body: list[Runnable]
+    line_number: int = 0
+    always_pass: bool = False
+
+
+@dataclass(slots=True)
 class ConditionalBlock:
     condition: Statement
     branches: dict[Status, list[Runnable]] = field(default_factory=dict)
@@ -41,7 +67,7 @@ class ConditionalBlock:
     ignored_branches: set[Status] = field(default_factory=set)
 
 
-Runnable: TypeAlias = Statement | RepeatBlock | ConditionalBlock
+Runnable: TypeAlias = Statement | RepeatBlock | ForBlock | WhileBlock | ForEachRowBlock | ConditionalBlock
 
 
 @dataclass(slots=True)
@@ -57,6 +83,7 @@ class TestSuite:
     test_cases: list[TestCase]
     variables: dict[str, str] = field(default_factory=dict)
     libraries: dict[str, str] = field(default_factory=dict)
+    datasets: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(slots=True)

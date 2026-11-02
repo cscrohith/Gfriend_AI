@@ -2,6 +2,14 @@
 
 from .executor import Executor
 from .models import ExecutionResult, KeywordResult, Status
-from .parser import ParseError, parse_script
+from .parser import ParseError, parse_script, parse_variable_file
 
-__all__ = ["ExecutionResult", "Executor", "KeywordResult", "ParseError", "Status", "parse_script"]
+__all__ = [
+    "ExecutionResult",
+    "Executor",
+    "KeywordResult",
+    "ParseError",
+    "Status",
+    "parse_script",
+    "parse_variable_file",
+]

@@ -4,11 +4,26 @@ import ast
 import re
 from pathlib import Path
 
-from .models import ConditionalBlock, RepeatBlock, Runnable, Status, Statement, TestCase, TestSuite
+from .models import (
+    ConditionalBlock,
+    ForEachRowBlock,
+    ForBlock,
+    RepeatBlock,
+    Runnable,
+    Status,
+    Statement,
+    TestCase,
+    TestSuite,
+    WhileBlock,
+)
 
 _VARIABLE = re.compile(r"^\$\{([A-Za-z0-9_-]+)\}\s*=\s*(.*)$")
 _USING = re.compile(r"^using\s+([^\s]+)(?:\s+as\s+([^\s]+))?", re.IGNORECASE)
-_BLOCK = re.compile(r"^(@)?(repeat|if)\s*:\s*(.*?)\s*(\{)?$", re.IGNORECASE)
+_DATASET = re.compile(r"^dataset\s+(.+?)\s+as\s+([^\s]+)$", re.IGNORECASE)
+_BLOCK = re.compile(
+    r"^(@)?(repeat|for|while|foreachrow|spreadsheetforeachrow|if)\s*:\s*(.*?)\s*(\{)?$",
+    re.IGNORECASE,
+)
 _BRANCH = re.compile(r"^(@)?(fail|error)\s*:\s*(\{)?$", re.IGNORECASE)
 _VARIABLE_REFERENCE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
 
@@ -166,10 +181,57 @@ def _parse_body(
             ignore_result, kind, value, inline_open = block_match.groups()
             index = _require_open_brace(lines, index + 1, bool(inline_open), line_number)
             nested_body, index = _parse_body(lines, index, case_name=case_name)
-            if kind.casefold() == "repeat":
+            normalized_kind = kind.casefold()
+            if normalized_kind == "repeat":
                 if not value:
                     raise ParseError(f"Repeat count is missing on line {line_number}")
                 body.append(RepeatBlock(value.strip(), nested_body, bool(ignore_result)))
+                continue
+            if normalized_kind == "for":
+                values = _read_arguments(value, line_number)
+                if not values:
+                    raise ParseError(f"For list is empty on line {line_number}")
+                body.append(ForBlock(values, nested_body, bool(ignore_result)))
+                continue
+            if normalized_kind == "while":
+                parts = value.split(":")
+                condition_text = parts[0].strip()
+                if not condition_text:
+                    raise ParseError(f"While condition is missing on line {line_number}")
+                max_iterations = parts[1].strip() if len(parts) > 1 else "50"
+                if len(parts) > 2:
+                    raise ParseError(f"Invalid While declaration on line {line_number}")
+                while_pass = not condition_text.startswith("!")
+                if not while_pass:
+                    condition_text = condition_text[1:].strip()
+                if not condition_text:
+                    raise ParseError(f"While condition is missing on line {line_number}")
+                body.append(
+                    WhileBlock(
+                        _parse_statement(condition_text, line_number),
+                        nested_body,
+                        max_iterations,
+                        while_pass,
+                        bool(ignore_result),
+                    )
+                )
+                continue
+            if normalized_kind in {"foreachrow", "spreadsheetforeachrow"}:
+                parts = value.split(".")
+                if len(parts) != 3 or not all(part.strip() for part in parts):
+                    raise ParseError(
+                        f"Expected dataset.sheet.table in {kind} declaration on line {line_number}"
+                    )
+                body.append(
+                    ForEachRowBlock(
+                        parts[0].strip(),
+                        parts[1].strip(),
+                        parts[2].strip(),
+                        nested_body,
+                        line_number,
+                        bool(ignore_result),
+                    )
+                )
                 continue
 
             condition = _parse_statement(value, line_number)
@@ -208,6 +270,7 @@ def parse_script(
     *,
     name: str = "TestSuite",
     execution_variables: dict[str, str] | None = None,
+    base_dir: str | Path | None = None,
 ) -> TestSuite:
     """Parse a GFriend script's variables, library declarations, cases, and steps."""
     lines = [
@@ -225,6 +288,18 @@ def parse_script(
         if using_match:
             library, alias = using_match.groups()
             suite.libraries[alias or library] = library
+            index += 1
+            continue
+        dataset_match = _DATASET.match(text)
+        if dataset_match:
+            path_text, alias = dataset_match.groups()
+            path_text = path_text.strip()
+            if len(path_text) >= 2 and path_text[0] in ("'", '"') and path_text[-1] == path_text[0]:
+                path_text = _argument_value(path_text, line_number)
+            dataset_path = Path(path_text)
+            if not dataset_path.is_absolute() and base_dir is not None:
+                dataset_path = Path(base_dir) / dataset_path
+            suite.datasets[alias] = str(dataset_path.resolve())
             index += 1
             continue
         if variable_match:
@@ -270,4 +345,25 @@ def parse_file(path: str | Path, execution_variables: dict[str, str] | None = No
         source,
         name=script_path.stem,
         execution_variables=execution_variables,
+        base_dir=script_path.parent,
     )
+
+
+def parse_variable_file(path: str | Path) -> dict[str, str]:
+    variable_path = Path(path)
+    try:
+        contents = variable_path.read_text(encoding="utf-8-sig")
+    except OSError as error:
+        raise ParseError(f"Cannot read variable file '{variable_path}': {error}") from error
+
+    variables: dict[str, str] = {}
+    for line_number, raw in enumerate(contents.splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("//"):
+            continue
+        match = _VARIABLE.match(line)
+        if not match:
+            continue
+        name, value = match.groups()
+        variables[f"${{{name}}}"] = value.strip()
+    return variables

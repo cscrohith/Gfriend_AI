@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gfriend_python import Executor, KeywordResult, ParseError, Status, parse_script
+from gfriend_python import Executor, KeywordResult, ParseError, Status, parse_script, parse_variable_file
 from gfriend_python.parser import parse_file
 
 
@@ -50,6 +50,28 @@ class ParserTests(unittest.TestCase):
         result = Executor().run(suite)
         self.assertEqual(result.status, Status.PASS)
         self.assertEqual(len(result.test_cases[0].steps), 4)
+
+    def test_parses_for_and_while_blocks(self) -> None:
+        suite = parse_script(
+            'Loops\n{\n'
+            '  For: first, "second, item"\n  {\n'
+            '    Pass(${ITEM})\n'
+            '  }\n'
+            '  While: Equals(${R}, 1): 3\n  {\n'
+            '    Pass(loop)\n'
+            '  }\n'
+            '}\n'
+        )
+        result = Executor().run(suite)
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(
+            [
+                step.output
+                for step in result.test_cases[0].steps
+                if step.keyword.endswith(".Pass")
+            ],
+            ["first", "second, item", "loop"],
+        )
 
     def test_reports_malformed_script_with_line_number(self) -> None:
         with self.assertRaisesRegex(ParseError, "line 3"):
@@ -129,6 +151,61 @@ class ExecutorTests(unittest.TestCase):
         )
         self.assertEqual(Executor().run(suite).status, Status.PASS)
 
+    def test_for_loop_continue_and_break(self) -> None:
+        suite = parse_script(
+            'Case\n{\n'
+            '  For: a, b, c\n  {\n'
+            '    If: Equals(${ITEM}, b)\n    {\n'
+            '      ContinueLoop()\n'
+            '    }\n'
+            '    Pass(${ITEM})\n'
+            '    If: Equals(${ITEM}, c)\n    {\n'
+            '      BreakLoop()\n'
+            '    }\n'
+            '  }\n'
+            '  Pass(done)\n'
+            '}\n'
+        )
+        result = Executor().run(suite)
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(
+            [
+                step.output
+                for step in result.test_cases[0].steps
+                if step.keyword.endswith(".Pass")
+            ],
+            ["a", "c", "done"],
+        )
+
+    def test_stop_test_case_and_suite_are_respected(self) -> None:
+        suite = parse_script(
+            'First\n{\n'
+            '  Stop Test Case\n'
+            '  Fail(not run)\n'
+            '}\n'
+            'Second\n{\n'
+            '  Stop Test Suite\n'
+            '}\n'
+            'Third\n{\n'
+            '  Fail(not run)\n'
+            '}\n'
+        )
+        result = Executor().run(suite)
+        self.assertEqual([case.name for case in result.test_cases], ["First", "Second"])
+        self.assertEqual(result.status, Status.PASS)
+
+    def test_variable_assignment_and_arithmetic(self) -> None:
+        suite = parse_script(
+            '${Count}=1\n'
+            'Case\n{\n'
+            '  Calculate And Assign(${Count} + 2, ${Count})\n'
+            '  Pass(${Count})\n'
+            '}\n'
+        )
+        result = Executor().run(suite)
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(result.test_cases[0].steps[-1].output, "3")
+
     def test_ignore_error_marks_statement_pass(self) -> None:
         result = Executor().run(parse_script("Case\n{\n  @Missing.Keyword()\n}\n"))
         self.assertEqual(result.status, Status.PASS)
@@ -157,6 +234,44 @@ class ExecutorTests(unittest.TestCase):
             path = Path(directory) / "sample.gfscripts"
             path.write_text("Case\n{\n  Pass(ok)\n}\n", encoding="utf-8-sig")
             self.assertEqual(parse_file(path).test_cases[0].name, "Case")
+
+    def test_reads_gfvar_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "common.gfvar"
+            path.write_text("// ignored\n${User}=alice=admin\ninvalid\n", encoding="utf-8")
+            self.assertEqual(parse_variable_file(path), {"${User}": "alice=admin"})
+
+    def test_foreachrow_reads_excel_table(self) -> None:
+        from openpyxl import Workbook
+        from openpyxl.worksheet.table import Table
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "data.xlsx"
+            workbook = Workbook()
+            worksheet = workbook.active
+            worksheet.title = "Data"
+            worksheet.append(["Name", "Role"])
+            worksheet.append(["Ada", "Admin"])
+            worksheet.append(["Lin", "User"])
+            worksheet.add_table(Table(displayName="Accounts", ref="A1:B3"))
+            workbook.save(path)
+
+            suite_path = Path(directory) / "suite.txt"
+            suite_path.write_text(
+                'dataset "data.xlsx" as Users\n'
+                'Case\n{\n'
+                '  ForEachRow: Users.Data.Accounts\n  {\n'
+                '    Pass(${Name}-${Role})\n'
+                '  }\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(suite_path))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(
+                [step.output for step in result.test_cases[0].steps],
+                ["Ada-Admin", "Lin-User"],
+            )
 
 
 if __name__ == "__main__":

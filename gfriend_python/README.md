@@ -1,21 +1,25 @@
-# GFriend Python runtime (migration phase 1)
+# GFriend Python runtime (migration in progress)
 
 This package is the first executable Python replacement slice for the legacy
 GFriend runtime. It parses test cases, static and execution variables, `using`
-declarations, keyword statements, `Repeat` blocks, and `If`/`Fail`/`Error`
-branches. It executes built-in keywords and registered Python keyword libraries
-and emits a JSON result report.
+declarations, keyword statements, `Repeat`, `For`, and `While` blocks, and
+`If`/`Fail`/`Error` branches. It executes built-in keywords and registered
+Python keyword libraries, reads `.gfvar` files and Excel named tables for
+`ForEachRow`, and emits a JSON result report.
 
 The .NET solution remains in the repository as the behavioral reference while
 the migration proceeds. Device drivers, remote execution, datasets, spreadsheets,
-reports, desktop UI, and the remaining GFriend keyword libraries are not yet
-ported; scripts using those features require later migration phases.
+resources, remote execution, datasets other than Excel named tables,
+`ForSelectedRow` and advanced spreadsheet loops, reports, desktop UI, device
+drivers, and the remaining GFriend keyword libraries are not yet ported; scripts
+using those features require later migration phases.
 
 ## Run a script
 
 ```powershell
 python -m gfriend_python path\to\script.txt
 python -m gfriend_python path\to\script.txt --var UserName=alice --test-case "Login"
+python -m gfriend_python path\to\script.txt --variable-file path\to\common.gfvar
 python -m gfriend_python path\to\script.txt --report output\result.json
 ```
 
@@ -47,13 +51,19 @@ print(result.to_dict())
 ## Implemented syntax and built-ins
 
 - `using Library` and `using Library as Alias`
-- `${Name}=value` declarations and `--var Name=value` overrides
+- `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value
+- `Repeat: 10s { ... }` for time-based repetition; `For: a, b { ... }` with `${ITEM}`
+- `While: Keyword(...): max_iterations { ... }` (default maximum: 50)
+- `dataset data.xlsx as Data` with `ForEachRow: Data.Sheet.Table { ... }`
+  for Excel named tables (and CSV rows) using `openpyxl`
 - `If: Keyword(...) { ... }`, followed optionally by `Fail:` and `Error:`
-- `Pass`, `Fail`, `Error`, `Equals`, `Log`, and `Sleep`
+- `Pass`, `Fail`, `Error`, `Equals`, `Equals IgnoreCase`, `Log`, `Sleep`,
+  `Calculate And Assign`, and `ReAssign Value To Variable`
+- `Stop Test Case`, `Stop Test Suite`, `BreakLoop`, and `ContinueLoop`
 - Prefix a statement with `@` to ignore its result when aggregating the case
 
-This is an incremental port, not feature parity with GFriend yet. The initial
-runtime intentionally returns an error for unimplemented keywords and unregistered
+This is an incremental port, not feature parity with GFriend yet. The runtime
+intentionally returns an error for unimplemented keywords and unregistered
 libraries instead of silently treating them as successful.

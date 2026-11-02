@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 from .executor import Executor
-from .parser import ParseError, parse_file
+from .parser import ParseError, parse_file, parse_variable_file
 
 
 def _variable(value: str) -> tuple[str, str]:
@@ -35,12 +35,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("script", type=Path, help="Path to a .txt, .gfscripts, or other GFriend script")
     parser.add_argument("-c", "--test-case", action="append", dest="test_cases", help="Test case to run (repeatable)")
     parser.add_argument("-e", "--var", action="append", type=_variable, default=[], help="Execution variable NAME=VALUE")
+    parser.add_argument("-v", "--variable-file", action="append", type=Path, default=[], help="Load a .gfvar file")
     parser.add_argument("--plugin", action="append", default=[], metavar="MODULE:OBJECT", help="Load a Python keyword library")
     parser.add_argument("--report", type=Path, help="Write the JSON execution report to this path")
     args = parser.parse_args(argv)
 
     try:
-        variables = dict(args.var)
+        variables: dict[str, str] = {}
+        for variable_file in args.variable_file:
+            variables.update(parse_variable_file(variable_file))
+        variables.update(dict(args.var))
         suite = parse_file(args.script, variables)
         executor = Executor()
         for plugin_spec in args.plugin:

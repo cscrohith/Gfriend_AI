@@ -7,7 +7,7 @@ name = "gfriend-python-runtime"
 version = "0.1.0"
 description = "Python runtime for GFriend test scripts"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["openpyxl>=3.1"]
 
 [project.scripts]
 gfriend-python = "gfriend_python.cli:main"

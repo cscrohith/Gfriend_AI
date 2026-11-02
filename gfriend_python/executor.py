@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import re
 import time
+import csv
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 from .models import (
     ConditionalBlock,
     ExecutionResult,
+    ForEachRowBlock,
+    ForBlock,
     KeywordResult,
     RepeatBlock,
     Runnable,
@@ -16,6 +20,7 @@ from .models import (
     StepResult,
     TestCaseResult,
     TestSuite,
+    WhileBlock,
 )
 
 _VARIABLE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
@@ -39,6 +44,7 @@ class Executor:
         self._libraries: dict[str, object] = {}
         self._sleep = sleep
         self._suite: TestSuite | None = None
+        self._flow = ""
         if variables:
             self._set_variables(variables)
 
@@ -61,10 +67,13 @@ class Executor:
         for test_case in suite.test_cases:
             if selected is not None and test_case.name.casefold() not in selected:
                 continue
+            self._flow = ""
             self.variables["${TESTCASE_NAME}"] = test_case.name
             steps: list[StepResult] = []
             status = self._run_items(test_case.steps, steps)
             results.append(TestCaseResult(test_case.name, status, steps))
+            if self._flow == "suite":
+                break
 
         suite_status = self._aggregate(result.status for result in results)
         return ExecutionResult(suite.name, suite_status, results)
@@ -90,15 +99,41 @@ class Executor:
                 if item.always_pass:
                     block_status = Status.PASS
                 status = self._aggregate((status, block_status))
+            elif isinstance(item, ForBlock):
+                block_status = self._run_for(item, results)
+                if item.always_pass:
+                    block_status = Status.PASS
+                status = self._aggregate((status, block_status))
+            elif isinstance(item, WhileBlock):
+                block_status = self._run_while(item, results)
+                if item.always_pass:
+                    block_status = Status.PASS
+                status = self._aggregate((status, block_status))
+            elif isinstance(item, ForEachRowBlock):
+                block_status = self._run_each_row(item, results)
+                if item.always_pass:
+                    block_status = Status.PASS
+                status = self._aggregate((status, block_status))
             else:
                 block_status = self._run_conditional(item, results)
                 if item.always_pass:
                     block_status = Status.PASS
                 status = self._aggregate((status, block_status))
+            if self._flow in {"case", "suite", "break", "continue"}:
+                break
         return status
 
     def _run_statement(self, statement: Statement) -> StepResult:
-        arguments = [self._expand(value) for value in statement.arguments]
+        keyword_name = _normalize(statement.keyword)
+        variable_arguments = {
+            "reassignvaluetovariable": {0},
+            "setvariable": {0},
+            "calculateandassign": {1},
+        }.get(keyword_name, set())
+        arguments = [
+            value if index in variable_arguments else self._expand(value)
+            for index, value in enumerate(statement.arguments)
+        ]
         library_name = statement.library.casefold()
         if self._suite:
             for alias, library in self._suite.libraries.items():
@@ -152,6 +187,31 @@ class Executor:
                 raise ValueError("Sleep duration must not be negative")
             self._sleep(seconds)
             return KeywordResult(Status.PASS)
+        if normalized in {"exittestcase", "stoptestcase", "stopcase"}:
+            self._flow = "case"
+            return KeywordResult(Status.PASS)
+        if normalized in {"stoptestsuite", "exittestsuite"}:
+            self._flow = "suite"
+            return KeywordResult(Status.PASS)
+        if normalized in {"break", "breakloop"}:
+            self._flow = "break"
+            return KeywordResult(Status.PASS)
+        if normalized in {"continue", "continueloop"}:
+            self._flow = "continue"
+            return KeywordResult(Status.PASS)
+        if normalized in {"reassignvaluetovariable", "setvariable"}:
+            self._require_arguments(keyword, arguments, 2)
+            self.variables[arguments[0]] = arguments[1]
+            return KeywordResult(Status.PASS)
+        if normalized == "calculateandassign":
+            self._require_arguments(keyword, arguments, 2)
+            self.variables[arguments[1]] = str(self._calculate(arguments[0]))
+            return KeywordResult(Status.PASS)
+        if normalized == "equalsignorecase":
+            self._require_arguments(keyword, arguments, 2)
+            if arguments[0].casefold() == arguments[1].casefold():
+                return KeywordResult(Status.PASS)
+            return KeywordResult(Status.FAIL, f"{arguments[0]!r} does not equal {arguments[1]!r} ignoring case")
         raise LookupError(f"Built-in keyword '{keyword}' is not implemented")
 
     @staticmethod
@@ -182,8 +242,10 @@ class Executor:
 
     def _run_repeat(self, block: RepeatBlock, results: list[StepResult]) -> Status:
         raw_count = self._expand(block.count)
+        duration = self._duration_seconds(raw_count)
+        deadline = time.monotonic() + duration if duration is not None else None
         try:
-            count = int(raw_count)
+            count = int(raw_count) if duration is None else 2**63 - 1
         except ValueError:
             return Status.ERROR
         if count < 0:
@@ -193,7 +255,161 @@ class Executor:
         for iteration in range(1, count + 1):
             self.variables["${R}"] = str(iteration)
             status = self._aggregate((status, self._run_items(block.body, results)))
+            if self._flow in {"case", "suite"}:
+                break
+            if self._flow == "break":
+                self._flow = ""
+                break
+            if self._flow == "continue":
+                self._flow = ""
+            if deadline is not None and time.monotonic() >= deadline:
+                break
+            if deadline is not None:
+                self._sleep(min(0.01, max(0.0, deadline - time.monotonic())))
         return status
+
+    def _run_for(self, block: ForBlock, results: list[StepResult]) -> Status:
+        status = Status.PASS
+        previous_item = self.variables.get("${ITEM}")
+        for index, value in enumerate(block.values):
+            self.variables["${ITEM}"] = self._expand(value)
+            self.variables["${R}"] = str(index + 1)
+            status = self._aggregate((status, self._run_items(block.body, results)))
+            if self._flow in {"case", "suite"}:
+                break
+            if self._flow == "break":
+                self._flow = ""
+                break
+            if self._flow == "continue":
+                self._flow = ""
+        if previous_item is None:
+            self.variables.pop("${ITEM}", None)
+        else:
+            self.variables["${ITEM}"] = previous_item
+        return status
+
+    def _run_while(self, block: WhileBlock, results: list[StepResult]) -> Status:
+        try:
+            max_iterations = int(self._expand(block.max_iterations))
+        except ValueError:
+            return Status.ERROR
+        if max_iterations < 0:
+            return Status.ERROR
+
+        status = Status.PASS
+        for iteration in range(1, max_iterations + 1):
+            self.variables["${R}"] = str(iteration)
+            condition = self._run_statement(block.condition)
+            results.append(condition)
+            if condition.status is Status.ERROR:
+                return Status.ERROR
+            if (condition.status is Status.PASS) != block.while_pass:
+                break
+            status = self._aggregate((status, self._run_items(block.body, results)))
+            if self._flow in {"case", "suite"}:
+                break
+            if self._flow == "break":
+                self._flow = ""
+                break
+            if self._flow == "continue":
+                self._flow = ""
+        return status
+
+    def _run_each_row(self, block: ForEachRowBlock, results: list[StepResult]) -> Status:
+        if self._suite is None or block.dataset.casefold() not in {
+            name.casefold() for name in self._suite.datasets
+        }:
+            results.append(
+                StepResult(
+                    keyword="ForEachRow",
+                    line_number=block.line_number,
+                    status=Status.ERROR,
+                    output=f"Dataset '{block.dataset}' is not declared",
+                )
+            )
+            return Status.ERROR
+
+        dataset_path = next(
+            path
+            for name, path in self._suite.datasets.items()
+            if name.casefold() == block.dataset.casefold()
+        )
+        try:
+            rows = self._load_rows(Path(dataset_path), block.sheet, block.table)
+        except (OSError, ValueError, ImportError, KeyError) as error:
+            results.append(
+                StepResult(
+                    keyword="ForEachRow",
+                    line_number=block.line_number,
+                    status=Status.ERROR,
+                    output=str(error),
+                )
+            )
+            return Status.ERROR
+
+        status = Status.PASS
+        for index, row in enumerate(rows, start=1):
+            for header, value in row.items():
+                self.variables[f"${{{header}}}"] = value
+            self.variables["${R}"] = str(index)
+            status = self._aggregate((status, self._run_items(block.body, results)))
+            if self._flow in {"case", "suite"}:
+                break
+            if self._flow == "break":
+                self._flow = ""
+                break
+            if self._flow == "continue":
+                self._flow = ""
+        return status
+
+    @staticmethod
+    def _load_rows(path: Path, sheet_name: str, table_name: str) -> list[dict[str, str]]:
+        if not path.is_file():
+            raise FileNotFoundError(f"Dataset file does not exist: {path}")
+        if path.suffix.casefold() == ".csv":
+            with path.open("r", encoding="utf-8-sig", newline="") as stream:
+                return [
+                    {
+                        re.sub(r"\s+", "", header.strip()): value or ""
+                        for header, value in row.items()
+                        if header is not None
+                    }
+                    for row in csv.DictReader(stream)
+                ]
+        if path.suffix.casefold() not in {".xlsx", ".xlsm"}:
+            raise ValueError(f"Unsupported dataset type: {path.suffix or '(none)'}")
+
+        try:
+            from openpyxl import load_workbook
+            from openpyxl.utils.cell import range_boundaries
+        except ImportError as error:
+            raise ImportError("Excel datasets require openpyxl; install the gfriend-python package dependencies") from error
+
+        workbook = load_workbook(path, read_only=False, data_only=True)
+        try:
+            if sheet_name not in workbook.sheetnames:
+                raise KeyError(f"Worksheet '{sheet_name}' was not found in '{path.name}'")
+            worksheet = workbook[sheet_name]
+            if table_name not in worksheet.tables:
+                raise KeyError(f"Table '{table_name}' was not found on worksheet '{sheet_name}'")
+            min_col, min_row, max_col, max_row = range_boundaries(worksheet.tables[table_name].ref)
+            headers = [
+                re.sub(r"\s+", "", str(worksheet.cell(min_row, column).value or "").strip())
+                for column in range(min_col, max_col + 1)
+            ]
+            if not headers or any(not header for header in headers):
+                raise ValueError(f"Table '{table_name}' has an empty column header")
+            if len(set(header.casefold() for header in headers)) != len(headers):
+                raise ValueError(f"Table '{table_name}' has duplicate column headers")
+            return [
+                {
+                    header: str(worksheet.cell(row, column).value or "")
+                    for header, column in zip(headers, range(min_col, max_col + 1))
+                }
+                for row in range(min_row + 1, max_row + 1)
+            ]
+        finally:
+            workbook.close()
 
     def _run_conditional(self, block: ConditionalBlock, results: list[StepResult]) -> Status:
         condition = self._run_statement(block.condition)
@@ -205,6 +421,52 @@ class Executor:
         if condition.status in block.ignored_branches:
             return Status.PASS
         return status
+
+    @staticmethod
+    def _duration_seconds(value: str) -> float | None:
+        match = re.fullmatch(r"(\d+(?:\.\d+)?)([hms])", value.strip(), re.IGNORECASE)
+        if not match:
+            return None
+        amount = float(match.group(1))
+        unit = match.group(2).casefold()
+        return amount * {"h": 3600, "m": 60, "s": 1}[unit]
+
+    @staticmethod
+    def _calculate(expression: str) -> int | float:
+        import ast
+        import operator
+
+        operations: dict[type[ast.operator], Callable[[Any, Any], Any]] = {
+            ast.Add: lambda left, right: left + right,
+            ast.Sub: lambda left, right: left - right,
+            ast.Mult: lambda left, right: left * right,
+            ast.Div: lambda left, right: left / right,
+            ast.FloorDiv: lambda left, right: left // right,
+            ast.Mod: lambda left, right: left % right,
+            ast.Pow: lambda left, right: left**right,
+        }
+        unary_operations: dict[type[ast.unaryop], Callable[[Any], Any]] = {
+            ast.UAdd: operator.pos,
+            ast.USub: operator.neg,
+        }
+
+        def evaluate(node: ast.AST) -> int | float:
+            if isinstance(node, ast.Expression):
+                return evaluate(node.body)
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+                return node.value
+            if isinstance(node, ast.BinOp) and type(node.op) in operations:
+                if isinstance(node.op, ast.Pow):
+                    exponent = evaluate(node.right)
+                    if abs(exponent) > 100:
+                        raise ValueError("Exponent magnitude must not exceed 100")
+                    return evaluate(node.left) ** exponent
+                return operations[type(node.op)](evaluate(node.left), evaluate(node.right))
+            if isinstance(node, ast.UnaryOp) and type(node.op) in unary_operations:
+                return unary_operations[type(node.op)](evaluate(node.operand))
+            raise ValueError("Only numeric arithmetic is allowed")
+
+        return evaluate(ast.parse(expression, mode="eval"))
 
     def _expand(self, value: str) -> str:
         def replace(match: re.Match[str]) -> str:
