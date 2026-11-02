@@ -85,6 +85,27 @@ class ParserTests(unittest.TestCase):
             [(Status.PASS, ""), (Status.PASS, "ready branch"), (Status.FAIL, "")],
         )
 
+    def test_parses_late_fail_branch_at_same_scope(self) -> None:
+        suite = parse_script(
+            'Case\n{\n'
+            '  If: Equals(left,right)\n'
+            '  {\n'
+            '    Pass(unselected)\n'
+            '  }\n'
+            '  Pass(intervening statement)\n'
+            '  Fail:\n'
+            '  {\n'
+            '    Pass(late fail branch)\n'
+            '  }\n'
+            '}\n'
+        )
+        result = Executor().run(suite)
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(
+            [step.output for step in result.test_cases[0].steps],
+            ["'left' does not equal 'right'", "late fail branch", "intervening statement"],
+        )
+
     def test_parses_for_and_while_blocks(self) -> None:
         suite = parse_script(
             'Loops\n{\n'

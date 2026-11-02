@@ -281,8 +281,26 @@ def _parse_body(
             body.append(ConditionalBlock(condition, branches, bool(ignore_result), ignored_branches))
             continue
 
-        if _BRANCH.match(text):
-            raise ParseError(f"Fail/Error branch without an If block in test case '{case_name}' on line {line_number}")
+        branch_match = _BRANCH.match(text)
+        if branch_match:
+            branch_ignore, branch, branch_inline = branch_match.groups()
+            target = next(
+                (item for item in reversed(body) if isinstance(item, ConditionalBlock)),
+                None,
+            )
+            if target is None:
+                raise ParseError(
+                    f"Fail/Error branch without an If block in test case '{case_name}' on line {line_number}"
+                )
+            result = Status.FAIL if branch.casefold() == "fail" else Status.ERROR
+            if result in target.branches:
+                raise ParseError(f"Duplicate {branch} branch on line {line_number}")
+            index = _require_open_brace(lines, index + 1, bool(branch_inline), line_number)
+            branch_body, index = _parse_body(lines, index, case_name=case_name)
+            target.branches[result] = branch_body
+            if branch_ignore:
+                target.ignored_branches.add(result)
+            continue
         if text == "{":
             raise ParseError(f"Unexpected '{{' on line {line_number}")
         if text.endswith("{"):
