@@ -211,6 +211,18 @@ class Executor:
                 )
             elif library.casefold() == "windows":
                 self.register_library("Windows", WindowsLibrary(self.variables))
+            elif library.casefold() == "android":
+                from .android_library import AndroidLibrary
+
+                self.register_library(
+                    "Android",
+                    AndroidLibrary(
+                        self.variables,
+                        self.device,
+                        self.output_folder,
+                        sleep=self._sleep,
+                    ),
+                )
             elif library.casefold() == "fleet":
                 from .fleet_library import FleetLibrary
 

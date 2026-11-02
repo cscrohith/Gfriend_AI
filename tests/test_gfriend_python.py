@@ -194,6 +194,107 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_android_library_uses_configured_device_backend(self) -> None:
+        from gfriend_python.android_library import AndroidLibrary
+        from gfriend_python.models import DeviceUnderTest
+
+        element = ET.fromstring(
+            '<node text="Sign in now" resource-id="login" enabled="true" '
+            'selected="false" checked="false" bounds="[10,20][110,60]" />'
+        )
+
+        class FakeBackend:
+            def __init__(self) -> None:
+                self.launched: list[str] = []
+                self.taps: list[ET.Element] = []
+                self.inputs: list[tuple[str, ET.Element | None]] = []
+                self.keys: list[str] = []
+                self.swipes: list[str] = []
+                self.disconnected = False
+
+            def launch(self, activity_name: str) -> None:
+                self.launched.append(activity_name)
+
+            def find(self, selector: str, by: str) -> list[ET.Element]:
+                if by == "id" and selector == "login":
+                    return [element]
+                if by == "text" and selector == "Sign in now":
+                    return [element]
+                if by == "xpath" and selector == "//node[@resource-id='login']":
+                    return [element]
+                return []
+
+            def find_text_contains(self, text: str) -> list[ET.Element]:
+                return [element] if text in element.get("text", "") else []
+
+            def tap(self, target: ET.Element) -> None:
+                self.taps.append(target)
+
+            def input_text(self, text: str, target: ET.Element | None = None) -> None:
+                self.inputs.append((text, target))
+
+            def key(self, keycode: str) -> None:
+                self.keys.append(keycode)
+
+            def swipe(self, direction: str) -> None:
+                self.swipes.append(direction)
+
+            def screenshot(self) -> bytes:
+                return b"fake-png"
+
+            def hierarchy(self) -> ET.Element:
+                return ET.Element("hierarchy", {"rotation": "0"})
+
+            def ping(self) -> None:
+                return None
+
+            def disconnect(self) -> None:
+                self.disconnected = True
+
+        backend = FakeBackend()
+        device = DeviceUnderTest(device_id="android-serial")
+        variables: dict[str, str] = {}
+        library = AndroidLibrary(
+            variables,
+            device,
+            tempfile.gettempdir(),
+            backend_factory=lambda: backend,
+            sleep=lambda _: None,
+        )
+        self.assertEqual(library.launch("com.example.app").status, Status.PASS)
+        self.assertEqual(library.touch_text("Sign in now").status, Status.PASS)
+        self.assertEqual(library.touch_id("login").status, Status.PASS)
+        self.assertEqual(
+            library.touch_xpath("//node[@resource-id='login']").status,
+            Status.PASS,
+        )
+        self.assertEqual(library.input_text("login", "user@example.test").status, Status.PASS)
+        self.assertEqual(
+            library.check_screen_contains_partial_text("Sign in").status,
+            Status.PASS,
+        )
+        self.assertEqual(library.get_text("login", "${label}").output, "Sign in now")
+        self.assertEqual(library.is_enabled("login").status, Status.PASS)
+        self.assertEqual(library.wait_for_text("Sign in now", "0").status, Status.PASS)
+        self.assertEqual(library.press_back_key().status, Status.PASS)
+        self.assertEqual(library.swipe("up").status, Status.PASS)
+        self.assertEqual(backend.launched, ["com.example.app"])
+        self.assertEqual(backend.taps, [element, element, element])
+        self.assertEqual(backend.inputs, [("user@example.test", element)])
+        self.assertEqual(backend.keys, ["BACK"])
+        self.assertEqual(backend.swipes, ["up"])
+        self.assertEqual(variables["${label}"], "Sign in now")
+        runtime = Executor(device=device).run(
+            parse_script(
+                "using Android\n"
+                "Device smoke test\n"
+                "{\n"
+                "  Android.SetTimeoutScale(2)\n"
+                "}\n"
+            )
+        )
+        self.assertEqual(runtime.status, Status.PASS)
+
     def test_updater_verifies_and_atomically_installs_release_archive(self) -> None:
         archive_buffer = io.BytesIO()
         with zipfile.ZipFile(archive_buffer, "w") as archive:

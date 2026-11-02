@@ -132,6 +132,13 @@ adapter, executing a remote block reports an error.
   using the legacy GFriend report schema for consumption by existing report
   tooling; per-step timestamps and hierarchical control-block timing are absent
   from the Python result model and therefore remain empty/not represented
+- `using Android` provides an initial ADB-backed device automation subset for
+  app launch, resource-ID/text/XPath taps, text input and retrieval, screen text
+  assertions, enabled/selected/checked checks, swipes, key events, UI waits,
+  screenshots, and UI hierarchy export. Install Android Debug Bridge and
+  configure a run-spec `DeviceUnderTest` with its ADB serial or network address.
+  The legacy SES controller, WebView automation, toast/log/memory features,
+  arbitrary ADB commands, and many gesture/control keywords remain unported.
 - `using Windows` exposes local process launch, environment-variable lookup,
   application/child-window selection, move and maximize, automation-ID/name
   text access, clickability checks, combo-box selection, toggle and radio-button
