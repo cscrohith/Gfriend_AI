@@ -358,6 +358,24 @@ class ParserTests(unittest.TestCase):
             def is_visible(self) -> bool:
                 return True
 
+            def get_toggle_state(self) -> int:
+                return int(self.toggled)
+
+            def toggle(self) -> None:
+                self.toggled = not self.toggled
+
+            def select(self, value: str = "") -> None:
+                self.selected = value or True
+
+            def is_selected(self) -> bool:
+                return bool(self.selected)
+
+            def __init__(self) -> None:
+                self.text = ""
+                self.clicked = False
+                self.toggled = False
+                self.selected: str | bool = False
+
         class FakeBackend:
             has_window = True
 
@@ -366,12 +384,14 @@ class ParserTests(unittest.TestCase):
                 self.selected: tuple[str, float] | None = None
                 self.keys: list[str] = []
                 self.maximized = False
+                self.disappeared: tuple[str, float] | None = None
 
             def select(self, title: str, timeout: float) -> None:
                 self.selected = (title, timeout)
 
             def find(self, selector: str, timeout: float, by_name: bool = False) -> FakeControl:
-                if selector != ("Text Label" if by_name else "field-id"):
+                allowed = {"Text Label"} if by_name else {"field-id", "combo-id"}
+                if selector not in allowed:
                     raise LookupError(f"Unknown control {selector}")
                 return self.control
 
@@ -380,6 +400,23 @@ class ParserTests(unittest.TestCase):
 
             def maximize(self) -> None:
                 self.maximized = True
+
+            def select_combo_item(self, automation_id: str, item_name: str) -> None:
+                if automation_id != "combo-id":
+                    raise LookupError(automation_id)
+                self.control.select(item_name)
+
+            def set_toggle(self, selector: str, enabled: bool, by_name: bool = False) -> None:
+                self.control.toggled = enabled
+
+            def check_toggle(self, selector: str, enabled: bool, by_name: bool = False) -> bool:
+                return self.control.toggled == enabled
+
+            def set_radio(self, selector: str, enabled: bool, by_name: bool = False) -> None:
+                self.control.selected = enabled
+
+            def wait_disappear(self, automation_id: str, timeout: float) -> None:
+                self.disappeared = (automation_id, timeout)
 
             def close(self) -> None:
                 return None
@@ -405,6 +442,11 @@ class ParserTests(unittest.TestCase):
             "  Windows.SendSpecialKey(ENTER)\n"
             "  Windows.SendKey(abc)\n"
             "  Windows.MaximizeWindow()\n"
+            "  Windows.SetComboBoxWithName(combo-id, Option B)\n"
+            "  Windows.SetToggle(field-id, On)\n"
+            "  Windows.CheckToggleState(field-id, On)\n"
+            "  Windows.SetRadioButtonWithId(field-id, On)\n"
+            "  Windows.WaitForIdDisappear(spinner, 3)\n"
             "  Windows.CloseApplication()\n"
             "}\n"
         )
@@ -428,6 +470,9 @@ class ParserTests(unittest.TestCase):
         self.assertTrue(backend.control.clicked)
         self.assertEqual(backend.keys, ["{ENTER}", "abc"])
         self.assertTrue(backend.maximized)
+        self.assertEqual(backend.control.selected, True)
+        self.assertTrue(backend.control.toggled)
+        self.assertEqual(backend.disappeared, ("spinner", 6))
 
     def test_windows_library_reports_missing_optional_driver_and_unknown_environment(self) -> None:
         from gfriend_python.windows_library import WindowsLibrary

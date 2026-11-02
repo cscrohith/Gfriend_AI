@@ -134,10 +134,13 @@ adapter, executing a remote block reports an error.
   from the Python result model and therefore remain empty/not represented
 - `using Windows` exposes local process launch, environment-variable lookup,
   application selection, automation-ID/name text access, clickability checks,
-  keyboard input, window maximize, wait, and close keywords through UI
+  combo-box selection, toggle and radio-button state, keyboard input, window
+  maximize, appearance/disappearance waits, and close keywords through UI
   Automation; install `gfriend-python-runtime[windows]` on Windows for the
   optional `pywinauto` driver. UI keywords are unavailable on non-Windows
-  platforms unless a compatible backend is injected.
+  platforms unless a compatible backend is injected. This remains a subset of
+  the legacy Windows library; WPath, screenshot, printer, and many specialized
+  control operations are not ported.
 - `gfriend-update URL SHA256 install-folder` downloads a ZIP over HTTPS, verifies
   the caller-supplied digest, rejects unsafe archive paths and links, then
   installs to a new checksum-versioned directory without replacing existing

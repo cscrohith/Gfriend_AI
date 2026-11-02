@@ -59,6 +59,33 @@ class _PywinautoBackend:
             raise RuntimeError("Select an application before maximizing it.")
         self._window.maximize()
 
+    def select_combo_item(self, automation_id: str, item_name: str) -> None:
+        combo = self.find(automation_id, 5)
+        combo.select(item_name)
+
+    def set_toggle(self, selector: str, enabled: bool, by_name: bool = False) -> None:
+        control = self.find(selector, 5, by_name)
+        state = bool(control.get_toggle_state())
+        if state != enabled:
+            control.toggle()
+
+    def check_toggle(self, selector: str, enabled: bool, by_name: bool = False) -> bool:
+        control = self.find(selector, 5, by_name)
+        return bool(control.get_toggle_state()) == enabled
+
+    def set_radio(self, selector: str, enabled: bool, by_name: bool = False) -> None:
+        control = self.find(selector, 5, by_name)
+        if enabled:
+            control.select()
+        elif control.is_selected():
+            return
+
+    def wait_disappear(self, automation_id: str, wait_seconds: float) -> None:
+        started = time.monotonic()
+        control = self.find(automation_id, wait_seconds)
+        remaining = max(0, wait_seconds - (time.monotonic() - started))
+        control.wait_not("visible", timeout=remaining)
+
     def close(self) -> None:
         if self._window is not None:
             try:
@@ -155,6 +182,21 @@ class WindowsLibrary:
     def wait_for_name(self, name: str, timeout_in_sec: str) -> KeywordResult:
         _, error = self._find_control(name, timeout_in_sec, by_name=True)
         return error or KeywordResult(Status.PASS)
+
+    def wait_for_id_disappear(self, automation_id: str, timeout: str) -> KeywordResult:
+        backend, error = self._get_backend()
+        if error is not None:
+            return error
+        try:
+            backend.wait_disappear(
+                automation_id,
+                self._scaled_timeout(timeout),
+            )
+        except (RuntimeError, ValueError, TimeoutError, OSError) as exception:
+            return KeywordResult(Status.FAIL, f"UI control did not disappear: {exception}")
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Could not wait for UI control: {exception}")
+        return KeywordResult(Status.PASS)
 
     def is_exist(self, automation_id: str) -> KeywordResult:
         control, error = self._find_control(automation_id, "0")
@@ -278,6 +320,67 @@ class WindowsLibrary:
             return KeywordResult(Status.ERROR, f"Could not maximize window: {exception}")
         return KeywordResult(Status.PASS)
 
+    def set_combo_box_with_name(self, automation_id: str, value_name: str) -> KeywordResult:
+        return self._backend_action(
+            "select_combo_item",
+            automation_id,
+            value_name,
+            failure=f"Could not select '{value_name}' in combo box '{automation_id}'",
+        )
+
+    def set_combo_box(self, automation_id: str, value_name: str) -> KeywordResult:
+        return self.set_combo_box_with_name(automation_id, value_name)
+
+    def set_toggle(self, automation_id: str, toggle_on_off: str) -> KeywordResult:
+        enabled, error = self._parse_on_off(toggle_on_off, "toggle")
+        if error is not None:
+            return error
+        return self._backend_action(
+            "set_toggle",
+            automation_id,
+            enabled,
+            failure=f"Could not set toggle '{automation_id}'",
+        )
+
+    def check_toggle_state(self, automation_id: str, toggle_on_off: str) -> KeywordResult:
+        enabled, error = self._parse_on_off(toggle_on_off, "toggle")
+        if error is not None:
+            return error
+        try:
+            backend, backend_error = self._get_backend()
+            if backend_error is not None:
+                return backend_error
+            matches = backend.check_toggle(automation_id, enabled)
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Could not inspect toggle '{automation_id}': {exception}")
+        return KeywordResult(
+            Status.PASS if matches else Status.FAIL,
+            "" if matches else "Current toggle state is not matching with given toggle state",
+        )
+
+    def set_radio_button_with_id(self, automation_id: str, radio_on_off: str) -> KeywordResult:
+        enabled, error = self._parse_on_off(radio_on_off, "radio button")
+        if error is not None:
+            return error
+        return self._backend_action(
+            "set_radio",
+            automation_id,
+            enabled,
+            failure=f"Could not set radio button '{automation_id}'",
+        )
+
+    def set_radio_button_with_name(self, name: str, radio_on_off: str) -> KeywordResult:
+        enabled, error = self._parse_on_off(radio_on_off, "radio button")
+        if error is not None:
+            return error
+        return self._backend_action(
+            "set_radio",
+            name,
+            enabled,
+            True,
+            failure=f"Could not set radio button '{name}'",
+        )
+
     def close_application(self, window_title: str = "") -> KeywordResult:
         if self._backend is None:
             return KeywordResult(Status.PASS)
@@ -333,6 +436,32 @@ class WindowsLibrary:
         except Exception as exception:
             return KeywordResult(Status.ERROR, f"Could not send keyboard input: {exception}")
         return KeywordResult(Status.PASS)
+
+    def _backend_action(
+        self,
+        action: str,
+        *arguments: Any,
+        failure: str,
+    ) -> KeywordResult:
+        backend, error = self._get_backend()
+        if error is not None:
+            return error
+        try:
+            getattr(backend, action)(*arguments)
+        except (RuntimeError, ValueError, TimeoutError, OSError, LookupError) as exception:
+            return KeywordResult(Status.FAIL, f"{failure}: {exception}")
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"{failure}: {exception}")
+        return KeywordResult(Status.PASS)
+
+    @staticmethod
+    def _parse_on_off(value: str, label: str) -> tuple[bool, KeywordResult | None]:
+        normalized = value.strip().casefold()
+        if normalized == "on":
+            return True, None
+        if normalized == "off":
+            return False, None
+        return False, KeywordResult(Status.FAIL, f"Option value of {label} must be On or Off")
 
     def _scaled_timeout(self, timeout: str) -> float:
         seconds = float(timeout.strip())
