@@ -67,8 +67,12 @@ print(result.to_dict())
   file, with declared parameters substituted during execution
 - `If: Keyword(...) { ... }`, followed optionally by `Fail:` and `Error:`
 - `Pass`, `Fail`, `Error`, `Equals`, `Equals IgnoreCase`, `Log`, `Sleep`,
-  `Contains`, `ConvertToUpperCase`, `ConvertToLowerCase`, `Calculate And
-  Assign`, and `ReAssign Value To Variable`
+  `Contains`, `ConvertToUpperCase`, `ConvertToLowerCase`, `Calculate`,
+  `Calculate And
+  Assign`, `ReAssign Value To Variable`, `NotEquals`, and `CompareAmounts`
+- String helpers: `Trim`, `Replace`, `Substring`, `Count`, and
+  `SplitAndStoreWord`
+- `Get Time Difference`, `Get Random Number`, and `Append To File`
 - `Stop Test Case`, `Stop Test Suite`, `BreakLoop`, and `ContinueLoop`
 - Custom `.gflib` methods support `Return With Pass`, `Return With Fail`, and
   `Return With Error`; a custom library can use its own `using` declarations

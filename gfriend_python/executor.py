@@ -5,7 +5,7 @@ import time
 import csv
 import random
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -213,8 +213,16 @@ class Executor:
             "reassignvaluetovariable": {0},
             "setvariable": {0},
             "calculateandassign": {1},
+            "calculate": {1},
             "readfromfile": {1},
             "gettimestamp": {0},
+            "gettimedifference": {2},
+            "getrandomnumber": {2},
+            "trim": {0},
+            "replace": {0},
+            "substring": {3},
+            "count": {0},
+            "splitandstoreword": {3},
         }.get(keyword_name, set())
         resource_names = {
             alias.casefold(): path for alias, path in (self._suite.resources.items() if self._suite else [])
@@ -273,6 +281,25 @@ class Executor:
             if arguments[0] == arguments[1]:
                 return KeywordResult(Status.PASS)
             return KeywordResult(Status.FAIL, f"{arguments[0]!r} does not equal {arguments[1]!r}")
+        if normalized == "notequals":
+            self._require_arguments(keyword, arguments, 2)
+            if arguments[0] != arguments[1]:
+                return KeywordResult(Status.PASS)
+            return KeywordResult(Status.FAIL, f"{arguments[0]} and {arguments[1]} are same")
+        if normalized == "compareamounts":
+            self._require_arguments(keyword, arguments, 2)
+            amount = arguments[0].lstrip("₹").replace("\\", "")
+            try:
+                left = float(amount)
+            except ValueError:
+                left = 0.0
+            try:
+                right = float(arguments[1])
+            except ValueError:
+                right = 0.0
+            if left == right:
+                return KeywordResult(Status.PASS)
+            return KeywordResult(Status.FAIL, f"{amount} and {arguments[1]} are not same")
         if normalized == "log":
             self._require_arguments(keyword, arguments, 1)
             return KeywordResult(Status.PASS, arguments[0])
@@ -316,7 +343,7 @@ class Executor:
             self._require_arguments(keyword, arguments, 2)
             self.variables[arguments[0]] = arguments[1]
             return KeywordResult(Status.PASS)
-        if normalized == "calculateandassign":
+        if normalized in {"calculateandassign", "calculate"}:
             self._require_arguments(keyword, arguments, 2)
             self.variables[arguments[1]] = str(self._calculate(arguments[0]))
             return KeywordResult(Status.PASS)
@@ -366,6 +393,16 @@ class Executor:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(arguments[1], encoding="utf-8")
             return KeywordResult(Status.PASS, str(path))
+        if normalized == "appendtofile":
+            self._require_arguments(keyword, arguments, 2)
+            file_name = arguments[0] or f"{datetime.now():%Y%m%d_%H%M%S}_SaveToFile.txt"
+            path = self._resolve_path(file_name, for_output=True)
+            try:
+                with path.open("a", encoding="utf-8") as stream:
+                    stream.write("\n" + arguments[1])
+            except OSError as error:
+                return KeywordResult(Status.ERROR, f"Error during write value to file: {error}")
+            return KeywordResult(Status.PASS)
         if normalized == "filecontainstext":
             self._require_arguments(keyword, arguments, 2)
             contents = self._resolve_path(arguments[0]).read_text(encoding="utf-8-sig")
@@ -385,6 +422,74 @@ class Executor:
             timestamp = datetime.now().strftime(self._strftime_format(format_string))
             self.variables[arguments[0]] = timestamp
             return KeywordResult(Status.PASS, f"{arguments[0]} = {timestamp}")
+        if normalized == "gettimedifference":
+            self._require_arguments(keyword, arguments, 3)
+            try:
+                first = self._parse_datetime(arguments[0])
+                second = self._parse_datetime(arguments[1])
+                difference = self._format_timespan(second - first)
+            except (ValueError, OverflowError, TypeError):
+                return KeywordResult(Status.ERROR, "Cannot convert given string into DateTime Format")
+            self.variables[arguments[2].strip()] = difference
+            return KeywordResult(Status.PASS, f"{arguments[2]} = {difference}")
+        if normalized == "getrandomnumber":
+            self._require_arguments(keyword, arguments, 3)
+            minimum, maximum = int(arguments[0]), int(arguments[1])
+            if maximum < minimum:
+                raise ValueError("Maximum must be greater than or equal to minimum")
+            value = str(random.randint(minimum, maximum))
+            self.variables[arguments[2].strip()] = value
+            return KeywordResult(Status.PASS, f"{arguments[2]} = {value}")
+        if normalized == "trim":
+            if len(arguments) not in {1, 2}:
+                raise ValueError("Trim expects 1 or 2 arguments")
+            variable = arguments[0].strip()
+            if variable not in self.variables:
+                raise KeyError(f"Variable '{variable}' is not defined")
+            value = self.variables[variable]
+            value = value.strip() if len(arguments) == 1 else value.strip(arguments[1])
+            self.variables[variable] = value
+            return KeywordResult(Status.PASS, f"{arguments[0]} = {value}")
+        if normalized == "replace":
+            self._require_arguments(keyword, arguments, 3)
+            variable = arguments[0].strip()
+            if variable not in self.variables:
+                raise KeyError(f"Variable '{variable}' is not defined")
+            value = self.variables[variable].replace(arguments[1], arguments[2])
+            self.variables[variable] = value
+            return KeywordResult(Status.PASS, f"{arguments[0]} = {value}")
+        if normalized == "substring":
+            self._require_arguments(keyword, arguments, 4)
+            start = int(arguments[1])
+            length = int(arguments[2])
+            if start < 0 or length < 0 or start > len(arguments[0]):
+                raise ValueError("Substring start and length must be non-negative and start must be within the value")
+            value = arguments[0][start:start + length]
+            self.variables[arguments[3].strip()] = value
+            return KeywordResult(
+                Status.PASS,
+                f"Substring of {arguments[0]} stored in {arguments[3]}: {value}",
+            )
+        if normalized == "count":
+            self._require_arguments(keyword, arguments, 1)
+            variable = arguments[0].strip()
+            if variable not in self.variables:
+                raise KeyError(f"Variable '{variable}' is not defined")
+            count = len(self.variables[variable])
+            return KeywordResult(Status.PASS, f"Number of characters in {variable}: {count}")
+        if normalized == "splitandstoreword":
+            self._require_arguments(keyword, arguments, 4)
+            delimiter = " " if arguments[1] in {'""', ""} else arguments[1]
+            words = [word for word in arguments[0].split(delimiter) if word]
+            index = int(arguments[2])
+            if index < 0 or index >= len(words):
+                raise IndexError(f"Word index {index} is outside the {len(words)} available word(s)")
+            value = words[index]
+            self.variables[arguments[3].strip()] = value
+            return KeywordResult(
+                Status.PASS,
+                f"Word at index {index} from {arguments[0]} stored in {arguments[3]}: {value}",
+            )
         if normalized == "runkeyword":
             self._require_arguments(keyword, arguments, 1)
             nested_statement = _parse_statement(arguments[0], 0)
@@ -523,6 +628,42 @@ class Executor:
         }
         pattern = re.compile("|".join(sorted(tokens, key=len, reverse=True)))
         return pattern.sub(lambda match: tokens[match.group(0)], format_string)
+
+    @staticmethod
+    def _parse_datetime(value: str) -> datetime:
+        value = value.strip()
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            pass
+        for date_format in (
+            "%H:%M:%S",
+            "%H:%M",
+            "%m/%d/%Y %H:%M:%S",
+            "%m/%d/%Y %H:%M",
+            "%m/%d/%Y",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d %H:%M",
+            "%Y-%m-%d",
+        ):
+            try:
+                return datetime.strptime(value, date_format)
+            except ValueError:
+                continue
+        raise ValueError("Cannot convert given string into DateTime Format")
+
+    @staticmethod
+    def _format_timespan(value: timedelta) -> str:
+        total_microseconds = int(value.total_seconds() * 1_000_000)
+        sign = "-" if total_microseconds < 0 else ""
+        remaining = abs(total_microseconds)
+        days, remaining = divmod(remaining, 86_400_000_000)
+        hours, remaining = divmod(remaining, 3_600_000_000)
+        minutes, remaining = divmod(remaining, 60_000_000)
+        seconds, microseconds = divmod(remaining, 1_000_000)
+        prefix = f"{days}." if days else ""
+        fractional = f".{microseconds:06d}".rstrip("0") if microseconds else ""
+        return f"{sign}{prefix}{hours:02}:{minutes:02}:{seconds:02}{fractional}"
 
     @staticmethod
     def _require_arguments(keyword: str, arguments: list[str], count: int) -> None:

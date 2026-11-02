@@ -480,6 +480,64 @@ class ExecutorTests(unittest.TestCase):
         self.assertEqual(result.status, Status.PASS)
         self.assertEqual(result.test_cases[0].steps[-1].output, "HELLO")
 
+    def test_comparison_and_variable_string_builtins(self) -> None:
+        result = Executor().run(
+            parse_script(
+                '${Text}=  foo-bar  \n'
+                'Case\n{\n'
+                '  NotEquals(one,two)\n'
+                '  CompareAmounts(₹1,1.0)\n'
+                '  Trim(${Text})\n'
+                '  Replace(${Text},foo,baz)\n'
+                '  Substring(${Text},0,3,${Part})\n'
+                '  Split And Store Word(one two three, ,1,${Word})\n'
+                '  Count(${Text})\n'
+                '  Pass(${Part}-${Word}-${Text})\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.PASS)
+        outputs = [step.output for step in result.test_cases[0].steps]
+        self.assertEqual(outputs[2], "${Text} = foo-bar")
+        self.assertEqual(outputs[3], "${Text} = baz-bar")
+        self.assertEqual(outputs[4], "Substring of baz-bar stored in ${Part}: baz")
+        self.assertEqual(outputs[5], "Word at index 1 from one two three stored in ${Word}: two")
+        self.assertEqual(outputs[6], "Number of characters in ${Text}: 7")
+        self.assertEqual(outputs[7], "baz-two-baz-bar")
+
+    def test_date_difference_random_number_and_append_to_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "suite.txt"
+            script.write_text(
+                'Case\n{\n'
+                '  Get Time Difference(2:48:25,2:54:25,${Difference})\n'
+                '  Get Random Number(7,7,${Random})\n'
+                '  Calculate(2+3,${Total})\n'
+                '  Append To File(result.txt,entry)\n'
+                '  Pass(${Difference}-${Random}-${Total})\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor(output_folder=root).run(parse_file(script))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(result.test_cases[0].steps[-1].output, "00:06:00-7-5")
+            self.assertEqual((root / "result.txt").read_text(encoding="utf-8"), "\nentry")
+
+    def test_invalid_date_difference_returns_error(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'Case\n{\n'
+                '  Get Time Difference(not-a-date,2:54:25,${Difference})\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertEqual(
+            result.test_cases[0].steps[0].output,
+            "Cannot convert given string into DateTime Format",
+        )
+
     def test_foreachrow_reads_excel_table(self) -> None:
         from openpyxl import Workbook
         from openpyxl.worksheet.table import Table
