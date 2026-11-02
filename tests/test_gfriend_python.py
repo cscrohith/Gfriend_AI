@@ -1,3 +1,4 @@
+import csv
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
@@ -113,6 +114,54 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_info_library_records_timing_and_writes_svg_chart(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = Executor(output_folder=directory).run(
+                parse_script(
+                    'using Info\n'
+                    'Case\n{\n'
+                    '  Info.Start Time Check(Login)\n'
+                    '  Info.Mark Start(Login,Authenticate)\n'
+                    '  Sleep(0.001)\n'
+                    '  Info.Mark End(Login,Authenticate)\n'
+                    '  Info.Draw Time Graph(Login)\n'
+                    '}\n'
+                )
+            )
+
+            self.assertEqual(result.status, Status.PASS)
+            csv_path = Path(directory) / "Login.csv"
+            with csv_path.open(encoding="utf-8-sig", newline="") as stream:
+                rows = list(csv.reader(stream))
+            self.assertEqual(rows[0], ["Point", "Time (ms)"])
+            self.assertEqual(rows[1][0], "Authenticate")
+            self.assertGreater(float(rows[1][1]), 0)
+            chart = (Path(directory) / "Login.svg").read_text(encoding="utf-8")
+            self.assertIn("<svg", chart)
+            self.assertIn("Authenticate", chart)
+
+    def test_info_library_requires_measurement_before_marks_or_graphs(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'using Info\n'
+                'Case\n{\n'
+                '  Info.Mark Start(Missing,point)\n'
+                '  Info.Mark End(Missing,point)\n'
+                '  Info.Draw Time Graph(Missing)\n'
+                '}\n'
+            )
+        )
+
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertEqual(
+            [step.output for step in result.test_cases[0].steps],
+            [
+                "Can not find Measure set with name Missing",
+                "Can not find Measure set with name Missing",
+                "Can not find Measure set with name Missing",
+            ],
+        )
+
     def test_xml_library_loads_queries_mutates_and_saves_document(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

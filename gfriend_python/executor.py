@@ -30,6 +30,7 @@ from .models import (
 )
 from .parser import ParseError, _parse_statement, parse_file
 from .json_library import JsonLibrary
+from .info_library import InfoLibrary
 from .regex_library import RegexLibrary
 from .xml_library import XmlLibrary
 
@@ -178,6 +179,11 @@ class Executor:
                         self.variables,
                         script_folder=suite.script_folder,
                     ),
+                )
+            elif library.casefold() == "info":
+                self.register_library(
+                    "Info",
+                    InfoLibrary(self.variables, self.output_folder),
                 )
 
     def _set_variables(self, variables: dict[str, str]) -> None:

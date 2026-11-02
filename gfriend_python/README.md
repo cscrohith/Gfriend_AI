@@ -102,6 +102,8 @@ adapter, executing a remote block reports an error.
 - `using XML` provides XML loading, basic XPath-compatible attribute/text
   lookup and mutation, node appending, and file saving using Python's standard
   XML library
+- `using Info` provides portable `Start Time Check`, `Mark Start`, `Mark End`,
+  and `Draw Time Graph` timing; charts are written as SVG files
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value
