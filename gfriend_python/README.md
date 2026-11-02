@@ -10,9 +10,10 @@ execution reports.
 
 The .NET solution remains in the repository as the behavioral reference while
 the migration proceeds. Device drivers, the remote transport, the legacy
-XML/session report format, desktop UI, and the remaining GFriend keyword
-libraries are not yet ported; scripts using those features require later
-migration phases.
+XML/session report format, Windows desktop UI, and the remaining GFriend
+keyword libraries are not yet ported; scripts using those features require
+later migration phases. A local browser-based execution workspace is available
+for the Python runtime.
 
 ## Run a script
 
@@ -27,6 +28,29 @@ python -m gfriend_python path\to\script.txt --xml-report output\report.xml
 
 The command exits with status `0` when selected cases pass, `1` when execution
 reports a failure or error, and `2` for invalid input or file errors.
+
+## Open the web execution workspace
+
+The local web interface runs on loopback and uses the `GfriendScripts` folder
+under the current directory by default:
+
+```powershell
+python -m gfriend_python.web
+```
+
+Or point it at a different folder containing `.txt` or `.gfscripts` files:
+
+```powershell
+python -m gfriend_python.web --scripts-dir path\to\trusted-scripts --port 8765
+```
+
+The workspace opens in your browser and supports script search, test-case
+selection, per-run variable overrides, and live execution results. It binds
+only to `127.0.0.1`; it is not intended to be exposed to a network. Run only
+scripts and datasets you trust because GFriend scripts can write files and
+interact with local resources. Execution is single-run-at-a-time. Manual
+confirmation keywords need the interactive CLI and report an error in the web
+workspace.
 
 ## Add a Python keyword library
 

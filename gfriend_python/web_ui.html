@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>GFriend | Execution workspace</title>
+<style>
+:root {
+  color-scheme: light;
+  --ink: #172033;
+  --muted: #64748b;
+  --line: #e5eaf1;
+  --canvas: #f4f6fa;
+  --surface: #fff;
+  --navy: #111827;
+  --blue: #2463eb;
+  --blue-dark: #1d4ed8;
+  --green: #14804a;
+  --red: #c0394b;
+  --amber: #a45b08;
+  font: 14px/1.5 "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: var(--canvas); color: var(--ink); }
+button, input { font: inherit; }
+button { cursor: pointer; }
+.shell { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
+.rail { background: var(--navy); color: #d6deed; padding: 24px 16px; display: flex; flex-direction: column; gap: 34px; }
+.brand { display: flex; gap: 12px; align-items: center; padding: 0 8px; color: #fff; font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 10px; background: #2e6df2; display: grid; place-items: center; box-shadow: 0 5px 16px #2463eb55; }
+.brand-mark svg { width: 20px; height: 20px; }
+.workspace-label { padding: 0 10px; color: #8290a8; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+.nav-item { width: 100%; padding: 10px 12px; border: 0; border-radius: 8px; display: flex; align-items: center; gap: 11px; background: transparent; color: #d6deed; text-align: left; }
+.nav-item.active { background: #25334b; color: #fff; }
+.nav-item svg { width: 17px; height: 17px; opacity: .8; }
+.rail-foot { margin-top: auto; border-top: 1px solid #293346; padding: 18px 8px 0; color: #93a0b5; font-size: 12px; }
+.local-dot { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #38c78a; box-shadow: 0 0 0 3px #38c78a22; }
+.main { min-width: 0; }
+.topbar { height: 68px; padding: 0 clamp(20px, 4vw, 52px); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); background: #fff; }
+.crumb { color: var(--muted); font-size: 13px; }
+.crumb strong { color: var(--ink); font-weight: 600; }
+.top-right { display: flex; gap: 18px; align-items: center; color: var(--muted); font-size: 12px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: #e6edff; color: #2453bb; font-weight: 700; }
+.content { max-width: 1500px; margin: 0 auto; padding: 34px clamp(20px, 4vw, 52px) 56px; }
+.heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 26px; }
+.eyebrow { color: #5674ad; font-size: 11px; text-transform: uppercase; letter-spacing: 1.3px; font-weight: 700; }
+h1 { margin: 5px 0 6px; font-size: clamp(25px, 3vw, 32px); line-height: 1.2; letter-spacing: -.9px; }
+.subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+.local-badge { flex: 0 0 auto; margin-top: 8px; padding: 7px 11px; border: 1px solid #d5e9dd; border-radius: 999px; background: #f5fbf7; color: #287449; font-size: 11px; font-weight: 650; }
+.summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
+.summary-card, .panel { border: 1px solid var(--line); border-radius: 11px; background: var(--surface); box-shadow: 0 2px 6px #17203308; }
+.summary-card { min-height: 98px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+.summary-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; color: #2b61ce; background: #edf3ff; }
+.summary-icon.green { color: #198252; background: #eaf8f0; }
+.summary-icon.amber { color: #a9680b; background: #fff5e6; }
+.summary-icon svg { width: 19px; height: 19px; }
+.summary-value { font-size: 21px; line-height: 1.1; font-weight: 700; letter-spacing: -.4px; }
+.summary-label { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.work-grid { display: grid; grid-template-columns: minmax(260px, .82fr) minmax(360px, 1.18fr); gap: 18px; align-items: start; }
+.panel { overflow: hidden; }
+.panel-head { min-height: 66px; padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.panel-title { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
+.panel-subtitle { margin-top: 2px; color: var(--muted); font-size: 12px; }
+.count { padding: 3px 8px; border-radius: 999px; background: #f0f3f8; color: #5b687d; font-size: 11px; font-weight: 650; }
+.search-wrap { padding: 14px 16px 10px; }
+.search { width: 100%; height: 37px; border: 1px solid #dce3ed; border-radius: 7px; padding: 0 11px 0 35px; outline: none; background: #fbfcfe; color: var(--ink); }
+.search:focus, .variable-input:focus { border-color: #6a95f5; box-shadow: 0 0 0 3px #2463eb17; }
+.search-box { position: relative; }
+.search-box svg { position: absolute; left: 11px; top: 10px; width: 16px; height: 16px; color: #8592a7; }
+.script-list { max-height: 510px; overflow: auto; padding: 2px 9px 10px; }
+.script-item { width: 100%; padding: 11px 10px; border: 1px solid transparent; border-radius: 8px; display: flex; gap: 11px; align-items: flex-start; text-align: left; background: transparent; color: var(--ink); }
+.script-item:hover { background: #f7f9fc; }
+.script-item.selected { border-color: #cddcff; background: #f2f6ff; }
+.file-icon { width: 31px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #dce5f2; border-radius: 6px; background: #fff; color: #4972c5; }
+.file-icon svg { width: 16px; height: 16px; }
+.script-name { display: block; font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
+.script-path { display: block; margin-top: 2px; color: #7a879a; font-size: 10px; overflow-wrap: anywhere; }
+.empty { padding: 25px 14px; text-align: center; color: var(--muted); font-size: 12px; }
+.config-body { padding: 19px 20px 20px; }
+.selected-file { display: flex; gap: 12px; align-items: center; padding: 13px; border: 1px solid #e6ebf2; border-radius: 8px; background: #fbfcfe; }
+.selected-name { font-weight: 700; font-size: 13px; overflow-wrap: anywhere; }
+.selected-path { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.section-label { margin: 20px 0 9px; font-size: 11px; color: #59677b; text-transform: uppercase; letter-spacing: .8px; font-weight: 700; }
+.case-list { max-height: 180px; overflow: auto; padding: 1px 2px; }
+.check-row { min-height: 32px; display: flex; align-items: center; gap: 9px; color: #344158; font-size: 12px; }
+.check-row input { accent-color: var(--blue); }
+.select-actions { display: flex; gap: 12px; margin: 5px 0 4px 23px; }
+.text-button { padding: 0; border: 0; background: none; color: #2b61ce; font-size: 11px; font-weight: 600; }
+.variables { display: grid; gap: 9px; }
+.variable-row { display: grid; grid-template-columns: minmax(90px, .68fr) minmax(130px, 1.32fr); gap: 10px; align-items: center; }
+.variable-name { color: #42516a; font-size: 11px; overflow-wrap: anywhere; }
+.variable-input { min-width: 0; height: 34px; padding: 0 10px; border: 1px solid #dce3ed; border-radius: 6px; outline: none; background: #fff; color: var(--ink); font-size: 12px; }
+.hint { margin: 9px 0 0; color: #8490a2; font-size: 11px; }
+.divider { height: 1px; margin: 19px 0 15px; background: var(--line); }
+.action-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.run-button { min-height: 39px; padding: 0 16px; border: 0; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--blue); color: #fff; font-weight: 650; font-size: 12px; box-shadow: 0 3px 7px #2463eb30; }
+.run-button:hover:not(:disabled) { background: var(--blue-dark); }
+.run-button:disabled { opacity: .55; cursor: not-allowed; }
+.run-button svg { width: 15px; height: 15px; }
+.action-note { color: #8994a5; font-size: 10px; }
+.results { margin-top: 18px; }
+.results-body { padding: 20px; }
+.result-placeholder { padding: 27px 12px; text-align: center; color: #7a879a; }
+.placeholder-icon { width: 46px; height: 46px; margin: 0 auto 10px; display: grid; place-items: center; border-radius: 12px; color: #6684bf; background: #f0f4fb; }
+.placeholder-icon svg { width: 22px; height: 22px; }
+.result-banner { padding: 14px 16px; border: 1px solid #dce4ef; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #f9fbfe; }
+.result-banner.pass { border-color: #cce8d7; background: #f4fbf7; }
+.result-banner.fail, .result-banner.error { border-color: #f0d4d7; background: #fff8f8; }
+.result-status { font-weight: 750; letter-spacing: .3px; }
+.pass .result-status { color: var(--green); }
+.fail .result-status, .error .result-status { color: var(--red); }
+.result-meta { color: var(--muted); font-size: 11px; }
+.case-results { display: grid; gap: 8px; margin-top: 12px; }
+.case-result { padding: 12px 13px; border: 1px solid var(--line); border-radius: 7px; }
+.case-summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; font-weight: 650; }
+.status-pill { padding: 2px 8px; border-radius: 999px; background: #edf1f6; color: #536176; font-size: 10px; font-weight: 700; }
+.status-pill.pass { background: #e8f7ee; color: #198252; }
+.status-pill.fail, .status-pill.error { background: #fff0f0; color: #bb3948; }
+.steps { display: grid; gap: 6px; margin-top: 9px; }
+.step { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding-top: 7px; border-top: 1px solid #eff2f6; font-size: 11px; }
+.step-line { color: #8994a5; }
+.step-keyword { min-width: 0; overflow-wrap: anywhere; color: #344158; }
+.step-output { grid-column: 2 / -1; color: #748197; overflow-wrap: anywhere; white-space: pre-wrap; }
+.alert { display: none; margin: 12px 0 0; padding: 10px 12px; border: 1px solid #f0d4d7; border-radius: 7px; background: #fff8f8; color: #a93643; font-size: 12px; }
+.alert.visible { display: block; }
+.footer { padding: 18px 0 0; color: #8a95a6; font-size: 10px; text-align: center; }
+@media (max-width: 980px) {
+  .shell { grid-template-columns: 70px minmax(0, 1fr); }
+  .rail { align-items: center; padding: 20px 9px; }
+  .brand { padding: 0; }
+  .brand-name, .workspace-label, .nav-label, .rail-foot-text { display: none; }
+  .nav-item { width: 46px; height: 44px; padding: 0; justify-content: center; }
+  .nav-item svg { width: 19px; height: 19px; }
+  .rail-foot { width: 100%; text-align: center; }
+}
+@media (max-width: 720px) {
+  .topbar { height: 58px; }
+  .top-right .top-label { display: none; }
+  .content { padding-top: 25px; }
+  .heading { display: block; }
+  .local-badge { display: inline-block; margin-top: 13px; }
+  .summary-grid { gap: 8px; }
+  .summary-card { min-height: 80px; padding: 12px 10px; gap: 8px; }
+  .summary-icon { width: 32px; height: 32px; }
+  .summary-value { font-size: 17px; }
+  .summary-label { font-size: 10px; }
+  .work-grid { grid-template-columns: 1fr; }
+  .script-list { max-height: 300px; }
+}
+@media (max-width: 420px) {
+  .shell { grid-template-columns: 54px minmax(0, 1fr); }
+  .rail { padding-left: 4px; padding-right: 4px; }
+  .nav-item { width: 42px; }
+  .summary-grid { grid-template-columns: 1fr; }
+  .summary-card { min-height: 66px; }
+  .variable-row { grid-template-columns: 1fr; gap: 3px; }
+  .result-banner { align-items: flex-start; flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6.5 9.2 12 5 17.5M12 17.5h7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="brand-name">GFriend</span>
+    </div>
+    <div>
+      <div class="workspace-label">Workspace</div>
+      <button class="nav-item active" type="button" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 8h8M8 12h8M8 16h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span class="nav-label">Script execution</span>
+      </button>
+    </div>
+    <div class="rail-foot"><span class="local-dot"></span><span class="rail-foot-text">Private local session</span></div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="crumb">Workspace <span aria-hidden="true">/</span> <strong>Script execution</strong></div>
+      <div class="top-right"><span class="local-dot"></span><span class="top-label">Local runtime connected</span><span class="avatar" aria-label="Local user">GF</span></div>
+    </header>
+    <div class="content">
+      <section class="heading">
+        <div>
+          <div class="eyebrow">Automation operations</div>
+          <h1>Execution workspace</h1>
+          <p class="subtitle">Select a GFriend script, configure its run, and review results.</p>
+        </div>
+        <span class="local-badge"><span class="local-dot"></span>Runs stay on this machine</span>
+      </section>
+
+      <section class="summary-grid" aria-label="Workspace overview">
+        <article class="summary-card">
+          <div class="summary-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3.8h9l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V3.8Z" stroke="currentColor" stroke-width="1.7"/><path d="M14 4v5h5M8 13h8M8 17h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+          <div><div class="summary-value" id="script-count">—</div><div class="summary-label">Available scripts</div></div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-icon green"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2.1 2.1m7.8 7.8L18 18M18 6l-2.1 2.1M8.1 15.9 6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/></svg></div>
+          <div><div class="summary-value" id="runtime-state">Ready</div><div class="summary-label">Execution engine</div></div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-icon amber"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4.5 6v5.3c0 4.5 3.2 7.6 7.5 9.7 4.3-2.1 7.5-5.2 7.5-9.7V6L12 3Z" stroke="currentColor" stroke-width="1.7"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div class="summary-value">Local only</div><div class="summary-label">Execution boundary</div></div>
+        </article>
+      </section>
+
+      <section class="work-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <div><h2 class="panel-title">Script library</h2><div class="panel-subtitle">Choose from the configured script folder</div></div>
+            <span class="count" id="visible-count">0 files</span>
+          </div>
+          <div class="search-wrap">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input class="search" id="script-search" type="search" placeholder="Search scripts" aria-label="Search scripts">
+            </div>
+          </div>
+          <div class="script-list" id="script-list" aria-live="polite"><div class="empty">Loading scripts…</div></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div><h2 class="panel-title">Run configuration</h2><div class="panel-subtitle">Select cases and provide execution variables</div></div>
+            <span class="count" id="case-count">No script selected</span>
+          </div>
+          <div class="config-body">
+            <div class="selected-file">
+              <span class="file-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h8l4 4V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.7"/><path d="M14 4v4h4M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+              <div><div class="selected-name" id="selected-name">Select a script to get started</div><div class="selected-path" id="selected-path">Script details and test cases will appear here</div></div>
+            </div>
+            <div class="section-label">Test cases</div>
+            <div class="case-list" id="case-list"><div class="empty">Choose a script from the library.</div></div>
+            <div class="select-actions" id="select-actions" hidden>
+              <button class="text-button" type="button" id="select-all">Select all</button>
+              <button class="text-button" type="button" id="select-none">Clear selection</button>
+            </div>
+            <div class="section-label">Execution variables</div>
+            <div class="variables" id="variables"><div class="empty">No script variables to override.</div></div>
+            <p class="hint">Overrides apply to this run only. Existing script defaults are not displayed.</p>
+            <div class="divider"></div>
+            <div class="action-row">
+              <span class="action-note">Run only scripts and datasets you trust.</span>
+              <button class="run-button" id="run-button" type="button" disabled>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 10 6-10 6V6Z" fill="currentColor"/></svg>
+                Run script
+              </button>
+            </div>
+            <div class="alert" id="alert" role="alert"></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel results" aria-labelledby="results-title">
+        <div class="panel-head">
+          <div><h2 class="panel-title" id="results-title">Execution results</h2><div class="panel-subtitle">Live status and per-case outcomes</div></div>
+          <span class="count" id="run-id">No run yet</span>
+        </div>
+        <div class="results-body" id="results-body">
+          <div class="result-placeholder">
+            <div class="placeholder-icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19V5m0 14h16M8 15v-4m4 4V7m4 8v-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <strong>No execution results yet</strong><div>Select a script and start a run to see its results here.</div>
+          </div>
+        </div>
+      </section>
+      <footer class="footer">GFriend Python Runtime · Local execution workspace</footer>
+    </div>
+  </main>
+</div>
+<script>
+const state = { scripts: [], selected: null, runTimer: null, running: false };
+const byId = (id) => document.getElementById(id);
+
+async function request(path, options) {
+  const response = await fetch(path, options);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+  return data;
+}
+
+function showAlert(message) {
+  const alert = byId("alert");
+  alert.textContent = message;
+  alert.classList.add("visible");
+}
+
+function clearAlert() {
+  byId("alert").classList.remove("visible");
+  byId("alert").textContent = "";
+}
+
+function renderScripts() {
+  const query = byId("script-search").value.trim().toLocaleLowerCase();
+  const scripts = state.scripts.filter((script) =>
+    `${script.name} ${script.path}`.toLocaleLowerCase().includes(query)
+  );
+  byId("visible-count").textContent = `${scripts.length} ${scripts.length === 1 ? "file" : "files"}`;
+  const list = byId("script-list");
+  list.replaceChildren();
+  if (!scripts.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = query ? "No scripts match this search." : "No scripts found in the configured folder.";
+    list.append(empty);
+    return;
+  }
+  for (const script of scripts) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `script-item${state.selected?.id === script.id ? " selected" : ""}`;
+    button.setAttribute("aria-pressed", String(state.selected?.id === script.id));
+    const icon = document.createElement("span");
+    icon.className = "file-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = "GF";
+    const details = document.createElement("span");
+    const name = document.createElement("span");
+    name.className = "script-name";
+    name.textContent = script.name;
+    const path = document.createElement("span");
+    path.className = "script-path";
+    path.textContent = script.path;
+    details.append(name, path);
+    button.append(icon, details);
+    button.addEventListener("click", () => selectScript(script));
+    list.append(button);
+  }
+}
+
+function renderCases(cases) {
+  const list = byId("case-list");
+  list.replaceChildren();
+  byId("select-actions").hidden = !cases.length;
+  byId("case-count").textContent = `${cases.length} ${cases.length === 1 ? "case" : "cases"}`;
+  if (!cases.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "This script has no test cases.";
+    list.append(empty);
+    return;
+  }
+  for (const name of cases) {
+    const label = document.createElement("label");
+    label.className = "check-row";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = true;
+    input.value = name;
+    input.className = "case-checkbox";
+    input.addEventListener("change", updateRunButton);
+    const text = document.createElement("span");
+    text.textContent = name;
+    label.append(input, text);
+    list.append(label);
+  }
+}
+
+function renderVariables(variables) {
+  const container = byId("variables");
+  container.replaceChildren();
+  if (!variables.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "No script variables to override.";
+    container.append(empty);
+    return;
+  }
+  for (const name of variables) {
+    const row = document.createElement("label");
+    row.className = "variable-row";
+    const label = document.createElement("span");
+    label.className = "variable-name";
+    label.textContent = `\${${name}}`;
+    const input = document.createElement("input");
+    input.className = "variable-input";
+    input.dataset.variable = name;
+    input.type = "text";
+    input.autocomplete = "off";
+    input.placeholder = "Use script default";
+    row.append(label, input);
+    container.append(row);
+  }
+}
+
+async function selectScript(script) {
+  clearAlert();
+  state.selected = script;
+  state.details = null;
+  byId("selected-name").textContent = script.name;
+  byId("selected-path").textContent = script.path;
+  byId("case-list").innerHTML = '<div class="empty">Loading test cases…</div>';
+  byId("variables").innerHTML = '<div class="empty">Loading variables…</div>';
+  byId("run-button").disabled = true;
+  renderScripts();
+  try {
+    const details = await request(`/api/scripts/${encodeURIComponent(script.id)}`);
+    if (state.selected?.id !== script.id) return;
+    state.details = details;
+    renderCases(details.cases);
+    renderVariables(details.variables);
+    updateRunButton();
+  } catch (error) {
+    showAlert(error.message);
+    byId("case-list").textContent = "Script could not be parsed.";
+  }
+}
+
+function updateRunButton() {
+  const checked = document.querySelectorAll(".case-checkbox:checked").length;
+  byId("run-button").disabled = !state.details || state.running || checked === 0;
+}
+
+function setAllCases(checked) {
+  document.querySelectorAll(".case-checkbox").forEach((input) => { input.checked = checked; });
+  updateRunButton();
+}
+
+function renderRunning(job) {
+  const body = byId("results-body");
+  body.replaceChildren();
+  const banner = document.createElement("div");
+  banner.className = "result-banner";
+  const status = document.createElement("span");
+  status.className = "result-status";
+  status.textContent = "RUNNING";
+  const meta = document.createElement("span");
+  meta.className = "result-meta";
+  meta.textContent = `Executing ${job.script}`;
+  banner.append(status, meta);
+  body.append(banner);
+}
+
+function renderResult(job) {
+  const body = byId("results-body");
+  body.replaceChildren();
+  if (job.error) {
+    const alert = document.createElement("div");
+    alert.className = "alert visible";
+    alert.textContent = job.error;
+    body.append(alert);
+    return;
+  }
+  const result = job.result;
+  if (!result) return;
+  const banner = document.createElement("div");
+  banner.className = `result-banner ${result.status.toLocaleLowerCase()}`;
+  const status = document.createElement("span");
+  status.className = "result-status";
+  status.textContent = result.status;
+  const meta = document.createElement("span");
+  meta.className = "result-meta";
+  meta.textContent = `${result.test_cases.length} cases · ${Number(result.duration_seconds).toFixed(2)}s`;
+  banner.append(status, meta);
+  body.append(banner);
+
+  const cases = document.createElement("div");
+  cases.className = "case-results";
+  for (const testCase of result.test_cases) {
+    const card = document.createElement("article");
+    card.className = "case-result";
+    const summary = document.createElement("div");
+    summary.className = "case-summary";
+    const name = document.createElement("span");
+    name.textContent = testCase.name;
+    const pill = document.createElement("span");
+    pill.className = `status-pill ${testCase.status.toLocaleLowerCase()}`;
+    pill.textContent = testCase.status;
+    summary.append(name, pill);
+    card.append(summary);
+    const steps = document.createElement("div");
+    steps.className = "steps";
+    for (const item of testCase.steps) {
+      const step = document.createElement("div");
+      step.className = "step";
+      const line = document.createElement("span");
+      line.className = "step-line";
+      line.textContent = item.line ? `L${item.line}` : "—";
+      const keyword = document.createElement("span");
+      keyword.className = "step-keyword";
+      keyword.textContent = item.keyword;
+      const stepStatus = document.createElement("span");
+      stepStatus.className = `status-pill ${item.status.toLocaleLowerCase()}`;
+      stepStatus.textContent = item.status;
+      step.append(line, keyword, stepStatus);
+      if (item.output) {
+        const output = document.createElement("span");
+        output.className = "step-output";
+        output.textContent = item.output;
+        step.append(output);
+      }
+      steps.append(step);
+    }
+    card.append(steps);
+    cases.append(card);
+  }
+  body.append(cases);
+}
+
+async function pollRun(jobId) {
+  try {
+    const job = await request(`/api/runs/${jobId}`);
+    if (job.status === "RUNNING") {
+      renderRunning(job);
+      state.runTimer = window.setTimeout(() => pollRun(jobId), 900);
+      return;
+    }
+    state.running = false;
+    byId("runtime-state").textContent = "Ready";
+    byId("run-id").textContent = `Run ${job.id.slice(0, 8)}`;
+    byId("run-button").innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 10 6-10 6V6Z" fill="currentColor"/></svg> Run script';
+    renderResult(job);
+    updateRunButton();
+  } catch (error) {
+    state.running = false;
+    byId("runtime-state").textContent = "Ready";
+    showAlert(error.message);
+    updateRunButton();
+  }
+}
+
+async function runScript() {
+  if (!state.details || state.running) return;
+  clearAlert();
+  const testCases = Array.from(document.querySelectorAll(".case-checkbox:checked"), (input) => input.value);
+  const variables = {};
+  document.querySelectorAll(".variable-input").forEach((input) => {
+    if (input.value !== "") variables[input.dataset.variable] = input.value;
+  });
+  state.running = true;
+  updateRunButton();
+  byId("runtime-state").textContent = "Running";
+  byId("run-button").textContent = "Starting…";
+  try {
+    const job = await request("/api/runs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ script_id: state.details.id, test_cases: testCases, variables }),
+    });
+    byId("run-id").textContent = `Run ${job.id.slice(0, 8)}`;
+    renderRunning({ script: state.details.path });
+    pollRun(job.id);
+  } catch (error) {
+    state.running = false;
+    byId("runtime-state").textContent = "Ready";
+    byId("run-button").innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 10 6-10 6V6Z" fill="currentColor"/></svg> Run script';
+    showAlert(error.message);
+    updateRunButton();
+  }
+}
+
+async function init() {
+  byId("script-search").addEventListener("input", renderScripts);
+  byId("select-all").addEventListener("click", () => setAllCases(true));
+  byId("select-none").addEventListener("click", () => setAllCases(false));
+  byId("run-button").addEventListener("click", runScript);
+  try {
+    const data = await request("/api/scripts");
+    state.scripts = data.scripts;
+    byId("script-count").textContent = data.scripts.length;
+    renderScripts();
+    if (data.scripts.length) await selectScript(data.scripts[0]);
+  } catch (error) {
+    byId("script-list").textContent = "Unable to load scripts.";
+    showAlert(error.message);
+  }
+}
+init();
+</script>
+</body>
+</html>
