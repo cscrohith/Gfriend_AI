@@ -19,6 +19,7 @@ from gfriend_python import (
 from gfriend_python.parser import parse_file
 from gfriend_python.run_spec import main as run_spec_main, run_spec
 from gfriend_python.report import render_legacy_xml_report, write_legacy_html_report
+from gfriend_python.summary_report import render_summary_report, write_summary_report
 
 
 class RunSpecTests(unittest.TestCase):
@@ -117,6 +118,52 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_summary_report_aggregates_nested_output_xmls_and_links_reports(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first = root / "suite-a"
+            second = root / "nested" / "suite-b"
+            first.mkdir()
+            second.mkdir(parents=True)
+            (first / "output.xml").write_text(
+                '<TestSuite Name="Suite &lt;A&gt;"><StartTime>2025-01-01T10:00:00</StartTime>'
+                "<EndTime>2025-01-01T10:00:03</EndTime>"
+                "<TestCase Name=\"one\"><Result>PASS</Result></TestCase>"
+                "<TestCase Name=\"two\"><Result>FAIL</Result></TestCase></TestSuite>",
+                encoding="utf-8",
+            )
+            (first / "report.html").write_text("<html>suite report</html>", encoding="utf-8")
+            (second / "output.xml").write_text(
+                '<TestSuite Name="Suite B"><DurationSeconds>1.25</DurationSeconds>'
+                "<TestCase Name=\"three\"><Result>ERROR</Result></TestCase>"
+                "</TestSuite>",
+                encoding="utf-8",
+            )
+
+            html = render_summary_report(root)
+            output_path = write_summary_report(root)
+
+            self.assertIn("<strong>1</strong> PASS", html)
+            self.assertIn("<strong>1</strong> FAIL", html)
+            self.assertIn("<strong>1</strong> ERROR", html)
+            self.assertIn("Suite &lt;A&gt;", html)
+            self.assertIn("suite-a/report.html", html)
+            self.assertIn("nested/suite-b/output.xml", html)
+            self.assertIn("0:00:03", html)
+            self.assertIn("1.250s", html)
+            self.assertEqual(output_path, root / "SummaryReport.html")
+            nested_summary = root / "reports" / "SummaryReport.html"
+            external_html = render_summary_report(root, nested_summary)
+            self.assertIn("../suite-a/report.html", external_html)
+
+    def test_summary_report_reports_invalid_xml_and_handles_empty_folder(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.assertIn("No output.xml reports found", render_summary_report(root))
+            (root / "output.xml").write_text("<bad", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Could not read report"):
+                render_summary_report(root)
+
     def test_legacy_xml_report_renders_case_tree_and_merges_remote_results(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
