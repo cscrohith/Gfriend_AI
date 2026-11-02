@@ -104,6 +104,8 @@ adapter, executing a remote block reports an error.
   XML library
 - `using Info` provides portable `Start Time Check`, `Mark Start`, `Mark End`,
   and `Draw Time Graph` timing; charts are written as SVG files
+- `using LogInfo` records checkpoint start/end times with loop results and
+  creates SVG elapsed-time and result-distribution charts
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value

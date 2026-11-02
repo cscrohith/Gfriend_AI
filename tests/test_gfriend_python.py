@@ -162,6 +162,32 @@ class ParserTests(unittest.TestCase):
             ],
         )
 
+    def test_log_info_library_records_results_and_writes_two_charts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = Executor(output_folder=directory).run(
+                parse_script(
+                    'using LogInfo\n'
+                    'Case\n{\n'
+                    '  LogInfo.Start Time Check(Login)\n'
+                    '  LogInfo.Start Time(Login,Authenticate)\n'
+                    '  Sleep(0.001)\n'
+                    '  LogInfo.End Time(Login,Authenticate)\n'
+                    '  LogInfo.Draw Charts(Login)\n'
+                    '}\n'
+                )
+            )
+
+            self.assertEqual(result.status, Status.PASS)
+            csv_path = Path(directory) / "Login.csv"
+            with csv_path.open(encoding="utf-8-sig", newline="") as stream:
+                rows = list(csv.reader(stream))
+            self.assertEqual(rows[0], ["Point", "Time (ms)"])
+            self.assertEqual(rows[1][0], "Authenticate")
+            self.assertIn(rows[1][4], {"PASS", "FAIL", "ERROR"})
+            self.assertTrue((Path(directory) / "Login_ColumnChart.svg").exists())
+            pie = (Path(directory) / "Login_PieChart.svg").read_text(encoding="utf-8")
+            self.assertIn("PASS", pie)
+
     def test_xml_library_loads_queries_mutates_and_saves_document(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

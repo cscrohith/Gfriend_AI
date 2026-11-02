@@ -31,6 +31,7 @@ from .models import (
 from .parser import ParseError, _parse_statement, parse_file
 from .json_library import JsonLibrary
 from .info_library import InfoLibrary
+from .log_info_library import LogInfoLibrary
 from .regex_library import RegexLibrary
 from .xml_library import XmlLibrary
 
@@ -184,6 +185,11 @@ class Executor:
                 self.register_library(
                     "Info",
                     InfoLibrary(self.variables, self.output_folder),
+                )
+            elif library.casefold() == "loginfo":
+                self.register_library(
+                    "LogInfo",
+                    LogInfoLibrary(self.variables, self.output_folder),
                 )
 
     def _set_variables(self, variables: dict[str, str]) -> None:
