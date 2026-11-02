@@ -50,7 +50,8 @@ print(result.to_dict())
 
 ## Implemented syntax and built-ins
 
-- `using Library` and `using Library as Alias`
+- `using Library` and `using Library as Alias`; `using file.gfvar` loads
+  script-relative static variables
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value

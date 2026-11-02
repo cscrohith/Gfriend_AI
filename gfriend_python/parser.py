@@ -404,9 +404,15 @@ def parse_script(
         if using_match:
             library, alias = using_match.groups()
             library_path = Path(library)
-            if library_path.suffix.casefold() == ".gflib" and not library_path.is_absolute() and base_dir is not None:
+            suffix = library_path.suffix.casefold()
+            if suffix in {".gflib", ".gfvar"} and not library_path.is_absolute() and base_dir is not None:
                 library = str((Path(base_dir) / library_path).resolve())
-            library_name = alias or (library_path.stem if library_path.suffix.casefold() == ".gflib" else library)
+                library_path = Path(library)
+            if suffix == ".gfvar":
+                suite.variables.update(parse_variable_file(library_path))
+                index += 1
+                continue
+            library_name = alias or (library_path.stem if suffix == ".gflib" else library)
             suite.libraries[library_name] = library
             index += 1
             continue

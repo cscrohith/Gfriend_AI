@@ -424,6 +424,40 @@ class ExecutorTests(unittest.TestCase):
             path.write_text("// ignored\n${User}=alice=admin\ninvalid\n", encoding="utf-8")
             self.assertEqual(parse_variable_file(path), {"${User}": "alice=admin"})
 
+    def test_using_gfvar_imports_relative_variables_before_overrides(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            variables = root / "common.gfvar"
+            variables.write_text(
+                '${User}=library\n${Role}=Admin\n',
+                encoding="utf-8",
+            )
+            script = root / "suite.txt"
+            script.write_text(
+                'using common.gfvar\n'
+                '${User}=script\n'
+                'Case\n{\n'
+                '  Pass(${User}-${Role})\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            suite = parse_file(script, {"User": "execution"})
+            result = Executor().run(suite)
+            self.assertEqual(suite.libraries, {})
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(result.test_cases[0].steps[0].output, "execution-Admin")
+
+    def test_using_gfvar_reports_missing_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            script = Path(directory) / "suite.txt"
+            script.write_text(
+                'using missing.gfvar\n'
+                'Case\n{\n  Pass(ok)\n}\n',
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ParseError, "Cannot read variable file"):
+                parse_file(script)
+
     def test_selected_rows_filters_csv_data(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
