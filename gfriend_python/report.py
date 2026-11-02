@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
+from datetime import timedelta
 from html import escape
 from pathlib import Path
 
@@ -51,6 +52,43 @@ def write_xml_report(result: ExecutionResult, path: str | Path) -> Path:
     report_path = Path(path)
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(render_xml_report(result), encoding="utf-8")
+    return report_path
+
+
+def render_legacy_xml_execution_report(result: ExecutionResult) -> str:
+    """Render a Python execution result in the legacy GFriend output.xml shape."""
+    root = ET.Element("TestSuite", {"Name": _xml_safe(result.suite_name)})
+    started_at = result.started_at
+    ended_at = started_at + timedelta(seconds=result.duration_seconds) if started_at else None
+    ET.SubElement(root, "StartTime").text = started_at.isoformat() if started_at else ""
+    ET.SubElement(root, "EndTime").text = ended_at.isoformat() if ended_at else ""
+    for case in result.test_cases:
+        case_element = ET.SubElement(root, "TestCase", {"Name": _xml_safe(case.name)})
+        ET.SubElement(case_element, "Result").text = case.status.value
+        for step in case.steps:
+            statement = ET.SubElement(
+                case_element,
+                "Statement",
+                {"StatementName": _xml_safe(step.keyword)},
+            )
+            ET.SubElement(statement, "StartTime").text = ""
+            ET.SubElement(statement, "Result").text = step.status.value
+            ET.SubElement(statement, "Output").text = _xml_safe(step.output)
+            ET.SubElement(statement, "EndTime").text = ""
+    ET.indent(root, space="  ")
+    return ET.tostring(root, encoding="unicode", xml_declaration=True)
+
+
+def write_legacy_xml_execution_report(
+    result: ExecutionResult,
+    path: str | Path,
+) -> Path:
+    report_path = Path(path)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(
+        render_legacy_xml_execution_report(result),
+        encoding="utf-8",
+    )
     return report_path
 
 

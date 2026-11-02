@@ -18,7 +18,11 @@ from gfriend_python import (
 )
 from gfriend_python.parser import parse_file
 from gfriend_python.run_spec import main as run_spec_main, run_spec
-from gfriend_python.report import render_legacy_xml_report, write_legacy_html_report
+from gfriend_python.report import (
+    render_legacy_xml_execution_report,
+    render_legacy_xml_report,
+    write_legacy_html_report,
+)
 from gfriend_python.summary_report import render_summary_report, write_summary_report
 
 
@@ -118,6 +122,34 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_execution_can_export_legacy_xml_consumed_by_summary_and_html_reports(self) -> None:
+        result = Executor().run(
+            parse_script(
+                "Case & Suite\n"
+                "{\n"
+                "  Pass(ok & safe)\n"
+                "  Fail(expected failure)\n"
+                "}\n"
+            )
+        )
+
+        legacy_xml = render_legacy_xml_execution_report(result)
+        root = ET.fromstring(legacy_xml)
+        self.assertEqual(root.tag, "TestSuite")
+        self.assertEqual(root.get("Name"), result.suite_name)
+        self.assertEqual(root.find("TestCase").get("Name"), "Case & Suite")
+        self.assertEqual(root.findtext("TestCase/Result"), "FAIL")
+        self.assertEqual(root.findtext("TestCase/Statement[1]/Output"), "ok & safe")
+        self.assertIn("StatementName=\"BuiltIn.Pass\"", legacy_xml)
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "output.xml"
+            path.write_text(legacy_xml, encoding="utf-8")
+            html = render_legacy_xml_report(path)
+            self.assertIn("<strong>1</strong> FAIL", html)
+            summary = render_summary_report(directory)
+            self.assertIn("<strong>1</strong> FAIL", summary)
+
     def test_summary_report_aggregates_nested_output_xmls_and_links_reports(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1127,6 +1159,33 @@ class ExecutorTests(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(json.loads(completed.stdout)["status"], "PASS")
             self.assertEqual(ET.parse(xml_report).getroot().findtext("Result"), "PASS")
+
+    def test_cli_writes_legacy_xml_report_without_suppressing_json_stdout(self) -> None:
+        import json
+        import subprocess
+        import sys
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "case.txt"
+            legacy_xml = root / "nested" / "output.xml"
+            script.write_text("CLI\n{\n  Pass(ok)\n}\n", encoding="utf-8")
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "gfriend_python",
+                    str(script),
+                    "--legacy-xml-report",
+                    str(legacy_xml),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(json.loads(completed.stdout)["status"], "PASS")
+            self.assertEqual(ET.parse(legacy_xml).getroot().findtext("TestCase/Result"), "PASS")
 
     def test_ignore_error_marks_statement_pass(self) -> None:
         result = Executor().run(parse_script("Case\n{\n  @Missing.Keyword()\n}\n"))

@@ -27,6 +27,7 @@ python -m gfriend_python path\to\script.txt --xml-report output\report.xml
 python -m gfriend_python.run_spec path\to\run-spec.xml --var UserName=alice
 python -m gfriend_python.legacy_report path\to\legacy-output.xml
 python -m gfriend_python.summary_report path\to\report-folder
+python -m gfriend_python path\to\script.txt --legacy-xml-report output\output.xml
 ```
 
 The command exits with status `0` when selected cases pass, `1` when execution
@@ -122,6 +123,10 @@ adapter, executing a remote block reports an error.
   block output; the installed command also accepts `--output path.html`
 - `gfriend-summary-report folder` aggregates suite pass/fail/error counts from
   nested `output.xml` files and links to sibling HTML reports where present
+- The runner's `--legacy-xml-report output.xml` option writes its test results
+  using the legacy GFriend report schema for consumption by existing report
+  tooling; per-step timestamps and hierarchical control-block timing are absent
+  from the Python result model and therefore remain empty/not represented
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value

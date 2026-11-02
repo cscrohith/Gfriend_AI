@@ -9,7 +9,11 @@ from pathlib import Path
 from .executor import Executor
 from .models import KeywordResult, Status
 from .parser import ParseError, parse_file, parse_variable_file
-from .report import write_html_report, write_xml_report
+from .report import (
+    write_html_report,
+    write_legacy_xml_execution_report,
+    write_xml_report,
+)
 
 
 def _variable(value: str) -> tuple[str, str]:
@@ -60,6 +64,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--report", type=Path, help="Write the JSON execution report to this path")
     parser.add_argument("--html-report", type=Path, help="Write a standalone HTML execution report")
     parser.add_argument("--xml-report", type=Path, help="Write an XML execution report")
+    parser.add_argument(
+        "--legacy-xml-report",
+        type=Path,
+        help="Write XML using the legacy GFriend output.xml structure",
+    )
     parser.add_argument("-o", "--output-folder", type=Path, help="Directory for generated files")
     args = parser.parse_args(argv)
 
@@ -90,6 +99,8 @@ def main(argv: list[str] | None = None) -> int:
             write_html_report(result, args.html_report)
         if args.xml_report:
             write_xml_report(result, args.xml_report)
+        if args.legacy_xml_report:
+            write_legacy_xml_execution_report(result, args.legacy_xml_report)
     except OSError as error:
         print(f"gfriend-python: cannot write report: {error}", file=sys.stderr)
         return 2
