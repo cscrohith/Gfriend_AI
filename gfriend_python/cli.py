@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .executor import Executor
 from .parser import ParseError, parse_file, parse_variable_file
+from .report import write_html_report
 
 
 def _variable(value: str) -> tuple[str, str]:
@@ -38,6 +39,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-v", "--variable-file", action="append", type=Path, default=[], help="Load a .gfvar file")
     parser.add_argument("--plugin", action="append", default=[], metavar="MODULE:OBJECT", help="Load a Python keyword library")
     parser.add_argument("--report", type=Path, help="Write the JSON execution report to this path")
+    parser.add_argument("--html-report", type=Path, help="Write a standalone HTML execution report")
     parser.add_argument("-o", "--output-folder", type=Path, help="Directory for generated files")
     args = parser.parse_args(argv)
 
@@ -57,14 +59,16 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     report = json.dumps(result.to_dict(), indent=2)
-    if args.report:
-        try:
+    try:
+        if args.report:
             args.report.parent.mkdir(parents=True, exist_ok=True)
             args.report.write_text(report + "\n", encoding="utf-8")
-        except OSError as error:
-            print(f"gfriend-python: cannot write report '{args.report}': {error}", file=sys.stderr)
-            return 2
-    else:
+        if args.html_report:
+            write_html_report(result, args.html_report)
+    except OSError as error:
+        print(f"gfriend-python: cannot write report: {error}", file=sys.stderr)
+        return 2
+    if not args.report:
         print(report)
     return 0 if result.status.value == "PASS" else 1
 

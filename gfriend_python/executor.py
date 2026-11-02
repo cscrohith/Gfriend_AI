@@ -5,7 +5,7 @@ import time
 import csv
 import random
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -114,6 +114,8 @@ class Executor:
         self._libraries[name.casefold()] = library
 
     def run(self, suite: TestSuite, test_cases: set[str] | None = None) -> ExecutionResult:
+        started_at = datetime.now(timezone.utc)
+        started_counter = time.perf_counter()
         self._suite = suite
         self.variables = dict(suite.variables)
         self.variables.update(self._execution_variables)
@@ -142,7 +144,13 @@ class Executor:
                 break
 
         suite_status = self._aggregate(result.status for result in results)
-        return ExecutionResult(suite.name, suite_status, results)
+        return ExecutionResult(
+            suite.name,
+            suite_status,
+            results,
+            started_at,
+            time.perf_counter() - started_counter,
+        )
 
     def _register_script_libraries(self, suite: TestSuite) -> None:
         for alias, library in suite.libraries.items():

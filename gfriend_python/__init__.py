@@ -3,6 +3,7 @@
 from .executor import Executor
 from .models import ExecutionResult, KeywordResult, Status
 from .parser import ParseError, parse_script, parse_variable_file
+from .report import render_html_report, write_html_report
 
 __all__ = [
     "ExecutionResult",
@@ -12,4 +13,6 @@ __all__ = [
     "Status",
     "parse_script",
     "parse_variable_file",
+    "render_html_report",
+    "write_html_report",
 ]

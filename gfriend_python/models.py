@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import StrEnum
 from typing import TypeAlias
 
@@ -127,11 +128,15 @@ class ExecutionResult:
     suite_name: str
     status: Status
     test_cases: list[TestCaseResult]
+    started_at: datetime | None = None
+    duration_seconds: float = 0.0
 
     def to_dict(self) -> dict[str, object]:
         return {
             "suite": self.suite_name,
             "status": self.status.value,
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "duration_seconds": round(self.duration_seconds, 3),
             "test_cases": [
                 {
                     "name": test_case.name,

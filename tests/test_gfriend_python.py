@@ -2,7 +2,15 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gfriend_python import Executor, KeywordResult, ParseError, Status, parse_script, parse_variable_file
+from gfriend_python import (
+    Executor,
+    KeywordResult,
+    ParseError,
+    Status,
+    parse_script,
+    parse_variable_file,
+    render_html_report,
+)
 from gfriend_python.parser import parse_file
 
 
@@ -88,6 +96,22 @@ class ExecutorTests(unittest.TestCase):
         result = Executor().run(suite)
         self.assertEqual(result.status, Status.FAIL)
         self.assertEqual([step.status for step in result.test_cases[0].steps], [Status.FAIL, Status.PASS])
+        report_data = result.to_dict()
+        self.assertEqual(report_data["status"], "FAIL")
+        self.assertGreaterEqual(report_data["duration_seconds"], 0)
+        self.assertIsNotNone(report_data["started_at"])
+
+    def test_html_report_contains_results_and_escapes_user_content(self) -> None:
+        result = Executor().run(
+            parse_script("Unsafe <case>\n{\n  Fail(<script>alert(1)</script>)\n}\n")
+        )
+        report = render_html_report(result)
+        self.assertIn("Unsafe &lt;case&gt;", report)
+        self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", report)
+        self.assertNotIn("<script>alert(1)</script>", report)
+        self.assertIn("FAIL", report)
+        self.assertIn("Duration:", report)
+
 
     def test_registered_python_library_and_variable_precedence(self) -> None:
         suite = parse_script(
@@ -239,6 +263,33 @@ class ExecutorTests(unittest.TestCase):
         )
         self.assertEqual(result.status, Status.PASS)
         self.assertEqual(len(result.test_cases[0].steps[-1].output), 4)
+
+    def test_cli_writes_html_report_without_suppressing_json_stdout(self) -> None:
+        import json
+        import subprocess
+        import sys
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "case.txt"
+            html_report = root / "nested" / "report.html"
+            script.write_text("CLI\n{\n  Pass(ok)\n}\n", encoding="utf-8")
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "gfriend_python",
+                    str(script),
+                    "--html-report",
+                    str(html_report),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(json.loads(completed.stdout)["status"], "PASS")
+            self.assertIn("<title>GFriend report - case</title>", html_report.read_text(encoding="utf-8"))
 
     def test_ignore_error_marks_statement_pass(self) -> None:
         result = Executor().run(parse_script("Case\n{\n  @Missing.Keyword()\n}\n"))

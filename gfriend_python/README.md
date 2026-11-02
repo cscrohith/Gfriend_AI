@@ -5,14 +5,14 @@ GFriend runtime. It parses test cases, static and execution variables, `using`
 declarations, keyword statements, `Repeat`, `For`, and `While` blocks, and
 `If`/`Fail`/`Error` branches. It executes built-in keywords and registered
 Python keyword libraries, reads `.gfvar` files and Excel named tables for
-`ForEachRow`, and emits a JSON result report.
+`ForEachRow`, and emits JSON and standalone HTML execution reports.
 
 The .NET solution remains in the repository as the behavioral reference while
-the migration proceeds. Device drivers, remote execution, datasets, spreadsheets,
-resources, remote execution, datasets other than Excel named tables,
-advanced spreadsheet loops, reports, desktop UI, device drivers, and the
-remaining GFriend keyword libraries are not yet ported; scripts using those
-features require later migration phases.
+the migration proceeds. Device drivers, remote execution, spreadsheet write-back
+formats beyond the supported dataset-table operations, advanced spreadsheet
+loops, the legacy XML/session report format, desktop UI, and the remaining
+GFriend keyword libraries are not yet ported; scripts using those features
+require later migration phases.
 
 ## Run a script
 
@@ -21,6 +21,7 @@ python -m gfriend_python path\to\script.txt
 python -m gfriend_python path\to\script.txt --var UserName=alice --test-case "Login"
 python -m gfriend_python path\to\script.txt --variable-file path\to\common.gfvar
 python -m gfriend_python path\to\script.txt --report output\result.json --output-folder output
+python -m gfriend_python path\to\script.txt --html-report output\report.html
 ```
 
 The command exits with status `0` when selected cases pass, `1` when execution
