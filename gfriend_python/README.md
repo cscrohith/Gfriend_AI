@@ -98,6 +98,9 @@ adapter, executing a remote block reports an error.
   `Return With Error`; a custom library can use its own `using` declarations
 - File built-ins: `File Exist`, `Folder Exist`, `Create Folder`,
   `Read From File`, `Save To File`, `File Contains Text`, and file equality
+- `Write To Data Set Advanced(sheet, row, column, value[, dataset])` writes a
+  worksheet cell in a declared Excel dataset; specify the dataset alias when
+  the script declares multiple Excel datasets
 - `Get Time Stamp` and `Run Keyword`
 - Prefix a statement with `@` to ignore its result when aggregating the case
 

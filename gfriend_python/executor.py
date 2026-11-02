@@ -472,6 +472,16 @@ class Executor:
         if normalized == "writetodataset":
             self._require_arguments(keyword, arguments, 2)
             return self._write_to_dataset(arguments[0], arguments[1])
+        if normalized == "writetodatasetadvanced":
+            if len(arguments) not in {4, 5}:
+                raise ValueError(
+                    "Write To Data Set Advanced expects 4 arguments, or 5 with a dataset alias"
+                )
+            sheet_name, row_value, column_letter, value = arguments[:4]
+            dataset = arguments[4] if len(arguments) == 5 else None
+            return self._write_to_dataset_advanced(
+                sheet_name, row_value, column_letter, value, dataset
+            )
         if normalized == "fileexist":
             self._require_arguments(keyword, arguments, 1)
             return KeywordResult(Status.PASS if self._resolve_path(arguments[0]).is_file() else Status.FAIL)
@@ -727,6 +737,92 @@ class Executor:
                 workbook.close()
         except (OSError, ValueError, ImportError, KeyError) as error:
             return KeywordResult(Status.ERROR, f"Could not write dataset value: {error}")
+        return KeywordResult(Status.PASS)
+
+    def _write_to_dataset_advanced(
+        self,
+        sheet_name: str,
+        row_value: str,
+        column_letter: str,
+        value: str,
+        dataset: str | None,
+    ) -> KeywordResult:
+        if self._suite is None:
+            return KeywordResult(Status.ERROR, "No test suite is active")
+
+        datasets = [
+            (name, Path(path))
+            for name, path in self._suite.datasets.items()
+            if Path(path).suffix.casefold() in {".xlsx", ".xlsm"}
+        ]
+        if dataset is not None:
+            datasets = [
+                (name, path)
+                for name, path in datasets
+                if name.casefold() == dataset.casefold()
+            ]
+            if not datasets:
+                return KeywordResult(
+                    Status.ERROR,
+                    f"Excel dataset '{dataset}' is not declared",
+                )
+        elif len(datasets) != 1:
+            return KeywordResult(
+                Status.ERROR,
+                "Write To Data Set Advanced requires one declared Excel dataset "
+                "or an explicit dataset alias as the fifth argument.",
+            )
+
+        try:
+            row_number = int(row_value)
+        except ValueError:
+            return KeywordResult(
+                Status.ERROR,
+                f"Invalid row index: {row_value}. Must be a positive number (1-based).",
+            )
+        if row_number < 1:
+            return KeywordResult(
+                Status.ERROR,
+                f"Invalid row index: {row_value}. Must be a positive number (1-based).",
+            )
+        if not re.fullmatch(r"[A-Za-z]+", column_letter.strip()):
+            return KeywordResult(
+                Status.ERROR,
+                "Column letter must be an Excel column such as 'A', 'B', or 'AA'.",
+            )
+
+        dataset_name, path = datasets[0]
+        if not path.is_file():
+            return KeywordResult(Status.ERROR, f"Dataset file does not exist: {path}")
+        try:
+            from openpyxl import load_workbook
+            from openpyxl.utils.cell import column_index_from_string
+
+            column_number = column_index_from_string(column_letter.strip().upper())
+            workbook = load_workbook(path)
+            try:
+                if not sheet_name.strip() or sheet_name.strip().casefold() == "active":
+                    worksheet = workbook.active
+                else:
+                    worksheet = next(
+                        (
+                            workbook[name]
+                            for name in workbook.sheetnames
+                            if name.casefold() == sheet_name.strip().casefold()
+                        ),
+                        None,
+                    )
+                    if worksheet is None:
+                        return KeywordResult(
+                            Status.ERROR,
+                            f"Sheet '{sheet_name}' not found in dataset '{dataset_name}'.",
+                        )
+                worksheet.cell(row=row_number, column=column_number).value = value
+                workbook.save(path)
+            finally:
+                workbook.close()
+        except (OSError, ValueError, ImportError, KeyError) as error:
+            return KeywordResult(Status.ERROR, f"Could not write dataset cell: {error}")
         return KeywordResult(Status.PASS)
 
     def _dataset_row_context(

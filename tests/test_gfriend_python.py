@@ -1050,6 +1050,51 @@ class ExecutorTests(unittest.TestCase):
             finally:
                 saved.close()
 
+    def test_write_to_dataset_advanced_targets_declared_excel_dataset(self) -> None:
+        from openpyxl import Workbook, load_workbook
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first_path = root / "first.xlsx"
+            second_path = root / "second.xlsx"
+            for path in (first_path, second_path):
+                workbook = Workbook()
+                workbook.active.title = "Data"
+                workbook.save(path)
+                workbook.close()
+
+            suite_path = root / "suite.txt"
+            suite_path.write_text(
+                'dataset "first.xlsx" as First\n'
+                'dataset "second.xlsx" as Second\n'
+                'Case\n{\n'
+                '  Write To Data Set Advanced(Data,3,AA,updated,Second)\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(suite_path))
+            self.assertEqual(result.status, Status.PASS)
+
+            first = load_workbook(first_path, data_only=True)
+            second = load_workbook(second_path, data_only=True)
+            try:
+                self.assertIsNone(first["Data"]["AA3"].value)
+                self.assertEqual(second["Data"]["AA3"].value, "updated")
+            finally:
+                first.close()
+                second.close()
+
+    def test_write_to_dataset_advanced_requires_unambiguous_dataset(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'Case\n{\n'
+                '  Write To Data Set Advanced(Data,1,A,value)\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertIn("one declared Excel dataset", result.test_cases[0].steps[0].output)
+
     def test_write_to_dataset_updates_selected_csv_row(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
