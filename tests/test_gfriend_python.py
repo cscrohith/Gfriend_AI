@@ -1,6 +1,8 @@
 import csv
+import threading
 import tempfile
 import unittest
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -114,6 +116,90 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_rest_library_sends_json_and_stores_response(self) -> None:
+        received: dict[str, str] = {}
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_POST(self) -> None:
+                received["path"] = self.path
+                received["body"] = self.rfile.read(int(self.headers["Content-Length"])).decode()
+                received["header"] = self.headers["X-Test"]
+                received["authorization"] = self.headers["Authorization"]
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'{"result":"ok"}')
+
+            def log_message(self, format: str, *args: object) -> None:
+                pass
+
+        server = HTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            script = parse_script(
+                "using REST\n"
+                "Case\n"
+                "{\n"
+                f"  REST.InitializeRequest(http://127.0.0.1:{server.server_port}/echo, POST)\n"
+                "  REST.AddHeader(X-Test, yes)\n"
+                "  REST.AddBasicAuth(user, pass)\n"
+                '  REST.AddJsonData({"ok":true})\n'
+                "  REST.SendRequest(${body})\n"
+                "}\n"
+            )
+
+            executor = Executor()
+            result = executor.run(script)
+
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(executor.variables["${body}"], '{"result":"ok"}')
+            self.assertEqual(received["path"], "/echo")
+            self.assertEqual(received["body"], '{"ok":true}')
+            self.assertEqual(received["header"], "yes")
+            self.assertEqual(received["authorization"], "Basic dXNlcjpwYXNz")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_rest_library_stores_non_success_body_and_rejects_tls_bypass(self) -> None:
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self) -> None:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b"bad request")
+
+            def log_message(self, format: str, *args: object) -> None:
+                pass
+
+        server = HTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            result = Executor().run(
+                parse_script(
+                    "using Rest\n"
+                    "Case\n"
+                    "{\n"
+                    f"  Rest.InitializeRequest(http://127.0.0.1:{server.server_port}/, GET)\n"
+                    "  Rest.SendRequest(${response})\n"
+                    "}\n"
+                )
+            )
+
+            self.assertEqual(result.status, Status.FAIL)
+            self.assertEqual(result.test_cases[0].steps[-1].output, "bad request")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+        result = Executor().run(
+            parse_script("using Rest\nCase\n{\n  Rest.DisableSecurityWarning()\n}\n")
+        )
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertIn("not supported", result.test_cases[0].steps[0].output)
+
     def test_spreadsheet_library_creates_writes_reads_and_calculates(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

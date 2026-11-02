@@ -110,6 +110,9 @@ adapter, executing a remote block reports an error.
   appending rows and columns, writing/formatting cells, validating status
   columns, reading cells and ranges, and basic numeric/date-difference formulas
   for `.xlsx`, `.xlsm`, and CSV data where applicable
+- `using Rest` supports GET, POST, PUT, and DELETE requests with headers, Basic
+  authentication, JSON bodies, and response variables; TLS certificate
+  validation remains enabled and cannot be disabled
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value

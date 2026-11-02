@@ -33,6 +33,7 @@ from .json_library import JsonLibrary
 from .info_library import InfoLibrary
 from .log_info_library import LogInfoLibrary
 from .regex_library import RegexLibrary
+from .rest_library import RestLibrary
 from .spreadsheet_library import SpreadSheetLibrary
 from .xml_library import XmlLibrary
 
@@ -201,6 +202,8 @@ class Executor:
                         output_folder=self.output_folder,
                     ),
                 )
+            elif library.casefold() == "rest":
+                self.register_library("Rest", RestLibrary(self.variables))
 
     def _set_variables(self, variables: dict[str, str]) -> None:
         for key, value in variables.items():
@@ -340,6 +343,8 @@ class Executor:
                 "readcolumndata": {0},
                 "calculateformulafromcells": {5},
             }.get(keyword_name, set())
+        elif library_name == "rest" and keyword_name == "sendrequest":
+            variable_arguments = {0}
         resource_names = {
             alias.casefold(): path for alias, path in (self._suite.resources.items() if self._suite else [])
         }
