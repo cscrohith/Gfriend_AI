@@ -10,6 +10,7 @@ from .models import (
     ForSelectedRowBlock,
     ForBlock,
     RepeatBlock,
+    RemoteBlock,
     Runnable,
     Status,
     Statement,
@@ -23,7 +24,7 @@ _USING = re.compile(r"^using\s+([^\s]+)(?:\s+as\s+([^\s]+))?", re.IGNORECASE)
 _DATASET = re.compile(r"^dataset\s+(.+?)\s+as\s+([^\s]+)$", re.IGNORECASE)
 _RESOURCE = re.compile(r"^resource\s+(.+?)\s+as\s+([^\s]+)$", re.IGNORECASE)
 _BLOCK = re.compile(
-    r"^(@)?(repeat|for|while|for\s*each\s*row|for\s*selected\s*row|spread\s*sheet\s*for\s*each\s*row|foreachrow|forselectedrow|spreadsheetforeachrow|if)\s*:\s*(.*?)\s*(\{)?$",
+    r"^(@)?(repeat|for|while|for\s*each\s*row|for\s*selected\s*row|spread\s*sheet\s*for\s*each\s*row|remote\s*run|foreachrow|forselectedrow|spreadsheetforeachrow|remoterun|if)\s*:\s*(.*?)\s*(\{)?$",
     re.IGNORECASE,
 )
 _BRANCH = re.compile(r"^(@)?(fail|error)\s*:\s*(\{)?$", re.IGNORECASE)
@@ -342,6 +343,14 @@ def _parse_body(
                         line_number,
                         bool(ignore_result),
                     )
+                )
+                continue
+            if normalized_kind == "remoterun":
+                remote_id = value.strip()
+                if not remote_id:
+                    raise ParseError(f"Remote executor ID is missing on line {line_number}")
+                body.append(
+                    RemoteBlock(remote_id, nested_body, line_number, bool(ignore_result))
                 )
                 continue
 

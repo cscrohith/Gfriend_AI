@@ -59,6 +59,34 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(result.status, Status.PASS)
         self.assertEqual(len(result.test_cases[0].steps), 4)
 
+    def test_remote_run_requires_and_uses_configured_adapter(self) -> None:
+        suite = parse_script(
+            '${Target}=worker-1\n'
+            'Case\n{\n'
+            '  RemoteRun: ${Target}\n'
+            '  {\n'
+            '    Pass(remote step)\n'
+            '  }\n'
+            '}\n'
+        )
+
+        missing_adapter = Executor().run(suite)
+        self.assertEqual(missing_adapter.status, Status.ERROR)
+        self.assertIn("remote_runner", missing_adapter.test_cases[0].steps[0].output)
+
+        calls: list[tuple[str, list[object], dict[str, str]]] = []
+
+        def remote_runner(remote_id, body, variables):
+            calls.append((remote_id, body, variables))
+            return KeywordResult(Status.PASS, "remote completed")
+
+        result = Executor(remote_runner=remote_runner).run(suite)
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(result.test_cases[0].steps[0].output, "remote completed")
+        self.assertEqual(calls[0][0], "worker-1")
+        self.assertEqual(calls[0][2]["${Target}"], "worker-1")
+        self.assertEqual(calls[0][1][0].keyword, "Pass")
+
     def test_parses_keyword_invocation_as_implicit_conditional_block(self) -> None:
         class ConditionLibrary:
             def condition(self, value: str) -> bool:

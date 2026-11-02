@@ -19,6 +19,7 @@ from .models import (
     ForSelectedRowBlock,
     KeywordResult,
     RepeatBlock,
+    RemoteBlock,
     Runnable,
     Status,
     Statement,
@@ -97,12 +98,14 @@ class Executor:
         sleep: Callable[[float], None] = time.sleep,
         output_folder: str | Path | None = None,
         user_interaction: Callable[[str, bool], KeywordResult] | None = None,
+        remote_runner: Callable[[str, list[Runnable], dict[str, str]], KeywordResult] | None = None,
     ) -> None:
         self.variables: dict[str, str] = {}
         self._execution_variables: dict[str, str] = {}
         self._libraries: dict[str, object] = {}
         self._sleep = sleep
         self._user_interaction = user_interaction
+        self._remote_runner = remote_runner
         self._suite: TestSuite | None = None
         self.output_folder = Path(output_folder).resolve() if output_folder else Path.cwd()
         self._flow = ""
@@ -203,6 +206,10 @@ class Executor:
                 if item.always_pass:
                     block_status = Status.PASS
                 status = self._aggregate((status, block_status))
+            elif isinstance(item, RemoteBlock):
+                remote_result = self._run_remote(item)
+                results.append(remote_result)
+                status = self._aggregate((status, remote_result.status))
             else:
                 block_status = self._run_conditional(item, results)
                 if item.always_pass:
@@ -211,6 +218,30 @@ class Executor:
             if self._flow in {"case", "suite", "break", "continue", "custom-return"}:
                 break
         return status
+
+    def _run_remote(self, block: RemoteBlock) -> StepResult:
+        if self._remote_runner is None:
+            result = KeywordResult(
+                Status.ERROR,
+                "Remote execution requires a configured remote_runner adapter",
+            )
+        else:
+            try:
+                result = self._remote_runner(
+                    self._expand(block.remote_id),
+                    block.body,
+                    self.variables.copy(),
+                )
+                if not isinstance(result, KeywordResult):
+                    raise TypeError("remote_runner must return a KeywordResult")
+            except Exception as error:
+                result = KeywordResult(Status.ERROR, str(error))
+        return StepResult(
+            keyword=f"RemoteRun({block.remote_id})",
+            line_number=block.line_number,
+            status=Status.PASS if block.always_pass else result.status,
+            output=result.output,
+        )
 
     def _run_statement(self, statement: Statement) -> StepResult:
         keyword_name = _normalize(statement.keyword)

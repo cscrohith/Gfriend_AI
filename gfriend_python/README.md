@@ -9,9 +9,10 @@ Python keyword libraries, reads `.gfvar` files and Excel named tables for
 execution reports.
 
 The .NET solution remains in the repository as the behavioral reference while
-the migration proceeds. Device drivers, remote execution, the legacy XML/session
-report format, desktop UI, and the remaining GFriend keyword libraries are not
-yet ported; scripts using those features require later migration phases.
+the migration proceeds. Device drivers, the remote transport, the legacy
+XML/session report format, desktop UI, and the remaining GFriend keyword
+libraries are not yet ported; scripts using those features require later
+migration phases.
 
 ## Run a script
 
@@ -48,6 +49,11 @@ result = executor.run(suite)
 print(result.to_dict())
 ```
 
+`RemoteRun: executor-id { ... }` blocks can be dispatched through an injected
+adapter. The callback receives the expanded executor ID, parsed block body, and
+a snapshot of current variables, and must return a `KeywordResult`. Without an
+adapter, executing a remote block reports an error.
+
 ## Implemented syntax and built-ins
 
 - `using Library` and `using Library as Alias`; `using file.gfvar` loads
@@ -69,6 +75,7 @@ print(result.to_dict())
   `${Name}` or a direct keyword argument
 - `using MyLibrary.gflib` loads script-defined custom keyword cases from that
   file, with declared parameters substituted during execution
+- `RemoteRun: executor-id { ... }` blocks through an injected Python adapter
 - `If: Keyword(...) { ... }`, followed optionally by `Fail:` and `Error:`
 - `Pass`, `Fail`, `Error`, `Equals`, `Equals IgnoreCase`, `Log`, `Sleep`,
   `Contains`, `ConvertToUpperCase`, `ConvertToLowerCase`, `Calculate`,

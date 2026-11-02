@@ -73,6 +73,14 @@ class ForSelectedRowBlock:
 
 
 @dataclass(slots=True)
+class RemoteBlock:
+    remote_id: str
+    body: list[Runnable]
+    line_number: int = 0
+    always_pass: bool = False
+
+
+@dataclass(slots=True)
 class ConditionalBlock:
     condition: Statement
     branches: dict[Status, list[Runnable]] = field(default_factory=dict)
@@ -87,6 +95,7 @@ Runnable: TypeAlias = (
     | WhileBlock
     | ForEachRowBlock
     | ForSelectedRowBlock
+    | RemoteBlock
     | ConditionalBlock
 )
 
