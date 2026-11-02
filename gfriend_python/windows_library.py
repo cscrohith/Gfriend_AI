@@ -41,6 +41,14 @@ class _PywinautoBackend:
         self._window.set_focus()
         self._application = None
 
+    def select_child(self, title: str, wait_seconds: float) -> None:
+        if self._window is None:
+            raise RuntimeError("Select an application before accessing child windows.")
+        child = self._window.child_window(title=title, control_type="Window")
+        child.wait("exists enabled visible", timeout=wait_seconds)
+        child.set_focus()
+        self._window = child
+
     def find(self, selector: str, wait_seconds: float, by_name: bool = False) -> Any:
         if self._window is None:
             raise RuntimeError("Select an application before accessing controls.")
@@ -58,6 +66,17 @@ class _PywinautoBackend:
         if self._window is None:
             raise RuntimeError("Select an application before maximizing it.")
         self._window.maximize()
+
+    def move_window(self, x: float, y: float) -> None:
+        if self._window is None:
+            raise RuntimeError("Select an application before moving its window.")
+        rect = self._window.rectangle()
+        self._window.move_window(
+            x=rect.left if x < 0 else x,
+            y=rect.top if y < 0 else y,
+            width=rect.width(),
+            height=rect.height(),
+        )
 
     def select_combo_item(self, automation_id: str, item_name: str) -> None:
         combo = self.find(automation_id, 5)
@@ -170,6 +189,24 @@ class WindowsLibrary:
             return KeywordResult(Status.FAIL, f"Can not find target application: {exception}")
         except Exception as exception:
             return KeywordResult(Status.ERROR, f"Could not select application: {exception}")
+        return KeywordResult(Status.PASS)
+
+    def select_child_window_with_title(
+        self,
+        window_title: str,
+        timeout: str = "5",
+    ) -> KeywordResult:
+        if not window_title.strip():
+            return KeywordResult(Status.ERROR, "Child window title cannot be empty.")
+        backend, error = self._get_backend()
+        if error is not None:
+            return error
+        try:
+            backend.select_child(window_title, self._scaled_timeout(timeout))
+        except (RuntimeError, ValueError, TimeoutError, OSError) as exception:
+            return KeywordResult(Status.FAIL, f"Can not find target child window: {exception}")
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Could not select child window: {exception}")
         return KeywordResult(Status.PASS)
 
     def wait_for_id(self, automation_id: str, timeout_in_sec: str) -> KeywordResult:
@@ -318,6 +355,23 @@ class WindowsLibrary:
             backend.maximize()
         except Exception as exception:
             return KeywordResult(Status.ERROR, f"Could not maximize window: {exception}")
+        return KeywordResult(Status.PASS)
+
+    def move_window(self, x: str, y: str) -> KeywordResult:
+        try:
+            position_x = float(x.strip())
+            position_y = float(y.strip())
+        except ValueError:
+            return KeywordResult(Status.ERROR, "PosX and PosY should be number")
+        backend, error = self._get_backend()
+        if error is not None:
+            return error
+        try:
+            backend.move_window(position_x, position_y)
+        except (RuntimeError, ValueError, TimeoutError, OSError) as exception:
+            return KeywordResult(Status.FAIL, f"Window cannot be moved: {exception}")
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Error during move window: {exception}")
         return KeywordResult(Status.PASS)
 
     def set_combo_box_with_name(self, automation_id: str, value_name: str) -> KeywordResult:

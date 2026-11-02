@@ -385,6 +385,8 @@ class ParserTests(unittest.TestCase):
                 self.keys: list[str] = []
                 self.maximized = False
                 self.disappeared: tuple[str, float] | None = None
+                self.child_window: tuple[str, float] | None = None
+                self.moved: tuple[float, float] | None = None
 
             def select(self, title: str, timeout: float) -> None:
                 self.selected = (title, timeout)
@@ -400,6 +402,12 @@ class ParserTests(unittest.TestCase):
 
             def maximize(self) -> None:
                 self.maximized = True
+
+            def select_child(self, title: str, timeout: float) -> None:
+                self.child_window = (title, timeout)
+
+            def move_window(self, x: float, y: float) -> None:
+                self.moved = (x, y)
 
             def select_combo_item(self, automation_id: str, item_name: str) -> None:
                 if automation_id != "combo-id":
@@ -430,6 +438,8 @@ class ParserTests(unittest.TestCase):
             "{\n"
             "  Windows.SetTimeoutScale(2)\n"
             "  Windows.SelectApplication(Sample Window, 3)\n"
+            "  Windows.SelectChildWindowWithTitle(Child Window, 2)\n"
+            "  Windows.MoveWindow(30, -1)\n"
             "  Windows.WaitForId(field-id, 2)\n"
             "  Windows.GetText(field-id, ${text})\n"
             "  Windows.SetText(field-id, new value)\n"
@@ -464,6 +474,8 @@ class ParserTests(unittest.TestCase):
 
         self.assertEqual(result.status, Status.PASS)
         self.assertEqual(backend.selected, ("Sample Window", 6))
+        self.assertEqual(backend.child_window, ("Child Window", 4))
+        self.assertEqual(backend.moved, (30, -1))
         self.assertEqual(executor.variables["${text}"], "Sample text")
         self.assertEqual(executor.variables["${named_text}"], "Sample text")
         self.assertEqual(backend.control.text, "named value")
