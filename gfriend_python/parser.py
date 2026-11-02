@@ -74,6 +74,8 @@ def _logical_lines(source: str) -> list[tuple[int, str]]:
         stripped = _strip_comment(raw).strip()
         if not stripped:
             continue
+        if stripped.startswith("\\\\\\") or stripped.startswith("/ <"):
+            continue
         if pending is None:
             pending = stripped
             pending_line = line_number
@@ -98,7 +100,18 @@ def _logical_lines(source: str) -> list[tuple[int, str]]:
                 parenthesis_depth = max(0, parenthesis_depth - 1)
 
         if parenthesis_depth == 0:
-            lines.append((pending_line, pending))
+            if pending.startswith("{") and pending != "{":
+                lines.append((pending_line, "{"))
+                remainder = pending[1:].strip()
+                if remainder.endswith("}"):
+                    remainder = remainder[:-1].strip()
+                    if remainder:
+                        lines.append((pending_line, remainder))
+                    lines.append((pending_line, "}"))
+                else:
+                    lines.append((pending_line, remainder))
+            else:
+                lines.append((pending_line, pending))
             pending = None
             quote = None
             escaped = False

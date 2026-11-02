@@ -85,6 +85,17 @@ class ParserTests(unittest.TestCase):
             [(Status.PASS, ""), (Status.PASS, "ready branch"), (Status.FAIL, "")],
         )
 
+    def test_parses_inline_opening_brace_and_ignores_legacy_comments(self) -> None:
+        suite = parse_script(
+            '\\\\\\ Prerequisites\n'
+            '/ <Name>Inline</Name>\n'
+            'Case\n'
+            '{ Pass(inline body) }\n'
+        )
+        result = Executor().run(suite)
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(result.test_cases[0].steps[0].output, "inline body")
+
     def test_parses_late_fail_branch_at_same_scope(self) -> None:
         suite = parse_script(
             'Case\n{\n'
