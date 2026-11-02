@@ -574,6 +574,51 @@ class ExecutorTests(unittest.TestCase):
         self.assertEqual(result.status, Status.ERROR)
         self.assertIn("Could not convert timestamp", result.test_cases[0].steps[0].output)
 
+    def test_assert_last_repeat_checks_iteration_result_counts(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'Case\n{\n'
+                '  For: a, b, c\n'
+                '  {\n'
+                '    If: Equals(${ITEM},b)\n'
+                '    {\n'
+                '      Fail(matched failure)\n'
+                '    }\n'
+                '    Fail:\n'
+                '    {\n'
+                '      Pass(other iteration)\n'
+                '    }\n'
+                '    Pass(iteration)\n'
+                '  }\n'
+                '  Assert Last Repeat(PASS,>=2)\n'
+                '  AssertLastRepeat(FAIL,=1)\n'
+                '  AssertLastRepeat(ERROR,<1)\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.FAIL)
+        self.assertEqual(
+            [step.output for step in result.test_cases[0].steps[-3:]],
+            [
+                "PASS count of last repeat is 2.",
+                "FAIL count of last repeat is 1.",
+                "ERROR count of last repeat is 0.",
+            ],
+        )
+
+    def test_assert_last_repeat_rejects_invalid_status_or_condition(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'Case\n{\n'
+                '  AssertLastRepeat(SKIP,=1)\n'
+                '  AssertLastRepeat(PASS,!=1)\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertIn("unknown result type", result.test_cases[0].steps[0].output)
+        self.assertIn("threshold number", result.test_cases[0].steps[1].output)
+
     def test_foreachrow_reads_excel_table(self) -> None:
         from openpyxl import Workbook
         from openpyxl.worksheet.table import Table

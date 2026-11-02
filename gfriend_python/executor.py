@@ -103,6 +103,7 @@ class Executor:
         self.output_folder = Path(output_folder).resolve() if output_folder else Path.cwd()
         self._flow = ""
         self._custom_return_status = Status.PASS
+        self._last_repeat_result = (0, 0, 0)
         self._active_dataset_row: tuple[Path, str, str, int, dict[str, str]] | None = None
         if variables:
             self._set_variables(variables)
@@ -320,6 +321,33 @@ class Executor:
             if new_value > old_value:
                 return KeywordResult(Status.PASS, f"Value increased: {new_value} > {old_value}")
             return KeywordResult(Status.FAIL, f"Value not increased: {new_value} <= {old_value}")
+        if normalized == "assertlastrepeat":
+            self._require_arguments(keyword, arguments, 2)
+            result_name = arguments[0].strip().upper()
+            result_index = {"PASS": 0, "FAIL": 1, "ERROR": 2}.get(result_name)
+            if result_index is None:
+                return KeywordResult(Status.ERROR, f"{arguments[0].strip()} is unknown result type.")
+            condition = arguments[1].strip()
+            match = re.fullmatch(r"(>=|<=|>|<|=)\s*(\d+)", condition)
+            if match is None:
+                return KeywordResult(
+                    Status.ERROR,
+                    f"Can not find threshold number in the condition: {condition}",
+                )
+            operator, raw_threshold = match.groups()
+            threshold = int(raw_threshold)
+            count = self._last_repeat_result[result_index]
+            passed = {
+                ">": count > threshold,
+                "<": count < threshold,
+                ">=": count >= threshold,
+                "<=": count <= threshold,
+                "=": count == threshold,
+            }[operator]
+            return KeywordResult(
+                Status.PASS if passed else Status.FAIL,
+                f"{result_name} count of last repeat is {count}.",
+            )
         if normalized == "log":
             self._require_arguments(keyword, arguments, 1)
             return KeywordResult(Status.PASS, arguments[0])
@@ -781,9 +809,12 @@ class Executor:
             return Status.ERROR
 
         status = Status.PASS
+        iteration_statuses: list[Status] = []
         for iteration in range(1, count + 1):
             self.variables["${R}"] = str(iteration)
-            status = self._aggregate((status, self._run_items(block.body, results)))
+            iteration_status = self._run_items(block.body, results)
+            iteration_statuses.append(iteration_status)
+            status = self._aggregate((status, iteration_status))
             if self._flow in {"case", "suite", "custom-return"}:
                 break
             if self._flow == "break":
@@ -795,15 +826,19 @@ class Executor:
                 break
             if deadline is not None:
                 self._sleep(min(0.01, max(0.0, deadline - time.monotonic())))
+        self._set_last_repeat_result(iteration_statuses)
         return status
 
     def _run_for(self, block: ForBlock, results: list[StepResult]) -> Status:
         status = Status.PASS
+        iteration_statuses: list[Status] = []
         previous_item = self.variables.get("${ITEM}")
         for index, value in enumerate(block.values):
             self.variables["${ITEM}"] = self._expand(value)
             self.variables["${R}"] = str(index + 1)
-            status = self._aggregate((status, self._run_items(block.body, results)))
+            iteration_status = self._run_items(block.body, results)
+            iteration_statuses.append(iteration_status)
+            status = self._aggregate((status, iteration_status))
             if self._flow in {"case", "suite", "custom-return"}:
                 break
             if self._flow == "break":
@@ -815,6 +850,7 @@ class Executor:
             self.variables.pop("${ITEM}", None)
         else:
             self.variables["${ITEM}"] = previous_item
+        self._set_last_repeat_result(iteration_statuses)
         return status
 
     def _run_while(self, block: WhileBlock, results: list[StepResult]) -> Status:
@@ -826,6 +862,7 @@ class Executor:
             return Status.ERROR
 
         status = Status.PASS
+        iteration_statuses: list[Status] = []
         for iteration in range(1, max_iterations + 1):
             self.variables["${R}"] = str(iteration)
             condition = self._run_statement(block.condition)
@@ -834,7 +871,9 @@ class Executor:
                 return Status.ERROR
             if (condition.status is Status.PASS) != block.while_pass:
                 break
-            status = self._aggregate((status, self._run_items(block.body, results)))
+            iteration_status = self._run_items(block.body, results)
+            iteration_statuses.append(iteration_status)
+            status = self._aggregate((status, iteration_status))
             if self._flow in {"case", "suite", "custom-return"}:
                 break
             if self._flow == "break":
@@ -842,6 +881,7 @@ class Executor:
                 break
             if self._flow == "continue":
                 self._flow = ""
+        self._set_last_repeat_result(iteration_statuses)
         return status
 
     def _run_each_row(self, block: ForEachRowBlock, results: list[StepResult]) -> Status:
@@ -853,6 +893,7 @@ class Executor:
             return Status.ERROR
 
         status = Status.PASS
+        iteration_statuses: list[Status] = []
         for index, row in enumerate(rows, start=1):
             for header, value in row.items():
                 self.variables[f"${{{header}}}"] = value
@@ -867,7 +908,9 @@ class Executor:
                     row,
                     spreadsheet=block.spreadsheet,
                 )
-                status = self._aggregate((status, self._run_items(block.body, results)))
+                iteration_status = self._run_items(block.body, results)
+                iteration_statuses.append(iteration_status)
+                status = self._aggregate((status, iteration_status))
             except (OSError, ValueError, ImportError, KeyError, RuntimeError) as error:
                 results.append(
                     StepResult("ForEachRow", block.line_number, Status.ERROR, str(error))
@@ -882,6 +925,7 @@ class Executor:
                 break
             if self._flow == "continue":
                 self._flow = ""
+        self._set_last_repeat_result(iteration_statuses)
         return status
 
     def _run_selected_rows(self, block: ForSelectedRowBlock, results: list[StepResult]) -> Status:
@@ -891,6 +935,7 @@ class Executor:
             return Status.ERROR
 
         status = Status.PASS
+        iteration_statuses: list[Status] = []
         for index, row in enumerate(rows):
             if not self._matches_filters(row, block.filters):
                 continue
@@ -902,7 +947,9 @@ class Executor:
                 self._active_dataset_row = self._dataset_row_context(
                     block.dataset, block.sheet, block.table, index, row
                 )
-                status = self._aggregate((status, self._run_items(block.body, results)))
+                iteration_status = self._run_items(block.body, results)
+                iteration_statuses.append(iteration_status)
+                status = self._aggregate((status, iteration_status))
             except (OSError, ValueError, ImportError, KeyError, RuntimeError) as error:
                 results.append(
                     StepResult("ForSelectedRow", block.line_number, Status.ERROR, str(error))
@@ -917,6 +964,7 @@ class Executor:
                 break
             if self._flow == "continue":
                 self._flow = ""
+        self._set_last_repeat_result(iteration_statuses)
         return status
 
     def _get_dataset_rows(
@@ -1117,3 +1165,10 @@ class Executor:
         if Status.FAIL in values:
             return Status.FAIL
         return Status.PASS
+
+    def _set_last_repeat_result(self, statuses: list[Status]) -> None:
+        self._last_repeat_result = (
+            statuses.count(Status.PASS),
+            statuses.count(Status.FAIL),
+            statuses.count(Status.ERROR),
+        )

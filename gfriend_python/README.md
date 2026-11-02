@@ -75,7 +75,8 @@ print(result.to_dict())
   `SplitAndStoreWord`
 - `Get Time Difference`, `Get Random Number`, and `Append To File`
 - `Convert Time Stamp Format`, both concatenation helpers, and
-  `Has Value Increased`
+  `Has Value Increased`, and `Assert Last Repeat` for result counts from
+  Repeat/For/While/dataset-row blocks
 - `Stop Test Case`, `Stop Test Suite`, `BreakLoop`, and `ContinueLoop`
 - Custom `.gflib` methods support `Return With Pass`, `Return With Fail`, and
   `Return With Error`; a custom library can use its own `using` declarations
