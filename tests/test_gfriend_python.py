@@ -113,6 +113,56 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_regex_library_matches_and_stores_selected_values(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'using Regex as Re\n'
+                '${Message}=Issue INC-123 and INC-456\n'
+                'Case\n{\n'
+                '  Re.Set Pattern(INC-[0-9]+)\n'
+                '  Re.Is Match(${Message})\n'
+                '  Re.Get Match(${Message},${First})\n'
+                '  Re.Get Match(${Message},1,${Second})\n'
+                '  Re.Get Match Count(${Message},${Count})\n'
+                '  Pass(${First}/${Second}/${Count})\n'
+                '}\n'
+            )
+        )
+
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(result.test_cases[0].steps[1].output, "INC-123")
+        self.assertEqual(result.test_cases[0].steps[2].output, "INC-123")
+        self.assertEqual(result.test_cases[0].steps[3].output, "INC-456")
+        self.assertEqual(result.test_cases[0].steps[4].output, "Matched count : 2")
+        self.assertEqual(result.test_cases[0].steps[5].output, "INC-123/INC-456/2")
+
+    def test_regex_library_reports_missing_invalid_and_out_of_range_patterns(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'using Regex\n'
+                'Case\n{\n'
+                '  Regex.Is Match(value)\n'
+                '  Regex.Set Pattern([)\n'
+                '  Regex.Get Match(value,save)\n'
+                '  Regex.Set Pattern(value)\n'
+                '  Regex.Get Match(value,-1,save)\n'
+                '}\n'
+            )
+        )
+
+        self.assertEqual(result.status, Status.ERROR)
+        outputs = [step.output for step in result.test_cases[0].steps]
+        self.assertEqual(
+            outputs,
+            [
+                "Pattern is not set. Use Set Pattern keyword first.",
+                "Can not initialize regex.",
+                "Pattern is not set. Use Set Pattern keyword first.",
+                "",
+                "Match index is outside the available matches.",
+            ],
+        )
+
     def test_parses_variables_libraries_cases_and_quoted_commas(self) -> None:
         suite = parse_script(
             '${User}=Ada\n'

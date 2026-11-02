@@ -29,6 +29,7 @@ from .models import (
     WhileBlock,
 )
 from .parser import ParseError, _parse_statement, parse_file
+from .regex_library import RegexLibrary
 
 _VARIABLE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
 
@@ -164,6 +165,8 @@ class Executor:
         for alias, library in suite.libraries.items():
             if library.casefold().endswith(".gflib") and Path(library).is_file():
                 self.register_library(alias, _ScriptLibrary(self, library))
+            elif library.casefold() == "regex":
+                self.register_library("Regex", RegexLibrary(self.variables))
 
     def _set_variables(self, variables: dict[str, str]) -> None:
         for key, value in variables.items():
@@ -245,6 +248,14 @@ class Executor:
 
     def _run_statement(self, statement: Statement) -> StepResult:
         keyword_name = _normalize(statement.keyword)
+        library_name = statement.library.casefold()
+        if self._suite:
+            for alias, library in self._suite.libraries.items():
+                if alias.casefold() == library_name:
+                    library_name = library.casefold()
+                    if library.casefold().endswith(".gflib"):
+                        library_name = alias.casefold()
+                    break
         variable_arguments = {
             "reassignvaluetovariable": {0},
             "setvariable": {0},
@@ -266,6 +277,11 @@ class Executor:
             "getram": {0},
             "getwindowsversion": {0},
         }.get(keyword_name, set())
+        if library_name == "regex":
+            if keyword_name == "getmatch":
+                variable_arguments = {2} if len(statement.arguments) == 3 else {1}
+            elif keyword_name == "getmatchcount":
+                variable_arguments = {1}
         resource_names = {
             alias.casefold(): path for alias, path in (self._suite.resources.items() if self._suite else [])
         }
@@ -276,15 +292,6 @@ class Executor:
                 continue
             expanded = self._expand(value)
             arguments.append(resource_names.get(expanded.casefold(), expanded))
-        library_name = statement.library.casefold()
-        if self._suite:
-            for alias, library in self._suite.libraries.items():
-                if alias.casefold() == library_name:
-                    library_name = library.casefold()
-                    if library.casefold().endswith(".gflib"):
-                        library_name = alias.casefold()
-                    break
-
         try:
             if library_name == "builtin":
                 result = self._execute_builtin(statement.keyword, arguments)
