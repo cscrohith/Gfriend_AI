@@ -118,7 +118,25 @@ def _logical_lines(source: str) -> list[tuple[int, str]]:
 
     if pending is not None:
         lines.append((pending_line, pending))
-    return lines
+    normalized: list[tuple[int, str]] = []
+    for line_number, text in lines:
+        if text != "{":
+            normalized.append((line_number, text))
+            continue
+        declaration_index = -1
+        for index in range(len(normalized) - 1, -1, -1):
+            previous_text = normalized[index][1]
+            if previous_text == "}" or previous_text.endswith("{"):
+                break
+            if _BLOCK.match(previous_text):
+                declaration_index = index
+                break
+        if declaration_index >= 0:
+            declaration_line, declaration = normalized[declaration_index]
+            normalized[declaration_index] = (declaration_line, f"{declaration} {{")
+        else:
+            normalized.append((line_number, text))
+    return normalized
 
 
 def _read_arguments(source: str, line_number: int) -> list[str]:

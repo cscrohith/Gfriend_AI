@@ -96,6 +96,23 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(result.status, Status.PASS)
         self.assertEqual(result.test_cases[0].steps[0].output, "inline body")
 
+    def test_parses_delayed_if_opening_brace_with_preceding_step(self) -> None:
+        suite = parse_script(
+            'Case\n{\n'
+            '  If: Equals(ready,ready)\n'
+            '  Log(conditional setup)\n'
+            '  {\n'
+            '    Pass(conditional body)\n'
+            '  }\n'
+            '}\n'
+        )
+        result = Executor().run(suite)
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(
+            [step.output for step in result.test_cases[0].steps],
+            ["", "conditional setup", "conditional body"],
+        )
+
     def test_parses_late_fail_branch_at_same_scope(self) -> None:
         suite = parse_script(
             'Case\n{\n'
