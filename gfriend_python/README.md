@@ -113,6 +113,8 @@ adapter, executing a remote block reports an error.
 - `using Rest` supports GET, POST, PUT, and DELETE requests with headers, Basic
   authentication, JSON bodies, and response variables; TLS certificate
   validation remains enabled and cannot be disabled
+- `using LP` builds a shell-quoted CUPS `lp` command from a selected file,
+  printer, copy count, and options; it returns the command without executing it
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value

@@ -32,6 +32,7 @@ from .parser import ParseError, _parse_statement, parse_file
 from .json_library import JsonLibrary
 from .info_library import InfoLibrary
 from .log_info_library import LogInfoLibrary
+from .lp_library import LpLibrary
 from .regex_library import RegexLibrary
 from .rest_library import RestLibrary
 from .spreadsheet_library import SpreadSheetLibrary
@@ -193,6 +194,8 @@ class Executor:
                     "LogInfo",
                     LogInfoLibrary(self.variables, self.output_folder),
                 )
+            elif library.casefold() in {"lp", "lpr"}:
+                self.register_library("LP", LpLibrary(self.variables))
             elif library.casefold() == "spreadsheet":
                 self.register_library(
                     "SpreadSheet",
@@ -328,6 +331,8 @@ class Executor:
             "getattribute",
             "getinnertext",
         }:
+            variable_arguments = {0}
+        elif library_name in {"lp", "lpr"} and keyword_name == "getlpcommand":
             variable_arguments = {0}
         elif library_name == "spreadsheet":
             variable_arguments = {

@@ -116,6 +116,57 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_lp_library_builds_safe_command_and_stores_it(self) -> None:
+        result = Executor().run(
+            parse_script(
+                "using LP\n"
+                "Case\n"
+                "{\n"
+                "  LP.SelectFile(/tmp/sample document.pdf)\n"
+                "  LP.SelectPrinter(Office Printer)\n"
+                "  LP.SetCopies(2)\n"
+                "  LP.SetOption(orientation-requested, 4)\n"
+                "  LP.GetLpCommand(${command})\n"
+                "}\n"
+            )
+        )
+
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(
+            result.test_cases[0].steps[-1].output,
+            "lp -d 'Office Printer' -n 2 -o orientation-requested=4 "
+            "'/tmp/sample document.pdf'",
+        )
+
+    def test_lp_library_requires_file_before_printer_and_escapes_shell_values(self) -> None:
+        result = Executor().run(
+            parse_script(
+                "using Lp\n"
+                "Case\n"
+                "{\n"
+                "  Lp.SelectPrinter(printer; touch /tmp/unwanted)\n"
+                "}\n"
+            )
+        )
+
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertIn("File selection should be done", result.test_cases[0].steps[0].output)
+
+        from gfriend_python.lp_library import LpLibrary
+
+        variables: dict[str, str] = {}
+        library = LpLibrary(variables)
+        library.select_file("file; touch /tmp/unwanted")
+        library.select_printer("printer; touch /tmp/unwanted")
+        generated = library.get_lp_command("${cmd}")
+        self.assertEqual(generated.status, Status.PASS)
+        self.assertEqual(
+            generated.output,
+            "lp -d 'printer; touch /tmp/unwanted' "
+            "'file; touch /tmp/unwanted'",
+        )
+        self.assertEqual(variables["${cmd}"], generated.output)
+
     def test_rest_library_sends_json_and_stores_response(self) -> None:
         received: dict[str, str] = {}
 
