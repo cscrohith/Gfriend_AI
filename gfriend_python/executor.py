@@ -4,6 +4,8 @@ import re
 import time
 import csv
 import random
+import os
+import platform
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -227,6 +229,9 @@ class Executor:
             "converttimestampformat": {0},
             "concatenatevariablesandstoreresult": {0, 1, 2},
             "concatenatevariablevaluesandstoreresult": {2},
+            "getsysteminformation": {0},
+            "getram": {0},
+            "getwindowsversion": {0},
         }.get(keyword_name, set())
         resource_names = {
             alias.casefold(): path for alias, path in (self._suite.resources.items() if self._suite else [])
@@ -470,6 +475,30 @@ class Executor:
             timestamp = datetime.now().strftime(self._strftime_format(format_string))
             self.variables[arguments[0]] = timestamp
             return KeywordResult(Status.PASS, f"{arguments[0]} = {timestamp}")
+        if normalized == "getsysteminformation":
+            self._require_arguments(keyword, arguments, 1)
+            cpu_info = platform.processor().strip() or platform.machine().strip()
+            if not cpu_info:
+                return KeywordResult(Status.ERROR, "Could not determine processor information.")
+            self.variables[arguments[0].strip()] = cpu_info
+            return KeywordResult(Status.PASS, f"System Information: {cpu_info}")
+        if normalized == "getram":
+            self._require_arguments(keyword, arguments, 1)
+            total_gigabytes = self._total_memory_gigabytes()
+            if total_gigabytes is None:
+                return KeywordResult(Status.ERROR, "Could not determine total physical memory.")
+            rounded = round(total_gigabytes)
+            self.variables[arguments[0].strip()] = f"RAM:{rounded}GB"
+            return KeywordResult(Status.PASS, f"RAM Size: {rounded} GB")
+        if normalized == "getwindowsversion":
+            self._require_arguments(keyword, arguments, 1)
+            if platform.system() != "Windows":
+                return KeywordResult(Status.ERROR, "Get Windows Version is only available on Windows.")
+            windows_version = self._windows_version()
+            if not windows_version:
+                return KeywordResult(Status.ERROR, "Could not determine Windows edition and version.")
+            self.variables[arguments[0].strip()] = windows_version
+            return KeywordResult(Status.PASS, f"Windows Version: {windows_version}")
         if normalized == "converttimestampformat":
             self._require_arguments(keyword, arguments, 3)
             variable = arguments[0].strip()
@@ -751,6 +780,56 @@ class Executor:
             except ValueError:
                 continue
         raise ValueError("Cannot convert given string into DateTime Format")
+
+    @staticmethod
+    def _total_memory_gigabytes() -> float | None:
+        if platform.system() == "Windows":
+            import ctypes
+
+            class MemoryStatus(ctypes.Structure):
+                _fields_ = [
+                    ("dwLength", ctypes.c_ulong),
+                    ("dwMemoryLoad", ctypes.c_ulong),
+                    ("ullTotalPhys", ctypes.c_ulonglong),
+                    ("ullAvailPhys", ctypes.c_ulonglong),
+                    ("ullTotalPageFile", ctypes.c_ulonglong),
+                    ("ullAvailPageFile", ctypes.c_ulonglong),
+                    ("ullTotalVirtual", ctypes.c_ulonglong),
+                    ("ullAvailVirtual", ctypes.c_ulonglong),
+                    ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+                ]
+
+            status = MemoryStatus()
+            status.dwLength = ctypes.sizeof(status)
+            if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+                return None
+            return status.ullTotalPhys / (1024**3)
+
+        try:
+            page_size = os.sysconf("SC_PAGE_SIZE")
+            page_count = os.sysconf("SC_PHYS_PAGES")
+        except (AttributeError, OSError, ValueError):
+            return None
+        return page_size * page_count / (1024**3)
+
+    @staticmethod
+    def _windows_version() -> str:
+        try:
+            import winreg
+
+            with winreg.OpenKey(
+                winreg.HKEY_LOCAL_MACHINE,
+                r"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+            ) as key:
+                product_name = winreg.QueryValueEx(key, "ProductName")[0]
+                try:
+                    display_version = winreg.QueryValueEx(key, "DisplayVersion")[0]
+                except OSError:
+                    display_version = winreg.QueryValueEx(key, "ReleaseId")[0]
+            return f"{product_name} {display_version}".strip()
+        except (ImportError, OSError):
+            version = platform.win32_ver()
+            return " ".join(part for part in version if part)
 
     @staticmethod
     def _format_timespan(value: timedelta) -> str:

@@ -619,6 +619,38 @@ class ExecutorTests(unittest.TestCase):
         self.assertIn("unknown result type", result.test_cases[0].steps[0].output)
         self.assertIn("threshold number", result.test_cases[0].steps[1].output)
 
+    def test_portable_system_information_keywords(self) -> None:
+        from unittest.mock import patch
+
+        with patch("gfriend_python.executor.platform.processor", return_value="Test CPU"):
+            result = Executor().run(
+                parse_script(
+                    'Case\n{\n'
+                    '  Get System Information(${CPU})\n'
+                    '  Get RAM(${Memory})\n'
+                    '  Pass(${CPU}-${Memory})\n'
+                    '}\n'
+                )
+            )
+        self.assertEqual(result.status, Status.PASS)
+        outputs = [step.output for step in result.test_cases[0].steps]
+        self.assertEqual(outputs[0], "System Information: Test CPU")
+        self.assertRegex(outputs[1], r"^RAM Size: \d+ GB$")
+        self.assertRegex(outputs[2], r"^Test CPU-RAM:\d+GB$")
+
+    def test_windows_version_keyword_errors_on_non_windows(self) -> None:
+        from unittest.mock import patch
+
+        with patch("gfriend_python.executor.platform.system", return_value="Linux"):
+            result = Executor().run(
+                parse_script("Case\n{\n  Get Windows Version(${Version})\n}\n")
+            )
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertEqual(
+            result.test_cases[0].steps[0].output,
+            "Get Windows Version is only available on Windows.",
+        )
+
     def test_foreachrow_reads_excel_table(self) -> None:
         from openpyxl import Workbook
         from openpyxl.worksheet.table import Table

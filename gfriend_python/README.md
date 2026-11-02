@@ -77,6 +77,8 @@ print(result.to_dict())
 - `Convert Time Stamp Format`, both concatenation helpers, and
   `Has Value Increased`, and `Assert Last Repeat` for result counts from
   Repeat/For/While/dataset-row blocks
+- `Get System Information` (processor), `Get RAM`, and Windows-only
+  `Get Windows Version`
 - `Stop Test Case`, `Stop Test Suite`, `BreakLoop`, and `ContinueLoop`
 - Custom `.gflib` methods support `Return With Pass`, `Return With Fail`, and
   `Return With Error`; a custom library can use its own `using` declarations
