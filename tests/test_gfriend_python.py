@@ -292,20 +292,34 @@ class ParserTests(unittest.TestCase):
             def set_edit_text(self, text: str) -> None:
                 self.text = text
 
+            def is_enabled(self) -> bool:
+                return True
+
+            def is_visible(self) -> bool:
+                return True
+
         class FakeBackend:
             has_window = True
 
             def __init__(self) -> None:
                 self.control = FakeControl()
                 self.selected: tuple[str, float] | None = None
+                self.keys: list[str] = []
+                self.maximized = False
 
             def select(self, title: str, timeout: float) -> None:
                 self.selected = (title, timeout)
 
-            def find(self, automation_id: str, timeout: float) -> FakeControl:
-                if automation_id != "field-id":
-                    raise LookupError(f"Unknown control {automation_id}")
+            def find(self, selector: str, timeout: float, by_name: bool = False) -> FakeControl:
+                if selector != ("Text Label" if by_name else "field-id"):
+                    raise LookupError(f"Unknown control {selector}")
                 return self.control
+
+            def send_keys(self, keys: str) -> None:
+                self.keys.append(keys)
+
+            def maximize(self) -> None:
+                self.maximized = True
 
             def close(self) -> None:
                 return None
@@ -323,6 +337,14 @@ class ParserTests(unittest.TestCase):
             "  Windows.GetText(field-id, ${text})\n"
             "  Windows.SetText(field-id, new value)\n"
             "  Windows.ClickId(field-id)\n"
+            "  Windows.WaitForName(Text Label, 1)\n"
+            "  Windows.GetTextWithName(Text Label, ${named_text})\n"
+            "  Windows.SetTextWithName(Text Label, named value)\n"
+            "  Windows.ClickName(Text Label)\n"
+            "  Windows.IsClickable(field-id)\n"
+            "  Windows.SendSpecialKey(ENTER)\n"
+            "  Windows.SendKey(abc)\n"
+            "  Windows.MaximizeWindow()\n"
             "  Windows.CloseApplication()\n"
             "}\n"
         )
@@ -341,8 +363,11 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(result.status, Status.PASS)
         self.assertEqual(backend.selected, ("Sample Window", 6))
         self.assertEqual(executor.variables["${text}"], "Sample text")
-        self.assertEqual(backend.control.text, "new value")
+        self.assertEqual(executor.variables["${named_text}"], "Sample text")
+        self.assertEqual(backend.control.text, "named value")
         self.assertTrue(backend.control.clicked)
+        self.assertEqual(backend.keys, ["{ENTER}", "abc"])
+        self.assertTrue(backend.maximized)
 
     def test_windows_library_reports_missing_optional_driver_and_unknown_environment(self) -> None:
         from gfriend_python.windows_library import WindowsLibrary

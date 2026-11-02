@@ -41,12 +41,23 @@ class _PywinautoBackend:
         self._window.set_focus()
         self._application = None
 
-    def find(self, automation_id: str, wait_seconds: float) -> Any:
+    def find(self, selector: str, wait_seconds: float, by_name: bool = False) -> Any:
         if self._window is None:
             raise RuntimeError("Select an application before accessing controls.")
-        control = self._window.child_window(auto_id=automation_id)
+        criteria = {"title": selector} if by_name else {"auto_id": selector}
+        control = self._window.child_window(**criteria)
         control.wait("exists", timeout=wait_seconds)
         return control
+
+    def send_keys(self, keys: str) -> None:
+        if self._window is None:
+            raise RuntimeError("Select an application before sending keys.")
+        self._window.type_keys(keys, with_spaces=True)
+
+    def maximize(self) -> None:
+        if self._window is None:
+            raise RuntimeError("Select an application before maximizing it.")
+        self._window.maximize()
 
     def close(self) -> None:
         if self._window is not None:
@@ -141,6 +152,10 @@ class WindowsLibrary:
     def wait_for_wpath(self, automation_path: str, timeout: str) -> KeywordResult:
         return self.wait_for_id(automation_path, timeout)
 
+    def wait_for_name(self, name: str, timeout_in_sec: str) -> KeywordResult:
+        _, error = self._find_control(name, timeout_in_sec, by_name=True)
+        return error or KeywordResult(Status.PASS)
+
     def is_exist(self, automation_id: str) -> KeywordResult:
         control, error = self._find_control(automation_id, "0")
         if error is not None:
@@ -149,10 +164,33 @@ class WindowsLibrary:
             return error
         return KeywordResult(Status.PASS if control is not None else Status.FAIL)
 
+    def is_clickable(self, automation_id: str) -> KeywordResult:
+        control, error = self._find_control(automation_id, "0")
+        if error is not None:
+            return error
+        try:
+            clickable = control.is_enabled() and control.is_visible()
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Could not inspect UI control: {exception}")
+        return KeywordResult(Status.PASS if clickable else Status.FAIL)
+
     def get_text(self, automation_id: str, save_to: str) -> KeywordResult:
         if not save_to.strip():
             return KeywordResult(Status.FAIL, "A variable name must be provided to save the text.")
         control, error = self._find_control(automation_id, "5")
+        if error is not None:
+            return error
+        try:
+            text = control.window_text()
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Could not read UI control text: {exception}")
+        self._variables[self._variable_key(save_to)] = text
+        return KeywordResult(Status.PASS, text)
+
+    def get_text_with_name(self, name: str, save_to: str) -> KeywordResult:
+        if not save_to.strip():
+            return KeywordResult(Status.FAIL, "A variable name must be provided to save the text.")
+        control, error = self._find_control(name, "5", by_name=True)
         if error is not None:
             return error
         try:
@@ -178,6 +216,16 @@ class WindowsLibrary:
     def click_wpath(self, automation_path: str) -> KeywordResult:
         return self.click_id(automation_path)
 
+    def click_name(self, name: str) -> KeywordResult:
+        control, error = self._find_control(name, "5", by_name=True)
+        if error is not None:
+            return error
+        try:
+            control.click_input()
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Could not click UI control: {exception}")
+        return KeywordResult(Status.PASS)
+
     def set_text(self, automation_id: str, text_to_set: str) -> KeywordResult:
         control, error = self._find_control(automation_id, "5")
         if error is not None:
@@ -186,6 +234,48 @@ class WindowsLibrary:
             control.set_edit_text(text_to_set)
         except Exception as exception:
             return KeywordResult(Status.ERROR, f"Could not set UI control text: {exception}")
+        return KeywordResult(Status.PASS)
+
+    def set_text_with_name(self, name: str, text_to_set: str) -> KeywordResult:
+        control, error = self._find_control(name, "5", by_name=True)
+        if error is not None:
+            return error
+        try:
+            control.set_edit_text(text_to_set)
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Could not set UI control text: {exception}")
+        return KeywordResult(Status.PASS)
+
+    def send_key(self, key: str) -> KeywordResult:
+        return self._send_keys(key)
+
+    def send_special_key(self, key: str) -> KeywordResult:
+        special_keys = {
+            "ENTER": "{ENTER}",
+            "TAB": "{TAB}",
+            "ESC": "{ESC}",
+            "ESCAPE": "{ESC}",
+            "SPACE": "{SPACE}",
+            "BACKSPACE": "{BACKSPACE}",
+            "DELETE": "{DELETE}",
+            "UP": "{UP}",
+            "DOWN": "{DOWN}",
+            "LEFT": "{LEFT}",
+            "RIGHT": "{RIGHT}",
+        }
+        normalized = key.strip().upper()
+        if normalized not in special_keys:
+            return KeywordResult(Status.ERROR, f"Unsupported special key: {key}")
+        return self._send_keys(special_keys[normalized])
+
+    def maximize_window(self) -> KeywordResult:
+        backend, error = self._get_backend()
+        if error is not None:
+            return error
+        try:
+            backend.maximize()
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Could not maximize window: {exception}")
         return KeywordResult(Status.PASS)
 
     def close_application(self, window_title: str = "") -> KeywordResult:
@@ -212,6 +302,8 @@ class WindowsLibrary:
         self,
         automation_id: str,
         timeout: str,
+        *,
+        by_name: bool = False,
     ) -> tuple[Any | None, KeywordResult | None]:
         if not automation_id.strip():
             return None, KeywordResult(Status.ERROR, "Automation ID cannot be empty.")
@@ -224,12 +316,23 @@ class WindowsLibrary:
             control = backend.find(
                 automation_id,
                 self._scaled_timeout(timeout),
+                by_name,
             )
             return control, None
         except (RuntimeError, ValueError, TimeoutError, OSError) as exception:
             return None, KeywordResult(Status.FAIL, f"Could not find UI control '{automation_id}': {exception}")
         except Exception as exception:
             return None, KeywordResult(Status.ERROR, f"Could not access UI control '{automation_id}': {exception}")
+
+    def _send_keys(self, keys: str) -> KeywordResult:
+        backend, error = self._get_backend()
+        if error is not None:
+            return error
+        try:
+            backend.send_keys(keys)
+        except Exception as exception:
+            return KeywordResult(Status.ERROR, f"Could not send keyboard input: {exception}")
+        return KeywordResult(Status.PASS)
 
     def _scaled_timeout(self, timeout: str) -> float:
         seconds = float(timeout.strip())
