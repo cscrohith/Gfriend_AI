@@ -56,6 +56,19 @@ class WebWorkspaceTests(unittest.TestCase):
         except HTTPError as error:
             return error.code, json.loads(error.read())
 
+    def put_json(self, path: str, payload: object) -> tuple[int, dict]:
+        request = Request(
+            f"{self.base_url}{path}",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="PUT",
+        )
+        try:
+            with urlopen(request, timeout=5) as response:
+                return response.status, json.loads(response.read())
+        except HTTPError as error:
+            return error.code, json.loads(error.read())
+
     def test_workspace_serves_enterprise_ui_and_local_security_headers(self) -> None:
         with urlopen(self.base_url, timeout=5) as response:
             html = response.read().decode("utf-8")
@@ -65,6 +78,8 @@ class WebWorkspaceTests(unittest.TestCase):
         self.assertIn("Execution workspace", html)
         self.assertIn("Script library", html)
         self.assertIn("Run configuration", html)
+        self.assertIn("Script editor", html)
+        self.assertIn('id="validate-script"', html)
 
     def test_script_listing_and_preview_hide_default_variable_values(self) -> None:
         scripts = self.get_json("/api/scripts")["scripts"]
@@ -112,6 +127,84 @@ class WebWorkspaceTests(unittest.TestCase):
         )
         self.assertEqual(status, 400)
         self.assertIn("Variable names or values", response["error"])
+
+    def test_editor_creates_reads_and_saves_scripts_with_revision_conflicts(self) -> None:
+        content = "Created\n{\n  Pass(first)\n}\n"
+        status, created = self.post_json(
+            "/api/scripts",
+            {"path": "Drafts/Created.txt", "content": content},
+        )
+        self.assertEqual(status, 201)
+        self.assertTrue(created["valid"])
+        self.assertEqual(created["cases"], ["Created"])
+
+        script_id = created["id"]
+        loaded = self.get_json(f"/api/scripts/{script_id}/content")
+        self.assertEqual(loaded["content"], content)
+        self.assertEqual(loaded["revision"], created["revision"])
+
+        status, duplicate = self.post_json(
+            "/api/scripts",
+            {"path": "Drafts/Created.txt", "content": content},
+        )
+        self.assertEqual(status, 409)
+        self.assertIn("already exists", duplicate["error"])
+
+        updated_content = "Created\n{\n  Pass(updated)\n}\n"
+        status, updated = self.put_json(
+            f"/api/scripts/{script_id}/content",
+            {"content": updated_content, "revision": loaded["revision"]},
+        )
+        self.assertEqual(status, 200)
+        self.assertTrue(updated["valid"])
+        self.assertEqual(
+            self.get_json(f"/api/scripts/{script_id}/content")["content"],
+            updated_content,
+        )
+
+        status, conflict = self.put_json(
+            f"/api/scripts/{script_id}/content",
+            {"content": content, "revision": loaded["revision"]},
+        )
+        self.assertEqual(status, 409)
+        self.assertIn("changed since it was opened", conflict["error"])
+
+    def test_editor_rejects_traversal_and_cross_origin_writes(self) -> None:
+        status, response = self.post_json(
+            "/api/scripts",
+            {"path": "../outside.txt", "content": "Draft\n{\n}\n"},
+        )
+        self.assertEqual(status, 400)
+        self.assertIn("relative .txt", response["error"])
+
+        request = Request(
+            f"{self.base_url}/api/scripts",
+            data=json.dumps(
+                {"path": "CrossOrigin.txt", "content": "Draft\n{\n}\n"}
+            ).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "Origin": "http://attacker.example",
+            },
+            method="POST",
+        )
+        with self.assertRaises(HTTPError) as raised:
+            urlopen(request, timeout=5)
+        self.assertEqual(raised.exception.code, 403)
+        self.assertFalse((self.scripts / "CrossOrigin.txt").exists())
+
+    def test_editor_can_save_invalid_draft_for_later_completion(self) -> None:
+        status, saved = self.post_json(
+            "/api/scripts",
+            {"path": "Draft.txt", "content": "Incomplete"},
+        )
+        self.assertEqual(status, 201)
+        self.assertFalse(saved["valid"])
+        self.assertIn("Expected a test case", saved["validation_error"])
+        self.assertEqual(
+            (self.scripts / "Draft.txt").read_text(encoding="utf-8"),
+            "Incomplete",
+        )
 
     def test_server_refuses_non_loopback_bind_addresses(self) -> None:
         with self.assertRaisesRegex(ValueError, "loopback"):

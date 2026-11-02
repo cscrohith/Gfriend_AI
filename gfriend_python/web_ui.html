@@ -33,6 +33,7 @@ button { cursor: pointer; }
 .workspace-label { padding: 0 10px; color: #8290a8; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
 .nav-item { width: 100%; padding: 10px 12px; border: 0; border-radius: 8px; display: flex; align-items: center; gap: 11px; background: transparent; color: #d6deed; text-align: left; }
 .nav-item.active { background: #25334b; color: #fff; }
+.nav-item + .nav-item { margin-top: 5px; }
 .nav-item svg { width: 17px; height: 17px; opacity: .8; }
 .rail-foot { margin-top: auto; border-top: 1px solid #293346; padding: 18px 8px 0; color: #93a0b5; font-size: 12px; }
 .local-dot { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #38c78a; box-shadow: 0 0 0 3px #38c78a22; }
@@ -125,6 +126,30 @@ h1 { margin: 5px 0 6px; font-size: clamp(25px, 3vw, 32px); line-height: 1.2; let
 .alert { display: none; margin: 12px 0 0; padding: 10px 12px; border: 1px solid #f0d4d7; border-radius: 7px; background: #fff8f8; color: #a93643; font-size: 12px; }
 .alert.visible { display: block; }
 .footer { padding: 18px 0 0; color: #8a95a6; font-size: 10px; text-align: center; }
+.selected-file { min-width: 0; }
+.selected-file > div { min-width: 0; flex: 1; }
+.edit-button, .secondary-button {
+  min-height: 34px; padding: 0 11px; border: 1px solid #dce3ed; border-radius: 6px;
+  background: #fff; color: #344158; font-size: 11px; font-weight: 650;
+}
+.edit-button:hover, .secondary-button:hover { border-color: #b8c9ea; background: #f7f9fd; }
+.editor-view { margin-bottom: 20px; }
+.editor-panel { overflow: visible; }
+.editor-toolbar { display: flex; align-items: center; gap: 8px; }
+.editor-status { color: #8490a2; font-size: 11px; }
+.editor-status.unsaved { color: #a9680b; font-weight: 650; }
+.editor-config { display: grid; grid-template-columns: minmax(200px, 1fr) auto; gap: 14px; align-items: end; padding: 16px 20px; border-bottom: 1px solid var(--line); background: #fbfcfe; }
+.editor-field { display: grid; gap: 5px; color: #59677b; font-size: 11px; font-weight: 650; }
+.editor-path { height: 36px; width: 100%; padding: 0 10px; border: 1px solid #dce3ed; border-radius: 6px; outline: none; background: #fff; color: var(--ink); font-size: 12px; }
+.editor-path:focus, .editor-source:focus { border-color: #6a95f5; box-shadow: 0 0 0 3px #2463eb17; }
+.editor-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.editor-source-wrap { padding: 18px 20px 20px; }
+.editor-source { display: block; width: 100%; min-height: 430px; resize: vertical; padding: 16px; border: 1px solid #dce3ed; border-radius: 8px; outline: none; background: #111827; color: #e5edf8; caret-color: #82aaff; font: 12px/1.65 "Cascadia Code", Consolas, "SFMono-Regular", monospace; tab-size: 4; }
+.editor-hint { display: flex; justify-content: space-between; gap: 12px; margin-top: 9px; color: #8490a2; font-size: 10px; }
+.editor-message { min-height: 18px; margin: 11px 0 0; color: #5f6d82; font-size: 11px; }
+.editor-message.valid { color: #198252; }
+.editor-message.invalid { color: #bb3948; }
+[hidden] { display: none !important; }
 @media (max-width: 980px) {
   .shell { grid-template-columns: 70px minmax(0, 1fr); }
   .rail { align-items: center; padding: 20px 9px; }
@@ -133,6 +158,8 @@ h1 { margin: 5px 0 6px; font-size: clamp(25px, 3vw, 32px); line-height: 1.2; let
   .nav-item { width: 46px; height: 44px; padding: 0; justify-content: center; }
   .nav-item svg { width: 19px; height: 19px; }
   .rail-foot { width: 100%; text-align: center; }
+  .selected-file { flex-wrap: wrap; }
+  .edit-button { margin-left: 43px; }
 }
 @media (max-width: 720px) {
   .topbar { height: 58px; }
@@ -156,6 +183,10 @@ h1 { margin: 5px 0 6px; font-size: clamp(25px, 3vw, 32px); line-height: 1.2; let
   .summary-card { min-height: 66px; }
   .variable-row { grid-template-columns: 1fr; gap: 3px; }
   .result-banner { align-items: flex-start; flex-direction: column; }
+  .editor-config { grid-template-columns: 1fr; }
+  .editor-actions { justify-content: flex-start; }
+  .editor-source { min-height: 340px; }
+  .editor-hint { flex-direction: column; gap: 2px; }
 }
 </style>
 </head>
@@ -168,19 +199,60 @@ h1 { margin: 5px 0 6px; font-size: clamp(25px, 3vw, 32px); line-height: 1.2; let
     </div>
     <div>
       <div class="workspace-label">Workspace</div>
-      <button class="nav-item active" type="button" aria-current="page">
+      <button class="nav-item active" id="execution-nav" type="button" aria-current="page">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 8h8M8 12h8M8 16h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
         <span class="nav-label">Script execution</span>
+      </button>
+      <button class="nav-item" id="editor-nav" type="button">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14.5 5.5 4 4M4 20l4-.8L19 8.2a2.1 2.1 0 0 0-3-3L5 16.2 4 20Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="nav-label">Script editor</span>
       </button>
     </div>
     <div class="rail-foot"><span class="local-dot"></span><span class="rail-foot-text">Private local session</span></div>
   </aside>
   <main class="main">
     <header class="topbar">
-      <div class="crumb">Workspace <span aria-hidden="true">/</span> <strong>Script execution</strong></div>
+      <div class="crumb">Workspace <span aria-hidden="true">/</span> <strong id="breadcrumb">Script execution</strong></div>
       <div class="top-right"><span class="local-dot"></span><span class="top-label">Local runtime connected</span><span class="avatar" aria-label="Local user">GF</span></div>
     </header>
     <div class="content">
+      <section class="editor-view" id="editor-view" hidden>
+        <div class="heading">
+          <div>
+            <div class="eyebrow">Script authoring</div>
+            <h1>GFriend script editor</h1>
+            <p class="subtitle">Create or update a script in the configured scripts folder.</p>
+          </div>
+          <span class="local-badge"><span class="local-dot"></span>Saved to your local workspace</span>
+        </div>
+        <article class="panel editor-panel">
+          <div class="panel-head">
+            <div><h2 class="panel-title">Script source</h2><div class="panel-subtitle">Write GFriend syntax, validate it, and save your changes</div></div>
+            <div class="editor-toolbar">
+              <span class="editor-status" id="editor-status">No script loaded</span>
+              <button class="secondary-button" id="new-script" type="button">New script</button>
+            </div>
+          </div>
+          <div class="editor-config">
+            <label class="editor-field" for="editor-path">Script path <span>Relative to the configured scripts folder</span>
+              <input class="editor-path" id="editor-path" type="text" value="" placeholder="Examples/SmokeTest.txt" autocomplete="off" spellcheck="false">
+            </label>
+            <div class="editor-actions">
+              <button class="secondary-button" id="validate-script" type="button">Validate</button>
+              <button class="run-button" id="save-script" type="button" disabled>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h12l3 3v13H4V4h1Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 4v6h8V4M8 20v-6h8v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                Save script
+              </button>
+            </div>
+          </div>
+          <div class="editor-source-wrap">
+            <textarea class="editor-source" id="editor-source" aria-label="GFriend script source" spellcheck="false" placeholder="SmokeTest\n{\n    Pass(Script is ready)\n}"></textarea>
+            <div class="editor-hint"><span>Tip: use Tab for indentation. Scripts are saved as UTF-8.</span><span id="editor-size">0 characters</span></div>
+            <p class="editor-message" id="editor-message" aria-live="polite"></p>
+          </div>
+        </article>
+      </section>
+      <div id="execution-view">
       <section class="heading">
         <div>
           <div class="eyebrow">Automation operations</div>
@@ -229,6 +301,7 @@ h1 { margin: 5px 0 6px; font-size: clamp(25px, 3vw, 32px); line-height: 1.2; let
             <div class="selected-file">
               <span class="file-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h8l4 4V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.7"/><path d="M14 4v4h4M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
               <div><div class="selected-name" id="selected-name">Select a script to get started</div><div class="selected-path" id="selected-path">Script details and test cases will appear here</div></div>
+              <button class="edit-button" id="edit-current" type="button" disabled>Edit script</button>
             </div>
             <div class="section-label">Test cases</div>
             <div class="case-list" id="case-list"><div class="empty">Choose a script from the library.</div></div>
@@ -265,11 +338,15 @@ h1 { margin: 5px 0 6px; font-size: clamp(25px, 3vw, 32px); line-height: 1.2; let
         </div>
       </section>
       <footer class="footer">GFriend Python Runtime · Local execution workspace</footer>
+      </div>
     </div>
   </main>
 </div>
 <script>
-const state = { scripts: [], selected: null, runTimer: null, running: false };
+const state = {
+  scripts: [], selected: null, runTimer: null, running: false, details: null,
+  editor: { id: null, revision: null, path: "", content: "", savedContent: "", isNew: false },
+};
 const byId = (id) => document.getElementById(id);
 
 async function request(path, options) {
@@ -288,6 +365,159 @@ function showAlert(message) {
 function clearAlert() {
   byId("alert").classList.remove("visible");
   byId("alert").textContent = "";
+}
+
+function editorDirty() {
+  return state.editor.content !== state.editor.savedContent;
+}
+
+function updateEditorState() {
+  const dirty = editorDirty();
+  const status = byId("editor-status");
+  status.textContent = state.editor.isNew ? "New script" : dirty ? "Unsaved changes" : state.editor.id ? "All changes saved" : "No script loaded";
+  status.classList.toggle("unsaved", dirty);
+  byId("save-script").disabled = !dirty || !byId("editor-path").value.trim();
+  byId("editor-size").textContent = `${state.editor.content.length.toLocaleString()} characters`;
+}
+
+function setEditorContent(content) {
+  state.editor.content = content;
+  byId("editor-source").value = content;
+  updateEditorState();
+}
+
+async function switchView(view) {
+  if (view === "execution" && !byId("editor-view").hidden && editorDirty()) {
+    if (!window.confirm("Discard your unsaved script changes?")) return;
+  }
+  const editing = view === "editor";
+  byId("editor-view").hidden = !editing;
+  byId("execution-view").hidden = editing;
+  byId("breadcrumb").textContent = editing ? "Script editor" : "Script execution";
+  document.querySelectorAll(".rail .nav-item").forEach((item) => {
+    const active = item.id === "editor-nav" ? editing : !editing;
+    item.classList.toggle("active", active);
+    if (active) item.setAttribute("aria-current", "page");
+    else item.removeAttribute("aria-current");
+  });
+  if (editing && state.selected && state.editor.id !== state.selected.id && !state.editor.isNew) {
+    await loadEditorScript(state.selected);
+  }
+}
+
+async function loadEditorScript(script) {
+  if (editorDirty() && !window.confirm("Discard your unsaved script changes?")) return;
+  try {
+    const source = await request(`/api/scripts/${encodeURIComponent(script.id)}/content`);
+    state.editor = {
+      id: source.id,
+      revision: source.revision,
+      path: source.path,
+      content: source.content,
+      savedContent: source.content,
+      isNew: false,
+    };
+    byId("editor-path").value = source.path;
+    byId("editor-path").readOnly = true;
+    byId("editor-message").textContent = "";
+    byId("editor-message").className = "editor-message";
+    setEditorContent(source.content);
+  } catch (error) {
+    showEditorMessage(error.message, "invalid");
+  }
+}
+
+function startNewScript() {
+  if (editorDirty() && !window.confirm("Discard your unsaved script changes?")) return;
+  state.editor = {
+    id: null,
+    revision: null,
+    path: "NewScript.txt",
+    content: "",
+    savedContent: "",
+    isNew: true,
+  };
+  byId("editor-path").value = state.editor.path;
+  byId("editor-path").readOnly = false;
+  byId("editor-message").textContent = "Start writing, then validate or save the new script.";
+  byId("editor-message").className = "editor-message";
+  setEditorContent("");
+  byId("editor-source").focus();
+}
+
+function showEditorMessage(message, kind = "") {
+  const status = byId("editor-message");
+  status.textContent = message;
+  status.className = `editor-message ${kind}`.trim();
+}
+
+async function validateEditorScript() {
+  clearAlert();
+  try {
+    const result = await request("/api/scripts/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: byId("editor-path").value, content: byId("editor-source").value }),
+    });
+    if (result.valid) {
+      showEditorMessage(`Valid GFriend script · ${result.cases.length} test case${result.cases.length === 1 ? "" : "s"}.`, "valid");
+    } else {
+      showEditorMessage(result.validation_error, "invalid");
+    }
+  } catch (error) {
+    showEditorMessage(error.message, "invalid");
+  }
+}
+
+async function saveEditorScript() {
+  if (!editorDirty()) return;
+  const content = byId("editor-source").value;
+  const path = byId("editor-path").value.trim();
+  byId("save-script").disabled = true;
+  showEditorMessage("Saving script…");
+  try {
+    const payload = { path, content, revision: state.editor.revision };
+    const saved = state.editor.isNew
+      ? await request("/api/scripts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+      : await request(`/api/scripts/${encodeURIComponent(state.editor.id)}/content`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+    state.editor.id = saved.id;
+    state.editor.revision = saved.revision;
+    state.editor.path = saved.path;
+    state.editor.isNew = false;
+    state.editor.content = content;
+    state.editor.savedContent = content;
+    byId("editor-path").value = saved.path;
+    byId("editor-path").readOnly = true;
+    updateEditorState();
+    if (saved.valid) {
+      showEditorMessage(`Saved and validated · ${saved.cases.length} test case${saved.cases.length === 1 ? "" : "s"}.`, "valid");
+    } else {
+      showEditorMessage(`Saved as a draft, but validation failed: ${saved.validation_error}`, "invalid");
+    }
+    await refreshScripts(saved.id);
+  } catch (error) {
+    showEditorMessage(error.message, "invalid");
+    updateEditorState();
+  }
+}
+
+async function refreshScripts(selectId = null) {
+  const data = await request("/api/scripts");
+  state.scripts = data.scripts;
+  byId("script-count").textContent = data.scripts.length;
+  renderScripts();
+  if (selectId) {
+    const selected = data.scripts.find((script) => script.id === selectId);
+    if (selected) await selectScript(selected);
+  }
 }
 
 function renderScripts() {
@@ -389,6 +619,7 @@ async function selectScript(script) {
   state.details = null;
   byId("selected-name").textContent = script.name;
   byId("selected-path").textContent = script.path;
+  byId("edit-current").disabled = false;
   byId("case-list").innerHTML = '<div class="empty">Loading test cases…</div>';
   byId("variables").innerHTML = '<div class="empty">Loading variables…</div>';
   byId("run-button").disabled = true;
@@ -554,6 +785,35 @@ async function init() {
   byId("select-all").addEventListener("click", () => setAllCases(true));
   byId("select-none").addEventListener("click", () => setAllCases(false));
   byId("run-button").addEventListener("click", runScript);
+  byId("execution-nav").addEventListener("click", () => switchView("execution"));
+  byId("editor-nav").addEventListener("click", () => switchView("editor"));
+  byId("edit-current").addEventListener("click", async () => {
+    await switchView("editor");
+    if (state.selected && state.editor.id !== state.selected.id && !state.editor.isNew) {
+      await loadEditorScript(state.selected);
+    }
+  });
+  byId("new-script").addEventListener("click", () => {
+    startNewScript();
+    switchView("editor");
+  });
+  byId("editor-source").addEventListener("input", (event) => {
+    state.editor.content = event.target.value;
+    byId("editor-message").textContent = "";
+    byId("editor-message").className = "editor-message";
+    updateEditorState();
+  });
+  byId("editor-path").addEventListener("input", updateEditorState);
+  byId("editor-source").addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") return;
+    event.preventDefault();
+    const editor = event.currentTarget;
+    editor.setRangeText("    ", editor.selectionStart, editor.selectionEnd, "end");
+    state.editor.content = editor.value;
+    updateEditorState();
+  });
+  byId("validate-script").addEventListener("click", validateEditorScript);
+  byId("save-script").addEventListener("click", saveEditorScript);
   try {
     const data = await request("/api/scripts");
     state.scripts = data.scripts;

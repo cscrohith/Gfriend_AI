@@ -52,6 +52,11 @@ interact with local resources. Execution is single-run-at-a-time. Manual
 confirmation keywords need the interactive CLI and report an error in the web
 workspace.
 
+Use **Script editor** to create or edit `.txt` and `.gfscripts` files inside the
+configured scripts folder. Validate changes before saving; invalid scripts can
+still be saved as drafts. Existing files use revision checks to prevent
+overwriting changes made after the editor loaded them.
+
 ## Add a Python keyword library
 
 Register an object with `Executor.register_library`. Public Python methods are

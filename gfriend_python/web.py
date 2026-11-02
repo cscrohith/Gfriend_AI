@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
+import os
 import re
 import threading
 import uuid
@@ -12,7 +14,7 @@ from typing import Any
 from urllib.parse import unquote, urlsplit
 
 from .executor import Executor
-from .parser import ParseError, parse_file
+from .parser import ParseError, parse_file, parse_script
 from .report import render_html_report
 
 _SCRIPT_SUFFIXES = {".txt", ".gfscripts"}
@@ -20,7 +22,12 @@ _VARIABLE_NAME = re.compile(r"^[A-Za-z0-9_-]+$")
 _MAX_REQUEST_BYTES = 1_000_000
 _MAX_VARIABLES = 250
 _MAX_VARIABLE_VALUE_LENGTH = 10_000
+_MAX_SCRIPT_BYTES = 900_000
 _MAX_RETAINED_JOBS = 50
+
+
+class ScriptConflictError(ValueError):
+    """Raised when a script changed since the editor loaded it."""
 
 
 class WebApplication:
@@ -105,6 +112,146 @@ class WebApplication:
                 for variable in suite.variables
             ),
         }
+
+    def read_script(self, script_id: str) -> dict[str, str]:
+        path = self._resolve_script(script_id)
+        try:
+            content = path.read_text(encoding="utf-8-sig")
+        except (OSError, UnicodeError) as error:
+            raise ValueError(f"Cannot read script: {error}") from error
+        return {
+            "id": script_id,
+            "path": path.relative_to(self.scripts_root).as_posix(),
+            "content": content,
+            "revision": self._revision(content),
+        }
+
+    @staticmethod
+    def _revision(content: str) -> str:
+        return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+    def _validate_script_path(self, relative_name: object) -> tuple[Path, Path]:
+        if not isinstance(relative_name, str) or not relative_name.strip():
+            raise ValueError("Script path is required")
+        path_text = relative_name.strip().replace("\\", "/")
+        relative_path = Path(path_text)
+        if (
+            relative_path.is_absolute()
+            or any(part in {"", ".", ".."} or part.startswith(".") for part in relative_path.parts)
+            or relative_path.suffix.casefold() not in _SCRIPT_SUFFIXES
+        ):
+            raise ValueError("Use a relative .txt or .gfscripts path inside the scripts folder")
+        destination = (self.scripts_root / relative_path).resolve()
+        if not destination.is_relative_to(self.scripts_root):
+            raise ValueError("Script path must remain inside the configured scripts folder")
+        return relative_path, destination
+
+    @staticmethod
+    def _validate_script_content(content: object) -> str:
+        if not isinstance(content, str):
+            raise ValueError("Script content must be text")
+        try:
+            encoded = content.encode("utf-8")
+        except UnicodeEncodeError as error:
+            raise ValueError("Script content must be valid UTF-8 text") from error
+        if "\x00" in content or len(encoded) > _MAX_SCRIPT_BYTES:
+            raise ValueError(f"Script content must be at most {_MAX_SCRIPT_BYTES} bytes")
+        return content
+
+    def _write_script(self, destination: Path, content: str) -> None:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        resolved_parent = destination.parent.resolve()
+        if not resolved_parent.is_relative_to(self.scripts_root):
+            raise ValueError("Script path must remain inside the configured scripts folder")
+        temporary_path: Path | None = None
+        try:
+            temporary_path = destination.with_name(
+                f".{destination.name}.{uuid.uuid4().hex}.tmp"
+            )
+            with temporary_path.open("x", encoding="utf-8", newline="") as stream:
+                stream.write(content)
+                stream.flush()
+                os.fsync(stream.fileno())
+            temporary_path.replace(destination)
+        finally:
+            if temporary_path is not None:
+                temporary_path.unlink(missing_ok=True)
+
+    def _script_validation(self, content: str, relative_path: Path) -> dict[str, Any]:
+        try:
+            suite = parse_script(
+                content,
+                name=relative_path.stem,
+                base_dir=self.scripts_root / relative_path.parent,
+            )
+        except ParseError as error:
+            return {"valid": False, "cases": [], "validation_error": str(error)}
+        return {
+            "valid": True,
+            "cases": [case.name for case in suite.test_cases],
+            "validation_error": None,
+        }
+
+    def validate_script(self, request: object) -> dict[str, Any]:
+        if not isinstance(request, dict):
+            raise ValueError("Request body must be a JSON object")
+        relative_path, _ = self._validate_script_path(request.get("path"))
+        content = self._validate_script_content(request.get("content"))
+        return self._script_validation(content, relative_path)
+
+    def create_script(self, request: object) -> dict[str, Any]:
+        if not isinstance(request, dict):
+            raise ValueError("Request body must be a JSON object")
+        relative_path, destination = self._validate_script_path(request.get("path"))
+        content = self._validate_script_content(request.get("content"))
+        with self._lock:
+            if destination.exists():
+                raise FileExistsError("A script already exists at this path")
+            try:
+                self._write_script(destination, content)
+            except OSError as error:
+                raise ValueError(f"Cannot save script: {error}") from error
+        result = {
+            "id": self._encode_id(relative_path),
+            "path": relative_path.as_posix(),
+            "revision": self._revision(content),
+        }
+        result.update(self._script_validation(content, relative_path))
+        return result
+
+    def save_script(self, script_id: str, request: object) -> dict[str, Any]:
+        if not isinstance(request, dict):
+            raise ValueError("Request body must be a JSON object")
+        path = self._resolve_script(script_id)
+        relative_path = path.relative_to(self.scripts_root)
+        content = self._validate_script_content(request.get("content"))
+        expected_revision = request.get("revision")
+        if not isinstance(expected_revision, str) or not re.fullmatch(
+            r"[a-f0-9]{64}", expected_revision
+        ):
+            raise ValueError("A valid script revision is required")
+
+        with self._lock:
+            try:
+                current_content = path.read_text(encoding="utf-8-sig")
+            except (OSError, UnicodeError) as error:
+                raise ValueError(f"Cannot read current script: {error}") from error
+            if self._revision(current_content) != expected_revision:
+                raise ScriptConflictError(
+                    "This script changed since it was opened. Reload it before saving."
+                )
+            try:
+                self._write_script(path, content)
+            except OSError as error:
+                raise ValueError(f"Cannot save script: {error}") from error
+
+        result = {
+            "id": script_id,
+            "path": relative_path.as_posix(),
+            "revision": self._revision(content),
+        }
+        result.update(self._script_validation(content, relative_path))
+        return result
 
     def submit_run(self, request: object) -> dict[str, str]:
         if not isinstance(request, dict):
@@ -266,6 +413,21 @@ def create_server(
             except (UnicodeDecodeError, json.JSONDecodeError) as error:
                 raise ValueError("Request body must contain valid JSON") from error
 
+        def _allow_state_change(self) -> bool:
+            origin = self.headers.get("Origin")
+            if origin is None:
+                return True
+            try:
+                parsed = urlsplit(origin)
+                expected_port = self.server.server_address[1]
+                return (
+                    parsed.scheme == "http"
+                    and parsed.hostname == "127.0.0.1"
+                    and parsed.port == expected_port
+                )
+            except ValueError:
+                return False
+
         def do_GET(self) -> None:
             path = urlsplit(self.path).path
             if path == "/":
@@ -280,7 +442,15 @@ def create_server(
                 self._send_json(200, {"scripts": app.list_scripts()})
                 return
             if path.startswith("/api/scripts/"):
-                script_id = unquote(path.removeprefix("/api/scripts/"))
+                route = path.removeprefix("/api/scripts/")
+                if route.endswith("/content"):
+                    script_id = unquote(route.removesuffix("/content"))
+                    try:
+                        self._send_json(200, app.read_script(script_id))
+                    except ValueError as error:
+                        self._send_json(400, {"error": str(error)})
+                    return
+                script_id = unquote(route)
                 try:
                     self._send_json(200, app.describe_script(script_id))
                 except (ValueError, ParseError) as error:
@@ -300,17 +470,53 @@ def create_server(
             self._send_json(404, {"error": "Not found"})
 
         def do_POST(self) -> None:
-            if urlsplit(self.path).path != "/api/runs":
+            path = urlsplit(self.path).path
+            if path not in {"/api/runs", "/api/scripts", "/api/scripts/validate"}:
                 self._send_json(404, {"error": "Not found"})
                 return
             try:
-                run = app.submit_run(self._read_json())
+                request = self._read_json()
+                if not self._allow_state_change():
+                    self._send_json(403, {"error": "Cross-origin requests are not allowed"})
+                    return
+                if path == "/api/runs":
+                    run = app.submit_run(request)
+                    status = 202
+                elif path == "/api/scripts":
+                    run = app.create_script(request)
+                    status = 201
+                else:
+                    run = app.validate_script(request)
+                    status = 200
+            except FileExistsError as error:
+                self._send_json(409, {"error": str(error)})
             except RuntimeError as error:
                 self._send_json(409, {"error": str(error)})
             except (ValueError, ParseError) as error:
                 self._send_json(400, {"error": str(error)})
             else:
-                self._send_json(202, run)
+                self._send_json(status, run)
+
+        def do_PUT(self) -> None:
+            path = urlsplit(self.path).path
+            prefix = "/api/scripts/"
+            suffix = "/content"
+            if not path.startswith(prefix) or not path.endswith(suffix):
+                self._send_json(404, {"error": "Not found"})
+                return
+            script_id = unquote(path[len(prefix):-len(suffix)])
+            try:
+                request = self._read_json()
+                if not self._allow_state_change():
+                    self._send_json(403, {"error": "Cross-origin requests are not allowed"})
+                    return
+                result = app.save_script(script_id, request)
+            except ScriptConflictError as error:
+                self._send_json(409, {"error": str(error)})
+            except (ValueError, ParseError) as error:
+                self._send_json(400, {"error": str(error)})
+            else:
+                self._send_json(200, result)
 
         def log_message(self, format: str, *args: object) -> None:
             return
