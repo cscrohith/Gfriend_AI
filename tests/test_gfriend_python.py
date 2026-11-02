@@ -28,7 +28,7 @@ from gfriend_python.report import (
     write_legacy_html_report,
 )
 from gfriend_python.summary_report import render_summary_report, write_summary_report
-from gfriend_python.updater import install_release
+from gfriend_python.updater import install_from_manifest, install_release
 
 
 class RunSpecTests(unittest.TestCase):
@@ -272,6 +272,66 @@ class ParserTests(unittest.TestCase):
                 self.assertEqual(list(Path(directory).iterdir()), [])
                 with self.assertRaisesRegex(ValueError, "HTTPS"):
                     install_release("http://example.com/release.zip", checksum, directory)
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_updater_checks_manifest_versions_and_installs_matching_release(self) -> None:
+        archive_buffer = io.BytesIO()
+        with zipfile.ZipFile(archive_buffer, "w") as archive:
+            archive.writestr("app/version.txt", "2.0.0")
+        archive_bytes = archive_buffer.getvalue()
+        checksum = hashlib.sha256(archive_bytes).hexdigest()
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self) -> None:
+                if self.path == "/manifest.json":
+                    payload = (
+                        '{"name":"GFriend","version":"2.0.0",'
+                        f'"url":"http://127.0.0.1:{self.server.server_port}/release.zip",'
+                        f'"sha256":"{checksum}"}}'
+                    ).encode()
+                    content_type = "application/json"
+                else:
+                    payload = archive_bytes
+                    content_type = "application/zip"
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(payload)))
+                self.send_header("Content-Type", content_type)
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, format: str, *args: object) -> None:
+                pass
+
+        server = HTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            manifest_url = f"http://127.0.0.1:{server.server_port}/manifest.json"
+            with tempfile.TemporaryDirectory() as directory:
+                no_update = install_from_manifest(
+                    manifest_url,
+                    "GFriend",
+                    directory,
+                    current_version="2.0.0.0",
+                )
+                self.assertIsNone(no_update)
+                self.assertEqual(list(Path(directory).iterdir()), [])
+                installed = install_from_manifest(
+                    manifest_url,
+                    "GFriend",
+                    directory,
+                    current_version="1.0.0",
+                )
+                self.assertIsNotNone(installed)
+                self.assertEqual(
+                    (installed / "app" / "version.txt").read_text(),
+                    "2.0.0",
+                )
+                with self.assertRaisesRegex(ValueError, "does not match"):
+                    install_from_manifest(manifest_url, "Other", directory)
         finally:
             server.shutdown()
             server.server_close()

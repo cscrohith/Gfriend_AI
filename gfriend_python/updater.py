@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import ipaddress
+import json
 import os
+import re
 import shutil
 import stat
 import sys
@@ -16,6 +18,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024
 MAX_EXTRACTED_BYTES = 2 * 1024 * 1024 * 1024
+MAX_MANIFEST_BYTES = 1024 * 1024
 
 
 def _is_loopback(host: str) -> bool:
@@ -148,6 +151,68 @@ def install_release(
             shutil.rmtree(staging)
 
 
+def _read_manifest(url: str) -> dict[str, object]:
+    _validate_url(url)
+    opener = build_opener(_SafeRedirectHandler)
+    request = Request(url, headers={"User-Agent": "GFriend-Python-Updater/1"})
+    with opener.open(request, timeout=30) as response:
+        _validate_url(response.geturl())
+        payload = response.read(MAX_MANIFEST_BYTES + 1)
+    if len(payload) > MAX_MANIFEST_BYTES:
+        raise ValueError("Release manifest exceeds the size limit.")
+    try:
+        manifest = json.loads(payload)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"Release manifest is not valid UTF-8 JSON: {error}") from error
+    if not isinstance(manifest, dict):
+        raise ValueError("Release manifest must be a JSON object.")
+    return manifest
+
+
+def _version_parts(value: str) -> tuple[int, ...]:
+    version = value.strip()
+    if not re.fullmatch(r"\d+(?:\.\d+){1,3}", version):
+        raise ValueError(f"Version must contain two to four numeric components: {value!r}")
+    return tuple(int(part) for part in version.split("."))
+
+
+def _version_is_newer(candidate: str, current: str) -> bool:
+    candidate_parts = _version_parts(candidate)
+    current_parts = _version_parts(current)
+    width = max(len(candidate_parts), len(current_parts))
+    return candidate_parts + (0,) * (width - len(candidate_parts)) > (
+        current_parts + (0,) * (width - len(current_parts))
+    )
+
+
+def install_from_manifest(
+    manifest_url: str,
+    release_name: str,
+    install_root: str | Path,
+    *,
+    current_version: str | None = None,
+) -> Path | None:
+    """Fetch a trusted HTTPS manifest and install a matching newer release."""
+    manifest = _read_manifest(manifest_url)
+    name = manifest.get("name")
+    version = manifest.get("version")
+    release_url = manifest.get("url")
+    checksum = manifest.get("sha256")
+    if not isinstance(name, str) or name.casefold() != release_name.casefold():
+        raise ValueError(f"Release manifest name does not match requested release {release_name!r}.")
+    if not isinstance(version, str):
+        raise ValueError("Release manifest must contain a string version.")
+    _version_parts(version)
+    if current_version is not None:
+        _version_parts(current_version)
+        if not _version_is_newer(version, current_version):
+            return None
+    if not isinstance(release_url, str) or not isinstance(checksum, str):
+        raise ValueError("Release manifest must contain string url and sha256 fields.")
+    _validate_url(release_url)
+    return install_release(release_url, checksum, install_root)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Install a verified GFriend release ZIP into a new versioned directory."
@@ -162,6 +227,32 @@ def main(argv: list[str] | None = None) -> int:
         print(f"gfriend-updater: {error}", file=sys.stderr)
         return 2
     print(destination)
+    return 0
+
+
+def manifest_main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Check an HTTPS release manifest and install a newer verified release."
+    )
+    parser.add_argument("manifest_url", help="HTTPS JSON release manifest URL")
+    parser.add_argument("release_name", help="Name that must match the manifest")
+    parser.add_argument("install_root", type=Path, help="Directory under which the release is installed")
+    parser.add_argument("--current-version", help="Installed numeric version; omit to install the manifest version")
+    args = parser.parse_args(argv)
+    try:
+        destination = install_from_manifest(
+            args.manifest_url,
+            args.release_name,
+            args.install_root,
+            current_version=args.current_version,
+        )
+    except (OSError, URLError, ValueError) as error:
+        print(f"gfriend-check-update: {error}", file=sys.stderr)
+        return 2
+    if destination is None:
+        print("No newer release is available.")
+    else:
+        print(destination)
     return 0
 
 

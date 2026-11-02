@@ -28,7 +28,8 @@ python -m gfriend_python.run_spec path\to\run-spec.xml --var UserName=alice
 python -m gfriend_python.legacy_report path\to\legacy-output.xml
 python -m gfriend_python.summary_report path\to\report-folder
 python -m gfriend_python path\to\script.txt --legacy-xml-report output\output.xml
-python -m gfriend_python.updater https://example.com/release.zip <sha256> path\to\releases
+gfriend-update https://example.com/release.zip SHA256_VALUE path\to\releases
+gfriend-check-update https://example.com/gfriend.json GFriend path\to\releases --current-version 1.0.0
 ```
 
 The command exits with status `0` when selected cases pass, `1` when execution
@@ -142,6 +143,11 @@ adapter, executing a remote block reports an error.
   installs to a new checksum-versioned directory without replacing existing
   releases. This is a safe installer primitive, not yet a full replacement for
   the legacy authenticated release service or self-updating Windows UI.
+- `gfriend-check-update MANIFEST_URL NAME install-folder [--current-version X.Y.Z]`
+  reads a bounded HTTPS JSON manifest containing `name`, `version`, `url`, and
+  `sha256`; it installs only a matching newer numeric version and keeps the
+  verified immutable-release behavior above. The manifest must be served by an
+  operator-controlled endpoint.
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value
