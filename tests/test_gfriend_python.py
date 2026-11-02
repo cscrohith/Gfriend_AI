@@ -113,6 +113,70 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_xml_library_loads_queries_mutates_and_saves_document(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            saved_xml = root / "saved.xml"
+            result = Executor().run(
+                parse_script(
+                    'using XML\n'
+                    'Case\n{\n'
+                    '  XML.Load(<root><item id="1">before</item></root>)\n'
+                    '  XML.Get Attribute(${Id},/root/item,id)\n'
+                    '  XML.Get Inner Text(${Text},/root/item)\n'
+                    '  XML.Replace Inner Text(after,/root/item)\n'
+                    '  XML.Append To Inner Text(!,/root/item)\n'
+                    '  XML.AppendNode(/root,<extra>value</extra>)\n'
+                    f'  XML.Save File({saved_xml})\n'
+                    '}\n'
+                )
+            )
+
+            self.assertEqual(result.status, Status.PASS)
+            outputs = [step.output for step in result.test_cases[0].steps]
+            self.assertEqual(outputs[1:5], ["1", "before", "before", "after"])
+            self.assertEqual(ET.parse(saved_xml).getroot().findtext("item"), "after!")
+            self.assertEqual(ET.parse(saved_xml).getroot().findtext("extra"), "value")
+
+    def test_xml_library_reports_unloaded_invalid_and_missing_nodes(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'using XML\n'
+                'Case\n{\n'
+                '  XML.Get Inner Text(${Text},/root/item)\n'
+                '  XML.Load(<root>)\n'
+                '  XML.Load(<root />)\n'
+                '  XML.Get Inner Text(${Text},/root/missing)\n'
+                '}\n'
+            )
+        )
+
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertEqual(
+            [step.output for step in result.test_cases[0].steps],
+            [
+                "XML is not loaded. Use Load or Load From File before getting values",
+                "Error with xml",
+                "",
+                "Can not find xml node with given xpath",
+            ],
+        )
+
+    def test_xml_library_resolves_namespaced_absolute_paths(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'using XML\n'
+                'Case\n{\n'
+                '  XML.Load(<p:root xmlns:p="urn:example"><p:item>found</p:item></p:root>)\n'
+                '  XML.Get Inner Text(${Text},/p:root/p:item)\n'
+                '  Pass(${Text})\n'
+                '}\n'
+            )
+        )
+
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(result.test_cases[0].steps[-1].output, "found")
+
     def test_json_library_loads_selects_and_updates_json_values(self) -> None:
         result = Executor().run(
             parse_script(

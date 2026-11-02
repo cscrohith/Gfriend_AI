@@ -31,6 +31,7 @@ from .models import (
 from .parser import ParseError, _parse_statement, parse_file
 from .json_library import JsonLibrary
 from .regex_library import RegexLibrary
+from .xml_library import XmlLibrary
 
 _VARIABLE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
 
@@ -170,6 +171,14 @@ class Executor:
                 self.register_library("Regex", RegexLibrary(self.variables))
             elif library.casefold() == "json":
                 self.register_library("Json", JsonLibrary(self.variables))
+            elif library.casefold() == "xml":
+                self.register_library(
+                    "XML",
+                    XmlLibrary(
+                        self.variables,
+                        script_folder=suite.script_folder,
+                    ),
+                )
 
     def _set_variables(self, variables: dict[str, str]) -> None:
         for key, value in variables.items():
@@ -290,6 +299,11 @@ class Executor:
                 variable_arguments = {0}
             elif keyword_name == "addjsonelement":
                 variable_arguments = {0}
+        elif library_name == "xml" and keyword_name in {
+            "getattribute",
+            "getinnertext",
+        }:
+            variable_arguments = {0}
         resource_names = {
             alias.casefold(): path for alias, path in (self._suite.resources.items() if self._suite else [])
         }
