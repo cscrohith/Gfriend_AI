@@ -96,11 +96,13 @@ class Executor:
         variables: dict[str, str] | None = None,
         sleep: Callable[[float], None] = time.sleep,
         output_folder: str | Path | None = None,
+        user_interaction: Callable[[str, bool], KeywordResult] | None = None,
     ) -> None:
         self.variables: dict[str, str] = {}
         self._execution_variables: dict[str, str] = {}
         self._libraries: dict[str, object] = {}
         self._sleep = sleep
+        self._user_interaction = user_interaction
         self._suite: TestSuite | None = None
         self.output_folder = Path(output_folder).resolve() if output_folder else Path.cwd()
         self._flow = ""
@@ -356,6 +358,20 @@ class Executor:
         if normalized == "log":
             self._require_arguments(keyword, arguments, 1)
             return KeywordResult(Status.PASS, arguments[0])
+        if normalized in {"waitforuserconfirm", "requestuserverification"}:
+            self._require_arguments(keyword, arguments, 1)
+            if self._user_interaction is None:
+                return KeywordResult(
+                    Status.ERROR,
+                    f"{keyword} requires an interactive user callback.",
+                )
+            result = self._user_interaction(
+                arguments[0],
+                normalized == "requestuserverification",
+            )
+            if not isinstance(result, KeywordResult):
+                raise TypeError("User interaction callback must return KeywordResult")
+            return result
         if normalized == "sleep":
             self._require_arguments(keyword, arguments, 1)
             seconds = float(arguments[0])

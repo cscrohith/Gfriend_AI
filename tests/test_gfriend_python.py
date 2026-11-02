@@ -651,6 +651,37 @@ class ExecutorTests(unittest.TestCase):
             "Get Windows Version is only available on Windows.",
         )
 
+    def test_manual_interaction_keywords_use_injected_callback(self) -> None:
+        interactions: list[tuple[str, bool]] = []
+
+        def interact(message: str, verification: bool) -> KeywordResult:
+            interactions.append((message, verification))
+            if verification:
+                return KeywordResult(Status.FAIL, "image is blurry")
+            return KeywordResult(Status.PASS)
+
+        result = Executor(user_interaction=interact).run(
+            parse_script(
+                'Case\n{\n'
+                '  Wait For User Confirm(Load paper)\n'
+                '  Request User Verification(Check output)\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.FAIL)
+        self.assertEqual(interactions, [("Load paper", False), ("Check output", True)])
+        self.assertEqual(result.test_cases[0].steps[1].output, "image is blurry")
+
+    def test_manual_interaction_reports_missing_callback(self) -> None:
+        result = Executor().run(
+            parse_script("Case\n{\n  Wait For User Confirm(Continue)\n}\n")
+        )
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertEqual(
+            result.test_cases[0].steps[0].output,
+            "Wait For User Confirm requires an interactive user callback.",
+        )
+
     def test_foreachrow_reads_excel_table(self) -> None:
         from openpyxl import Workbook
         from openpyxl.worksheet.table import Table

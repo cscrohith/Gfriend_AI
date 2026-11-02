@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from .executor import Executor
+from .models import KeywordResult, Status
 from .parser import ParseError, parse_file, parse_variable_file
 from .report import write_html_report
 
@@ -31,6 +32,24 @@ def _load_plugin(specification: str) -> tuple[str, object]:
     return str(name), plugin
 
 
+def _interact_with_user(message: str, verification: bool) -> KeywordResult:
+    if not verification:
+        input(f"\n{message}\nPress Enter when ready to continue.")
+        return KeywordResult(Status.PASS)
+
+    while True:
+        choice = input(f"\n{message}\nVerification result [pass/fail]: ").strip().casefold()
+        if choice in {"pass", "p"}:
+            status = Status.PASS
+            break
+        if choice in {"fail", "f"}:
+            status = Status.FAIL
+            break
+        print("Enter 'pass' or 'fail'.", file=sys.stderr)
+    reason = input("Reason (optional): ").strip()
+    return KeywordResult(status, reason)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run a GFriend test script with Python keyword libraries.")
     parser.add_argument("script", type=Path, help="Path to a .txt, .gfscripts, or other GFriend script")
@@ -49,7 +68,10 @@ def main(argv: list[str] | None = None) -> int:
             variables.update(parse_variable_file(variable_file))
         variables.update(dict(args.var))
         suite = parse_file(args.script, variables)
-        executor = Executor(output_folder=args.output_folder)
+        executor = Executor(
+            output_folder=args.output_folder,
+            user_interaction=_interact_with_user,
+        )
         for plugin_spec in args.plugin:
             name, plugin = _load_plugin(plugin_spec)
             executor.register_library(name, plugin)

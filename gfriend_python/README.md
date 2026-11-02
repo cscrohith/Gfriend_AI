@@ -79,6 +79,9 @@ print(result.to_dict())
   Repeat/For/While/dataset-row blocks
 - `Get System Information` (processor), `Get RAM`, and Windows-only
   `Get Windows Version`
+- `Wait For User Confirm` and `Request User Verification` through an injected
+  callback; the CLI uses text prompts and library users can provide their own
+  interaction handler
 - `Stop Test Case`, `Stop Test Suite`, `BreakLoop`, and `ContinueLoop`
 - Custom `.gflib` methods support `Return With Pass`, `Return With Fail`, and
   `Return With Error`; a custom library can use its own `using` declarations
