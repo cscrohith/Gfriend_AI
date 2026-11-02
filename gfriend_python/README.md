@@ -25,6 +25,7 @@ python -m gfriend_python path\to\script.txt --report output\result.json --output
 python -m gfriend_python path\to\script.txt --html-report output\report.html
 python -m gfriend_python path\to\script.txt --xml-report output\report.xml
 python -m gfriend_python.run_spec path\to\run-spec.xml --var UserName=alice
+python -m gfriend_python.legacy_report path\to\legacy-output.xml
 ```
 
 The command exits with status `0` when selected cases pass, `1` when execution
@@ -115,6 +116,9 @@ adapter, executing a remote block reports an error.
   validation remains enabled and cannot be disabled
 - `using LP` builds a shell-quoted CUPS `lp` command from a selected file,
   printer, copy count, and options; it returns the command without executing it
+- `gfriend-legacy-report output.xml` converts a legacy GFriend XML execution
+  report to standalone HTML, preserving nested results and available remote
+  block output; the installed command also accepts `--output path.html`
 - `${Name}=value` declarations, `.gfvar` files, and `--var Name=value` overrides
 - `Library.Keyword(arg1, arg2)` and built-in `Keyword(...)`
 - `Repeat: count { ... }` with `${R}` iteration value

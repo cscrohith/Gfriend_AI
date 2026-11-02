@@ -18,6 +18,7 @@ from gfriend_python import (
 )
 from gfriend_python.parser import parse_file
 from gfriend_python.run_spec import main as run_spec_main, run_spec
+from gfriend_python.report import render_legacy_xml_report, write_legacy_html_report
 
 
 class RunSpecTests(unittest.TestCase):
@@ -116,6 +117,57 @@ class KeywordLibrary:
 
 
 class ParserTests(unittest.TestCase):
+    def test_legacy_xml_report_renders_case_tree_and_merges_remote_results(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "output.xml"
+            source.write_text(
+                '<?xml version="1.0"?>'
+                '<TestSuite Name="Legacy &amp; Suite">'
+                "<StartTime>2025-01-01T10:00:00</StartTime>"
+                "<TestCase Name=\"Pass &lt;case&gt;\"><Result>PASS</Result>"
+                "<StartTime>2025-01-01T10:00:01</StartTime>"
+                '<Statement StatementName="Pass(&lt;script&gt;)">'
+                "<Result>PASS</Result><Output>&lt;script&gt;bad&lt;/script&gt;</Output>"
+                "</Statement></TestCase>"
+                '<TestCase Name="Remote case"><Result>FAIL</Result>'
+                '<Remote BlockID="remote-1"><Result>FAIL</Result></Remote>'
+                "</TestCase></TestSuite>",
+                encoding="utf-8",
+            )
+            (root / "output_remote-1.xml").write_text(
+                '<Remote><Statement StatementName="Remote.Log()">'
+                "<Result>FAIL</Result><Output>remote failure</Output>"
+                "</Statement></Remote>",
+                encoding="utf-8",
+            )
+
+            html = render_legacy_xml_report(source)
+            output_path = write_legacy_html_report(source)
+
+            self.assertIn("Legacy &amp; Suite", html)
+            self.assertIn("&lt;script&gt;bad&lt;/script&gt;", html)
+            self.assertNotIn("<script>bad</script>", html)
+            self.assertIn("remote failure", html)
+            self.assertIn("<strong>1</strong> PASS", html)
+            self.assertIn("<strong>1</strong> FAIL", html)
+            self.assertEqual(output_path, root / "report.html")
+            self.assertEqual(output_path.read_text(encoding="utf-8"), html)
+
+    def test_legacy_xml_report_strips_invalid_xml_characters(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "output.xml"
+            source.write_text(
+                '<TestSuite Name="Legacy"><TestCase Name="Case">'
+                "<Result>PASS</Result><Statement><Output>valid\x01text</Output>"
+                "</Statement></TestCase></TestSuite>",
+                encoding="utf-8",
+            )
+
+            html = render_legacy_xml_report(source)
+
+            self.assertIn("validtext", html)
+
     def test_lp_library_builds_safe_command_and_stores_it(self) -> None:
         result = Executor().run(
             parse_script(
