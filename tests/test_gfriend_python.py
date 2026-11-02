@@ -538,6 +538,42 @@ class ExecutorTests(unittest.TestCase):
             "Cannot convert given string into DateTime Format",
         )
 
+    def test_timestamp_conversion_concatenation_and_numeric_comparison(self) -> None:
+        result = Executor().run(
+            parse_script(
+                '${Date}=03/12/24 14:05\n'
+                '${First}=Hello\n'
+                '${Second}=World\n'
+                '${FirstSecond}=joined\n'
+                'Case\n{\n'
+                '  Convert Time Stamp Format(${Date},MM/dd/yy H:mm,"MMM dd, yyyy")\n'
+                '  Concatenate Variable Values And Store Result(${First},${Second},${Combined})\n'
+                '  Concatenate Variables And Store Result(${First},${Second},${Lookup})\n'
+                '  Has Value Increased(2,3)\n'
+                '  Pass(${Date}-${Combined}-${Lookup})\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.PASS)
+        outputs = [step.output for step in result.test_cases[0].steps]
+        self.assertEqual(outputs[0], "${Date} = Mar 12, 2024")
+        self.assertEqual(outputs[1], "${Combined} = HelloWorld")
+        self.assertEqual(outputs[2], "${Lookup} : joined")
+        self.assertEqual(outputs[3], "Value increased: 3.0 > 2.0")
+        self.assertEqual(outputs[4], "Mar 12, 2024-HelloWorld-joined")
+
+    def test_timestamp_conversion_reports_invalid_source(self) -> None:
+        result = Executor().run(
+            parse_script(
+                '${Date}=not-a-date\n'
+                'Case\n{\n'
+                '  ConvertTimeStampFormat(${Date},MM/dd/yy,yyyy)\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.ERROR)
+        self.assertIn("Could not convert timestamp", result.test_cases[0].steps[0].output)
+
     def test_foreachrow_reads_excel_table(self) -> None:
         from openpyxl import Workbook
         from openpyxl.worksheet.table import Table

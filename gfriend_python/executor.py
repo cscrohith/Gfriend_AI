@@ -223,6 +223,9 @@ class Executor:
             "substring": {3},
             "count": {0},
             "splitandstoreword": {3},
+            "converttimestampformat": {0},
+            "concatenatevariablesandstoreresult": {0, 1, 2},
+            "concatenatevariablevaluesandstoreresult": {2},
         }.get(keyword_name, set())
         resource_names = {
             alias.casefold(): path for alias, path in (self._suite.resources.items() if self._suite else [])
@@ -300,6 +303,23 @@ class Executor:
             if left == right:
                 return KeywordResult(Status.PASS)
             return KeywordResult(Status.FAIL, f"{amount} and {arguments[1]} are not same")
+        if normalized == "hasvalueincreased":
+            self._require_arguments(keyword, arguments, 2)
+            if not arguments[0]:
+                return KeywordResult(Status.FAIL, "oldValue cannot be null or empty.")
+            if not arguments[1]:
+                return KeywordResult(Status.FAIL, "newValue cannot be null or empty.")
+            try:
+                old_value = float(arguments[0])
+            except ValueError:
+                return KeywordResult(Status.FAIL, f"Invalid oldValue: '{arguments[0]}' is not a valid number.")
+            try:
+                new_value = float(arguments[1])
+            except ValueError:
+                return KeywordResult(Status.FAIL, f"Invalid newValue: '{arguments[1]}' is not a valid number.")
+            if new_value > old_value:
+                return KeywordResult(Status.PASS, f"Value increased: {new_value} > {old_value}")
+            return KeywordResult(Status.FAIL, f"Value not increased: {new_value} <= {old_value}")
         if normalized == "log":
             self._require_arguments(keyword, arguments, 1)
             return KeywordResult(Status.PASS, arguments[0])
@@ -422,6 +442,41 @@ class Executor:
             timestamp = datetime.now().strftime(self._strftime_format(format_string))
             self.variables[arguments[0]] = timestamp
             return KeywordResult(Status.PASS, f"{arguments[0]} = {timestamp}")
+        if normalized == "converttimestampformat":
+            self._require_arguments(keyword, arguments, 3)
+            variable = arguments[0].strip()
+            if variable not in self.variables:
+                raise KeyError(f"Variable '{variable}' is not defined")
+            source_format = self._strftime_format(arguments[1])
+            target_format = self._strftime_format(arguments[2])
+            try:
+                value = datetime.strptime(self.variables[variable], source_format).strftime(target_format)
+            except ValueError as error:
+                return KeywordResult(Status.ERROR, f"Could not convert timestamp: {error}")
+            self.variables[variable] = value
+            return KeywordResult(Status.PASS, f"{variable} = {value}")
+        if normalized == "concatenatevariablesandstoreresult":
+            self._require_arguments(keyword, arguments, 3)
+            variable_suffix = "".join(
+                argument.replace("$", "").replace("{", "").replace("}", "")
+                for argument in arguments[:2]
+            )
+            value = self.variables.get(f"${{{variable_suffix}}}", "")
+            if not value:
+                return KeywordResult(Status.PASS, f"{arguments[2]} : {variable_suffix}")
+            self.variables[arguments[2].strip()] = value
+            return KeywordResult(Status.PASS, f"{arguments[2]} : {value}")
+        if normalized == "concatenatevariablevaluesandstoreresult":
+            self._require_arguments(keyword, arguments, 3)
+            if not arguments[0]:
+                return KeywordResult(Status.FAIL, "First string value cannot be null or empty.")
+            if not arguments[1]:
+                return KeywordResult(Status.FAIL, "Second string value cannot be null or empty.")
+            if not arguments[2]:
+                return KeywordResult(Status.FAIL, "Result variable name cannot be null or empty.")
+            value = arguments[0] + arguments[1]
+            self.variables[arguments[2].strip()] = value
+            return KeywordResult(Status.PASS, f"{arguments[2]} = {value}")
         if normalized == "gettimedifference":
             self._require_arguments(keyword, arguments, 3)
             try:

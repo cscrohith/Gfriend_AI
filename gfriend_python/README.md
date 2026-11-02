@@ -73,6 +73,8 @@ print(result.to_dict())
 - String helpers: `Trim`, `Replace`, `Substring`, `Count`, and
   `SplitAndStoreWord`
 - `Get Time Difference`, `Get Random Number`, and `Append To File`
+- `Convert Time Stamp Format`, both concatenation helpers, and
+  `Has Value Increased`
 - `Stop Test Case`, `Stop Test Suite`, `BreakLoop`, and `ContinueLoop`
 - Custom `.gflib` methods support `Return With Pass`, `Return With Fail`, and
   `Return With Error`; a custom library can use its own `using` declarations
