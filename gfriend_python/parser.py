@@ -62,6 +62,52 @@ def _strip_comment(line: str) -> str:
     return line
 
 
+def _logical_lines(source: str) -> list[tuple[int, str]]:
+    lines: list[tuple[int, str]] = []
+    pending: str | None = None
+    pending_line = 0
+    parenthesis_depth = 0
+    quote: str | None = None
+    escaped = False
+
+    for line_number, raw in enumerate(source.splitlines(), start=1):
+        stripped = _strip_comment(raw).strip()
+        if not stripped:
+            continue
+        if pending is None:
+            pending = stripped
+            pending_line = line_number
+        else:
+            pending = f"{pending} {stripped}"
+
+        for character in stripped:
+            if escaped:
+                escaped = False
+                continue
+            if character == "\\":
+                escaped = True
+                continue
+            if quote:
+                if character == quote:
+                    quote = None
+            elif character in ("'", '"'):
+                quote = character
+            elif character == "(":
+                parenthesis_depth += 1
+            elif character == ")":
+                parenthesis_depth = max(0, parenthesis_depth - 1)
+
+        if parenthesis_depth == 0:
+            lines.append((pending_line, pending))
+            pending = None
+            quote = None
+            escaped = False
+
+    if pending is not None:
+        lines.append((pending_line, pending))
+    return lines
+
+
 def _read_arguments(source: str, line_number: int) -> list[str]:
     arguments: list[str] = []
     current: list[str] = []
@@ -205,6 +251,8 @@ def _parse_body(
                     if re.fullmatch(r"\d+|\$\{[A-Za-z0-9_-]+\}", candidate_limit):
                         condition_text = candidate_condition.strip()
                         max_iterations = candidate_limit
+                    elif not candidate_limit:
+                        condition_text = candidate_condition.strip()
                 if not condition_text:
                     raise ParseError(f"While condition is missing on line {line_number}")
                 while_pass = not condition_text.startswith("!")
@@ -341,9 +389,9 @@ def parse_script(
 ) -> TestSuite:
     """Parse a GFriend script's variables, library declarations, cases, and steps."""
     lines = [
-        (line_number, stripped)
-        for line_number, raw in enumerate(source.splitlines(), start=1)
-        if (stripped := _strip_comment(raw).strip()) and not stripped.startswith("///")
+        (line_number, text)
+        for line_number, text in _logical_lines(source)
+        if not text.startswith("///")
     ]
     suite = TestSuite(name=name, test_cases=[])
     suite.script_folder = str(Path(base_dir).resolve()) if base_dir is not None else str(Path.cwd())

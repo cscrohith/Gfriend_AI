@@ -56,7 +56,8 @@ print(result.to_dict())
 - `Repeat: count { ... }` with `${R}` iteration value
 - `Repeat: 10s { ... }` for time-based repetition; `For: a, b { ... }` with `${ITEM}`
 - `While: Keyword(...): max_iterations { ... }` (default maximum: 50), with
-  literal or variable iteration limits and colons supported inside arguments
+  literal or variable iteration limits, colons inside arguments, and multiline
+  keyword arguments
 - `dataset data.xlsx as Data` with `ForEachRow: Data.Sheet.Table { ... }`
   for Excel named tables (and CSV rows), or
   `SpreadSheetForEachRow: Data.Sheet.Name { ... }` for all worksheet rows,

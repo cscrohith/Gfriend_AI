@@ -145,6 +145,40 @@ class ParserTests(unittest.TestCase):
             2,
         )
 
+    def test_parser_joins_multiline_keyword_arguments(self) -> None:
+        class CaptureLibrary:
+            def capture(self, first: str, second: str) -> KeywordResult:
+                return KeywordResult(Status.PASS, f"{first}:{second}")
+
+        suite = parse_script(
+            'using Capture\n'
+            'Case\n{\n'
+            '  Capture.Capture(first,\n'
+            '      second)\n'
+            '}\n'
+        )
+        executor = Executor()
+        executor.register_library("Capture", CaptureLibrary())
+        result = executor.run(suite)
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(result.test_cases[0].steps[0].output, "first:second")
+        self.assertEqual(result.test_cases[0].steps[0].line_number, 4)
+
+    def test_while_accepts_trailing_colon_as_default_limit(self) -> None:
+        result = Executor().run(
+            parse_script(
+                'Loop\n{\n'
+                '  While:Equals(one,two):\n'
+                '  {\n'
+                '    Fail(should not execute)\n'
+                '  }\n'
+                '  Pass(done)\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual([step.output for step in result.test_cases[0].steps], ["'one' does not equal 'two'", "done"])
+
     def test_reports_malformed_script_with_line_number(self) -> None:
         with self.assertRaisesRegex(ParseError, "line 3"):
             parse_script("Case\n{\n  Pass(ok\n}\n")
