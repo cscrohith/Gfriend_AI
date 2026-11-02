@@ -24,10 +24,17 @@ python -m gfriend_python path\to\script.txt --variable-file path\to\common.gfvar
 python -m gfriend_python path\to\script.txt --report output\result.json --output-folder output
 python -m gfriend_python path\to\script.txt --html-report output\report.html
 python -m gfriend_python path\to\script.txt --xml-report output\report.xml
+python -m gfriend_python.run_spec path\to\run-spec.xml --var UserName=alice
 ```
 
 The command exits with status `0` when selected cases pass, `1` when execution
 reports a failure or error, and `2` for invalid input or file errors.
+
+The run-spec command reads the legacy `TestRuns` XML shape, including suite
+selection, repeat counts, and output paths, and aggregates the repeated suite
+results into one report. Relative suite and output paths resolve from the
+run-spec file. Device configuration fields are rejected until Python device
+libraries are available.
 
 ## Open the web execution workspace
 

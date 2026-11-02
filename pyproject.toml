@@ -12,6 +12,7 @@ dependencies = ["openpyxl>=3.1"]
 [project.scripts]
 gfriend-python = "gfriend_python.cli:main"
 gfriend-web = "gfriend_python.web:main"
+gfriend-run-spec = "gfriend_python.run_spec:main"
 
 [tool.setuptools]
 packages = ["gfriend_python"]

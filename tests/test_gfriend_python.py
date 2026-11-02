@@ -14,6 +14,94 @@ from gfriend_python import (
     render_xml_report,
 )
 from gfriend_python.parser import parse_file
+from gfriend_python.run_spec import main as run_spec_main, run_spec
+
+
+class RunSpecTests(unittest.TestCase):
+    def test_runs_repeated_suites_and_selected_cases_from_relative_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "suite.txt"
+            script.write_text(
+                "Selected\n{\n"
+                "  Pass(selected)\n"
+                "}\n"
+                "Skipped\n{\n"
+                "  Fail(skipped)\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            spec = root / "run.xml"
+            spec.write_text(
+                '<TestRuns Repeat="2">\n'
+                "  <OutputPath>results</OutputPath>\n"
+                '  <TestSuite Repeat="2">\n'
+                "    <TestSuitePath>suite.txt</TestSuitePath>\n"
+                "    <TestCase>Selected</TestCase>\n"
+                "  </TestSuite>\n"
+                "</TestRuns>\n",
+                encoding="utf-8",
+            )
+
+            result = run_spec(spec)
+
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(len(result.test_cases), 4)
+            self.assertTrue(all(case.name == "Selected" for case in result.test_cases))
+            self.assertTrue(
+                all(case.steps[0].output == "selected" for case in result.test_cases)
+            )
+            self.assertEqual(len(list((root / "results").iterdir())), 4)
+
+    def test_run_spec_cli_writes_aggregated_xml_and_json_reports(self) -> None:
+        import json
+        from contextlib import redirect_stdout
+        from io import StringIO
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "suite.txt").write_text(
+                "Case\n{\n  Pass(ok)\n}\n",
+                encoding="utf-8",
+            )
+            spec = root / "run.xml"
+            spec.write_text(
+                "<TestRuns><TestSuite><TestSuitePath>suite.txt</TestSuitePath>"
+                "<TestCase>Case</TestCase></TestSuite></TestRuns>",
+                encoding="utf-8",
+            )
+            json_report = root / "nested" / "report.json"
+            xml_report = root / "nested" / "report.xml"
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                exit_code = run_spec_main(
+                    [
+                        str(spec),
+                        "--report",
+                        str(json_report),
+                        "--xml-report",
+                        str(xml_report),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(json.loads(json_report.read_text())["status"], "PASS")
+            self.assertEqual(ET.parse(xml_report).getroot().findtext("Result"), "PASS")
+            self.assertEqual(stdout.getvalue(), "")
+
+    def test_run_spec_rejects_unsupported_device_configuration(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "suite.txt").write_text("Case\n{\n}\n", encoding="utf-8")
+            spec = root / "run.xml"
+            spec.write_text(
+                "<TestRuns><TestSuite><TestSuitePath>suite.txt</TestSuitePath>"
+                "<DefaultDevice>printer</DefaultDevice></TestSuite></TestRuns>",
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "device.*not supported"):
+                run_spec(spec)
 
 
 class KeywordLibrary:
