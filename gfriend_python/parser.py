@@ -7,6 +7,7 @@ from pathlib import Path
 from .models import (
     ConditionalBlock,
     ForEachRowBlock,
+    ForSelectedRowBlock,
     ForBlock,
     RepeatBlock,
     Runnable,
@@ -20,12 +21,14 @@ from .models import (
 _VARIABLE = re.compile(r"^\$\{([A-Za-z0-9_-]+)\}\s*=\s*(.*)$")
 _USING = re.compile(r"^using\s+([^\s]+)(?:\s+as\s+([^\s]+))?", re.IGNORECASE)
 _DATASET = re.compile(r"^dataset\s+(.+?)\s+as\s+([^\s]+)$", re.IGNORECASE)
+_RESOURCE = re.compile(r"^resource\s+(.+?)\s+as\s+([^\s]+)$", re.IGNORECASE)
 _BLOCK = re.compile(
-    r"^(@)?(repeat|for|while|foreachrow|spreadsheetforeachrow|if)\s*:\s*(.*?)\s*(\{)?$",
+    r"^(@)?(repeat|for|while|for\s*each\s*row|for\s*selected\s*row|spread\s*sheet\s*for\s*each\s*row|foreachrow|forselectedrow|spreadsheetforeachrow|if)\s*:\s*(.*?)\s*(\{)?$",
     re.IGNORECASE,
 )
 _BRANCH = re.compile(r"^(@)?(fail|error)\s*:\s*(\{)?$", re.IGNORECASE)
 _VARIABLE_REFERENCE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
+_ROW_FILTER = re.compile(r"^([A-Za-z0-9_-]+)\s*(>=|<=|!=|=|>|<)\s*(.+)$")
 
 
 class ParseError(ValueError):
@@ -181,7 +184,7 @@ def _parse_body(
             ignore_result, kind, value, inline_open = block_match.groups()
             index = _require_open_brace(lines, index + 1, bool(inline_open), line_number)
             nested_body, index = _parse_body(lines, index, case_name=case_name)
-            normalized_kind = kind.casefold()
+            normalized_kind = re.sub(r"\s+", "", kind).casefold()
             if normalized_kind == "repeat":
                 if not value:
                     raise ParseError(f"Repeat count is missing on line {line_number}")
@@ -227,6 +230,31 @@ def _parse_body(
                         parts[0].strip(),
                         parts[1].strip(),
                         parts[2].strip(),
+                        nested_body,
+                        line_number,
+                        bool(ignore_result),
+                    )
+                )
+                continue
+            if normalized_kind == "forselectedrow":
+                parts = value.split(".")
+                if len(parts) != 4 or not all(part.strip() for part in parts):
+                    raise ParseError(
+                        f"Expected dataset.sheet.table.column<operator>value in ForSelectedRow on line {line_number}"
+                    )
+                filter_match = _ROW_FILTER.match(parts[3].strip())
+                if filter_match is None:
+                    raise ParseError(f"Invalid ForSelectedRow filter on line {line_number}")
+                column, operator, raw_values = filter_match.groups()
+                filters = {column: (operator, [part.strip() for part in raw_values.split(",")])}
+                if not all(filters[column][1]):
+                    raise ParseError(f"ForSelectedRow filter has an empty value on line {line_number}")
+                body.append(
+                    ForSelectedRowBlock(
+                        parts[0].strip(),
+                        parts[1].strip(),
+                        parts[2].strip(),
+                        filters,
                         nested_body,
                         line_number,
                         bool(ignore_result),
@@ -279,6 +307,7 @@ def parse_script(
         if (stripped := _strip_comment(raw).strip()) and not stripped.startswith("///")
     ]
     suite = TestSuite(name=name, test_cases=[])
+    suite.script_folder = str(Path(base_dir).resolve()) if base_dir is not None else str(Path.cwd())
 
     index = 0
     while index < len(lines):
@@ -287,7 +316,11 @@ def parse_script(
         variable_match = _VARIABLE.match(text)
         if using_match:
             library, alias = using_match.groups()
-            suite.libraries[alias or library] = library
+            library_path = Path(library)
+            if library_path.suffix.casefold() == ".gflib" and not library_path.is_absolute() and base_dir is not None:
+                library = str((Path(base_dir) / library_path).resolve())
+            library_name = alias or (library_path.stem if library_path.suffix.casefold() == ".gflib" else library)
+            suite.libraries[library_name] = library
             index += 1
             continue
         dataset_match = _DATASET.match(text)
@@ -300,6 +333,18 @@ def parse_script(
             if not dataset_path.is_absolute() and base_dir is not None:
                 dataset_path = Path(base_dir) / dataset_path
             suite.datasets[alias] = str(dataset_path.resolve())
+            index += 1
+            continue
+        resource_match = _RESOURCE.match(text)
+        if resource_match:
+            path_text, alias = resource_match.groups()
+            path_text = path_text.strip()
+            if len(path_text) >= 2 and path_text[0] in ("'", '"') and path_text[-1] == path_text[0]:
+                path_text = _argument_value(path_text, line_number)
+            resource_path = Path(path_text)
+            if not resource_path.is_absolute() and base_dir is not None:
+                resource_path = Path(base_dir) / resource_path
+            suite.resources[alias] = str(resource_path.resolve())
             index += 1
             continue
         if variable_match:

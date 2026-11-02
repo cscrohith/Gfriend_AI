@@ -38,6 +38,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-v", "--variable-file", action="append", type=Path, default=[], help="Load a .gfvar file")
     parser.add_argument("--plugin", action="append", default=[], metavar="MODULE:OBJECT", help="Load a Python keyword library")
     parser.add_argument("--report", type=Path, help="Write the JSON execution report to this path")
+    parser.add_argument("-o", "--output-folder", type=Path, help="Directory for generated files")
     args = parser.parse_args(argv)
 
     try:
@@ -46,7 +47,7 @@ def main(argv: list[str] | None = None) -> int:
             variables.update(parse_variable_file(variable_file))
         variables.update(dict(args.var))
         suite = parse_file(args.script, variables)
-        executor = Executor()
+        executor = Executor(output_folder=args.output_folder)
         for plugin_spec in args.plugin:
             name, plugin = _load_plugin(plugin_spec)
             executor.register_library(name, plugin)

@@ -10,9 +10,9 @@ Python keyword libraries, reads `.gfvar` files and Excel named tables for
 The .NET solution remains in the repository as the behavioral reference while
 the migration proceeds. Device drivers, remote execution, datasets, spreadsheets,
 resources, remote execution, datasets other than Excel named tables,
-`ForSelectedRow` and advanced spreadsheet loops, reports, desktop UI, device
-drivers, and the remaining GFriend keyword libraries are not yet ported; scripts
-using those features require later migration phases.
+advanced spreadsheet loops, reports, desktop UI, device drivers, and the
+remaining GFriend keyword libraries are not yet ported; scripts using those
+features require later migration phases.
 
 ## Run a script
 
@@ -20,7 +20,7 @@ using those features require later migration phases.
 python -m gfriend_python path\to\script.txt
 python -m gfriend_python path\to\script.txt --var UserName=alice --test-case "Login"
 python -m gfriend_python path\to\script.txt --variable-file path\to\common.gfvar
-python -m gfriend_python path\to\script.txt --report output\result.json
+python -m gfriend_python path\to\script.txt --report output\result.json --output-folder output
 ```
 
 The command exits with status `0` when selected cases pass, `1` when execution
@@ -58,10 +58,19 @@ print(result.to_dict())
 - `While: Keyword(...): max_iterations { ... }` (default maximum: 50)
 - `dataset data.xlsx as Data` with `ForEachRow: Data.Sheet.Table { ... }`
   for Excel named tables (and CSV rows) using `openpyxl`
+- `For Selected Row: Data.Sheet.Table.Column>=value` with comparison and
+  comma-separated equality filters
+- `resource path as Name`, resolved relative to the script and available as
+  `${Name}` or a direct keyword argument
+- `using MyLibrary.gflib` loads script-defined custom keyword cases from that
+  file, with declared parameters substituted during execution
 - `If: Keyword(...) { ... }`, followed optionally by `Fail:` and `Error:`
 - `Pass`, `Fail`, `Error`, `Equals`, `Equals IgnoreCase`, `Log`, `Sleep`,
   `Calculate And Assign`, and `ReAssign Value To Variable`
 - `Stop Test Case`, `Stop Test Suite`, `BreakLoop`, and `ContinueLoop`
+- File built-ins: `File Exist`, `Folder Exist`, `Create Folder`,
+  `Read From File`, `Save To File`, `File Contains Text`, and file equality
+- `Get Time Stamp` and `Run Keyword`
 - Prefix a statement with `@` to ignore its result when aggregating the case
 
 This is an incremental port, not feature parity with GFriend yet. The runtime

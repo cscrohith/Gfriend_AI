@@ -60,6 +60,17 @@ class ForEachRowBlock:
 
 
 @dataclass(slots=True)
+class ForSelectedRowBlock:
+    dataset: str
+    sheet: str
+    table: str
+    filters: dict[str, tuple[str, list[str]]]
+    body: list[Runnable]
+    line_number: int = 0
+    always_pass: bool = False
+
+
+@dataclass(slots=True)
 class ConditionalBlock:
     condition: Statement
     branches: dict[Status, list[Runnable]] = field(default_factory=dict)
@@ -67,7 +78,15 @@ class ConditionalBlock:
     ignored_branches: set[Status] = field(default_factory=set)
 
 
-Runnable: TypeAlias = Statement | RepeatBlock | ForBlock | WhileBlock | ForEachRowBlock | ConditionalBlock
+Runnable: TypeAlias = (
+    Statement
+    | RepeatBlock
+    | ForBlock
+    | WhileBlock
+    | ForEachRowBlock
+    | ForSelectedRowBlock
+    | ConditionalBlock
+)
 
 
 @dataclass(slots=True)
@@ -84,6 +103,8 @@ class TestSuite:
     variables: dict[str, str] = field(default_factory=dict)
     libraries: dict[str, str] = field(default_factory=dict)
     datasets: dict[str, str] = field(default_factory=dict)
+    resources: dict[str, str] = field(default_factory=dict)
+    script_folder: str = ""
 
 
 @dataclass(slots=True)

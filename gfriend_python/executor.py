@@ -3,7 +3,9 @@ from __future__ import annotations
 import re
 import time
 import csv
+import random
 from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +14,7 @@ from .models import (
     ExecutionResult,
     ForEachRowBlock,
     ForBlock,
+    ForSelectedRowBlock,
     KeywordResult,
     RepeatBlock,
     Runnable,
@@ -22,12 +25,56 @@ from .models import (
     TestSuite,
     WhileBlock,
 )
+from .parser import ParseError, _parse_statement, parse_file
 
 _VARIABLE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
 
 
 def _normalize(value: str) -> str:
     return re.sub(r"\s+", "", value).casefold()
+
+
+class _ScriptLibrary:
+    def __init__(self, executor: Executor, path: str) -> None:
+        self._executor = executor
+        self._suite = parse_file(path)
+        self._keywords: dict[str, tuple[list[str], list[Runnable]]] = {}
+        for test_case in self._suite.test_cases:
+            signature = re.fullmatch(r"\s*(.*?)\s*\((.*?)\)\s*", test_case.name)
+            if signature:
+                keyword, raw_parameters = signature.groups()
+                parameters = [item.strip() for item in raw_parameters.split(",") if item.strip()]
+            else:
+                keyword, parameters = test_case.name.strip(), []
+            normalized = _normalize(keyword)
+            if normalized in self._keywords:
+                raise ParseError(f"Duplicate custom keyword '{keyword}' in '{path}'")
+            self._keywords[normalized] = (parameters, test_case.steps)
+
+    def __getattr__(self, name: str) -> Callable[..., KeywordResult]:
+        keyword = self._keywords.get(_normalize(name))
+        if keyword is None:
+            raise AttributeError(name)
+        parameters, body = keyword
+
+        def invoke(*arguments: str) -> KeywordResult:
+            if len(arguments) != len(parameters):
+                raise ValueError(f"Custom keyword '{name}' expects {len(parameters)} argument(s); got {len(arguments)}")
+            previous = self._executor.variables.copy()
+            try:
+                for parameter, value in zip(parameters, arguments):
+                    self._executor.variables[parameter] = value
+                nested_results: list[StepResult] = []
+                status = self._executor._run_items(body, nested_results)
+                output = next(
+                    (step.output for step in reversed(nested_results) if step.output),
+                    "",
+                )
+                return KeywordResult(status, output)
+            finally:
+                self._executor.variables = previous
+
+        return invoke
 
 
 class Executor:
@@ -38,12 +85,14 @@ class Executor:
         *,
         variables: dict[str, str] | None = None,
         sleep: Callable[[float], None] = time.sleep,
+        output_folder: str | Path | None = None,
     ) -> None:
         self.variables: dict[str, str] = {}
         self._execution_variables: dict[str, str] = {}
         self._libraries: dict[str, object] = {}
         self._sleep = sleep
         self._suite: TestSuite | None = None
+        self.output_folder = Path(output_folder).resolve() if output_folder else Path.cwd()
         self._flow = ""
         if variables:
             self._set_variables(variables)
@@ -61,6 +110,15 @@ class Executor:
         self.variables.setdefault("${EMPTY}", "")
         self.variables.setdefault("${CARRIAGE_RETURN}", "\r")
         self.variables.setdefault("${LINE_FEED}", "\n")
+        self.variables["${SCRIPT_FOLDER}"] = suite.script_folder
+        self.variables["${OUTPUT_FOLDER}"] = str(self.output_folder)
+        self.variables["${KEYWORD_OUTPUT}"] = ""
+        self.variables["${KEYWORD_RESULT}"] = Status.PASS.value
+        for alias, path in suite.resources.items():
+            self.variables[f"${{{alias}}}"] = path
+        for alias, library in suite.libraries.items():
+            if library.casefold().endswith(".gflib") and Path(library).is_file():
+                self.register_library(alias, _ScriptLibrary(self, library))
 
         results: list[TestCaseResult] = []
         selected = {name.casefold() for name in test_cases} if test_cases is not None else None
@@ -114,6 +172,11 @@ class Executor:
                 if item.always_pass:
                     block_status = Status.PASS
                 status = self._aggregate((status, block_status))
+            elif isinstance(item, ForSelectedRowBlock):
+                block_status = self._run_selected_rows(item, results)
+                if item.always_pass:
+                    block_status = Status.PASS
+                status = self._aggregate((status, block_status))
             else:
                 block_status = self._run_conditional(item, results)
                 if item.always_pass:
@@ -129,16 +192,26 @@ class Executor:
             "reassignvaluetovariable": {0},
             "setvariable": {0},
             "calculateandassign": {1},
+            "readfromfile": {1},
+            "gettimestamp": {0},
         }.get(keyword_name, set())
-        arguments = [
-            value if index in variable_arguments else self._expand(value)
-            for index, value in enumerate(statement.arguments)
-        ]
+        resource_names = {
+            alias.casefold(): path for alias, path in (self._suite.resources.items() if self._suite else [])
+        }
+        arguments = []
+        for index, value in enumerate(statement.arguments):
+            if index in variable_arguments:
+                arguments.append(value)
+                continue
+            expanded = self._expand(value)
+            arguments.append(resource_names.get(expanded.casefold(), expanded))
         library_name = statement.library.casefold()
         if self._suite:
             for alias, library in self._suite.libraries.items():
                 if alias.casefold() == library_name:
                     library_name = library.casefold()
+                    if library.casefold().endswith(".gflib"):
+                        library_name = alias.casefold()
                     break
 
         try:
@@ -157,6 +230,8 @@ class Executor:
         except Exception as error:
             result = KeywordResult(Status.ERROR, str(error))
 
+        self.variables["${KEYWORD_OUTPUT}"] = result.output
+        self.variables["${KEYWORD_RESULT}"] = result.status.value
         return StepResult(
             keyword=f"{statement.library}.{statement.keyword}",
             line_number=statement.line_number,
@@ -187,6 +262,13 @@ class Executor:
                 raise ValueError("Sleep duration must not be negative")
             self._sleep(seconds)
             return KeywordResult(Status.PASS)
+        if normalized == "randomsleep":
+            self._require_arguments(keyword, arguments, 2)
+            minimum, maximum = map(float, arguments)
+            if minimum < 0 or maximum < minimum:
+                raise ValueError("Random Sleep requires 0 <= min seconds <= max seconds")
+            self._sleep(random.uniform(minimum, maximum))
+            return KeywordResult(Status.PASS)
         if normalized in {"exittestcase", "stoptestcase", "stopcase"}:
             self._flow = "case"
             return KeywordResult(Status.PASS)
@@ -212,7 +294,85 @@ class Executor:
             if arguments[0].casefold() == arguments[1].casefold():
                 return KeywordResult(Status.PASS)
             return KeywordResult(Status.FAIL, f"{arguments[0]!r} does not equal {arguments[1]!r} ignoring case")
+        if normalized == "fileexist":
+            self._require_arguments(keyword, arguments, 1)
+            return KeywordResult(Status.PASS if self._resolve_path(arguments[0]).is_file() else Status.FAIL)
+        if normalized == "folderexist":
+            self._require_arguments(keyword, arguments, 1)
+            return KeywordResult(Status.PASS if self._resolve_path(arguments[0]).is_dir() else Status.FAIL)
+        if normalized == "createfolder":
+            self._require_arguments(keyword, arguments, 1)
+            self._resolve_path(arguments[0], for_output=True).mkdir(parents=True, exist_ok=True)
+            return KeywordResult(Status.PASS)
+        if normalized == "readfromfile":
+            self._require_arguments(keyword, arguments, 2)
+            value = self._resolve_path(arguments[0]).read_text(encoding="utf-8-sig")
+            self.variables[arguments[1]] = value
+            return KeywordResult(Status.PASS, value)
+        if normalized == "savetofile":
+            self._require_arguments(keyword, arguments, 2)
+            path = self._resolve_path(arguments[0], for_output=True)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(arguments[1], encoding="utf-8")
+            return KeywordResult(Status.PASS, str(path))
+        if normalized == "filecontainstext":
+            self._require_arguments(keyword, arguments, 2)
+            contents = self._resolve_path(arguments[0]).read_text(encoding="utf-8-sig")
+            return KeywordResult(
+                Status.PASS if arguments[1] in contents else Status.FAIL,
+                "" if arguments[1] in contents else f"Text was not found in '{arguments[0]}'",
+            )
+        if normalized in {"checkiffilesaresame", "checkiffilesarenotsame"}:
+            self._require_arguments(keyword, arguments, 2)
+            same = self._resolve_path(arguments[0]).read_bytes() == self._resolve_path(arguments[1]).read_bytes()
+            passed = same if normalized == "checkiffilesaresame" else not same
+            return KeywordResult(Status.PASS if passed else Status.FAIL)
+        if normalized == "gettimestamp":
+            if len(arguments) not in {1, 2}:
+                raise ValueError("Get Time Stamp expects 1 or 2 arguments")
+            format_string = arguments[1] if len(arguments) == 2 else "yyyyMMdd_HHmmss"
+            timestamp = datetime.now().strftime(self._strftime_format(format_string))
+            self.variables[arguments[0]] = timestamp
+            return KeywordResult(Status.PASS, f"{arguments[0]} = {timestamp}")
+        if normalized == "runkeyword":
+            self._require_arguments(keyword, arguments, 1)
+            nested_statement = _parse_statement(arguments[0], 0)
+            nested_result = self._run_statement(nested_statement)
+            return KeywordResult(nested_result.status, nested_result.output)
         raise LookupError(f"Built-in keyword '{keyword}' is not implemented")
+
+    def _resolve_path(self, value: str, *, for_output: bool = False) -> Path:
+        path = Path(value)
+        if path.is_absolute():
+            return path
+        root = self.output_folder if for_output else Path(self.variables["${SCRIPT_FOLDER}"])
+        return root / path
+
+    @staticmethod
+    def _strftime_format(format_string: str) -> str:
+        tokens = {
+            "yyyy": "%Y",
+            "yy": "%y",
+            "MMMM": "%B",
+            "MMM": "%b",
+            "MM": "%m",
+            "M": "%m",
+            "dddd": "%A",
+            "ddd": "%a",
+            "dd": "%d",
+            "d": "%d",
+            "HH": "%H",
+            "H": "%H",
+            "hh": "%I",
+            "h": "%I",
+            "mm": "%M",
+            "m": "%M",
+            "ss": "%S",
+            "s": "%S",
+            "tt": "%p",
+        }
+        pattern = re.compile("|".join(sorted(tokens, key=len, reverse=True)))
+        return pattern.sub(lambda match: tokens[match.group(0)], format_string)
 
     @staticmethod
     def _require_arguments(keyword: str, arguments: list[str], count: int) -> None:
@@ -228,6 +388,12 @@ class Executor:
             method = getattr(library, name)
             if callable(method):
                 return method
+        try:
+            dynamic_method = getattr(library, keyword)
+        except AttributeError:
+            return None
+        if callable(dynamic_method):
+            return dynamic_method
         return None
 
     @staticmethod
@@ -316,35 +482,9 @@ class Executor:
         return status
 
     def _run_each_row(self, block: ForEachRowBlock, results: list[StepResult]) -> Status:
-        if self._suite is None or block.dataset.casefold() not in {
-            name.casefold() for name in self._suite.datasets
-        }:
-            results.append(
-                StepResult(
-                    keyword="ForEachRow",
-                    line_number=block.line_number,
-                    status=Status.ERROR,
-                    output=f"Dataset '{block.dataset}' is not declared",
-                )
-            )
-            return Status.ERROR
-
-        dataset_path = next(
-            path
-            for name, path in self._suite.datasets.items()
-            if name.casefold() == block.dataset.casefold()
-        )
-        try:
-            rows = self._load_rows(Path(dataset_path), block.sheet, block.table)
-        except (OSError, ValueError, ImportError, KeyError) as error:
-            results.append(
-                StepResult(
-                    keyword="ForEachRow",
-                    line_number=block.line_number,
-                    status=Status.ERROR,
-                    output=str(error),
-                )
-            )
+        rows, error = self._get_dataset_rows(block.dataset, block.sheet, block.table, block.line_number)
+        if error is not None:
+            results.append(error)
             return Status.ERROR
 
         status = Status.PASS
@@ -361,6 +501,96 @@ class Executor:
             if self._flow == "continue":
                 self._flow = ""
         return status
+
+    def _run_selected_rows(self, block: ForSelectedRowBlock, results: list[StepResult]) -> Status:
+        rows, error = self._get_dataset_rows(block.dataset, block.sheet, block.table, block.line_number)
+        if error is not None:
+            results.append(error)
+            return Status.ERROR
+
+        status = Status.PASS
+        row_number = 0
+        for row in rows:
+            if not self._matches_filters(row, block.filters):
+                continue
+            row_number += 1
+            for header, value in row.items():
+                self.variables[f"${{{header}}}"] = value
+            self.variables["${R}"] = str(row_number)
+            status = self._aggregate((status, self._run_items(block.body, results)))
+            if self._flow in {"case", "suite"}:
+                break
+            if self._flow == "break":
+                self._flow = ""
+                break
+            if self._flow == "continue":
+                self._flow = ""
+        return status
+
+    def _get_dataset_rows(
+        self,
+        dataset: str,
+        sheet: str,
+        table: str,
+        line_number: int,
+    ) -> tuple[list[dict[str, str]], StepResult | None]:
+        if self._suite is None or dataset.casefold() not in {
+            name.casefold() for name in self._suite.datasets
+        }:
+            return [], StepResult(
+                keyword="ForEachRow",
+                line_number=line_number,
+                status=Status.ERROR,
+                output=f"Dataset '{dataset}' is not declared",
+            )
+
+        dataset_path = next(
+            path
+            for name, path in self._suite.datasets.items()
+            if name.casefold() == dataset.casefold()
+        )
+        try:
+            return self._load_rows(Path(dataset_path), sheet, table), None
+        except (OSError, ValueError, ImportError, KeyError) as error:
+            return [], StepResult(
+                keyword="ForEachRow",
+                line_number=line_number,
+                status=Status.ERROR,
+                output=str(error),
+            )
+
+    @staticmethod
+    def _matches_filters(
+        row: dict[str, str],
+        filters: dict[str, tuple[str, list[str]]],
+    ) -> bool:
+        normalized_row = {key.casefold(): value for key, value in row.items()}
+        for column, (operator, expected_values) in filters.items():
+            actual = normalized_row.get(column.casefold())
+            if actual is None:
+                return False
+            if operator in {"=", "!="}:
+                matched = actual.casefold() in {value.casefold() for value in expected_values}
+                if matched != (operator == "="):
+                    return False
+                continue
+            matched = False
+            for expected in expected_values:
+                try:
+                    left, right = float(actual), float(expected)
+                except ValueError:
+                    left, right = actual, expected
+                if operator == ">" and left > right:
+                    matched = True
+                elif operator == "<" and left < right:
+                    matched = True
+                elif operator == ">=" and left >= right:
+                    matched = True
+                elif operator == "<=" and left <= right:
+                    matched = True
+            if not matched:
+                return False
+        return True
 
     @staticmethod
     def _load_rows(path: Path, sheet_name: str, table_name: str) -> list[dict[str, str]]:

@@ -206,6 +206,40 @@ class ExecutorTests(unittest.TestCase):
         self.assertEqual(result.status, Status.PASS)
         self.assertEqual(result.test_cases[0].steps[-1].output, "3")
 
+    def test_file_builtins_and_keyword_result_variables(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "suite.txt"
+            script.write_text(
+                'Case\n{\n'
+                '  Save To File (result.txt,hello)\n'
+                '  File Contains Text (${OUTPUT_FOLDER}/result.txt,hello)\n'
+                '  Read From File (${OUTPUT_FOLDER}/result.txt,${Contents})\n'
+                '  Pass(${Contents})\n'
+                '  Pass(${KEYWORD_RESULT})\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor(output_folder=root / "output").run(parse_file(script))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(
+                [step.output for step in result.test_cases[0].steps],
+                [str(root / "output" / "result.txt"), "", "hello", "hello", "PASS"],
+            )
+
+    def test_get_timestamp_stores_value_in_variable(self) -> None:
+        result = Executor().run(
+            parse_script(
+                '${Stamp}=unset\n'
+                'Case\n{\n'
+                '  Get Time Stamp (${Stamp},yyyy)\n'
+                '  Pass(${Stamp})\n'
+                '}\n'
+            )
+        )
+        self.assertEqual(result.status, Status.PASS)
+        self.assertEqual(len(result.test_cases[0].steps[-1].output), 4)
+
     def test_ignore_error_marks_statement_pass(self) -> None:
         result = Executor().run(parse_script("Case\n{\n  @Missing.Keyword()\n}\n"))
         self.assertEqual(result.status, Status.PASS)
@@ -240,6 +274,98 @@ class ExecutorTests(unittest.TestCase):
             path = Path(directory) / "common.gfvar"
             path.write_text("// ignored\n${User}=alice=admin\ninvalid\n", encoding="utf-8")
             self.assertEqual(parse_variable_file(path), {"${User}": "alice=admin"})
+
+    def test_selected_rows_filters_csv_data(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data = root / "users.csv"
+            data.write_text("ID,Role\n1,Admin\n2,User\n3,Admin\n", encoding="utf-8")
+            script = root / "suite.txt"
+            script.write_text(
+                'dataset "users.csv" as Users\n'
+                'AdminRows\n{\n'
+                '  ForSelectedRow: Users.Users.Accounts.Role=Admin\n  {\n'
+                '    Pass(${ID}-${Role})\n'
+                '  }\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(script))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(
+                [step.output for step in result.test_cases[0].steps],
+                ["1-Admin", "3-Admin"],
+            )
+
+    def test_selected_rows_numeric_filter(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "values.csv").write_text("TCID\n1\n5\n7\n9\n10\n", encoding="utf-8")
+            script = root / "suite.txt"
+            script.write_text(
+                'dataset "values.csv" as Test\n'
+                'LargeRows\n{\n'
+                '  For Selected Row:Test.Sheet.Table.TCID>=7\n  {\n'
+                '    Pass(${TCID})\n'
+                '  }\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(script))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(
+                [step.output for step in result.test_cases[0].steps],
+                ["7", "9", "10"],
+            )
+
+    def test_resource_alias_resolves_relative_to_script(self) -> None:
+        class CaptureLibrary:
+            def __init__(self) -> None:
+                self.path = ""
+
+            def capture(self, path: str) -> None:
+                self.path = path
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            resource = root / "sample.pdf"
+            resource.write_bytes(b"pdf")
+            script = root / "suite.txt"
+            script.write_text(
+                'resource sample.pdf as Sample\n'
+                'using Capture\n'
+                'Case\n{\n'
+                '  Capture.Capture(Sample)\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            library = CaptureLibrary()
+            executor = Executor()
+            executor.register_library("Capture", library)
+            result = executor.run(parse_file(script))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(library.path, str(resource))
+
+    def test_gflib_custom_keyword_executes_with_arguments(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Greetings.gflib").write_text(
+                'Say Hello(${person})\n{\n'
+                '  Pass(Hello ${person})\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            script = root / "suite.txt"
+            script.write_text(
+                'using Greetings.gflib\n'
+                'Case\n{\n'
+                '  Greetings.Say Hello(World)\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(script))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(result.test_cases[0].steps[0].output, "Hello World")
 
     def test_foreachrow_reads_excel_table(self) -> None:
         from openpyxl import Workbook
