@@ -1,9 +1,57 @@
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
 from html import escape
 from pathlib import Path
 
 from .models import ExecutionResult
+
+
+def _xml_safe(value: str) -> str:
+    return "".join(
+        character
+        for character in value
+        if character in "\t\n\r"
+        or "\x20" <= character <= "\ud7ff"
+        or "\ue000" <= character <= "\ufffd"
+        or "\U00010000" <= character <= "\U0010ffff"
+    )
+
+
+def render_xml_report(result: ExecutionResult) -> str:
+    """Render a structured XML execution report."""
+    root = ET.Element("TestSuite", {"name": _xml_safe(result.suite_name)})
+    ET.SubElement(root, "Result").text = result.status.value
+    ET.SubElement(root, "StartTime").text = (
+        result.started_at.isoformat() if result.started_at else ""
+    )
+    ET.SubElement(root, "DurationSeconds").text = f"{result.duration_seconds:.3f}"
+
+    cases = ET.SubElement(root, "TestCases")
+    for case in result.test_cases:
+        case_element = ET.SubElement(
+            cases, "TestCase", {"name": _xml_safe(case.name)}
+        )
+        ET.SubElement(case_element, "Result").text = case.status.value
+        steps = ET.SubElement(case_element, "Steps")
+        for step in case.steps:
+            step_element = ET.SubElement(
+                steps,
+                "Step",
+                {"line": str(step.line_number), "keyword": _xml_safe(step.keyword)},
+            )
+            ET.SubElement(step_element, "Result").text = step.status.value
+            ET.SubElement(step_element, "Output").text = _xml_safe(step.output)
+
+    ET.indent(root, space="  ")
+    return ET.tostring(root, encoding="unicode", xml_declaration=True)
+
+
+def write_xml_report(result: ExecutionResult, path: str | Path) -> Path:
+    report_path = Path(path)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(render_xml_report(result), encoding="utf-8")
+    return report_path
 
 
 def render_html_report(result: ExecutionResult) -> str:

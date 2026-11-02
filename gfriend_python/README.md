@@ -5,7 +5,7 @@ GFriend runtime. It parses test cases, static and execution variables, `using`
 declarations, keyword statements, `Repeat`, `For`, and `While` blocks, and
 `If`/`Fail`/`Error` branches. It executes built-in keywords and registered
 Python keyword libraries, reads `.gfvar` files and Excel named tables for
-`ForEachRow` and whole-worksheet loops, and emits JSON and standalone HTML
+`ForEachRow` and whole-worksheet loops, and emits JSON, XML, and standalone HTML
 execution reports.
 
 The .NET solution remains in the repository as the behavioral reference while
@@ -22,6 +22,7 @@ python -m gfriend_python path\to\script.txt --var UserName=alice --test-case "Lo
 python -m gfriend_python path\to\script.txt --variable-file path\to\common.gfvar
 python -m gfriend_python path\to\script.txt --report output\result.json --output-folder output
 python -m gfriend_python path\to\script.txt --html-report output\report.html
+python -m gfriend_python path\to\script.txt --xml-report output\report.xml
 ```
 
 The command exits with status `0` when selected cases pass, `1` when execution
@@ -103,3 +104,7 @@ adapter, executing a remote block reports an error.
 This is an incremental port, not feature parity with GFriend yet. The runtime
 intentionally returns an error for unimplemented keywords and unregistered
 libraries instead of silently treating them as successful.
+
+The XML option writes the Python runtime's structured execution result format.
+It is not a replacement for the legacy XML event/session reporter or its
+session-report generation.

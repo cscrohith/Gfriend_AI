@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from gfriend_python import (
@@ -10,6 +11,7 @@ from gfriend_python import (
     parse_script,
     parse_variable_file,
     render_html_report,
+    render_xml_report,
 )
 from gfriend_python.parser import parse_file
 
@@ -266,6 +268,20 @@ class ExecutorTests(unittest.TestCase):
         self.assertIn("FAIL", report)
         self.assertIn("Duration:", report)
 
+    def test_xml_report_escapes_content_and_contains_case_results(self) -> None:
+        result = Executor().run(
+            parse_script("Unsafe <case>\n{\n  Fail(a & b < c\x01)\n}\n")
+        )
+        report = render_xml_report(result)
+        root = ET.fromstring(report)
+        self.assertEqual(root.tag, "TestSuite")
+        self.assertEqual(root.attrib["name"], "TestSuite")
+        self.assertEqual(root.findtext("Result"), "FAIL")
+        case = root.find("./TestCases/TestCase")
+        self.assertIsNotNone(case)
+        self.assertEqual(case.attrib["name"], "Unsafe <case>")
+        self.assertEqual(case.findtext("./Steps/Step/Output"), "a & b < c")
+
 
     def test_registered_python_library_and_variable_precedence(self) -> None:
         suite = parse_script(
@@ -444,6 +460,33 @@ class ExecutorTests(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(json.loads(completed.stdout)["status"], "PASS")
             self.assertIn("<title>GFriend report - case</title>", html_report.read_text(encoding="utf-8"))
+
+    def test_cli_writes_xml_report_without_suppressing_json_stdout(self) -> None:
+        import json
+        import subprocess
+        import sys
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = root / "case.txt"
+            xml_report = root / "nested" / "report.xml"
+            script.write_text("CLI\n{\n  Pass(ok)\n}\n", encoding="utf-8")
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "gfriend_python",
+                    str(script),
+                    "--xml-report",
+                    str(xml_report),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(json.loads(completed.stdout)["status"], "PASS")
+            self.assertEqual(ET.parse(xml_report).getroot().findtext("Result"), "PASS")
 
     def test_ignore_error_marks_statement_pass(self) -> None:
         result = Executor().run(parse_script("Case\n{\n  @Missing.Keyword()\n}\n"))
