@@ -61,7 +61,7 @@ print(result.to_dict())
   `SpreadSheetForEachRow: Data.Sheet.Name { ... }` for all worksheet rows,
   using `openpyxl`
 - `For Selected Row: Data.Sheet.Table.Column>=value` with comparison and
-  comma-separated equality filters
+  comma-separated equality filters and variable-expanded thresholds
 - `resource path as Name`, resolved relative to the script and available as
   `${Name}` or a direct keyword argument
 - `using MyLibrary.gflib` loads script-defined custom keyword cases from that

@@ -1031,8 +1031,12 @@ class Executor:
 
         status = Status.PASS
         iteration_statuses: list[Status] = []
+        expanded_filters = {
+            column: (operator, [self._expand(value) for value in values])
+            for column, (operator, values) in block.filters.items()
+        }
         for index, row in enumerate(rows):
-            if not self._matches_filters(row, block.filters):
+            if not self._matches_filters(row, expanded_filters):
                 continue
             for header, value in row.items():
                 self.variables[f"${{{header}}}"] = value
@@ -1106,9 +1110,21 @@ class Executor:
             actual = normalized_row.get(column.casefold())
             if actual is None:
                 return False
-            if operator in {"=", "!="}:
-                matched = actual.casefold() in {value.casefold() for value in expected_values}
-                if matched != (operator == "="):
+            if operator in {"=", "==", "!="}:
+                try:
+                    actual_number = float(actual)
+                    expected_numbers = [float(value) for value in expected_values]
+                except ValueError:
+                    actual_number = None
+                    expected_numbers = []
+                if actual_number is None:
+                    matched = actual in expected_values
+                else:
+                    matched = actual_number in expected_numbers
+                if operator == "!=":
+                    if matched:
+                        return False
+                elif not matched:
                     return False
                 continue
             matched = False

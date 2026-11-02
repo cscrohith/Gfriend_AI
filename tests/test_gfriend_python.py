@@ -369,6 +369,36 @@ class ExecutorTests(unittest.TestCase):
                 ["7", "9", "10"],
             )
 
+    def test_selected_rows_expand_variables_and_accept_double_equals(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "values.csv").write_text(
+                "TCID,Role\n7,Admin\n8,User\n9,Admin\n",
+                encoding="utf-8",
+            )
+            script = root / "suite.txt"
+            script.write_text(
+                '${Minimum}=8\n'
+                'dataset "values.csv" as Test\n'
+                'Selected\n{\n'
+                '  For Selected Row:Test.Sheet.Table.TCID>=${Minimum}\n'
+                '  {\n'
+                '    Pass(${TCID})\n'
+                '  }\n'
+                '  For Selected Row:Test.Sheet.Table.Role==Admin\n'
+                '  {\n'
+                '    Pass(${Role})\n'
+                '  }\n'
+                '}\n',
+                encoding="utf-8",
+            )
+            result = Executor().run(parse_file(script))
+            self.assertEqual(result.status, Status.PASS)
+            self.assertEqual(
+                [step.output for step in result.test_cases[0].steps],
+                ["8", "9", "Admin", "Admin"],
+            )
+
     def test_resource_alias_resolves_relative_to_script(self) -> None:
         class CaptureLibrary:
             def __init__(self) -> None:

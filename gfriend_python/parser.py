@@ -28,7 +28,7 @@ _BLOCK = re.compile(
 )
 _BRANCH = re.compile(r"^(@)?(fail|error)\s*:\s*(\{)?$", re.IGNORECASE)
 _VARIABLE_REFERENCE = re.compile(r"\$\{[A-Za-z0-9_-]+\}")
-_ROW_FILTER = re.compile(r"^([A-Za-z0-9_-]+)\s*(>=|<=|!=|=|>|<)\s*(.+)$")
+_ROW_FILTER = re.compile(r"^([A-Za-z0-9_-]+)\s*(>=|<=|!=|==|=|>|<)\s*(.+)$")
 
 
 class ParseError(ValueError):
